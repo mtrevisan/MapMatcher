@@ -37,16 +37,16 @@ public class DurationEdgeWeightCalculator implements EdgeWeightCalculator{
 
 
 	@Override
-	public double calculateWeight(Edge edge){
-		final Coordinates coordinatesFrom = edge.getFrom().getCoordinates();
-		final Coordinates coordinatesTo = edge.getTo().getCoordinates();
+	public double calculateWeight(final Edge edge){
+		final var coordinatesFrom = edge.getFrom().getCoordinates();
+		final var coordinatesTo = edge.getTo().getCoordinates();
 		return DISTANCE_CALCULATOR.calculateDistance(coordinatesFrom, coordinatesTo) / edge.getMaxSpeed() * 60.;
 	}
 
 	@Override
-	public double estimateWeight(Vertex start, Vertex end){
-		final Coordinates coordinatesStart = start.getCoordinates();
-		final Coordinates coordinatesEnd = end.getCoordinates();
+	public double estimateWeight(final Vertex start, final Vertex end){
+		final var coordinatesStart = start.getCoordinates();
+		final var coordinatesEnd = end.getCoordinates();
 		return DISTANCE_CALCULATOR.calculateDistance(coordinatesStart, coordinatesEnd) / MAX_ALLOWED_SPEED * 60.;
 	}
 

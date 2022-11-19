@@ -33,7 +33,7 @@ public class Coordinates{
 	private final double longitude;
 
 
-	public Coordinates(double latitude, double longitude){
+	public Coordinates(final double latitude, final double longitude){
 		if(latitude < -90. || latitude > 90.)
 			throw new IllegalArgumentException("Latitude must be between -90 and 90 inclusive");
 		if(longitude < -180. || longitude > 180.)
@@ -52,12 +52,13 @@ public class Coordinates{
 	}
 
 	@Override
-	public boolean equals(Object o){
+	public boolean equals(final Object o){
 		if(this == o)
 			return true;
 		if(o == null || getClass() != o.getClass())
 			return false;
-		Coordinates that = (Coordinates)o;
+
+		final Coordinates that = (Coordinates)o;
 		return (Double.compare(that.latitude, latitude) == 0 && Double.compare(that.longitude, longitude) == 0);
 	}
 

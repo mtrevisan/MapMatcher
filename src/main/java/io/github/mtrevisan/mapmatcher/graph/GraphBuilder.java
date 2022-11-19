@@ -36,13 +36,13 @@ public class GraphBuilder{
 	private final Map<Vertex, List<Edge>> adjacencyList = new HashMap<>();
 
 
-	public GraphBuilder addVertex(Vertex vertex){
+	public GraphBuilder addVertex(final Vertex vertex){
 		adjacencyList.put(vertex, new ArrayList<>());
 		vertices.put(vertex.getId(), vertex);
 		return this;
 	}
 
-	public GraphBuilder connect(Vertex from, Vertex to, int maxSpeed){
+	public GraphBuilder connect(final Vertex from, final Vertex to, final int maxSpeed){
 		if(!vertices.containsKey(from.getId()))
 			throw new VertexNotPresentException(from.getId());
 		if(!vertices.containsKey(to.getId()))
@@ -52,12 +52,12 @@ public class GraphBuilder{
 		return this;
 	}
 
-	private void connectVertices(Vertex from, Vertex to, int maxSpeed){
+	private void connectVertices(final Vertex from, final Vertex to, final int maxSpeed){
 		adjacencyList.computeIfAbsent(from, (e) -> new ArrayList<>())
 			.add(new Edge(from, to, maxSpeed));
 	}
 
-	public GraphBuilder connectByIds(long fromId, long toId, int maxSpeed){
+	public GraphBuilder connectByIds(final long fromId, final long toId, final int maxSpeed){
 		if(!vertices.containsKey(fromId))
 			throw new VertexNotPresentException(fromId);
 		if(!vertices.containsKey(toId))

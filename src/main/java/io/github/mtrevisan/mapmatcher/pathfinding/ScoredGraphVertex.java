@@ -33,7 +33,7 @@ public class ScoredGraphVertex implements Comparable<ScoredGraphVertex>{
 	private final double score;
 
 
-	ScoredGraphVertex(Vertex vertex, double score){
+	ScoredGraphVertex(final Vertex vertex, final double score){
 		this.vertex = vertex;
 		this.score = score;
 	}
@@ -47,7 +47,7 @@ public class ScoredGraphVertex implements Comparable<ScoredGraphVertex>{
 	}
 
 	@Override
-	public int compareTo(ScoredGraphVertex scoredGraphVertex){
+	public int compareTo(final ScoredGraphVertex scoredGraphVertex){
 		return Double.compare(score, scoredGraphVertex.score);
 	}
 

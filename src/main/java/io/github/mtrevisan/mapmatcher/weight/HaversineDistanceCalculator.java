@@ -34,24 +34,24 @@ class HaversineDistanceCalculator{
 
 
 	public double calculateDistance(Coordinates startCoordinates, Coordinates endCoordinatess){
-		double startLatitude = startCoordinates.getLatitude();
-		double startLongitude = startCoordinates.getLongitude();
-		double endLatitude = endCoordinatess.getLatitude();
-		double endLongitude = endCoordinatess.getLongitude();
+		var startLatitude = startCoordinates.getLatitude();
+		final var startLongitude = startCoordinates.getLongitude();
+		var endLatitude = endCoordinatess.getLatitude();
+		final var endLongitude = endCoordinatess.getLongitude();
 
-		double deltaLatitude = Math.toRadians(endLatitude - startLatitude);
-		double deltaLongitude = Math.toRadians(endLongitude - startLongitude);
+		final var deltaLatitude = Math.toRadians(endLatitude - startLatitude);
+		final var deltaLongitude = Math.toRadians(endLongitude - startLongitude);
 
 		startLatitude = Math.toRadians(startLatitude);
 		endLatitude = Math.toRadians(endLatitude);
 
-		double a = haversine(deltaLatitude) + StrictMath.cos(startLatitude) * StrictMath.cos(endLatitude) * haversine(deltaLongitude);
-		double c = 2. * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1. - a));
+		final var a = haversine(deltaLatitude) + StrictMath.cos(startLatitude) * StrictMath.cos(endLatitude) * haversine(deltaLongitude);
+		final var c = 2. * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1. - a));
 
 		return EARTH_RADIUS * c;
 	}
 
-	private double haversine(double val){
+	private double haversine(final double val){
 		return Math.pow(StrictMath.sin(val / 2.), 2.);
 	}
 

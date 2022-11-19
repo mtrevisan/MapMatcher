@@ -31,12 +31,12 @@ import io.github.mtrevisan.mapmatcher.graph.Vertex;
 public class UnweightedDistanceCalculator implements EdgeWeightCalculator{
 
 	@Override
-	public double calculateWeight(Edge edge){
+	public double calculateWeight(final Edge edge){
 		return 0.;
 	}
 
 	@Override
-	public double estimateWeight(Vertex start, Vertex end){
+	public double estimateWeight(final Vertex start, final Vertex end){
 		return 0.;
 	}
 

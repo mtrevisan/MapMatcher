@@ -34,7 +34,7 @@ public class Edge{
 	private final int maxSpeed;
 
 
-	public Edge(Vertex from, Vertex to, int maxSpeed){
+	public Edge(final Vertex from, final Vertex to, final int maxSpeed){
 		this.from = from;
 		this.to = to;
 		this.maxSpeed = maxSpeed;
@@ -57,13 +57,13 @@ public class Edge{
 	}
 
 	@Override
-	public boolean equals(Object o){
+	public boolean equals(final Object o){
 		if(this == o)
 			return true;
 		if(o == null || getClass() != o.getClass())
 			return false;
 
-		Edge edge = (Edge)o;
+		final Edge edge = (Edge)o;
 		return (Objects.equals(from, edge.from) && Objects.equals(to, edge.to) && Objects.equals(maxSpeed, edge.maxSpeed));
 	}
 

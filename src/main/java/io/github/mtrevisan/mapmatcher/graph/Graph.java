@@ -41,16 +41,16 @@ public class Graph{
 	private final ConcurrentHashMap<Graph, Graph> cache = new ConcurrentHashMap<>();
 
 
-	Graph(Map<Vertex, List<Edge>> adjacencyList, Map<Long, Vertex> vertices){
+	Graph(final Map<Vertex, List<Edge>> adjacencyList, final Map<Long, Vertex> vertices){
 		this.adjacencyList = deepImmutableCopy(adjacencyList);
 		this.vertices = new HashMap<>(vertices);
 	}
 
-	public Collection<Edge> getVertexEdges(Vertex node){
+	public Collection<Edge> getVertexEdges(final Vertex node){
 		return adjacencyList.getOrDefault(node, Collections.emptyList());
 	}
 
-	private Map<Vertex, List<Edge>> deepImmutableCopy(Map<Vertex, List<Edge>> adjacencyList){
+	private Map<Vertex, List<Edge>> deepImmutableCopy(final Map<Vertex, List<Edge>> adjacencyList){
 		return adjacencyList.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> List.copyOf(entry.getValue())));
 	}
 
@@ -59,9 +59,9 @@ public class Graph{
 	}
 
 	private Graph computeReversedGraph(){
-		var reversedAdjacencyList = new HashMap<Vertex, List<Edge>>();
-		for(var entry : adjacencyList.entrySet())
-			for(var edge : entry.getValue())
+		final var reversedAdjacencyList = new HashMap<Vertex, List<Edge>>();
+		for(final var entry : adjacencyList.entrySet())
+			for(final var edge : entry.getValue())
 				reversedAdjacencyList.computeIfAbsent(edge.getTo(), (e) -> new ArrayList<>()).add(edge.reversed());
 		return new Graph(reversedAdjacencyList, vertices);
 	}

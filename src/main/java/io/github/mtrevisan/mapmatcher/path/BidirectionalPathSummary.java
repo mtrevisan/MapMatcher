@@ -50,7 +50,7 @@ public class BidirectionalPathSummary implements PathSummary{
 	private final Set<Vertex> searchedVerticesFromEnd;
 
 
-	BidirectionalPathSummary(List<Edge> path, Set<Vertex> searchedVerticesFromStart, Set<Vertex> searchedVerticesFromEnd){
+	BidirectionalPathSummary(final List<Edge> path, final Set<Vertex> searchedVerticesFromStart, final Set<Vertex> searchedVerticesFromEnd){
 		this.path = path;
 		this.searchedVerticesFromStart = searchedVerticesFromStart;
 		this.searchedVerticesFromEnd = searchedVerticesFromEnd;
@@ -61,7 +61,7 @@ public class BidirectionalPathSummary implements PathSummary{
 		if(!isFound())
 			return Collections.emptyList();
 
-		var withoutLast = path.stream().map(Edge::getFrom).collect(Collectors.toList());
+		final var withoutLast = path.stream().map(Edge::getFrom).collect(Collectors.toList());
 		withoutLast.add(path.get(path.size() - 1).getTo());
 		return withoutLast;
 	}

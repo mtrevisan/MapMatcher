@@ -48,29 +48,29 @@ public class AStarPathfinder implements PathfindingStrategy{
 	private final EdgeWeightCalculator calculator;
 
 
-	public AStarPathfinder(EdgeWeightCalculator calculator){
+	public AStarPathfinder(final EdgeWeightCalculator calculator){
 		this.calculator = calculator;
 	}
 
 	@Override
-	public PathSummary findPath(Vertex start, Vertex end, Graph graph){
-		var predecessorTree = new HashMap<Vertex, Edge>();
+	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph){
+		final var predecessorTree = new HashMap<Vertex, Edge>();
 		predecessorTree.put(start, null);
 
-		var gScores = new HashMap<Vertex, Double>();
+		final var gScores = new HashMap<Vertex, Double>();
 		gScores.put(start, 0.0);
 
-		var open = new PriorityQueue<ScoredGraphVertex>();
+		final var open = new PriorityQueue<ScoredGraphVertex>();
 		open.add(new ScoredGraphVertex(start, heuristic(start, end)));
 
 		while(!open.isEmpty()){
-			var curr = open.poll().vertex();
+			final var curr = open.poll().vertex();
 			if(curr.equals(end))
-				return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
+				break;
 
-			for(var edge : graph.getVertexEdges(curr)){
-				var neighbour = edge.getTo();
-				var newScore = gScores.get(curr) + calculator.calculateWeight(edge);
+			for(final var edge : graph.getVertexEdges(curr)){
+				final var neighbour = edge.getTo();
+				final var newScore = gScores.get(curr) + calculator.calculateWeight(edge);
 
 				if(newScore < gScores.getOrDefault(neighbour, Double.MAX_VALUE)){
 					gScores.put(neighbour, newScore);
@@ -83,7 +83,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
 	}
 
-	private double heuristic(Vertex from, Vertex to){
+	private double heuristic(final Vertex from, final Vertex to){
 		return calculator.estimateWeight(from, to);
 	}
 

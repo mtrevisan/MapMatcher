@@ -33,7 +33,7 @@ public class Vertex{
 	private final Coordinates coordinates;
 
 
-	public Vertex(long id, Coordinates coordinates){
+	public Vertex(final long id, final Coordinates coordinates){
 		this.id = id;
 		this.coordinates = coordinates;
 	}
@@ -47,13 +47,13 @@ public class Vertex{
 	}
 
 	@Override
-	public boolean equals(Object o){
+	public boolean equals(final Object o){
 		if(this == o)
 			return true;
 		if(o == null || getClass() != o.getClass())
 			return false;
 
-		Vertex vertex = (Vertex)o;
+		final Vertex vertex = (Vertex)o;
 		return id == vertex.id;
 	}
 

@@ -36,31 +36,31 @@ import java.util.Map;
 
 public class PathSummaryCreator{
 
-	private List<Edge> reconstructPathFromPredecessorTree(Vertex from, Vertex to, Map<Vertex, Edge> predecessorTree){
-		var result = new ArrayList<Edge>();
+	private List<Edge> reconstructPathFromPredecessorTree(final Vertex from, final Vertex to, final Map<Vertex, Edge> predecessorTree){
+		final var result = new ArrayList<Edge>();
 		var currNode = from;
 		while(predecessorTree.containsKey(currNode) && !currNode.equals(to)){
-			var edge = predecessorTree.get(currNode);
+			final var edge = predecessorTree.get(currNode);
 			result.add(edge);
 			currNode = edge.getFrom();
 		}
 		return (currNode.equals(to)? result: new ArrayList<>());
 	}
 
-	public PathSummary createUnidirectionalPath(Vertex start, Vertex end, Map<Vertex, Edge> predecessorTree){
-		var fromEndToStart = reconstructPathFromPredecessorTree(end, start, predecessorTree);
+	public PathSummary createUnidirectionalPath(final Vertex start, final Vertex end, final Map<Vertex, Edge> predecessorTree){
+		final var fromEndToStart = reconstructPathFromPredecessorTree(end, start, predecessorTree);
 
 		Collections.reverse(fromEndToStart);
 
 		return new SingleDirectionalPathSummary(fromEndToStart, predecessorTree.keySet());
 	}
 
-	public PathSummary createBidirectionalPath(Vertex start, Vertex mid, Vertex end, Map<Vertex, Edge> predecessorTreeStart,
-			Map<Vertex, Edge> predecessorTreeEnd){
-		var fromMidToStart = reconstructPathFromPredecessorTree(mid, start, predecessorTreeStart);
+	public PathSummary createBidirectionalPath(final Vertex start, final Vertex mid, final Vertex end,
+			final Map<Vertex, Edge> predecessorTreeStart, final Map<Vertex, Edge> predecessorTreeEnd){
+		final var fromMidToStart = reconstructPathFromPredecessorTree(mid, start, predecessorTreeStart);
 		Collections.reverse(fromMidToStart);
 
-		var fromEndToMid = reconstructPathFromPredecessorTree(mid, end, predecessorTreeEnd);
+		final var fromEndToMid = reconstructPathFromPredecessorTree(mid, end, predecessorTreeEnd);
 
 		if((start != mid && fromMidToStart.isEmpty()) || (end != mid && fromEndToMid.isEmpty()))
 			return new BidirectionalPathSummary(Collections.emptyList(), predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
