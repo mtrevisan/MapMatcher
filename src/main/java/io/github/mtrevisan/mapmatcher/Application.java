@@ -29,9 +29,12 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.GraphBuilder;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathfinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathfindingStrategy;
 import io.github.mtrevisan.mapmatcher.weight.DistanceEdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
+
+import java.util.List;
 
 
 public class Application{
@@ -46,13 +49,16 @@ public class Application{
 			.addVertex(new Vertex(2, new Coordinates(45.982746, 12.302965)))
 			.addVertex(new Vertex(3, new Coordinates(46.007074, 12.285113)))
 			.addVertex(end)
-			.connectByIds(1, 2, 1)
-			.connectByIds(1, 3, 1)
-			.connectByIds(2, 3, 1)
-			.connectByIds(2, 10, 1)
-			.connectByIds(3, 10, 1)
+			.connectByIds(1, 2, 1.)
+			.connectByIds(1, 3, 1.)
+			.connectByIds(2, 3, 1.)
+			.connectByIds(2, 10, 1.)
+			.connectByIds(3, 10, 1.)
 			.asGraph();
-		strategy.findPath(start, end, graph);
+		PathSummary pathSummary = strategy.findPath(start, end, graph);
+		List<Vertex> path = pathSummary.simplePath();
+
+		System.out.println(path);
 	}
 
 }

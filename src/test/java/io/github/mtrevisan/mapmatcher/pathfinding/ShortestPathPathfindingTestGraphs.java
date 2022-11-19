@@ -131,7 +131,7 @@ class ShortestPathPathfindingTestGraphs{
 			.connect(vertexJ, vertexK, 50.)
 			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<Vertex>(), new EuclideanDistanceTestEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(), new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary vertexCountTestGraphConnected(){
@@ -252,7 +252,7 @@ class ShortestPathPathfindingTestGraphs{
 			.connect(vertexJ, vertexK, 50.)
 			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<Vertex>(), new VertexCountEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(), new VertexCountEdgeWeightCalculator());
 	}
 
 
@@ -265,7 +265,8 @@ class ShortestPathPathfindingTestGraphs{
 		private final EdgeWeightCalculator calculator;
 
 
-		TestGraphSummary(Graph graph, Vertex start, Vertex end, List<Vertex> shortestPath, EdgeWeightCalculator calculator){
+		TestGraphSummary(final Graph graph, final Vertex start, final Vertex end, final List<Vertex> shortestPath,
+				final EdgeWeightCalculator calculator){
 			this.graph = graph;
 			this.start = start;
 			this.end = end;
@@ -273,23 +274,23 @@ class ShortestPathPathfindingTestGraphs{
 			this.calculator = calculator;
 		}
 
-		public final Graph getGraph(){
+		final Graph getGraph(){
 			return graph;
 		}
 
-		public final Vertex getStart(){
+		final Vertex getStart(){
 			return start;
 		}
 
-		public final Vertex getEnd(){
+		final Vertex getEnd(){
 			return end;
 		}
 
-		public final List<Vertex> getShortestPath(){
+		final List<Vertex> getShortestPath(){
 			return shortestPath;
 		}
 
-		public final EdgeWeightCalculator getCalculator(){
+		final EdgeWeightCalculator getCalculator(){
 			return calculator;
 		}
 
