@@ -32,6 +32,6 @@ public interface EdgeWeightCalculator{
 
 	double calculateWeight(Edge edge);
 
-	double estimateWeight(Vertex start, Vertex end);
+	double calculateWeight(Vertex start, Vertex end);
 
 }

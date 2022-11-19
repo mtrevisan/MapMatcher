@@ -29,7 +29,7 @@ class GraphBuilderTest{
 		graphBuilder.addVertex(from);
 		graphBuilder.addVertex(to);
 
-		graphBuilder.connect(from, to, 50);
+		graphBuilder.connect(from, to, 50.);
 
 		Collection<Edge> edges = graphBuilder.asGraph().getVertexEdges(from);
 		Collection<Edge> expected = new ArrayList<>(Arrays.asList(
@@ -45,7 +45,7 @@ class GraphBuilderTest{
 		Vertex to = new Vertex(2, new Coordinates(33.22, 44.33));
 		graphBuilder.addVertex(to);
 
-		Executable when = () -> graphBuilder.connect(from, to, 50);
+		Executable when = () -> graphBuilder.connect(from, to, 50.);
 
 		Assertions.assertThrows(VertexNotPresentException.class, when);
 	}
@@ -57,7 +57,7 @@ class GraphBuilderTest{
 		Vertex to = new Vertex(2, new Coordinates(33.22, 44.33));
 		graphBuilder.addVertex(from);
 
-		Executable when = () -> graphBuilder.connect(from, to, 50);
+		Executable when = () -> graphBuilder.connect(from, to, 50.);
 
 		Assertions.assertThrows(VertexNotPresentException.class, when);
 	}

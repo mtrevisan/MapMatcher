@@ -30,23 +30,50 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex A = new Vertex(1, new Coordinates(0, 0));
-		Vertex B = new Vertex(2, new Coordinates(1, 1));
-		Vertex C = new Vertex(3, new Coordinates(1, 3));
-		Vertex D = new Vertex(4, new Coordinates(0, 2));
-		Vertex E = new Vertex(5, new Coordinates(- 1, 2));
-		Vertex F = new Vertex(6, new Coordinates(- 1, 6));
-		Vertex G = new Vertex(7, new Coordinates(1, 3));
-		Vertex H = new Vertex(8, new Coordinates(1, 4));
-		Vertex I = new Vertex(9, new Coordinates(3, 4));
-		Vertex J = new Vertex(10, new Coordinates(2, 4));
-		Vertex K = new Vertex(11, new Coordinates(2, 6));
-		Vertex M = new Vertex(12, new Coordinates(3, 6));
+		Vertex vertexA = new Vertex(1, new Coordinates(0, 0));
+		Vertex vertexB = new Vertex(2, new Coordinates(1, 1));
+		Vertex vertexC = new Vertex(3, new Coordinates(1, 3));
+		Vertex vertexD = new Vertex(4, new Coordinates(0, 2));
+		Vertex vertexE = new Vertex(5, new Coordinates(- 1, 2));
+		Vertex vertexF = new Vertex(6, new Coordinates(- 1, 6));
+		Vertex vertexG = new Vertex(7, new Coordinates(1, 3));
+		Vertex vertexH = new Vertex(8, new Coordinates(1, 4));
+		Vertex vertexI = new Vertex(9, new Coordinates(3, 4));
+		Vertex vertexJ = new Vertex(10, new Coordinates(2, 4));
+		Vertex vertexK = new Vertex(11, new Coordinates(2, 6));
+		Vertex vertexM = new Vertex(12, new Coordinates(3, 6));
 
 		GraphBuilder gb = new GraphBuilder();
-		gb.addVertex(A).addVertex(B).addVertex(C).addVertex(D).addVertex(E).addVertex(F).addVertex(G).addVertex(H).addVertex(I).addVertex(J).addVertex(K).addVertex(M).connect(A, D, 50).connect(A, C, 50).connect(A, B, 50).connect(B, G, 50).connect(B, I, 50).connect(G, H, 50).connect(H, I, 50).connect(I, M, 50).connect(D, J, 50).connect(C, D, 50).connect(C, E, 50).connect(E, F, 50).connect(F, K, 50).connect(K, M, 50).connect(J, K, 50).connect(J, I, 50);
+		gb.addVertex(vertexA)
+			.addVertex(vertexB)
+			.addVertex(vertexC)
+			.addVertex(vertexD)
+			.addVertex(vertexE)
+			.addVertex(vertexF)
+			.addVertex(vertexG)
+			.addVertex(vertexH)
+			.addVertex(vertexI)
+			.addVertex(vertexJ)
+			.addVertex(vertexK)
+			.addVertex(vertexM)
+			.connect(vertexA, vertexD, 50.)
+			.connect(vertexA, vertexC, 50.)
+			.connect(vertexA, vertexB, 50.)
+			.connect(vertexB, vertexG, 50.)
+			.connect(vertexB, vertexI, 50.)
+			.connect(vertexG, vertexH, 50.)
+			.connect(vertexH, vertexI, 50.)
+			.connect(vertexI, vertexM, 50.)
+			.connect(vertexD, vertexJ, 50.)
+			.connect(vertexC, vertexD, 50.)
+			.connect(vertexC, vertexE, 50.)
+			.connect(vertexE, vertexF, 50.)
+			.connect(vertexF, vertexK, 50.)
+			.connect(vertexK, vertexM, 50.)
+			.connect(vertexJ, vertexK, 50.)
+			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), A, M, new ArrayList<Vertex>(Arrays.asList(A, B, I, M)), new EuclideanDistanceTestEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<Vertex>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)), new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary euclideanDistanceTestGraphDisconnected(){
@@ -65,23 +92,46 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex A = new Vertex(1, new Coordinates(0, 0));
-		Vertex B = new Vertex(2, new Coordinates(1, 1));
-		Vertex C = new Vertex(3, new Coordinates(1, 3));
-		Vertex D = new Vertex(4, new Coordinates(0, 2));
-		Vertex E = new Vertex(5, new Coordinates(- 1, 2));
-		Vertex F = new Vertex(6, new Coordinates(- 1, 6));
-		Vertex G = new Vertex(7, new Coordinates(1, 3));
-		Vertex H = new Vertex(8, new Coordinates(1, 4));
-		Vertex I = new Vertex(9, new Coordinates(3, 4));
-		Vertex J = new Vertex(10, new Coordinates(2, 4));
-		Vertex K = new Vertex(11, new Coordinates(2, 6));
-		Vertex M = new Vertex(12, new Coordinates(3, 6));
+		Vertex vertexA = new Vertex(1, new Coordinates(0, 0));
+		Vertex vertexB = new Vertex(2, new Coordinates(1, 1));
+		Vertex vertexC = new Vertex(3, new Coordinates(1, 3));
+		Vertex vertexD = new Vertex(4, new Coordinates(0, 2));
+		Vertex vertexE = new Vertex(5, new Coordinates(- 1, 2));
+		Vertex vertexF = new Vertex(6, new Coordinates(- 1, 6));
+		Vertex vertexG = new Vertex(7, new Coordinates(1, 3));
+		Vertex vertexH = new Vertex(8, new Coordinates(1, 4));
+		Vertex vertexI = new Vertex(9, new Coordinates(3, 4));
+		Vertex vertexJ = new Vertex(10, new Coordinates(2, 4));
+		Vertex vertexK = new Vertex(11, new Coordinates(2, 6));
+		Vertex vertexM = new Vertex(12, new Coordinates(3, 6));
 
 		GraphBuilder gb = new GraphBuilder();
-		gb.addVertex(A).addVertex(B).addVertex(C).addVertex(D).addVertex(E).addVertex(F).addVertex(G).addVertex(H).addVertex(I).addVertex(J).addVertex(K).addVertex(M).connect(A, D, 50).connect(A, C, 50).connect(A, B, 50).connect(B, G, 50).connect(G, H, 50).connect(I, M, 50).connect(C, D, 50).connect(C, E, 50).connect(F, K, 50).connect(K, M, 50).connect(J, K, 50).connect(J, I, 50);
+		gb.addVertex(vertexA)
+			.addVertex(vertexB)
+			.addVertex(vertexC)
+			.addVertex(vertexD)
+			.addVertex(vertexE)
+			.addVertex(vertexF)
+			.addVertex(vertexG)
+			.addVertex(vertexH)
+			.addVertex(vertexI)
+			.addVertex(vertexJ)
+			.addVertex(vertexK)
+			.addVertex(vertexM)
+			.connect(vertexA, vertexD, 50.)
+			.connect(vertexA, vertexC, 50.)
+			.connect(vertexA, vertexB, 50.)
+			.connect(vertexB, vertexG, 50.)
+			.connect(vertexG, vertexH, 50.)
+			.connect(vertexI, vertexM, 50.)
+			.connect(vertexC, vertexD, 50.)
+			.connect(vertexC, vertexE, 50.)
+			.connect(vertexF, vertexK, 50.)
+			.connect(vertexK, vertexM, 50.)
+			.connect(vertexJ, vertexK, 50.)
+			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), A, M, new ArrayList<Vertex>(), new EuclideanDistanceTestEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<Vertex>(), new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary vertexCountTestGraphConnected(){
@@ -100,23 +150,51 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex A = new Vertex(1, new Coordinates(0, 0));
-		Vertex B = new Vertex(2, new Coordinates(1, 1));
-		Vertex C = new Vertex(3, new Coordinates(1, 3));
-		Vertex D = new Vertex(4, new Coordinates(0, 2));
-		Vertex E = new Vertex(5, new Coordinates(- 1, 2));
-		Vertex F = new Vertex(6, new Coordinates(- 1, 6));
-		Vertex G = new Vertex(7, new Coordinates(1, 3));
-		Vertex H = new Vertex(8, new Coordinates(1, 4));
-		Vertex I = new Vertex(9, new Coordinates(3, 4));
-		Vertex J = new Vertex(10, new Coordinates(2, 4));
-		Vertex K = new Vertex(11, new Coordinates(2, 6));
-		Vertex M = new Vertex(12, new Coordinates(3, 6));
+		Vertex vertexA = new Vertex(1, new Coordinates(0, 0));
+		Vertex vertexB = new Vertex(2, new Coordinates(1, 1));
+		Vertex vertexC = new Vertex(3, new Coordinates(1, 3));
+		Vertex vertexD = new Vertex(4, new Coordinates(0, 2));
+		Vertex vertexE = new Vertex(5, new Coordinates(- 1, 2));
+		Vertex vertexF = new Vertex(6, new Coordinates(- 1, 6));
+		Vertex vertexG = new Vertex(7, new Coordinates(1, 3));
+		Vertex vertexH = new Vertex(8, new Coordinates(1, 4));
+		Vertex vertexI = new Vertex(9, new Coordinates(3, 4));
+		Vertex vertexJ = new Vertex(10, new Coordinates(2, 4));
+		Vertex vertexK = new Vertex(11, new Coordinates(2, 6));
+		Vertex vertexM = new Vertex(12, new Coordinates(3, 6));
 
 		GraphBuilder gb = new GraphBuilder();
-		gb.addVertex(A).addVertex(B).addVertex(C).addVertex(D).addVertex(E).addVertex(F).addVertex(G).addVertex(H).addVertex(I).addVertex(J).addVertex(K).addVertex(M).connect(A, D, 50).connect(A, C, 50).connect(A, B, 50).connect(B, G, 50).connect(B, I, 50).connect(G, H, 50).connect(H, I, 50).connect(I, M, 50).connect(D, J, 50).connect(C, D, 50).connect(C, E, 50).connect(C, F, 50).connect(E, F, 50).connect(F, K, 50).connect(K, M, 50).connect(J, K, 50).connect(J, I, 50);
+		gb.addVertex(vertexA)
+			.addVertex(vertexB)
+			.addVertex(vertexC)
+			.addVertex(vertexD)
+			.addVertex(vertexE)
+			.addVertex(vertexF)
+			.addVertex(vertexG)
+			.addVertex(vertexH)
+			.addVertex(vertexI)
+			.addVertex(vertexJ)
+			.addVertex(vertexK)
+			.addVertex(vertexM)
+			.connect(vertexA, vertexD, 50.)
+			.connect(vertexA, vertexC, 50.)
+			.connect(vertexA, vertexB, 50.)
+			.connect(vertexB, vertexG, 50.)
+			.connect(vertexB, vertexI, 50.)
+			.connect(vertexG, vertexH, 50.)
+			.connect(vertexH, vertexI, 50.)
+			.connect(vertexI, vertexM, 50.)
+			.connect(vertexD, vertexJ, 50.)
+			.connect(vertexC, vertexD, 50.)
+			.connect(vertexC, vertexE, 50.)
+			.connect(vertexC, vertexF, 50.)
+			.connect(vertexE, vertexF, 50.)
+			.connect(vertexF, vertexK, 50.)
+			.connect(vertexK, vertexM, 50.)
+			.connect(vertexJ, vertexK, 50.)
+			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), A, M, new ArrayList<Vertex>(Arrays.asList(A, B, I, M)), new VertexCountEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<Vertex>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)), new VertexCountEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary vertexCountTestGraphDisconnected(){
@@ -135,23 +213,46 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex A = new Vertex(1, new Coordinates(0, 0));
-		Vertex B = new Vertex(2, new Coordinates(1, 1));
-		Vertex C = new Vertex(3, new Coordinates(1, 3));
-		Vertex D = new Vertex(4, new Coordinates(0, 2));
-		Vertex E = new Vertex(5, new Coordinates(- 1, 2));
-		Vertex F = new Vertex(6, new Coordinates(- 1, 6));
-		Vertex G = new Vertex(7, new Coordinates(1, 3));
-		Vertex H = new Vertex(8, new Coordinates(1, 4));
-		Vertex I = new Vertex(9, new Coordinates(3, 4));
-		Vertex J = new Vertex(10, new Coordinates(2, 4));
-		Vertex K = new Vertex(11, new Coordinates(2, 6));
-		Vertex M = new Vertex(12, new Coordinates(3, 6));
+		Vertex vertexA = new Vertex(1, new Coordinates(0, 0));
+		Vertex vertexB = new Vertex(2, new Coordinates(1, 1));
+		Vertex vertexC = new Vertex(3, new Coordinates(1, 3));
+		Vertex vertexD = new Vertex(4, new Coordinates(0, 2));
+		Vertex vertexE = new Vertex(5, new Coordinates(- 1, 2));
+		Vertex vertexF = new Vertex(6, new Coordinates(- 1, 6));
+		Vertex vertexG = new Vertex(7, new Coordinates(1, 3));
+		Vertex vertexH = new Vertex(8, new Coordinates(1, 4));
+		Vertex vertexI = new Vertex(9, new Coordinates(3, 4));
+		Vertex vertexJ = new Vertex(10, new Coordinates(2, 4));
+		Vertex vertexK = new Vertex(11, new Coordinates(2, 6));
+		Vertex vertexM = new Vertex(12, new Coordinates(3, 6));
 
 		GraphBuilder gb = new GraphBuilder();
-		gb.addVertex(A).addVertex(B).addVertex(C).addVertex(D).addVertex(E).addVertex(F).addVertex(G).addVertex(H).addVertex(I).addVertex(J).addVertex(K).addVertex(M).connect(A, D, 50).connect(A, C, 50).connect(A, B, 50).connect(B, G, 50).connect(G, H, 50).connect(I, M, 50).connect(C, D, 50).connect(C, E, 50).connect(F, K, 50).connect(K, M, 50).connect(J, K, 50).connect(J, I, 50);
+		gb.addVertex(vertexA)
+			.addVertex(vertexB)
+			.addVertex(vertexC)
+			.addVertex(vertexD)
+			.addVertex(vertexE)
+			.addVertex(vertexF)
+			.addVertex(vertexG)
+			.addVertex(vertexH)
+			.addVertex(vertexI)
+			.addVertex(vertexJ)
+			.addVertex(vertexK)
+			.addVertex(vertexM)
+			.connect(vertexA, vertexD, 50.)
+			.connect(vertexA, vertexC, 50.)
+			.connect(vertexA, vertexB, 50.)
+			.connect(vertexB, vertexG, 50.)
+			.connect(vertexG, vertexH, 50.)
+			.connect(vertexI, vertexM, 50.)
+			.connect(vertexC, vertexD, 50.)
+			.connect(vertexC, vertexE, 50.)
+			.connect(vertexF, vertexK, 50.)
+			.connect(vertexK, vertexM, 50.)
+			.connect(vertexJ, vertexK, 50.)
+			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), A, M, new ArrayList<Vertex>(), new VertexCountEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<Vertex>(), new VertexCountEdgeWeightCalculator());
 	}
 
 

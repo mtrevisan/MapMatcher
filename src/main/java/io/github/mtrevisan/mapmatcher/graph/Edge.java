@@ -31,13 +31,13 @@ public class Edge{
 
 	private final Vertex from;
 	private final Vertex to;
-	private final int maxSpeed;
+	private final double weight;
 
 
-	public Edge(final Vertex from, final Vertex to, final int maxSpeed){
+	public Edge(final Vertex from, final Vertex to, final double weight){
 		this.from = from;
 		this.to = to;
-		this.maxSpeed = maxSpeed;
+		this.weight = weight;
 	}
 
 	public Vertex getFrom(){
@@ -48,12 +48,12 @@ public class Edge{
 		return to;
 	}
 
-	public int getMaxSpeed(){
-		return maxSpeed;
+	public double getWeight(){
+		return weight;
 	}
 
 	public Edge reversed(){
-		return new Edge(to, from, maxSpeed);
+		return new Edge(to, from, weight);
 	}
 
 	@Override
@@ -64,12 +64,12 @@ public class Edge{
 			return false;
 
 		final Edge edge = (Edge)o;
-		return (Objects.equals(from, edge.from) && Objects.equals(to, edge.to) && Objects.equals(maxSpeed, edge.maxSpeed));
+		return (Objects.equals(from, edge.from) && Objects.equals(to, edge.to) && Objects.equals(weight, edge.weight));
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(from, to, maxSpeed);
+		return Objects.hash(from, to, weight);
 	}
 
 }

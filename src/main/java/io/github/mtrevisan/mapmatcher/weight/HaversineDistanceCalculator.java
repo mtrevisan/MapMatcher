@@ -33,7 +33,7 @@ class HaversineDistanceCalculator{
 	private static final double EARTH_RADIUS = 6371.;
 
 
-	public double calculateDistance(Coordinates startCoordinates, Coordinates endCoordinatess){
+	double calculateDistance(Coordinates startCoordinates, Coordinates endCoordinatess){
 		var startLatitude = startCoordinates.getLatitude();
 		final var startLongitude = startCoordinates.getLongitude();
 		var endLatitude = endCoordinatess.getLatitude();

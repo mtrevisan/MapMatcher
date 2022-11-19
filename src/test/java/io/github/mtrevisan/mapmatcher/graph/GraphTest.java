@@ -16,7 +16,13 @@ class GraphTest{
 		Vertex vertex = new Vertex(1, new Coordinates(1, 1));
 		Vertex firstNeighbour = new Vertex(2, new Coordinates(1, 1));
 		Vertex secondNeighbour = new Vertex(3, new Coordinates(1, 1));
-		Graph graph = new GraphBuilder().addVertex(vertex).addVertex(firstNeighbour).addVertex(secondNeighbour).connectByIds(1, 2, 50).connectByIds(1, 3, 50).asGraph();
+		Graph graph = new GraphBuilder()
+			.addVertex(vertex)
+			.addVertex(firstNeighbour)
+			.addVertex(secondNeighbour)
+			.connectByIds(1, 2, 50.)
+			.connectByIds(1, 3, 50.)
+			.asGraph();
 
 		Collection<Edge> result = graph.getVertexEdges(vertex);
 

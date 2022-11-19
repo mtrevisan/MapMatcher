@@ -39,31 +39,33 @@ public class GraphBuilder{
 	public GraphBuilder addVertex(final Vertex vertex){
 		adjacencyList.put(vertex, new ArrayList<>());
 		vertices.put(vertex.getId(), vertex);
+
 		return this;
 	}
 
-	public GraphBuilder connect(final Vertex from, final Vertex to, final int maxSpeed){
+	public GraphBuilder connect(final Vertex from, final Vertex to, final double weight){
 		if(!vertices.containsKey(from.getId()))
 			throw new VertexNotPresentException(from.getId());
 		if(!vertices.containsKey(to.getId()))
 			throw new VertexNotPresentException(to.getId());
 
-		connectVertices(from, to, maxSpeed);
+		connectVertices(from, to, weight);
+
 		return this;
 	}
 
-	private void connectVertices(final Vertex from, final Vertex to, final int maxSpeed){
+	private void connectVertices(final Vertex from, final Vertex to, final double weight){
 		adjacencyList.computeIfAbsent(from, (e) -> new ArrayList<>())
-			.add(new Edge(from, to, maxSpeed));
+			.add(new Edge(from, to, weight));
 	}
 
-	public GraphBuilder connectByIds(final long fromId, final long toId, final int maxSpeed){
+	public GraphBuilder connectByIds(final long fromId, final long toId, final double weight){
 		if(!vertices.containsKey(fromId))
 			throw new VertexNotPresentException(fromId);
 		if(!vertices.containsKey(toId))
 			throw new VertexNotPresentException(toId);
 
-		return connect(vertices.get(fromId), vertices.get(toId), maxSpeed);
+		return connect(vertices.get(fromId), vertices.get(toId), weight);
 	}
 
 	public Graph asGraph(){

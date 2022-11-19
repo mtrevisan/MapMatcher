@@ -16,7 +16,7 @@ public class EuclideanDistanceTestEdgeWeightCalculator implements EdgeWeightCalc
 	}
 
 	@Override
-	public double estimateWeight(Vertex start, Vertex end){
+	public double calculateWeight(Vertex start, Vertex end){
 		return calculateWeight(new Edge(start, end, 0));
 	}
 

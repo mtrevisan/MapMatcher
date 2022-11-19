@@ -84,7 +84,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 	}
 
 	private double heuristic(final Vertex from, final Vertex to){
-		return calculator.estimateWeight(from, to);
+		return calculator.calculateWeight(from, to);
 	}
 
 }
