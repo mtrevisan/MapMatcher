@@ -28,7 +28,7 @@ class AndrewMonotoneChainConvexHullCalculatorTest{
 
 	@Test
 	void should_remove_excess_vertices_and_determine_a_valid_convex_hull_when_given_7_points(){
-		ArrayList<Vertex> vertices = new ArrayList<Vertex>(Arrays.asList(
+		ArrayList<Vertex> vertices = new ArrayList<>(Arrays.asList(
 			new Vertex(1, new Coordinates(0, 3)),
 			new Vertex(2, new Coordinates(2, 4)),
 			new Vertex(3, new Coordinates(1, 1)),

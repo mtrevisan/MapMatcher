@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 
 class GraphBuilderTest{
@@ -32,9 +32,7 @@ class GraphBuilderTest{
 		graphBuilder.connect(from, to, 50.);
 
 		Collection<Edge> edges = graphBuilder.asGraph().getVertexEdges(from);
-		Collection<Edge> expected = new ArrayList<>(Arrays.asList(
-			new Edge(from, to, 50)
-		));
+		Collection<Edge> expected = new ArrayList<>(List.of(new Edge(from, to, 50.)));
 		Assertions.assertEquals(expected, edges);
 	}
 

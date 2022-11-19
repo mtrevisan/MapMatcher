@@ -33,11 +33,11 @@ class HaversineDistanceCalculator{
 	private static final double EARTH_RADIUS = 6371.;
 
 
-	double calculateDistance(Coordinates startCoordinates, Coordinates endCoordinatess){
+	double calculateDistance(Coordinates startCoordinates, Coordinates endCoordinates){
 		var startLatitude = startCoordinates.getLatitude();
 		final var startLongitude = startCoordinates.getLongitude();
-		var endLatitude = endCoordinatess.getLatitude();
-		final var endLongitude = endCoordinatess.getLongitude();
+		var endLatitude = endCoordinates.getLatitude();
+		final var endLongitude = endCoordinates.getLongitude();
 
 		final var deltaLatitude = Math.toRadians(endLatitude - startLatitude);
 		final var deltaLongitude = Math.toRadians(endLongitude - startLongitude);
@@ -52,7 +52,8 @@ class HaversineDistanceCalculator{
 	}
 
 	private double haversine(final double val){
-		return Math.pow(StrictMath.sin(val / 2.), 2.);
+		final var arg = StrictMath.sin(val / 2.);
+		return arg * arg;
 	}
 
 }

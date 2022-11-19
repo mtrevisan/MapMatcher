@@ -73,7 +73,7 @@ class ShortestPathPathfindingTestGraphs{
 			.connect(vertexJ, vertexK, 50.)
 			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<Vertex>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)), new EuclideanDistanceTestEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)), new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary euclideanDistanceTestGraphDisconnected(){
@@ -194,7 +194,7 @@ class ShortestPathPathfindingTestGraphs{
 			.connect(vertexJ, vertexK, 50.)
 			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<Vertex>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)), new VertexCountEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)), new VertexCountEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary vertexCountTestGraphDisconnected(){

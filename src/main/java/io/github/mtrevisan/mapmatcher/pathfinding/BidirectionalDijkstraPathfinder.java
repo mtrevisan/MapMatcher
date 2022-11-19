@@ -80,15 +80,17 @@ public class BidirectionalDijkstraPathfinder implements PathfindingStrategy{
 			visitVertex(currForward, graph, pqForward, predecessorTreeForward, minDistancesForward);
 
 			final var currBackward = pqBackward.poll();
-			if(predecessorTreeForward.containsKey(currBackward.vertex())){
-				final var candidateBidirectionalScore = minDistancesForward.get(currBackward.vertex())
-					+ minDistancesBackward.get(currBackward.vertex());
-				var center = CENTER_VERTEX_FINDER.findCenterVertex(currBackward.vertex(), candidateBidirectionalScore,
-					pqForward, pqBackward);
+			if(currBackward != null){
+				if(predecessorTreeForward.containsKey(currBackward.vertex())){
+					final var candidateBidirectionalScore = minDistancesForward.get(currBackward.vertex())
+						+ minDistancesBackward.get(currBackward.vertex());
+					var center = CENTER_VERTEX_FINDER.findCenterVertex(currBackward.vertex(), candidateBidirectionalScore,
+						pqForward, pqBackward);
 
-				return PATH_SUMMARY_CREATOR.createBidirectionalPath(start, center, end, predecessorTreeForward, predecessorTreeBackward);
+					return PATH_SUMMARY_CREATOR.createBidirectionalPath(start, center, end, predecessorTreeForward, predecessorTreeBackward);
+				}
+				visitVertex(currBackward, reversedGraph, pqBackward, predecessorTreeBackward, minDistancesBackward);
 			}
-			visitVertex(currBackward, reversedGraph, pqBackward, predecessorTreeBackward, minDistancesBackward);
 		}
 
 		return PATH_SUMMARY_CREATOR.createBidirectionalPath(start, start, end, predecessorTreeForward, predecessorTreeBackward);

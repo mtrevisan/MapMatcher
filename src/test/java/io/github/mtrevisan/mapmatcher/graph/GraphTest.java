@@ -27,8 +27,8 @@ class GraphTest{
 		Collection<Edge> result = graph.getVertexEdges(vertex);
 
 		Collection<Edge> expected = new ArrayList<>(Arrays.asList(
-			new Edge(vertex, firstNeighbour, 50),
-			new Edge(vertex, secondNeighbour, 50)
+			new Edge(vertex, firstNeighbour, 50.),
+			new Edge(vertex, secondNeighbour, 50.)
 		));
 		Assertions.assertEquals(expected, result);
 	}
@@ -54,9 +54,9 @@ class GraphTest{
 
 		final Graph result = graph.reversed();
 
-		Collection<Edge> expectedFirst = List.of(new Edge(firstNeighbour, vertex, 50));
+		Collection<Edge> expectedFirst = List.of(new Edge(firstNeighbour, vertex, 50.));
 		Assertions.assertEquals(expectedFirst, result.getVertexEdges(firstNeighbour));
-		Collection<Edge> expectedSecond = List.of(new Edge(secondNeighbour, vertex, 50));
+		Collection<Edge> expectedSecond = List.of(new Edge(secondNeighbour, vertex, 50.));
 		Assertions.assertEquals(expectedSecond, result.getVertexEdges(secondNeighbour));
 	}
 
@@ -81,7 +81,7 @@ class GraphTest{
 
 		Collection<Edge> result = graph.edges();
 
-		Collection<Edge> expected = List.of(new Edge(vertex, firstNeighbour, 50), new Edge(vertex, secondNeighbour, 50));
+		Collection<Edge> expected = List.of(new Edge(vertex, firstNeighbour, 50.), new Edge(vertex, secondNeighbour, 50));
 		Assertions.assertEquals(expected, result);
 	}
 
