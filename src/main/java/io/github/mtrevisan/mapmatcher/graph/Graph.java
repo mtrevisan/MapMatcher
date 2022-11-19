@@ -40,6 +40,7 @@ public class Graph{
 	private final Map<Long, Vertex> vertices;
 	private final ConcurrentHashMap<Graph, Graph> cache = new ConcurrentHashMap<>();
 
+
 	Graph(Map<Vertex, List<Edge>> adjacencyList, Map<Long, Vertex> vertices){
 		this.adjacencyList = deepImmutableCopy(adjacencyList);
 		this.vertices = new HashMap<>(vertices);
@@ -59,13 +60,9 @@ public class Graph{
 
 	private Graph computeReversedGraph(){
 		var reversedAdjacencyList = new HashMap<Vertex, List<Edge>>();
-
-		for(var entry : adjacencyList.entrySet()){
-			for(var edge : entry.getValue()){
+		for(var entry : adjacencyList.entrySet())
+			for(var edge : entry.getValue())
 				reversedAdjacencyList.computeIfAbsent(edge.getTo(), (e) -> new ArrayList<>()).add(edge.reversed());
-			}
-		}
-
 		return new Graph(reversedAdjacencyList, vertices);
 	}
 
@@ -74,7 +71,8 @@ public class Graph{
 	}
 
 	public Collection<Edge> edges(){
-		return adjacencyList.values().stream().collect(ArrayList::new, List::addAll, List::addAll);
+		return adjacencyList.values().stream()
+			.collect(ArrayList::new, List::addAll, List::addAll);
 	}
 
 	@Override

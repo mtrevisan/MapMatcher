@@ -41,12 +41,13 @@ import java.util.stream.Collectors;
 
 public class SingleDirectionalPathSummary implements PathSummary{
 
-	private static final DistanceEdgeWeightCalculator distanceCalculator = new DistanceEdgeWeightCalculator();
-	private static final DurationEdgeWeightCalculator durationCalculator = new DurationEdgeWeightCalculator();
-	private static final ConvexHullCalculator convexHullCalculator = new AndrewMonotoneChainConvexHullCalculator();
+	private static final DistanceEdgeWeightCalculator DISTANCE_CALCULATOR = new DistanceEdgeWeightCalculator();
+	private static final DurationEdgeWeightCalculator DURATION_CALCULATOR = new DurationEdgeWeightCalculator();
+	private static final ConvexHullCalculator CONVEX_HULL_CALCULATOR = new AndrewMonotoneChainConvexHullCalculator();
 
 	private final List<Edge> path;
 	private final Set<Vertex> searchedVertices;
+
 
 	SingleDirectionalPathSummary(List<Edge> path, Set<Vertex> searchedVertices){
 		this.path = path;
@@ -55,18 +56,19 @@ public class SingleDirectionalPathSummary implements PathSummary{
 
 	@Override
 	public List<Vertex> simplePath(){
-		if(! isFound()){
+		if(!isFound())
 			return Collections.emptyList();
-		}
 
-		var withoutLast = path.stream().map(Edge::getFrom).collect(Collectors.toList());
+		var withoutLast = path.stream()
+			.map(Edge::getFrom)
+			.collect(Collectors.toList());
 		withoutLast.add(path.get(path.size() - 1).getTo());
 		return withoutLast;
 	}
 
 	@Override
 	public int numberOfVertices(){
-		return isFound()? path.size() + 1: 0;
+		return (isFound()? path.size() + 1: 0);
 	}
 
 	@Override
@@ -76,22 +78,26 @@ public class SingleDirectionalPathSummary implements PathSummary{
 
 	@Override
 	public double totalDistance(){
-		return path.stream().mapToDouble(distanceCalculator::calculateWeight).sum();
+		return path.stream()
+			.mapToDouble(DISTANCE_CALCULATOR::calculateWeight)
+			.sum();
 	}
 
 	@Override
 	public double totalDuration(){
-		return path.stream().mapToDouble(durationCalculator::calculateWeight).sum();
+		return path.stream()
+			.mapToDouble(DURATION_CALCULATOR::calculateWeight)
+			.sum();
 	}
 
 	@Override
 	public Collection<List<Vertex>> searchBoundaries(){
-		return List.of(convexHullCalculator.calculateConvexHull(searchedVertices));
+		return List.of(CONVEX_HULL_CALCULATOR.calculateConvexHull(searchedVertices));
 	}
 
 	@Override
 	public boolean isFound(){
-		return ! path.isEmpty();
+		return !path.isEmpty();
 	}
 
 }

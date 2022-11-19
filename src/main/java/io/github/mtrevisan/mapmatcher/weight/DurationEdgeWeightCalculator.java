@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.weight;
 
+import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 
@@ -32,16 +33,21 @@ public class DurationEdgeWeightCalculator implements EdgeWeightCalculator{
 
 	private static final int MAX_ALLOWED_SPEED = 140;
 
-	private static final HaversineDistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
+	private static final HaversineDistanceCalculator DISTANCE_CALCULATOR = new HaversineDistanceCalculator();
+
 
 	@Override
 	public double calculateWeight(Edge edge){
-		return distanceCalculator.calculateDistance(edge.getFrom().getCoordinates(), edge.getTo().getCoordinates()) / edge.getMaxSpeed() * 60;
+		final Coordinates coordinatesFrom = edge.getFrom().getCoordinates();
+		final Coordinates coordinatesTo = edge.getTo().getCoordinates();
+		return DISTANCE_CALCULATOR.calculateDistance(coordinatesFrom, coordinatesTo) / edge.getMaxSpeed() * 60.;
 	}
 
 	@Override
 	public double estimateWeight(Vertex start, Vertex end){
-		return distanceCalculator.calculateDistance(start.getCoordinates(), end.getCoordinates()) / MAX_ALLOWED_SPEED * 60;
+		final Coordinates coordinatesStart = start.getCoordinates();
+		final Coordinates coordinatesEnd = end.getCoordinates();
+		return DISTANCE_CALCULATOR.calculateDistance(coordinatesStart, coordinatesEnd) / MAX_ALLOWED_SPEED * 60.;
 	}
 
 }

@@ -32,6 +32,7 @@ public class ScoredGraphVertex implements Comparable<ScoredGraphVertex>{
 	private final Vertex vertex;
 	private final double score;
 
+
 	ScoredGraphVertex(Vertex vertex, double score){
 		this.vertex = vertex;
 		this.score = score;

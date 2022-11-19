@@ -46,7 +46,7 @@ public class GrahamScanConvexHullCalculator implements ConvexHullCalculator{
 
 		final var source = Collections.min(vertices, minLatComparator);
 
-		var remaining = vertices.stream().filter(v -> ! v.equals(source)).sorted(Comparator.comparingDouble((target) -> angleFromSource(source, target))).collect(Collectors.toList());
+		var remaining = vertices.stream().filter(v -> !v.equals(source)).sorted(Comparator.comparingDouble((target) -> angleFromSource(source, target))).collect(Collectors.toList());
 
 		List<Vertex> result = new ArrayList<>();
 		result.add(source);

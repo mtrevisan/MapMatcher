@@ -29,29 +29,30 @@ import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 
 class HaversineDistanceCalculator{
 
-	private static final int EARTH_RADIUS = 6371;
+	//[km]
+	private static final double EARTH_RADIUS = 6371.;
 
-	public double calculateDistance(Coordinates startCoors, Coordinates endCoords){
-		double startLat = startCoors.getLatitude();
-		double startLong = startCoors.getLongitude();
 
-		double endLat = endCoords.getLatitude();
-		double endLong = endCoords.getLongitude();
+	public double calculateDistance(Coordinates startCoordinates, Coordinates endCoordinatess){
+		double startLatitude = startCoordinates.getLatitude();
+		double startLongitude = startCoordinates.getLongitude();
+		double endLatitude = endCoordinatess.getLatitude();
+		double endLongitude = endCoordinatess.getLongitude();
 
-		double dLat = Math.toRadians((endLat - startLat));
-		double dLong = Math.toRadians((endLong - startLong));
+		double deltaLatitude = Math.toRadians(endLatitude - startLatitude);
+		double deltaLongitude = Math.toRadians(endLongitude - startLongitude);
 
-		startLat = Math.toRadians(startLat);
-		endLat = Math.toRadians(endLat);
+		startLatitude = Math.toRadians(startLatitude);
+		endLatitude = Math.toRadians(endLatitude);
 
-		double a = haversine(dLat) + Math.cos(startLat) * Math.cos(endLat) * haversine(dLong);
-		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		double a = haversine(deltaLatitude) + StrictMath.cos(startLatitude) * StrictMath.cos(endLatitude) * haversine(deltaLongitude);
+		double c = 2. * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1. - a));
 
 		return EARTH_RADIUS * c;
 	}
 
 	private double haversine(double val){
-		return Math.pow(Math.sin(val / 2), 2);
+		return Math.pow(StrictMath.sin(val / 2.), 2.);
 	}
 
 }

@@ -35,6 +35,7 @@ public class GraphBuilder{
 	private final Map<Long, Vertex> vertices = new HashMap<>();
 	private final Map<Vertex, List<Edge>> adjacencyList = new HashMap<>();
 
+
 	public GraphBuilder addVertex(Vertex vertex){
 		adjacencyList.put(vertex, new ArrayList<>());
 		vertices.put(vertex.getId(), vertex);
@@ -42,28 +43,26 @@ public class GraphBuilder{
 	}
 
 	public GraphBuilder connect(Vertex from, Vertex to, int maxSpeed){
-		if(! vertices.containsKey(from.getId())){
+		if(!vertices.containsKey(from.getId()))
 			throw new VertexNotPresentException(from.getId());
-		}
-		if(! vertices.containsKey(to.getId())){
+		if(!vertices.containsKey(to.getId()))
 			throw new VertexNotPresentException(to.getId());
-		}
 
 		connectVertices(from, to, maxSpeed);
 		return this;
 	}
 
 	private void connectVertices(Vertex from, Vertex to, int maxSpeed){
-		adjacencyList.computeIfAbsent(from, (e) -> new ArrayList<>()).add(new Edge(from, to, maxSpeed));
+		adjacencyList.computeIfAbsent(from, (e) -> new ArrayList<>())
+			.add(new Edge(from, to, maxSpeed));
 	}
 
 	public GraphBuilder connectByIds(long fromId, long toId, int maxSpeed){
-		if(! vertices.containsKey(fromId)){
+		if(!vertices.containsKey(fromId))
 			throw new VertexNotPresentException(fromId);
-		}
-		if(! vertices.containsKey(toId)){
+		if(!vertices.containsKey(toId))
 			throw new VertexNotPresentException(toId);
-		}
+
 		return connect(vertices.get(fromId), vertices.get(toId), maxSpeed);
 	}
 

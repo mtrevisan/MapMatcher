@@ -43,8 +43,10 @@ import java.util.PriorityQueue;
  */
 public class AStarPathfinder implements PathfindingStrategy{
 
+	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
+
 	private final EdgeWeightCalculator calculator;
-	private static final PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
+
 
 	public AStarPathfinder(EdgeWeightCalculator calculator){
 		this.calculator = calculator;
@@ -65,7 +67,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 			var curr = open.poll().vertex();
 
 			if(curr.equals(end)){
-				return pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
+				return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
 			}
 
 			for(var edge : graph.getVertexEdges(curr)){
@@ -80,7 +82,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 			}
 		}
 
-		return pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
+		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
 	}
 
 	private double heuristic(Vertex from, Vertex to){
