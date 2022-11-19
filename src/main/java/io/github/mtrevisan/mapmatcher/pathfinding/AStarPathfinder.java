@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2022 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -65,10 +65,8 @@ public class AStarPathfinder implements PathfindingStrategy{
 
 		while(!open.isEmpty()){
 			var curr = open.poll().vertex();
-
-			if(curr.equals(end)){
+			if(curr.equals(end))
 				return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
-			}
 
 			for(var edge : graph.getVertexEdges(curr)){
 				var neighbour = edge.getTo();

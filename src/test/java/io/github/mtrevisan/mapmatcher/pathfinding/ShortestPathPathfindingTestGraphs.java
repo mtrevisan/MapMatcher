@@ -157,6 +157,13 @@ class ShortestPathPathfindingTestGraphs{
 
 	static class TestGraphSummary{
 
+		private final Graph graph;
+		private final Vertex start;
+		private final Vertex end;
+		private final List<Vertex> shortestPath;
+		private final EdgeWeightCalculator calculator;
+
+
 		TestGraphSummary(Graph graph, Vertex start, Vertex end, List<Vertex> shortestPath, EdgeWeightCalculator calculator){
 			this.graph = graph;
 			this.start = start;
@@ -185,11 +192,6 @@ class ShortestPathPathfindingTestGraphs{
 			return calculator;
 		}
 
-		private final Graph graph;
-		private final Vertex start;
-		private final Vertex end;
-		private final List<Vertex> shortestPath;
-		private final EdgeWeightCalculator calculator;
 	}
 
 }
