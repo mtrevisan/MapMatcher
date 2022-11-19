@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.weight;
 
-import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 
