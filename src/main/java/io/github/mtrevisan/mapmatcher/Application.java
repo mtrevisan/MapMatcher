@@ -39,7 +39,7 @@ import java.util.List;
 
 
 /**
- * https://github.com/Nalhin/Navigation/blob/main/backend/libraries/pathfinder/src/main/java/com/navigation/pathfinder/pathfinding/AStarPathfinder.java
+ * https://github.com/Nalhin/Navigation/blob/main/backend/libraries/pathfinder/
  *
  * https://github.com/navjindervirdee/Advanced-Shortest-Paths-Algorithms/tree/master/A-Star/A%20star
  * https://github.com/coderodde/GraphSearchPal/blob/master/src/main/java/net/coderodde/gsp/model/support/AStarPathFinder.java
@@ -48,12 +48,12 @@ import java.util.List;
 public class Application{
 
 	public static void main(final String[] args){
-		EdgeWeightCalculator calculator = new DistanceEdgeWeightCalculator();
-//		PathfindingStrategy strategy = new AStarPathfinder(calculator);
-		PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
-		Vertex start = new Vertex(1, new Coordinates(45.714662, 12.193859));
-		Vertex end = new Vertex(10, new Coordinates(46.062345, 12.078982));
-		Graph graph = new GraphBuilder()
+		final EdgeWeightCalculator calculator = new DistanceEdgeWeightCalculator();
+//		final PathfindingStrategy strategy = new AStarPathfinder(calculator);
+		final PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
+		final Vertex start = new Vertex(1, new Coordinates(45.714662, 12.193859));
+		final Vertex end = new Vertex(10, new Coordinates(46.062345, 12.078982));
+		final Graph graph = new GraphBuilder()
 			.addVertex(start)
 			.addVertex(new Vertex(2, new Coordinates(45.982746, 12.302965)))
 			.addVertex(new Vertex(3, new Coordinates(46.007074, 12.285113)))
@@ -64,8 +64,8 @@ public class Application{
 			.connectByIds(2, 10, 1.)
 			.connectByIds(3, 10, 1.)
 			.asGraph();
-		PathSummary pathSummary = strategy.findPath(start, end, graph);
-		List<Vertex> path = pathSummary.simplePath();
+		final PathSummary pathSummary = strategy.findPath(start, end, graph);
+		final List<Vertex> path = pathSummary.simplePath();
 
 		System.out.println(path);
 	}
