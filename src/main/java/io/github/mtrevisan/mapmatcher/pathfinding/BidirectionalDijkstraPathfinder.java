@@ -52,8 +52,8 @@ public class BidirectionalDijkstraPathfinder implements PathfindingStrategy{
 	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph){
 		final var minDistancesForward = new HashMap<Vertex, Double>();
 		final var minDistancesBackward = new HashMap<Vertex, Double>();
-		minDistancesForward.put(start, 0.0);
-		minDistancesBackward.put(end, 0.0);
+		minDistancesForward.put(start, 0.);
+		minDistancesBackward.put(end, 0.);
 
 		final var predecessorTreeBackward = new HashMap<Vertex, Edge>();
 		final var predecessorTreeForward = new HashMap<Vertex, Edge>();
@@ -62,8 +62,8 @@ public class BidirectionalDijkstraPathfinder implements PathfindingStrategy{
 
 		final var pqForward = new PriorityQueue<ScoredGraphVertex>();
 		final var pqBackward = new PriorityQueue<ScoredGraphVertex>();
-		pqForward.add(new ScoredGraphVertex(start, 0.0));
-		pqBackward.add(new ScoredGraphVertex(end, 0.0));
+		pqForward.add(new ScoredGraphVertex(start, 0.));
+		pqBackward.add(new ScoredGraphVertex(end, 0.));
 
 		final var reversedGraph = graph.reversed();
 

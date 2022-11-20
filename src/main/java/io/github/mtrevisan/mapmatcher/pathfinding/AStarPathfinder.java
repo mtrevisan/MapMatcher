@@ -58,7 +58,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 		predecessorTree.put(start, null);
 
 		final var gScores = new HashMap<Vertex, Double>();
-		gScores.put(start, 0.0);
+		gScores.put(start, 0.);
 
 		final var open = new PriorityQueue<ScoredGraphVertex>();
 		open.add(new ScoredGraphVertex(start, heuristic(start, end)));

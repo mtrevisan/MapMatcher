@@ -28,25 +28,21 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 
 
-public class DurationEdgeWeightCalculator implements EdgeWeightCalculator{
+public class DurationEdgeWeightCalculator extends DistanceEdgeWeightCalculator{
 
 	private static final double MAX_ALLOWED_WEIGHT = 140.;
-
-	private static final HaversineDistanceCalculator DISTANCE_CALCULATOR = new HaversineDistanceCalculator();
 
 
 	@Override
 	public double calculateWeight(final Edge edge){
-		final var coordinatesFrom = edge.getFrom().getCoordinates();
-		final var coordinatesTo = edge.getTo().getCoordinates();
-		return DISTANCE_CALCULATOR.calculateDistance(coordinatesFrom, coordinatesTo) * 60. / edge.getWeight();
+		final var distance = super.calculateWeight(edge);
+		return distance * 60. / edge.getWeight();
 	}
 
 	@Override
 	public double calculateWeight(final Vertex start, final Vertex end){
-		final var coordinatesStart = start.getCoordinates();
-		final var coordinatesEnd = end.getCoordinates();
-		return DISTANCE_CALCULATOR.calculateDistance(coordinatesStart, coordinatesEnd) * 60. / MAX_ALLOWED_WEIGHT;
+		final var distance = super.calculateWeight(start, end);
+		return distance * 60. / MAX_ALLOWED_WEIGHT;
 	}
 
 }

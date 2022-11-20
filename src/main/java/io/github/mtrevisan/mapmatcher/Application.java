@@ -29,6 +29,7 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.GraphBuilder;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathfinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.BidirectionalDijkstraPathfinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathfindingStrategy;
 import io.github.mtrevisan.mapmatcher.weight.DistanceEdgeWeightCalculator;
@@ -41,7 +42,8 @@ public class Application{
 
 	public static void main(final String[] args){
 		EdgeWeightCalculator calculator = new DistanceEdgeWeightCalculator();
-		PathfindingStrategy strategy = new AStarPathfinder(calculator);
+//		PathfindingStrategy strategy = new AStarPathfinder(calculator);
+		PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
 		Vertex start = new Vertex(1, new Coordinates(45.714662, 12.193859));
 		Vertex end = new Vertex(10, new Coordinates(46.062345, 12.078982));
 		Graph graph = new GraphBuilder()
