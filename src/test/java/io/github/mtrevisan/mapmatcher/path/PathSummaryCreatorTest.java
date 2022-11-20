@@ -53,7 +53,7 @@ class PathSummaryCreatorTest{
 		Vertex middle = start;
 		Vertex end = new Vertex(3, new Coordinates(1., 1.));
 		Map<Vertex, Edge> predecessorTree = new LinkedHashMap<>(1);
-		predecessorTree.put(end, new Edge(middle, end, 50));
+		predecessorTree.put(end, new Edge(middle, end, 50.));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
@@ -82,9 +82,9 @@ class PathSummaryCreatorTest{
 		Vertex mid = new Vertex(2, new Coordinates(1., 1.));
 		Vertex end = new Vertex(3, new Coordinates(1., 1.));
 		Map<Vertex, Edge> predecessorTreeStart = new LinkedHashMap<>(1);
-		predecessorTreeStart.put(mid, new Edge(randomVertex, mid, 50));
+		predecessorTreeStart.put(mid, new Edge(randomVertex, mid, 50.));
 		Map<Vertex, Edge> predecessorTreeEnd = new LinkedHashMap<>(1);
-		predecessorTreeEnd.put(mid, new Edge(end, mid, 50));
+		predecessorTreeEnd.put(mid, new Edge(end, mid, 50.));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createBidirectionalPath(start, mid, end, predecessorTreeStart, predecessorTreeEnd);

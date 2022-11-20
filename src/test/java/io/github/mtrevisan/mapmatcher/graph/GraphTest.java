@@ -50,7 +50,13 @@ class GraphTest{
 		final Vertex vertex = new Vertex(1, new Coordinates(1, 1));
 		final Vertex firstNeighbour = new Vertex(2, new Coordinates(1, 1));
 		final Vertex secondNeighbour = new Vertex(3, new Coordinates(1, 1));
-		Graph graph = new GraphBuilder().addVertex(vertex).addVertex(firstNeighbour).addVertex(secondNeighbour).connectByIds(1, 2, 50).connectByIds(1, 3, 50).asGraph();
+		Graph graph = new GraphBuilder()
+			.addVertex(vertex)
+			.addVertex(firstNeighbour)
+			.addVertex(secondNeighbour)
+			.connectByIds(1, 2, 50.)
+			.connectByIds(1, 3, 50.)
+			.asGraph();
 
 		final Graph result = graph.reversed();
 
@@ -65,7 +71,11 @@ class GraphTest{
 		Vertex first = new Vertex(1, new Coordinates(1, 1));
 		Vertex second = new Vertex(2, new Coordinates(1, 1));
 		Vertex third = new Vertex(3, new Coordinates(1, 1));
-		Graph graph = new GraphBuilder().addVertex(first).addVertex(second).addVertex(third).asGraph();
+		Graph graph = new GraphBuilder()
+			.addVertex(first)
+			.addVertex(second)
+			.addVertex(third)
+			.asGraph();
 
 		Collection<Vertex> result = graph.vertices();
 
@@ -77,11 +87,17 @@ class GraphTest{
 		Vertex vertex = new Vertex(1, new Coordinates(1, 1));
 		Vertex firstNeighbour = new Vertex(2, new Coordinates(1, 1));
 		Vertex secondNeighbour = new Vertex(3, new Coordinates(1, 1));
-		Graph graph = new GraphBuilder().addVertex(vertex).addVertex(firstNeighbour).addVertex(secondNeighbour).connectByIds(1, 2, 50).connectByIds(1, 3, 50).asGraph();
+		Graph graph = new GraphBuilder()
+			.addVertex(vertex)
+			.addVertex(firstNeighbour)
+			.addVertex(secondNeighbour)
+			.connectByIds(1, 2, 50.)
+			.connectByIds(1, 3, 50.)
+			.asGraph();
 
 		Collection<Edge> result = graph.edges();
 
-		Collection<Edge> expected = List.of(new Edge(vertex, firstNeighbour, 50.), new Edge(vertex, secondNeighbour, 50));
+		Collection<Edge> expected = List.of(new Edge(vertex, firstNeighbour, 50.), new Edge(vertex, secondNeighbour, 50.));
 		Assertions.assertEquals(expected, result);
 	}
 

@@ -20,7 +20,7 @@ class BidirectionalPathSummaryTest{
 	void should_return_path_consisting_of_vertices(){
 		Vertex first = new Vertex(1, new Coordinates(1., 2.));
 		Vertex second = new Vertex(2, new Coordinates(2., 2.));
-		List<Edge> path = new ArrayList<Edge>(Arrays.asList(new Edge(first, second, 50)));
+		List<Edge> path = new ArrayList<>(List.of(new Edge(first, second, 50.)));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
 		List<Vertex> result = pathSummary.simplePath();
