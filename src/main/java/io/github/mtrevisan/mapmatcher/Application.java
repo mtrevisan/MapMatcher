@@ -38,6 +38,13 @@ import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
 import java.util.List;
 
 
+/**
+ * https://github.com/Nalhin/Navigation/blob/main/backend/libraries/pathfinder/src/main/java/com/navigation/pathfinder/pathfinding/AStarPathfinder.java
+ *
+ * https://github.com/navjindervirdee/Advanced-Shortest-Paths-Algorithms/tree/master/A-Star/A%20star
+ * https://github.com/coderodde/GraphSearchPal/blob/master/src/main/java/net/coderodde/gsp/model/support/AStarPathFinder.java
+ * https://github.com/valhalla/valhalla/blob/master/docs/meili/algorithms.md
+ */
 public class Application{
 
 	public static void main(final String[] args){
