@@ -24,31 +24,48 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
+
 import java.util.Objects;
 
 
 public class Coordinates{
 
-	private final double latitude;
-	private final double longitude;
+	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
+	private static final int SRID_WGS84 = 4326;
+	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
 
 
-	public Coordinates(final double latitude, final double longitude){
+	private final Point point;
+
+
+	public static Coordinates of(final double latitude, final double longitude){
+		return new Coordinates(latitude, longitude);
+	}
+
+	private Coordinates(final double latitude, final double longitude){
 		if(latitude < -90. || latitude > 90.)
 			throw new IllegalArgumentException("Latitude must be between -90 and 90 inclusive");
 		if(longitude < -180. || longitude > 180.)
 			throw new IllegalArgumentException("Longitude must be between -180 and 180 inclusive");
 
-		this.latitude = latitude;
-		this.longitude = longitude;
+		point = FACTORY.createPoint(new Coordinate(longitude, latitude));
 	}
 
 	public double getLatitude(){
-		return latitude;
+		return point.getY();
 	}
 
 	public double getLongitude(){
-		return longitude;
+		return point.getX();
+	}
+
+	public Point getPoint(){
+		return point;
 	}
 
 	@Override
@@ -58,18 +75,18 @@ public class Coordinates{
 		if(o == null || getClass() != o.getClass())
 			return false;
 
-		final Coordinates that = (Coordinates)o;
-		return (Double.compare(that.latitude, latitude) == 0 && Double.compare(that.longitude, longitude) == 0);
+		final Coordinates other = (Coordinates)o;
+		return (Double.compare(other.getLatitude(), getLatitude()) == 0 && Double.compare(other.getLongitude(), getLongitude()) == 0);
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(latitude, longitude);
+		return Objects.hash(getLatitude(), getLongitude());
 	}
 
 	@Override
 	public String toString(){
-		return "Coordinates{" + "latitude=" + latitude + ", longitude=" + longitude + '}';
+		return "Coordinates{" + "φ = " + getLatitude() + ", λ = " + getLongitude() + '}';
 	}
 
 }

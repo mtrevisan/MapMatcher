@@ -24,19 +24,49 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
+
 import java.util.Objects;
 
 
 public class Edge{
 
+	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
+	private static final int SRID_WGS84 = 4326;
+	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
+
+
 	private final Vertex from;
 	private final Vertex to;
+	private LineString geometry;
 	private final double weight;
 
 
 	public Edge(final Vertex from, final Vertex to, final double weight){
+		if(from == null)
+			throw new IllegalArgumentException("`from` vertex cannot be null");
+		if(to == null)
+			throw new IllegalArgumentException("`to` vertex cannot be null");
+
 		this.from = from;
 		this.to = to;
+		this.weight = weight;
+	}
+
+	public Edge(final Vertex from, final Vertex to, final LineString geometry, final double weight){
+		if(from == null)
+			throw new IllegalArgumentException("`from` vertex cannot be null");
+		if(to == null)
+			throw new IllegalArgumentException("`to` vertex cannot be null");
+		if(geometry == null)
+			throw new IllegalArgumentException("geometry cannot be null");
+
+		this.from = from;
+		this.to = to;
+		this.geometry = geometry;
 		this.weight = weight;
 	}
 
@@ -48,12 +78,24 @@ public class Edge{
 		return to;
 	}
 
+	public LineString getLineString(){
+		if(geometry == null)
+			geometry = FACTORY.createLineString(new Coordinate[]{
+				from.getGeometry().getCoordinate(),
+				to.getGeometry().getCoordinate()
+			});
+		return geometry;
+	}
+
 	public double getWeight(){
 		return weight;
 	}
 
 	public Edge reversed(){
-		return new Edge(to, from, weight);
+		return (geometry != null
+			? new Edge(to, from, geometry.reverse(), weight)
+			: new Edge(to, from, weight)
+		);
 	}
 
 	@Override

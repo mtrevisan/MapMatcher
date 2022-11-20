@@ -84,7 +84,7 @@ public class BidirectionalDijkstraPathfinder implements PathfindingStrategy{
 				if(predecessorTreeForward.containsKey(currBackward.vertex())){
 					final var candidateBidirectionalScore = minDistancesForward.get(currBackward.vertex())
 						+ minDistancesBackward.get(currBackward.vertex());
-					var center = CENTER_VERTEX_FINDER.findCenterVertex(currBackward.vertex(), candidateBidirectionalScore,
+					final var center = CENTER_VERTEX_FINDER.findCenterVertex(currBackward.vertex(), candidateBidirectionalScore,
 						pqForward, pqBackward);
 
 					return PATH_SUMMARY_CREATOR.createBidirectionalPath(start, center, end, predecessorTreeForward, predecessorTreeBackward);

@@ -18,8 +18,8 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_consisting_of_vertices(){
-		Vertex first = new Vertex(1, new Coordinates(1., 2.));
-		Vertex second = new Vertex(2, new Coordinates(2., 2.));
+		Vertex first = new Vertex("1", Coordinates.of(1., 2.));
+		Vertex second = new Vertex("2", Coordinates.of(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(new Edge(first, second, 50.)));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
@@ -41,8 +41,8 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
 		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex(1, new Coordinates(1., 2.)),
-				new Vertex(2, new Coordinates(2., 2.)), 50.)));
+			new Edge(new Vertex("1", Coordinates.of(1., 2.)),
+				new Vertex("2", Coordinates.of(2., 2.)), 50.)));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		int result = pathSummary.numberOfVertices();
@@ -63,8 +63,8 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_visited_vertices(){
 		Set<Vertex> visitedVertices = new HashSet<>(Arrays.asList(
-			new Vertex(1, new Coordinates(1., 1.)),
-			new Vertex(2, new Coordinates(2., 2.))));
+			new Vertex("1", Coordinates.of(1., 1.)),
+			new Vertex("2", Coordinates.of(2., 2.))));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<Edge>(), visitedVertices);
 
 		int result = pathSummary.totalVisitedVertices();
@@ -75,32 +75,32 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_path_distance(){
 		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex(1, new Coordinates(14.552797, 121.058805)),
-				new Vertex(2, new Coordinates(14.593999, 120.994260)), 50.)));
+			new Edge(new Vertex("1", Coordinates.of(14.552797, 121.058805)),
+				new Vertex("2", Coordinates.of(14.593999, 120.994260)), 50.)));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		double result = pathSummary.totalDistance();
 
-		Assertions.assertEquals(8.321, result, 0.00005);
+		Assertions.assertEquals(8_316.3, result, 0.05);
 	}
 
 	@Test
 	void should_return_path_duration(){
 		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex(1, new Coordinates(14.552797, 121.058805)),
-				new Vertex(2, new Coordinates(14.593999, 120.994260)), 50.)));
+			new Edge(new Vertex("1", Coordinates.of(14.552797, 121.058805)),
+				new Vertex("2", Coordinates.of(14.593999, 120.994260)), 50.)));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		double result = pathSummary.totalDuration();
 
-		Assertions.assertEquals(9.985_19, result, 0.000_005);
+		Assertions.assertEquals(9_979.5, result, 0.05);
 	}
 
 	@Test
 	void should_return_path_search_boundaries(){
-		final Vertex firstVertex = new Vertex(1, new Coordinates(1, 1));
-		final Vertex secondVertex = new Vertex(2, new Coordinates(3, 3));
-		final Vertex thirdVertex = new Vertex(3, new Coordinates(1, 5));
+		final Vertex firstVertex = new Vertex("1", Coordinates.of(1, 1));
+		final Vertex secondVertex = new Vertex("2", Coordinates.of(3, 3));
+		final Vertex thirdVertex = new Vertex("3", Coordinates.of(1, 5));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(),
 			new HashSet<>(Arrays.asList(firstVertex, secondVertex, thirdVertex)));
 
@@ -119,8 +119,8 @@ class SingleDirectionalPathSummaryTest{
 
 
 		path = new ArrayList<>(List.of(
-			new Edge(new Vertex(1, new Coordinates(14.552797, 121.058805)),
-				new Vertex(2, new Coordinates(14.593999, 120.994260)), 50.)));
+			new Edge(new Vertex("1", Coordinates.of(14.552797, 121.058805)),
+				new Vertex("2", Coordinates.of(14.593999, 120.994260)), 50.)));
 		pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		Assertions.assertTrue(pathSummary.isFound());

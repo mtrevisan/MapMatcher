@@ -32,7 +32,7 @@ import java.util.Map;
 
 public class GraphBuilder{
 
-	private final Map<Long, Vertex> vertices = new HashMap<>();
+	private final Map<String, Vertex> vertices = new HashMap<>();
 	private final Map<Vertex, List<Edge>> adjacencyList = new HashMap<>();
 
 
@@ -59,7 +59,7 @@ public class GraphBuilder{
 			.add(new Edge(from, to, weight));
 	}
 
-	public GraphBuilder connectByIds(final long fromId, final long toId, final double weight){
+	public GraphBuilder connectByIds(final String fromId, final String toId, final double weight){
 		if(!vertices.containsKey(fromId))
 			throw new VertexNotPresentException(fromId);
 		if(!vertices.containsKey(toId))

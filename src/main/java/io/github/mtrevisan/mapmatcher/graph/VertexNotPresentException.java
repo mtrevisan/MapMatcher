@@ -29,8 +29,8 @@ import java.text.MessageFormat;
 
 public class VertexNotPresentException extends RuntimeException{
 
-	public VertexNotPresentException(final long vertexId){
-		super(MessageFormat.format("Vertex with {0} id is not present in the graph", vertexId));
+	public VertexNotPresentException(final String vertexID){
+		super(MessageFormat.format("Vertex with ID {0} is not present in the graph", vertexID));
 	}
 
 }

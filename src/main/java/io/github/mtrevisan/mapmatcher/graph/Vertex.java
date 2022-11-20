@@ -24,25 +24,27 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import org.locationtech.jts.geom.Geometry;
+
 import java.util.Objects;
 
 
 public class Vertex{
 
-	private final long id;
-	private final Coordinates coordinates;
+	private final String id;
+	private final Geometry geometry;
 
 
-	public Vertex(final long id, final Coordinates coordinates){
+	public Vertex(final String id, final Geometry geometry){
 		this.id = id;
-		this.coordinates = coordinates;
+		this.geometry = geometry;
 	}
 
-	public Coordinates getCoordinates(){
-		return coordinates;
+	public Geometry getGeometry(){
+		return geometry;
 	}
 
-	public long getId(){
+	public String getId(){
 		return id;
 	}
 
@@ -54,7 +56,7 @@ public class Vertex{
 			return false;
 
 		final Vertex vertex = (Vertex)o;
-		return id == vertex.id;
+		return id.equals(vertex.id);
 	}
 
 	@Override
@@ -64,7 +66,7 @@ public class Vertex{
 
 	@Override
 	public String toString(){
-		return "Vertex{" + "id=" + id + ", coordinates=" + coordinates + '}';
+		return "Vertex{" + "id=" + id + ", coordinates=" + geometry + '}';
 	}
 
 }

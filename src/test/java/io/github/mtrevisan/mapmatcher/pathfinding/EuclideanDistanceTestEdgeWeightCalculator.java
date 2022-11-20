@@ -10,8 +10,8 @@ public class EuclideanDistanceTestEdgeWeightCalculator implements EdgeWeightCalc
 
 	@Override
 	public double calculateWeight(Edge edge){
-		Coordinates fromCoordinates = edge.getFrom().getCoordinates();
-		Coordinates toCoordinates = edge.getTo().getCoordinates();
+		Coordinates fromCoordinates = edge.getFrom().getGeometry();
+		Coordinates toCoordinates = edge.getTo().getGeometry();
 		final var deltaLatitude = fromCoordinates.getLatitude() - toCoordinates.getLatitude();
 		final var deltaLongitude = fromCoordinates.getLongitude() - toCoordinates.getLongitude();
 		return Math.sqrt(deltaLatitude * deltaLatitude + deltaLongitude * deltaLongitude);

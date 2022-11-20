@@ -25,6 +25,7 @@
 package io.github.mtrevisan.mapmatcher.convexhull;
 
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import org.locationtech.jts.geom.Point;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,8 +36,9 @@ import java.util.List;
 
 public class GrahamScanConvexHullCalculator implements ConvexHullCalculator{
 
-	private static final Comparator<Vertex> MIN_LAT_COMPARATOR = Comparator.comparingDouble((Vertex v) -> v.getCoordinates().getLatitude())
-		.thenComparingDouble(v -> v.getCoordinates().getLongitude());
+	private static final Comparator<Vertex> MIN_LAT_COMPARATOR =
+		Comparator.comparingDouble((Vertex v) -> v.getGeometry().getCentroid().getY())
+			.thenComparingDouble(v -> v.getGeometry().getCentroid().getX());
 
 
 	@Override
@@ -67,16 +69,17 @@ public class GrahamScanConvexHullCalculator implements ConvexHullCalculator{
 	}
 
 	private boolean isClockwiseTurn(final Vertex p, final Vertex q, final Vertex r){
-		final var pp = p.getCoordinates();
-		final var qq = q.getCoordinates();
-		final var rr = r.getCoordinates();
-		return ((qq.getLatitude() - rr.getLatitude()) * (pp.getLongitude() - rr.getLongitude())
-			<= (qq.getLongitude() - rr.getLongitude()) * (pp.getLatitude() - rr.getLatitude()));
+		final var pp = p.getGeometry().getCentroid();
+		final var qq = q.getGeometry().getCentroid();
+		final var rr = r.getGeometry().getCentroid();
+		return ((qq.getY() - rr.getY()) * (pp.getX() - rr.getX()) <= (qq.getX() - rr.getX()) * (pp.getY() - rr.getY()));
 	}
 
 	private double angleFromSource(final Vertex source, final Vertex target){
-		final var latDiff = source.getCoordinates().getLatitude() - target.getCoordinates().getLatitude();
-		final var lngDiff = source.getCoordinates().getLongitude() - target.getCoordinates().getLongitude();
+		final Point s = source.getGeometry().getCentroid();
+		final Point t = target.getGeometry().getCentroid();
+		final var latDiff = s.getY() - t.getY();
+		final var lngDiff = s.getX() - t.getX();
 		return Math.atan2(latDiff, lngDiff);
 	}
 

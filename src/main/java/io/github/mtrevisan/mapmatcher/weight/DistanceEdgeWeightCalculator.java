@@ -30,9 +30,6 @@ import io.github.mtrevisan.mapmatcher.graph.Vertex;
 
 public class DistanceEdgeWeightCalculator implements EdgeWeightCalculator{
 
-	private static final HaversineDistanceCalculator DISTANCE_CALCULATOR = new HaversineDistanceCalculator();
-
-
 	@Override
 	public double calculateWeight(final Edge edge){
 		return calculateWeight(edge.getFrom(), edge.getTo());
@@ -40,7 +37,7 @@ public class DistanceEdgeWeightCalculator implements EdgeWeightCalculator{
 
 	@Override
 	public double calculateWeight(final Vertex start, final Vertex end){
-		return DISTANCE_CALCULATOR.calculateDistance(start.getCoordinates(), end.getCoordinates());
+		return start.getGeometry().distance(end.getGeometry());
 	}
 
 }

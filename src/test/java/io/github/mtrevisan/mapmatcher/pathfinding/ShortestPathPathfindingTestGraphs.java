@@ -30,18 +30,18 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex vertexA = new Vertex(1, new Coordinates(0, 0));
-		Vertex vertexB = new Vertex(2, new Coordinates(1, 1));
-		Vertex vertexC = new Vertex(3, new Coordinates(1, 3));
-		Vertex vertexD = new Vertex(4, new Coordinates(0, 2));
-		Vertex vertexE = new Vertex(5, new Coordinates(- 1, 2));
-		Vertex vertexF = new Vertex(6, new Coordinates(- 1, 6));
-		Vertex vertexG = new Vertex(7, new Coordinates(1, 3));
-		Vertex vertexH = new Vertex(8, new Coordinates(1, 4));
-		Vertex vertexI = new Vertex(9, new Coordinates(3, 4));
-		Vertex vertexJ = new Vertex(10, new Coordinates(2, 4));
-		Vertex vertexK = new Vertex(11, new Coordinates(2, 6));
-		Vertex vertexM = new Vertex(12, new Coordinates(3, 6));
+		Vertex vertexA = new Vertex("1", Coordinates.of(0, 0));
+		Vertex vertexB = new Vertex("2", Coordinates.of(1, 1));
+		Vertex vertexC = new Vertex("3", Coordinates.of(1, 3));
+		Vertex vertexD = new Vertex("4", Coordinates.of(0, 2));
+		Vertex vertexE = new Vertex("5", Coordinates.of(-1, 2));
+		Vertex vertexF = new Vertex("6", Coordinates.of(-1, 6));
+		Vertex vertexG = new Vertex("7", Coordinates.of(1, 3));
+		Vertex vertexH = new Vertex("8", Coordinates.of(1, 4));
+		Vertex vertexI = new Vertex("9", Coordinates.of(3, 4));
+		Vertex vertexJ = new Vertex("10", Coordinates.of(2, 4));
+		Vertex vertexK = new Vertex("11", Coordinates.of(2, 6));
+		Vertex vertexM = new Vertex("12", Coordinates.of(3, 6));
 
 		GraphBuilder gb = new GraphBuilder();
 		gb.addVertex(vertexA)
@@ -92,18 +92,18 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex vertexA = new Vertex(1, new Coordinates(0, 0));
-		Vertex vertexB = new Vertex(2, new Coordinates(1, 1));
-		Vertex vertexC = new Vertex(3, new Coordinates(1, 3));
-		Vertex vertexD = new Vertex(4, new Coordinates(0, 2));
-		Vertex vertexE = new Vertex(5, new Coordinates(- 1, 2));
-		Vertex vertexF = new Vertex(6, new Coordinates(- 1, 6));
-		Vertex vertexG = new Vertex(7, new Coordinates(1, 3));
-		Vertex vertexH = new Vertex(8, new Coordinates(1, 4));
-		Vertex vertexI = new Vertex(9, new Coordinates(3, 4));
-		Vertex vertexJ = new Vertex(10, new Coordinates(2, 4));
-		Vertex vertexK = new Vertex(11, new Coordinates(2, 6));
-		Vertex vertexM = new Vertex(12, new Coordinates(3, 6));
+		Vertex vertexA = new Vertex("1", Coordinates.of(0, 0));
+		Vertex vertexB = new Vertex("2", Coordinates.of(1, 1));
+		Vertex vertexC = new Vertex("3", Coordinates.of(1, 3));
+		Vertex vertexD = new Vertex("4", Coordinates.of(0, 2));
+		Vertex vertexE = new Vertex("5", Coordinates.of(-1, 2));
+		Vertex vertexF = new Vertex("6", Coordinates.of(-1, 6));
+		Vertex vertexG = new Vertex("7", Coordinates.of(1, 3));
+		Vertex vertexH = new Vertex("8", Coordinates.of(1, 4));
+		Vertex vertexI = new Vertex("9", Coordinates.of(3, 4));
+		Vertex vertexJ = new Vertex("10", Coordinates.of(2, 4));
+		Vertex vertexK = new Vertex("11", Coordinates.of(2, 6));
+		Vertex vertexM = new Vertex("12", Coordinates.of(3, 6));
 
 		GraphBuilder gb = new GraphBuilder();
 		gb.addVertex(vertexA)
@@ -150,18 +150,18 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex vertexA = new Vertex(1, new Coordinates(0, 0));
-		Vertex vertexB = new Vertex(2, new Coordinates(1, 1));
-		Vertex vertexC = new Vertex(3, new Coordinates(1, 3));
-		Vertex vertexD = new Vertex(4, new Coordinates(0, 2));
-		Vertex vertexE = new Vertex(5, new Coordinates(- 1, 2));
-		Vertex vertexF = new Vertex(6, new Coordinates(- 1, 6));
-		Vertex vertexG = new Vertex(7, new Coordinates(1, 3));
-		Vertex vertexH = new Vertex(8, new Coordinates(1, 4));
-		Vertex vertexI = new Vertex(9, new Coordinates(3, 4));
-		Vertex vertexJ = new Vertex(10, new Coordinates(2, 4));
-		Vertex vertexK = new Vertex(11, new Coordinates(2, 6));
-		Vertex vertexM = new Vertex(12, new Coordinates(3, 6));
+		Vertex vertexA = new Vertex("1", Coordinates.of(0, 0));
+		Vertex vertexB = new Vertex("2", Coordinates.of(1, 1));
+		Vertex vertexC = new Vertex("3", Coordinates.of(1, 3));
+		Vertex vertexD = new Vertex("4", Coordinates.of(0, 2));
+		Vertex vertexE = new Vertex("5", Coordinates.of(-1, 2));
+		Vertex vertexF = new Vertex("6", Coordinates.of(-1, 6));
+		Vertex vertexG = new Vertex("7", Coordinates.of(1, 3));
+		Vertex vertexH = new Vertex("8", Coordinates.of(1, 4));
+		Vertex vertexI = new Vertex("9", Coordinates.of(3, 4));
+		Vertex vertexJ = new Vertex("10", Coordinates.of(2, 4));
+		Vertex vertexK = new Vertex("11", Coordinates.of(2, 6));
+		Vertex vertexM = new Vertex("12", Coordinates.of(3, 6));
 
 		GraphBuilder gb = new GraphBuilder();
 		gb.addVertex(vertexA)
@@ -213,18 +213,18 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex vertexA = new Vertex(1, new Coordinates(0, 0));
-		Vertex vertexB = new Vertex(2, new Coordinates(1, 1));
-		Vertex vertexC = new Vertex(3, new Coordinates(1, 3));
-		Vertex vertexD = new Vertex(4, new Coordinates(0, 2));
-		Vertex vertexE = new Vertex(5, new Coordinates(- 1, 2));
-		Vertex vertexF = new Vertex(6, new Coordinates(- 1, 6));
-		Vertex vertexG = new Vertex(7, new Coordinates(1, 3));
-		Vertex vertexH = new Vertex(8, new Coordinates(1, 4));
-		Vertex vertexI = new Vertex(9, new Coordinates(3, 4));
-		Vertex vertexJ = new Vertex(10, new Coordinates(2, 4));
-		Vertex vertexK = new Vertex(11, new Coordinates(2, 6));
-		Vertex vertexM = new Vertex(12, new Coordinates(3, 6));
+		Vertex vertexA = new Vertex("1", Coordinates.of(0, 0));
+		Vertex vertexB = new Vertex("2", Coordinates.of(1, 1));
+		Vertex vertexC = new Vertex("3", Coordinates.of(1, 3));
+		Vertex vertexD = new Vertex("4", Coordinates.of(0, 2));
+		Vertex vertexE = new Vertex("5", Coordinates.of(-1, 2));
+		Vertex vertexF = new Vertex("6", Coordinates.of(-1, 6));
+		Vertex vertexG = new Vertex("7", Coordinates.of(1, 3));
+		Vertex vertexH = new Vertex("8", Coordinates.of(1, 4));
+		Vertex vertexI = new Vertex("9", Coordinates.of(3, 4));
+		Vertex vertexJ = new Vertex("10", Coordinates.of(2, 4));
+		Vertex vertexK = new Vertex("11", Coordinates.of(2, 6));
+		Vertex vertexM = new Vertex("12", Coordinates.of(3, 6));
 
 		GraphBuilder gb = new GraphBuilder();
 		gb.addVertex(vertexA)

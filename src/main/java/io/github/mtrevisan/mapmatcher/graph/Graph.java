@@ -37,11 +37,11 @@ import java.util.stream.Collectors;
 public class Graph{
 
 	private final Map<Vertex, List<Edge>> adjacencyList;
-	private final Map<Long, Vertex> vertices;
+	private final Map<String, Vertex> vertices;
 	private final ConcurrentHashMap<Graph, Graph> cache = new ConcurrentHashMap<>();
 
 
-	Graph(final Map<Vertex, List<Edge>> adjacencyList, final Map<Long, Vertex> vertices){
+	Graph(final Map<Vertex, List<Edge>> adjacencyList, final Map<String, Vertex> vertices){
 		this.adjacencyList = deepImmutableCopy(adjacencyList);
 		this.vertices = new HashMap<>(vertices);
 	}
@@ -62,7 +62,8 @@ public class Graph{
 		final var reversedAdjacencyList = new HashMap<Vertex, List<Edge>>();
 		for(final var entry : adjacencyList.entrySet())
 			for(final var edge : entry.getValue())
-				reversedAdjacencyList.computeIfAbsent(edge.getTo(), (e) -> new ArrayList<>()).add(edge.reversed());
+				reversedAdjacencyList.computeIfAbsent(edge.getTo(), (e) -> new ArrayList<>())
+					.add(edge.reversed());
 		return new Graph(reversedAdjacencyList, vertices);
 	}
 
