@@ -30,12 +30,13 @@ import io.github.mtrevisan.mapmatcher.graph.Vertex;
 
 public class DurationEdgeWeightCalculator extends DistanceEdgeWeightCalculator{
 
+	//[km/h]
 	private static final double MAX_ALLOWED_WEIGHT = 140.;
 
 
 	@Override
 	public double calculateWeight(final Edge edge){
-		final var distance = super.calculateWeight(edge);
+		final var distance = super.calculateWeight(edge.getFrom(), edge.getTo());
 		return distance * 60. / edge.getWeight();
 	}
 
