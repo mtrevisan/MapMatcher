@@ -27,6 +27,8 @@ package io.github.mtrevisan.mapmatcher.weight;
 import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -97,6 +99,41 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 			probabilities.put(edge.getTo(), logPr(sum / probabilities.get(edge.getTo())));
 		return probabilities;
 	}
+
+//	@Override
+//	protected void createEmissionProbability(final GeographicalPosition[] observations, final double[][] emissionProbability){
+//		for(int observationIndex = 0; observationIndex < observations.length; observationIndex ++){
+//			final Geometry point = WGS84_GEOMETRY_FACTORY.createPoint(
+//				new Coordinate(observations[observationIndex].getLongitude(), observations[observationIndex].getLatitude())
+//			);
+//			//step 1. Calculate dist(p_i, r_j)
+//			final int n = emissionProbability[0].length;
+//			for(int k = 0; k < n; k ++){
+//				//calculate distance from current position to segment
+//				emissionProbability[observationIndex][k] = calculateDistanceWGS84(point, getState(k));
+//			}
+//
+//			//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
+//			double cumulativeDistance = 0.;
+//			for(int k = 0; k < n; k ++){
+//				cumulativeDistance += emissionProbability[observationIndex][k];
+//			}
+//
+//			//step 3. Calculate Pr(r_j | p_i)
+//			for(int k = 0; k < n; k ++){
+//				emissionProbability[observationIndex][k] = cumulativeDistance / emissionProbability[observationIndex][k];
+//			}
+//
+//			//step 4. Calculate Pr(p_i | r_j)
+//			double cumulativeProbability = 0.;
+//			for(int k = 0; k < n; k ++){
+//				cumulativeProbability += emissionProbability[observationIndex][k];
+//			}
+//			for(int k = 0; k < n; k ++){
+//				emissionProbability[observationIndex][k] /= cumulativeProbability;
+//			}
+//		}
+//	}
 
 	private static double logPr(final double probability){
 		return -StrictMath.log(probability);
