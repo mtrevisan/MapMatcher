@@ -31,65 +31,54 @@ import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
 
 import java.util.HashMap;
-import java.util.PriorityQueue;
+import java.util.LinkedList;
 
 
 /**
- * @see <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A* search algorithm</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Viterbi_algorithm">Viterbi algorithm</a>
  */
-public class AStarPathfinder implements PathfindingStrategy{
+public class ViterbiPathfinder implements PathfindingStrategy{
 
 	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
 
 	private final EdgeWeightCalculator calculator;
 
 
-	public AStarPathfinder(final EdgeWeightCalculator calculator){
+	public ViterbiPathfinder(final EdgeWeightCalculator calculator){
 		this.calculator = calculator;
 	}
 
 	@Override
 	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph){
-		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
+		//for a node, this is the node immediately preceding it on the cheapest path from start to the given node currently known
 		final var predecessorTree = new HashMap<Vertex, Edge>();
 		predecessorTree.put(start, null);
 
-		//the cost of the cheapest path from start to given node currently known
-		final var gScores = new HashMap<Vertex, Double>();
-		gScores.put(start, 0.);
-
 		//set of discovered nodes that may need to be (re-)expanded
-		final var queue = new PriorityQueue<ScoredGraphVertex>();
-		//NOTE: the score here is `gScore[n] + h(n)`; it represents the current best guess as to how cheap a path could be from start to
-		// finish if it goes through the given node
-		double fScore = heuristic(start, end);
-		queue.add(new ScoredGraphVertex(start, fScore));
-
+		final var queue = new LinkedList<Vertex>();
+		queue.add(start);
 		while(!queue.isEmpty()){
-			final var current = queue.poll().vertex();
+			final var current = queue.pop();
 			if(current.equals(end))
 				break;
 
 			for(final var edge : graph.getVertexEdges(current)){
 				final var neighbor = edge.getTo();
-				final var newScore = gScores.get(current) + calculator.calculateWeight(edge);
+				final var newWeight = current.getWeight() + calculator.calculateWeight(edge);
 
-				if(newScore < gScores.getOrDefault(neighbor, Double.MAX_VALUE)){
-					gScores.put(neighbor, newScore);
+				if(newWeight < neighbor.getWeight()){
 					predecessorTree.put(neighbor, edge);
 
-					fScore = newScore + heuristic(neighbor, end);
-					queue.add(new ScoredGraphVertex(neighbor, fScore));
+					//store the cost of the cheapest path from start to this node
+					neighbor.setWeight(newWeight + calculator.calculateWeight(neighbor, end));
 				}
+
+				if(!queue.contains(neighbor))
+					queue.add(neighbor);
 			}
 		}
 
 		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
-	}
-
-	/** Estimates the cost to reach the final node from given node (emissionProbability). */
-	private double heuristic(final Vertex from, final Vertex to){
-		return calculator.calculateWeight(from, to);
 	}
 
 }

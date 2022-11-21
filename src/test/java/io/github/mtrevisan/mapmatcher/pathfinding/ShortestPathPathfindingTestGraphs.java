@@ -4,6 +4,7 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.GraphBuilder;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.weight.VertexCountEdgeWeightCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -37,20 +38,20 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex vertexA = new Vertex("1", FACTORY.createPoint(new Coordinate(0., 0.)));
-		Vertex vertexB = new Vertex("2", FACTORY.createPoint(new Coordinate(1., 1.)));
-		Vertex vertexC = new Vertex("3", FACTORY.createPoint(new Coordinate(1., 3.)));
-		Vertex vertexD = new Vertex("4", FACTORY.createPoint(new Coordinate(0., 2.)));
-		Vertex vertexE = new Vertex("5", FACTORY.createPoint(new Coordinate(-1., 2.)));
-		Vertex vertexF = new Vertex("6", FACTORY.createPoint(new Coordinate(-1., 6.)));
-		Vertex vertexG = new Vertex("7", FACTORY.createPoint(new Coordinate(1., 3.)));
-		Vertex vertexH = new Vertex("8", FACTORY.createPoint(new Coordinate(1., 4.)));
-		Vertex vertexI = new Vertex("9", FACTORY.createPoint(new Coordinate(3., 4.)));
-		Vertex vertexJ = new Vertex("10", FACTORY.createPoint(new Coordinate(2., 4.)));
-		Vertex vertexK = new Vertex("11", FACTORY.createPoint(new Coordinate(2., 6.)));
-		Vertex vertexM = new Vertex("12", FACTORY.createPoint(new Coordinate(3., 6.)));
+		final Vertex vertexA = new Vertex("1", FACTORY.createPoint(new Coordinate(0., 0.)));
+		final Vertex vertexB = new Vertex("2", FACTORY.createPoint(new Coordinate(1., 1.)));
+		final Vertex vertexC = new Vertex("3", FACTORY.createPoint(new Coordinate(3., 1.)));
+		final Vertex vertexD = new Vertex("4", FACTORY.createPoint(new Coordinate(2., 0.)));
+		final Vertex vertexE = new Vertex("5", FACTORY.createPoint(new Coordinate(2., -1.)));
+		final Vertex vertexF = new Vertex("6", FACTORY.createPoint(new Coordinate(6., -1.)));
+		final Vertex vertexG = new Vertex("7", FACTORY.createPoint(new Coordinate(3., 1.)));
+		final Vertex vertexH = new Vertex("8", FACTORY.createPoint(new Coordinate(4., 1.)));
+		final Vertex vertexI = new Vertex("9", FACTORY.createPoint(new Coordinate(4., 3.)));
+		final Vertex vertexJ = new Vertex("10", FACTORY.createPoint(new Coordinate(4., 2.)));
+		final Vertex vertexK = new Vertex("11", FACTORY.createPoint(new Coordinate(6., 2.)));
+		final Vertex vertexM = new Vertex("12", FACTORY.createPoint(new Coordinate(6., 3.)));
 
-		GraphBuilder gb = new GraphBuilder();
+		final GraphBuilder gb = new GraphBuilder();
 		gb.addVertex(vertexA)
 			.addVertex(vertexB)
 			.addVertex(vertexC)
@@ -80,7 +81,8 @@ class ShortestPathPathfindingTestGraphs{
 			.connect(vertexJ, vertexK, 50.)
 			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)), new EuclideanDistanceTestEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)),
+			new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary euclideanDistanceTestGraphDisconnected(){
@@ -99,20 +101,20 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex vertexA = new Vertex("1", FACTORY.createPoint(new Coordinate(0., 0.)));
-		Vertex vertexB = new Vertex("2", FACTORY.createPoint(new Coordinate(1., 1.)));
-		Vertex vertexC = new Vertex("3", FACTORY.createPoint(new Coordinate(1., 3.)));
-		Vertex vertexD = new Vertex("4", FACTORY.createPoint(new Coordinate(0., 2.)));
-		Vertex vertexE = new Vertex("5", FACTORY.createPoint(new Coordinate(-1., 2.)));
-		Vertex vertexF = new Vertex("6", FACTORY.createPoint(new Coordinate(-1., 6.)));
-		Vertex vertexG = new Vertex("7", FACTORY.createPoint(new Coordinate(1., 3.)));
-		Vertex vertexH = new Vertex("8", FACTORY.createPoint(new Coordinate(1., 4.)));
-		Vertex vertexI = new Vertex("9", FACTORY.createPoint(new Coordinate(3., 4.)));
-		Vertex vertexJ = new Vertex("10", FACTORY.createPoint(new Coordinate(2., 4.)));
-		Vertex vertexK = new Vertex("11", FACTORY.createPoint(new Coordinate(2., 6.)));
-		Vertex vertexM = new Vertex("12", FACTORY.createPoint(new Coordinate(3., 6.)));
+		final Vertex vertexA = new Vertex("1", FACTORY.createPoint(new Coordinate(0., 0.)));
+		final Vertex vertexB = new Vertex("2", FACTORY.createPoint(new Coordinate(1., 1.)));
+		final Vertex vertexC = new Vertex("3", FACTORY.createPoint(new Coordinate(3., 1.)));
+		final Vertex vertexD = new Vertex("4", FACTORY.createPoint(new Coordinate(2., 0.)));
+		final Vertex vertexE = new Vertex("5", FACTORY.createPoint(new Coordinate(2., -1.)));
+		final Vertex vertexF = new Vertex("6", FACTORY.createPoint(new Coordinate(6., -1.)));
+		final Vertex vertexG = new Vertex("7", FACTORY.createPoint(new Coordinate(3., 1.)));
+		final Vertex vertexH = new Vertex("8", FACTORY.createPoint(new Coordinate(4., 1.)));
+		final Vertex vertexI = new Vertex("9", FACTORY.createPoint(new Coordinate(4., 3.)));
+		final Vertex vertexJ = new Vertex("10", FACTORY.createPoint(new Coordinate(4., 2.)));
+		final Vertex vertexK = new Vertex("11", FACTORY.createPoint(new Coordinate(6., 2.)));
+		final Vertex vertexM = new Vertex("12", FACTORY.createPoint(new Coordinate(6., 3.)));
 
-		GraphBuilder gb = new GraphBuilder();
+		final GraphBuilder gb = new GraphBuilder();
 		gb.addVertex(vertexA)
 			.addVertex(vertexB)
 			.addVertex(vertexC)
@@ -157,20 +159,20 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex vertexA = new Vertex("1", FACTORY.createPoint(new Coordinate(0., 0.)));
-		Vertex vertexB = new Vertex("2", FACTORY.createPoint(new Coordinate(1., 1.)));
-		Vertex vertexC = new Vertex("3", FACTORY.createPoint(new Coordinate(1., 3.)));
-		Vertex vertexD = new Vertex("4", FACTORY.createPoint(new Coordinate(0., 2.)));
-		Vertex vertexE = new Vertex("5", FACTORY.createPoint(new Coordinate(-1., 2.)));
-		Vertex vertexF = new Vertex("6", FACTORY.createPoint(new Coordinate(-1., 6.)));
-		Vertex vertexG = new Vertex("7", FACTORY.createPoint(new Coordinate(1., 3.)));
-		Vertex vertexH = new Vertex("8", FACTORY.createPoint(new Coordinate(1., 4.)));
-		Vertex vertexI = new Vertex("9", FACTORY.createPoint(new Coordinate(3., 4.)));
-		Vertex vertexJ = new Vertex("10", FACTORY.createPoint(new Coordinate(2., 4.)));
-		Vertex vertexK = new Vertex("11", FACTORY.createPoint(new Coordinate(2., 6.)));
-		Vertex vertexM = new Vertex("12", FACTORY.createPoint(new Coordinate(3., 6.)));
+		final Vertex vertexA = new Vertex("1", FACTORY.createPoint(new Coordinate(0., 0.)));
+		final Vertex vertexB = new Vertex("2", FACTORY.createPoint(new Coordinate(1., 1.)));
+		final Vertex vertexC = new Vertex("3", FACTORY.createPoint(new Coordinate(3., 1.)));
+		final Vertex vertexD = new Vertex("4", FACTORY.createPoint(new Coordinate(2., 0.)));
+		final Vertex vertexE = new Vertex("5", FACTORY.createPoint(new Coordinate(2., -1.)));
+		final Vertex vertexF = new Vertex("6", FACTORY.createPoint(new Coordinate(6., -1.)));
+		final Vertex vertexG = new Vertex("7", FACTORY.createPoint(new Coordinate(3., 1.)));
+		final Vertex vertexH = new Vertex("8", FACTORY.createPoint(new Coordinate(4., 1.)));
+		final Vertex vertexI = new Vertex("9", FACTORY.createPoint(new Coordinate(4., 3.)));
+		final Vertex vertexJ = new Vertex("10", FACTORY.createPoint(new Coordinate(4., 2.)));
+		final Vertex vertexK = new Vertex("11", FACTORY.createPoint(new Coordinate(6., 2.)));
+		final Vertex vertexM = new Vertex("12", FACTORY.createPoint(new Coordinate(6., 3.)));
 
-		GraphBuilder gb = new GraphBuilder();
+		final GraphBuilder gb = new GraphBuilder();
 		gb.addVertex(vertexA)
 			.addVertex(vertexB)
 			.addVertex(vertexC)
@@ -201,7 +203,8 @@ class ShortestPathPathfindingTestGraphs{
 			.connect(vertexJ, vertexK, 50.)
 			.connect(vertexJ, vertexI, 50.);
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)), new VertexCountEdgeWeightCalculator());
+		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)),
+			new VertexCountEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary vertexCountTestGraphDisconnected(){
@@ -220,20 +223,20 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		Vertex vertexA = new Vertex("1", FACTORY.createPoint(new Coordinate(0., 0.)));
-		Vertex vertexB = new Vertex("2", FACTORY.createPoint(new Coordinate(1., 1.)));
-		Vertex vertexC = new Vertex("3", FACTORY.createPoint(new Coordinate(1., 3.)));
-		Vertex vertexD = new Vertex("4", FACTORY.createPoint(new Coordinate(0., 2.)));
-		Vertex vertexE = new Vertex("5", FACTORY.createPoint(new Coordinate(-1., 2.)));
-		Vertex vertexF = new Vertex("6", FACTORY.createPoint(new Coordinate(-1., 6.)));
-		Vertex vertexG = new Vertex("7", FACTORY.createPoint(new Coordinate(1., 3.)));
-		Vertex vertexH = new Vertex("8", FACTORY.createPoint(new Coordinate(1., 4.)));
-		Vertex vertexI = new Vertex("9", FACTORY.createPoint(new Coordinate(3., 4.)));
-		Vertex vertexJ = new Vertex("10", FACTORY.createPoint(new Coordinate(2., 4.)));
-		Vertex vertexK = new Vertex("11", FACTORY.createPoint(new Coordinate(2., 6.)));
-		Vertex vertexM = new Vertex("12", FACTORY.createPoint(new Coordinate(3., 6.)));
+		final Vertex vertexA = new Vertex("1", FACTORY.createPoint(new Coordinate(0., 0.)));
+		final Vertex vertexB = new Vertex("2", FACTORY.createPoint(new Coordinate(1., 1.)));
+		final Vertex vertexC = new Vertex("3", FACTORY.createPoint(new Coordinate(3., 1.)));
+		final Vertex vertexD = new Vertex("4", FACTORY.createPoint(new Coordinate(2., 0.)));
+		final Vertex vertexE = new Vertex("5", FACTORY.createPoint(new Coordinate(2., -1.)));
+		final Vertex vertexF = new Vertex("6", FACTORY.createPoint(new Coordinate(6., -1.)));
+		final Vertex vertexG = new Vertex("7", FACTORY.createPoint(new Coordinate(3., 1.)));
+		final Vertex vertexH = new Vertex("8", FACTORY.createPoint(new Coordinate(4., 1.)));
+		final Vertex vertexI = new Vertex("9", FACTORY.createPoint(new Coordinate(4., 3.)));
+		final Vertex vertexJ = new Vertex("10", FACTORY.createPoint(new Coordinate(4., 2.)));
+		final Vertex vertexK = new Vertex("11", FACTORY.createPoint(new Coordinate(6., 2.)));
+		final Vertex vertexM = new Vertex("12", FACTORY.createPoint(new Coordinate(6., 3.)));
 
-		GraphBuilder gb = new GraphBuilder();
+		final GraphBuilder gb = new GraphBuilder();
 		gb.addVertex(vertexA)
 			.addVertex(vertexB)
 			.addVertex(vertexC)

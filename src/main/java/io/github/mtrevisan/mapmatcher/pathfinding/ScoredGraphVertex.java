@@ -26,38 +26,29 @@ package io.github.mtrevisan.mapmatcher.pathfinding;
 
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 
-import java.util.Map;
-import java.util.Queue;
-import java.util.stream.Collectors;
+
+public class ScoredGraphVertex implements Comparable<ScoredGraphVertex>{
+
+	private final Vertex vertex;
+	private final double score;
 
 
-class BidirectionalCenterVertexFinder{
-
-	Vertex findCenterVertex(final Vertex candidate, final double candidateBidirectionalScore, final Queue<ScoredGraphVertex> pqForward,
-		final Queue<ScoredGraphVertex> pqBackward){
-		final Map<Vertex, Double> scoresForward = buildMinVertexScoreMap(pqForward);
-		final Map<Vertex, Double> scoresBackward = buildMinVertexScoreMap(pqBackward);
-
-		var minVertex = candidate;
-		var minScore = candidateBidirectionalScore;
-
-		for(final Map.Entry<Vertex, Double> forwardEntry : scoresForward.entrySet()){
-			if(!scoresBackward.containsKey(forwardEntry.getKey()))
-				continue;
-
-			final var currScore = scoresBackward.get(forwardEntry.getKey()) + forwardEntry.getValue();
-			if(minScore > currScore){
-				minScore = currScore;
-				minVertex = forwardEntry.getKey();
-			}
-		}
-
-		return minVertex;
+	ScoredGraphVertex(final Vertex vertex, final double score){
+		this.vertex = vertex;
+		this.score = score;
 	}
 
-	private Map<Vertex, Double> buildMinVertexScoreMap(final Queue<ScoredGraphVertex> scoredVertices){
-		return scoredVertices.stream()
-			.collect(Collectors.toMap(ScoredGraphVertex::vertex, ScoredGraphVertex::score, Math::min));
+	Vertex vertex(){
+		return vertex;
+	}
+
+	double score(){
+		return score;
+	}
+
+	@Override
+	public int compareTo(final ScoredGraphVertex scoredGraphVertex){
+		return Double.compare(score, scoredGraphVertex.score);
 	}
 
 }

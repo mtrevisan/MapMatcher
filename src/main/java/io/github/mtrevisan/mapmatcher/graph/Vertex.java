@@ -41,6 +41,12 @@ public class Vertex{
 		this.geometry = geometry;
 	}
 
+	public Vertex(final String id, final Geometry geometry, final double weight){
+		this.id = id;
+		this.geometry = geometry;
+		this.weight = weight;
+	}
+
 	public String getId(){
 		return id;
 	}

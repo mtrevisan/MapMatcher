@@ -65,10 +65,9 @@ public class Application{
 
 
 	public static void main(final String[] args){
-//		final EdgeWeightCalculator calculator = new VertexCountEdgeWeightCalculator();
-//		final EdgeWeightCalculator calculator = new DistanceEdgeWeightCalculator();
 		final LogMapEdgeWeightCalculator calculator = new LogMapEdgeWeightCalculator();
 		final PathfindingStrategy strategy = new AStarPathfinder(calculator);
+//		final PathfindingStrategy strategy = new ViterbiPathfinder(calculator);
 //		final PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
 		final Vertex start = new Vertex("START", FACTORY.createPoint(new Coordinate(12.11, 45.66)));
 		final Vertex end = new Vertex("END", FACTORY.createPoint(new Coordinate(12.41, 45.66)));
