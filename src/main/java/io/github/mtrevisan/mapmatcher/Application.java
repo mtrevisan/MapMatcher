@@ -32,7 +32,6 @@ import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathfinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathfindingStrategy;
-import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -71,8 +70,8 @@ public class Application{
 		final LogMapEdgeWeightCalculator calculator = new LogMapEdgeWeightCalculator();
 		final PathfindingStrategy strategy = new AStarPathfinder(calculator);
 //		final PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
-		final Vertex start = new Vertex("START", FACTORY.createPoint(new Coordinate(12.11, 45.66)), 0.);
-		final Vertex end = new Vertex("END", FACTORY.createPoint(new Coordinate(12.41, 45.66)), 0.);
+		final Vertex start = new Vertex("START", FACTORY.createPoint(new Coordinate(12.11, 45.66)));
+		final Vertex end = new Vertex("END", FACTORY.createPoint(new Coordinate(12.41, 45.66)));
 
 		final Coordinate vertex11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate vertex12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
@@ -157,7 +156,7 @@ public class Application{
 			.distinct()
 			.forEach(edge -> {
 				final String id = Integer.toString(edge.hashCode());
-				graphBuilder.addVertex(new Vertex(id, edge, Double.POSITIVE_INFINITY));
+				graphBuilder.addVertex(new Vertex(id, edge));
 			});
 
 		//calculate inner weights
