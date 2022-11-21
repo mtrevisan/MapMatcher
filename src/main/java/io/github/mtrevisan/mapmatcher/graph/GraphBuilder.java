@@ -54,9 +54,8 @@ public class GraphBuilder{
 		return this;
 	}
 
-	private void connectVertices(final Vertex from, final Vertex to, final double weight){
-		adjacencyList.computeIfAbsent(from, (e) -> new ArrayList<>())
-			.add(new Edge(from, to, weight));
+	public GraphBuilder connectByIds(final String fromId, final String toId){
+		return connectByIds(fromId, toId, 0.);
 	}
 
 	public GraphBuilder connectByIds(final String fromId, final String toId, final double weight){
@@ -66,6 +65,11 @@ public class GraphBuilder{
 			throw new VertexNotPresentException(toId);
 
 		return connect(vertices.get(fromId), vertices.get(toId), weight);
+	}
+
+	private void connectVertices(final Vertex from, final Vertex to, final double weight){
+		adjacencyList.computeIfAbsent(from, (e) -> new ArrayList<>())
+			.add(new Edge(from, to, weight));
 	}
 
 	public Graph asGraph(){

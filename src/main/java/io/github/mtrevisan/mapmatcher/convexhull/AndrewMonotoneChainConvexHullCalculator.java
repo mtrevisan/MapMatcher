@@ -35,8 +35,8 @@ import java.util.List;
 public class AndrewMonotoneChainConvexHullCalculator implements ConvexHullCalculator{
 
 	private static final Comparator<Vertex> MIN_LAT_COMPARATOR =
-		Comparator.comparingDouble((Vertex v) -> v.getGeometry().getCentroid().getCoordinate().getY())
-			.thenComparingDouble(v -> v.getGeometry().getCentroid().getX());
+		Comparator.comparingDouble((Vertex v) -> v.getCoordinate().getY())
+			.thenComparingDouble(v -> v.getCoordinate().getX());
 
 
 	@Override
@@ -71,9 +71,9 @@ public class AndrewMonotoneChainConvexHullCalculator implements ConvexHullCalcul
 	}
 
 	private boolean isCounterClockwiseTurn(final Vertex p, final Vertex q, final Vertex r){
-		final var pp = p.getGeometry().getCentroid();
-		final var qq = q.getGeometry().getCentroid();
-		final var rr = r.getGeometry().getCentroid();
+		final var pp = p.getCoordinate();
+		final var qq = q.getCoordinate();
+		final var rr = r.getCoordinate();
 		return ((qq.getY() - rr.getY()) * (pp.getX() - rr.getX()) >= (qq.getX() - rr.getX()) * (pp.getY() - rr.getY()));
 	}
 

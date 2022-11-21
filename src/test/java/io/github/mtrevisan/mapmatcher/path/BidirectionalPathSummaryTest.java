@@ -5,8 +5,6 @@ import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,15 +16,10 @@ import java.util.Set;
 
 class BidirectionalPathSummaryTest{
 
-	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
-	private static final int SRID_WGS84 = 4326;
-	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
-
-
 	@Test
 	void should_return_path_consisting_of_vertices(){
-		Vertex first = new Vertex("1", FACTORY.createPoint(new Coordinate(1., 2.)));
-		Vertex second = new Vertex("2", FACTORY.createPoint(new Coordinate(2., 2.)));
+		Vertex first = new Vertex("1", new Coordinate(1., 2.));
+		Vertex second = new Vertex("2", new Coordinate(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(new Edge(first, second, 50.)));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
@@ -47,8 +40,8 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
 		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", FACTORY.createPoint(new Coordinate(1., 2.))),
-				new Vertex("2", FACTORY.createPoint(new Coordinate(2., 2.))), 50.)));
+			new Edge(new Vertex("1", new Coordinate(1., 2.)),
+				new Vertex("2", new Coordinate(2., 2.)), 50.)));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
 		int result = pathSummary.numberOfVertices();
@@ -69,8 +62,8 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_visited_vertices(){
 		Set<Vertex> visitedVertices = new HashSet<>(Arrays.asList(
-			new Vertex("1", FACTORY.createPoint(new Coordinate(1., 1.))),
-			new Vertex("2", FACTORY.createPoint(new Coordinate(2., 2.)))
+			new Vertex("1", new Coordinate(1., 1.)),
+			new Vertex("2", new Coordinate(2., 2.))
 		));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(new ArrayList<>(), visitedVertices, visitedVertices);
 
@@ -82,8 +75,8 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_path_distance(){
 		ArrayList<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", FACTORY.createPoint(new Coordinate(14.552797, 121.058805))),
-				new Vertex("2", FACTORY.createPoint(new Coordinate(14.593999, 120.994260))), 50.)));
+			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
+				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
 		double result = pathSummary.totalDistance();
@@ -94,8 +87,8 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_path_duration(){
 		ArrayList<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", FACTORY.createPoint(new Coordinate(14.552797, 121.058805))),
-				new Vertex("2", FACTORY.createPoint(new Coordinate(14.593999, 120.994260))), 50.)));
+			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
+				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
 		double result = pathSummary.totalDuration();
@@ -105,9 +98,9 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_search_boundaries(){
-		final Vertex firstVertex = new Vertex("1", FACTORY.createPoint(new Coordinate(1., 1.)));
-		final Vertex secondVertex = new Vertex("2", FACTORY.createPoint(new Coordinate(3., 3.)));
-		final Vertex thirdVertex = new Vertex("3", FACTORY.createPoint(new Coordinate(5., 1.)));
+		final Vertex firstVertex = new Vertex("1", new Coordinate(1., 1.));
+		final Vertex secondVertex = new Vertex("2", new Coordinate(3., 3.));
+		final Vertex thirdVertex = new Vertex("3", new Coordinate(5., 1.));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(new ArrayList<>(),
 			new HashSet<>(Arrays.asList(firstVertex, secondVertex, thirdVertex)),
 			new HashSet<>(Arrays.asList(thirdVertex, firstVertex, secondVertex)));
@@ -128,8 +121,8 @@ class BidirectionalPathSummaryTest{
 		Assertions.assertFalse(pathSummary.isFound());
 
 
-		Vertex vertex1 = new Vertex("1", FACTORY.createPoint(new Coordinate(14.552797, 121.058805)));
-		Vertex vertex2 = new Vertex("2", FACTORY.createPoint(new Coordinate(14.593999, 120.994260)));
+		Vertex vertex1 = new Vertex("1", new Coordinate(14.552797, 121.058805));
+		Vertex vertex2 = new Vertex("2", new Coordinate(14.593999, 120.994260));
 		path = new ArrayList<>(List.of(new Edge(vertex1, vertex2, 50.)));
 		pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
