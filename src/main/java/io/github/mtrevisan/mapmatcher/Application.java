@@ -25,26 +25,27 @@
 package io.github.mtrevisan.mapmatcher;
 
 import io.github.mtrevisan.mapmatcher.graph.Coordinates;
+import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.GraphBuilder;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathfinder;
-import io.github.mtrevisan.mapmatcher.pathfinding.BidirectionalDijkstraPathfinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathfindingStrategy;
-import io.github.mtrevisan.mapmatcher.weight.DistanceEdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -66,11 +67,12 @@ public class Application{
 
 	public static void main(final String[] args){
 //		final EdgeWeightCalculator calculator = new VertexCountEdgeWeightCalculator();
-		final EdgeWeightCalculator calculator = new DistanceEdgeWeightCalculator();
-//		final PathfindingStrategy strategy = new AStarPathfinder(calculator);
-		final PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
-		final Vertex start = new Vertex("START", FACTORY.createPoint(new Coordinate(12.11, 45.66)));
-		final Vertex end = new Vertex("END", FACTORY.createPoint(new Coordinate(12.41, 45.66)));
+//		final EdgeWeightCalculator calculator = new DistanceEdgeWeightCalculator();
+		final LogMapEdgeWeightCalculator calculator = new LogMapEdgeWeightCalculator();
+		final PathfindingStrategy strategy = new AStarPathfinder(calculator);
+//		final PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
+		final Vertex start = new Vertex("START", FACTORY.createPoint(new Coordinate(12.11, 45.66)), 0.);
+		final Vertex end = new Vertex("END", FACTORY.createPoint(new Coordinate(12.41, 45.66)), 0.);
 
 		final Coordinate vertex11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate vertex12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
@@ -113,73 +115,105 @@ public class Application{
 
 		final LineString[] edges = new LineString[]{edge1, edge2, edge3, edge4, edge5, edge6};
 		//[m]
-//		final double radius = 1_000.;
-		final double radius = 200_000_000.;
+		final double radius = 2_000.;
 		final Graph graph = extractGraph(edges, observations, radius, start, end);
 
-		final PathSummary pathSummary = strategy.findPath(start, end, graph);
-		final List<Vertex> path = pathSummary.simplePath();
-		path.remove(0);
-		path.remove(path.size() - 1);
+		final List<List<Vertex>> paths = new ArrayList<>(observations.length);
+		for(final Coordinates observation : observations){
+			final Collection<Edge> startingNodes = graph.getVertexEdges(start);
+			calculator.updateEmissionProbability(observation, startingNodes);
 
-		System.out.println(path);
+			//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
+			// correct segment
+			final double initialProbability = logPr(1. / graph.edges().size());
+			for(final Edge startingNode : startingNodes)
+				startingNode.setWeight(initialProbability + calculator.calculateWeight(startingNode.getTo(), null));
+
+			final PathSummary pathSummary = strategy.findPath(start, end, graph);
+			final List<Vertex> path = pathSummary.simplePath();
+			path.remove(0);
+			path.remove(path.size() - 1);
+			paths.add(path);
+		}
+
+		System.out.println(paths);
+	}
+
+	private static double logPr(final double probability){
+		return -StrictMath.log(probability);
 	}
 
 	private static Graph extractGraph(final LineString[] edges, final Coordinates[] observations, final double radius,
 			final Vertex start, final Vertex end){
-		final List<List<LineString>> observedEdges = extractObservedEdges(edges, observations, radius);
+		final List<Set<LineString>> observedLayers = extractObservedLayers(edges, observations, radius);
 
 		//add vertices:
 		final GraphBuilder graphBuilder = new GraphBuilder()
 			.addVertex(start)
 			.addVertex(end);
-		observedEdges.stream()
-			.flatMap(List::stream)
+		final Set<LineString> firstLayer = observedLayers.get(0);
+		observedLayers.stream()
+			.flatMap(Set::stream)
 			.distinct()
 			.forEach(edge -> {
 				final String id = Integer.toString(edge.hashCode());
-				graphBuilder.addVertex(new Vertex(id, edge));
+				graphBuilder.addVertex(new Vertex(id, edge, Double.POSITIVE_INFINITY));
 			});
+
+		//calculate inner weights
+//		for(final LineString edge : edges){
+//			//FIXME find the closest observation?
+//			for(int i = 0; i < observedLayers.size(); i ++){
+//				if(observedLayers.get(i).contains(edge)){
+//					final Coordinates closestObservation = observations[i];
+//					final String previousStateID = Integer.toString(previousGeometry.hashCode());
+//					final String currentStateID = Integer.toString(currentGeometry.hashCode());
+//					final double edgeCost = edgeCost(previousGeometry, currentGeometry);
+//					graphBuilder.connectByIds(previousStateID, currentStateID, edgeCost);
+//				}
+//			}
+//
+//		}
+//
+//		for(int n = 1; n < observations.length; n ++){
+//			final Coordinates observation = observations[n];
+//			final Set<LineString> observedLayer = observedLayers.get(n);
+//
+//			final double nodeCost = nodeCost(observation.getPoint(), currentGeometry);
+//			final String currentStateID = Integer.toString(currentGeometry.hashCode());
+//			for(final Geometry previousGeometry : observedLayers.get(n - 1)){
+//				final String previousStateID = Integer.toString(previousGeometry.hashCode());
+//				final double edgeCost = edgeCost(previousGeometry, currentGeometry);
+//				graphBuilder.connectByIds(previousStateID, currentStateID, nodeCost + edgeCost);
+//			}
+//			n ++;
+//		}
 
 		//add start->inner state connections
 		final String startStateID = start.getId();
-		for(final Geometry geometry : observedEdges.get(0)){
-			final String currentStateID = Integer.toString(geometry.hashCode());
-			graphBuilder.connectByIds(startStateID, currentStateID, 1.);
-		}
+		firstLayer.forEach(edge -> {
+			final String currentStateID = Integer.toString(edge.hashCode());
+			graphBuilder.connectByIds(startStateID, currentStateID, 0.);
+		});
 		//add inner state->end connections
 		final String endStateID = end.getId();
-		for(final Geometry geometry : observedEdges.get(observedEdges.size() - 1)){
-			final String currentStateID = Integer.toString(geometry.hashCode());
-			graphBuilder.connectByIds(currentStateID, endStateID, 1.);
-		}
-
-		//calculate inner weights
-		for(int n = 1; n < observations.length - 1; n ++){
-			final Coordinates observation = observations[n];
-			for(final Geometry currentGeometry : observedEdges.get(n)){
-				final double nodeCost = nodeCost(observation.getPoint(), currentGeometry);
-				final String currentStateID = Integer.toString(currentGeometry.hashCode());
-				for(final Geometry previousGeometry : observedEdges.get(n - 1)){
-					final String previousStateID = Integer.toString(previousGeometry.hashCode());
-					final double edgeCost = edgeCost(previousGeometry, currentGeometry);
-					graphBuilder.connectByIds(previousStateID, currentStateID, nodeCost + edgeCost);
-				}
-			}
-			n ++;
-		}
+		final Set<LineString> lastLayer = observedLayers.get(observedLayers.size() - 1);
+		lastLayer.forEach(edge -> {
+			final String currentStateID = Integer.toString(edge.hashCode());
+			graphBuilder.connectByIds(currentStateID, endStateID, 0.);
+		});
 
 		return graphBuilder
 			.asGraph();
 	}
 
-	private static List<List<LineString>> extractObservedEdges(final LineString[] edges, final Coordinates[] observations,
+	private static List<Set<LineString>> extractObservedLayers(final LineString[] edges, final Coordinates[] observations,
 			final double radius){
-		final List<List<LineString>> observationsEdges = new ArrayList<>(observations.length);
+		final List<Set<LineString>> observationsEdges = new ArrayList<>(observations.length);
 		for(final Coordinates observation : observations){
 			final Polygon surrounding = createSurrounding(observation.getPoint().getCoordinate(), radius);
 
-			final List<LineString> observationEdges = new ArrayList<>(edges.length);
+			final Set<LineString> observationEdges = new HashSet<>(edges.length);
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge))
 					observationEdges.add(edge);
@@ -200,56 +234,6 @@ public class Application{
 		gsf.setHeight(radius * 2. / metersPerDegreeInLatitude);
 		gsf.setCentre(origin);
 		return gsf.createEllipse();
-	}
-
-	private static final class MapMatchingState{
-		Geometry geometry;
-		double probability;
-
-		static MapMatchingState of(final Geometry geometry, final double probability){
-			return new MapMatchingState(geometry, probability);
-		}
-
-		private MapMatchingState(final Geometry geometry, final double probability){
-			this.geometry = geometry;
-			this.probability = probability;
-		}
-
-		void addProbability(final double probability){
-			this.probability += probability;
-		}
-	}
-
-	private static double nodeCost(final Point observation, final Geometry segment){
-		return -StrictMath.log(emissionProbability(observation, segment));
-	}
-
-	private static double edgeCost(final Geometry segment1, final Geometry segment2){
-		return -StrictMath.log(transitionProbability(segment1, segment2));
-	}
-
-	//A zero-mean gaussian observation error, Pr(o_i | r_i) = 1/(√(2 ⋅ π) ⋅ σ_o) ⋅ exp(-0.5 ⋅ (δ(o_i, x_i) / σ_o)^2)
-	private static double emissionProbability(final Point observation, final Geometry segment){
-		final double c = 1. / (StrictMath.sqrt(2. * Math.PI) * SIGMA_OBSERVATION);
-		final double reducedDistance = observation.distance(segment) / SIGMA_OBSERVATION;
-		return c * StrictMath.exp(-0.5 * reducedDistance * reducedDistance);
-	}
-
-	//exponential function of the difference between the route length (in degrees!) and the great circle distance (in degrees!)
-	//between o_t and o_t+1, Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅* |δ(o_i-1, o_i) - σ(x_i-1, x_i)|)
-	/*
-	Pr(r_i | r_i-1) = 1/(2 ⋅ π ⋅ σ_p) * exp(-0.5 ⋅ (||p_t - x_t_i||great_circle / σ_p)^2) where x_t_i is the point on road segment r_i
-	nearest the measurement p_t at time t, and σ_p can be thought of as an estimate of the standard deviation of GPS noise
-	(Newson and Krumm (2009) derive σ_p from the median absolute deviation over their dataset, arriving at a value of 4.07)
-
-	p(d_t) = 1/β ⋅ exp(-d_t / β) where d_t is the difference between the great circle distance and route-traveled distance between time t
-	and t+1
-	*/
-	private static double transitionProbability(final Geometry segment1, final Geometry segment2){
-		//calculating route distance is expensive (https://github.com/valhalla/valhalla/blob/master/docs/meili/algorithms.md)
-//		final double delta = Math.abs(routeLength(segment1, segment2) - segment1.distance(segment2));
-final double delta = segment1.distance(segment2);
-		return BETA * StrictMath.exp(-BETA * delta);
 	}
 
 }

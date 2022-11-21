@@ -36,18 +36,8 @@ import java.util.Map;
 
 public class PathSummaryCreator{
 
-	private List<Edge> reconstructPathFromPredecessorTree(final Vertex from, final Vertex to, final Map<Vertex, Edge> predecessorTree){
-		final var result = new ArrayList<Edge>();
-		var currNode = from;
-		while(predecessorTree.containsKey(currNode) && !currNode.equals(to)){
-			final var edge = predecessorTree.get(currNode);
-			result.add(edge);
-			currNode = edge.getFrom();
-		}
-		return (currNode.equals(to)? result: new ArrayList<>());
-	}
-
-	public PathSummary createUnidirectionalPath(final Vertex start, final Vertex end, final Map<Vertex, Edge> predecessorTree){
+	public PathSummary createUnidirectionalPath(final Vertex start, final Vertex end,
+			final Map<Vertex, Edge> predecessorTree){
 		final var fromEndToStart = reconstructPathFromPredecessorTree(end, start, predecessorTree);
 
 		Collections.reverse(fromEndToStart);
@@ -67,6 +57,17 @@ public class PathSummaryCreator{
 
 		fromMidToStart.addAll(fromEndToMid.stream().map(Edge::reversed).toList());
 		return new BidirectionalPathSummary(fromMidToStart, predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
+	}
+
+	private List<Edge> reconstructPathFromPredecessorTree(final Vertex from, final Vertex to, final Map<Vertex, Edge> predecessorTree){
+		final var result = new ArrayList<Edge>();
+		var currNode = from;
+		while(predecessorTree.containsKey(currNode) && !currNode.equals(to)){
+			final var edge = predecessorTree.get(currNode);
+			result.add(edge);
+			currNode = edge.getFrom();
+		}
+		return (currNode.equals(to)? result: new ArrayList<>());
 	}
 
 }

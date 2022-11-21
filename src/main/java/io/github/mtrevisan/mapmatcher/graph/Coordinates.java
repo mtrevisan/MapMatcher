@@ -69,13 +69,13 @@ public class Coordinates{
 	}
 
 	@Override
-	public boolean equals(final Object o){
-		if(this == o)
+	public boolean equals(final Object obj){
+		if(this == obj)
 			return true;
-		if(o == null || getClass() != o.getClass())
+		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Coordinates other = (Coordinates)o;
+		final Coordinates other = (Coordinates)obj;
 		return (Double.compare(other.getLatitude(), getLatitude()) == 0 && Double.compare(other.getLongitude(), getLongitude()) == 0);
 	}
 

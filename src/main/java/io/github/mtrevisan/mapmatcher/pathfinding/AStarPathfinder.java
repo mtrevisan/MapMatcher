@@ -47,28 +47,31 @@ public class AStarPathfinder implements PathfindingStrategy{
 
 	@Override
 	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph){
+		//for a node, this is the node immediately preceding it on the cheapest path from start to the given node currently known
 		final var predecessorTree = new HashMap<Vertex, Edge>();
 		predecessorTree.put(start, null);
 
-		final var gScores = new HashMap<Vertex, Double>();
-		gScores.put(start, 0.);
-
-		final var open = new PriorityQueue<ScoredGraphVertex>();
-		open.add(new ScoredGraphVertex(start, heuristic(start, end)));
-
-		while(!open.isEmpty()){
-			final var curr = open.poll().vertex();
-			if(curr.equals(end))
+		//set of discovered nodes that may need to be (re-)expanded
+		final var queue = new PriorityQueue<Vertex>();
+		start.setWeight(heuristic(start, end));
+		queue.add(start);
+		while(!queue.isEmpty()){
+			final var current = queue.poll();
+			if(current.equals(end))
 				break;
 
-			for(final var edge : graph.getVertexEdges(curr)){
-				final var neighbour = edge.getTo();
-				final var newScore = gScores.get(curr) + calculator.calculateWeight(edge);
+			for(final var edge : graph.getVertexEdges(current)){
+				final var neighbor = edge.getTo();
+				final var newWeight = current.getWeight() + calculator.calculateWeight(edge);
 
-				if(newScore < gScores.getOrDefault(neighbour, Double.MAX_VALUE)){
-					gScores.put(neighbour, newScore);
-					predecessorTree.put(neighbour, edge);
-					open.add(new ScoredGraphVertex(neighbour, newScore + heuristic(neighbour, end)));
+				if(newWeight < neighbor.getWeight()){
+					//store the cost of the cheapest path from start to this node
+					neighbor.setWeight(newWeight);
+					predecessorTree.put(neighbor, edge);
+
+					neighbor.setWeight(newWeight + heuristic(neighbor, end));
+					queue.remove(neighbor);
+					queue.add(neighbor);
 				}
 			}
 		}
@@ -76,6 +79,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
 	}
 
+	/** Estimates the cost to reach the final node from given node (emissionProbability). */
 	private double heuristic(final Vertex from, final Vertex to){
 		return calculator.calculateWeight(from, to);
 	}

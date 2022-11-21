@@ -42,8 +42,8 @@ public class DurationEdgeWeightCalculator extends DistanceEdgeWeightCalculator{
 	}
 
 	@Override
-	public double calculateWeight(final Vertex start, final Vertex end){
-		final var distance = super.calculateWeight(start, end);
+	public double calculateWeight(final Vertex from, final Vertex to){
+		final var distance = super.calculateWeight(from, to);
 		//[s]
 		return distance * 60. / MAX_ALLOWED_WEIGHT;
 	}

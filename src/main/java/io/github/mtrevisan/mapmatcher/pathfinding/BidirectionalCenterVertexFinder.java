@@ -33,8 +33,8 @@ import java.util.stream.Collectors;
 
 class BidirectionalCenterVertexFinder{
 
-	Vertex findCenterVertex(final Vertex candidate, final double candidateBidirectionalScore, final Queue<ScoredGraphVertex> pqForward,
-			final Queue<ScoredGraphVertex> pqBackward){
+	Vertex findCenterVertex(final Vertex candidate, final double candidateBidirectionalScore, final Queue<Vertex> pqForward,
+			final Queue<Vertex> pqBackward){
 		final Map<Vertex, Double> scoresForward = buildMinVertexScoreMap(pqForward);
 		final Map<Vertex, Double> scoresBackward = buildMinVertexScoreMap(pqBackward);
 
@@ -55,9 +55,9 @@ class BidirectionalCenterVertexFinder{
 		return minVertex;
 	}
 
-	private Map<Vertex, Double> buildMinVertexScoreMap(final Queue<ScoredGraphVertex> scoredVertices){
+	private Map<Vertex, Double> buildMinVertexScoreMap(final Queue<Vertex> scoredVertices){
 		return scoredVertices.stream()
-			.collect(Collectors.toMap(ScoredGraphVertex::vertex, ScoredGraphVertex::score, Math::min));
+			.collect(Collectors.toMap(v -> v, Vertex::getWeight, Math::min));
 	}
 
 }

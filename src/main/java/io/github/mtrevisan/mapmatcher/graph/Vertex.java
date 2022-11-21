@@ -33,30 +33,40 @@ public class Vertex{
 
 	private final String id;
 	private final Geometry geometry;
+	private double weight;
 
 
-	public Vertex(final String id, final Geometry geometry){
+	public Vertex(final String id, final Geometry geometry, final double weight){
 		this.id = id;
 		this.geometry = geometry;
-	}
-
-	public Geometry getGeometry(){
-		return geometry;
+		this.weight = weight;
 	}
 
 	public String getId(){
 		return id;
 	}
 
+	public Geometry getGeometry(){
+		return geometry;
+	}
+
+	public double getWeight(){
+		return weight;
+	}
+
+	public void setWeight(final double weight){
+		this.weight = weight;
+	}
+
 	@Override
-	public boolean equals(final Object o){
-		if(this == o)
+	public boolean equals(final Object obj){
+		if(this == obj)
 			return true;
-		if(o == null || getClass() != o.getClass())
+		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Vertex vertex = (Vertex)o;
-		return id.equals(vertex.id);
+		final Vertex other = (Vertex)obj;
+		return id.equals(other.id);
 	}
 
 	@Override
@@ -66,7 +76,7 @@ public class Vertex{
 
 	@Override
 	public String toString(){
-		return "Vertex{" + "id=" + id + ", coordinates=" + geometry + '}';
+		return "Vertex{" + "id=" + id + ", coordinates=" + geometry + ", weight=" + weight + "}";
 	}
 
 }

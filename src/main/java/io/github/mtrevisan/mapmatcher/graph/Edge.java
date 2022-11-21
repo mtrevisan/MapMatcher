@@ -42,7 +42,7 @@ public class Edge{
 	private final Vertex from;
 	private final Vertex to;
 	private LineString geometry;
-	private final double weight;
+	private double weight;
 
 
 	public Edge(final Vertex from, final Vertex to, final double weight){
@@ -91,6 +91,10 @@ public class Edge{
 		return weight;
 	}
 
+	public void setWeight(final double weight){
+		this.weight = weight;
+	}
+
 	public Edge reversed(){
 		return (geometry != null
 			? new Edge(to, from, geometry.reverse(), weight)
@@ -99,13 +103,13 @@ public class Edge{
 	}
 
 	@Override
-	public boolean equals(final Object o){
-		if(this == o)
+	public boolean equals(final Object obj){
+		if(this == obj)
 			return true;
-		if(o == null || getClass() != o.getClass())
+		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Edge edge = (Edge)o;
+		final Edge edge = (Edge)obj;
 		return (Objects.equals(from, edge.from) && Objects.equals(to, edge.to) && Objects.equals(weight, edge.weight));
 	}
 

@@ -60,19 +60,21 @@ public class BidirectionalDijkstraPathfinder implements PathfindingStrategy{
 		predecessorTreeForward.put(start, null);
 		predecessorTreeBackward.put(end, null);
 
-		final var pqForward = new PriorityQueue<ScoredGraphVertex>();
-		final var pqBackward = new PriorityQueue<ScoredGraphVertex>();
-		pqForward.add(new ScoredGraphVertex(start, 0.));
-		pqBackward.add(new ScoredGraphVertex(end, 0.));
+		final var pqForward = new PriorityQueue<Vertex>();
+		final var pqBackward = new PriorityQueue<Vertex>();
+		start.setWeight(0.);
+		end.setWeight(0.);
+		pqForward.add(start);
+		pqBackward.add(end);
 
 		final var reversedGraph = graph.reversed();
 
 		while(!pqForward.isEmpty() && !pqBackward.isEmpty()){
 			final var currForward = pqForward.poll();
-			if(predecessorTreeBackward.containsKey(currForward.vertex())){
-				final var candidateBidirectionalScore = minDistancesForward.get(currForward.vertex())
-					+ minDistancesBackward.get(currForward.vertex());
-				final var center = CENTER_VERTEX_FINDER.findCenterVertex(currForward.vertex(), candidateBidirectionalScore,
+			if(predecessorTreeBackward.containsKey(currForward)){
+				final var candidateBidirectionalScore = minDistancesForward.get(currForward)
+					+ minDistancesBackward.get(currForward);
+				final var center = CENTER_VERTEX_FINDER.findCenterVertex(currForward, candidateBidirectionalScore,
 					pqForward, pqBackward);
 				return PATH_SUMMARY_CREATOR.createBidirectionalPath(start, center, end, predecessorTreeForward, predecessorTreeBackward);
 			}
@@ -81,10 +83,10 @@ public class BidirectionalDijkstraPathfinder implements PathfindingStrategy{
 
 			final var currBackward = pqBackward.poll();
 			if(currBackward != null){
-				if(predecessorTreeForward.containsKey(currBackward.vertex())){
-					final var candidateBidirectionalScore = minDistancesForward.get(currBackward.vertex())
-						+ minDistancesBackward.get(currBackward.vertex());
-					final var center = CENTER_VERTEX_FINDER.findCenterVertex(currBackward.vertex(), candidateBidirectionalScore,
+				if(predecessorTreeForward.containsKey(currBackward)){
+					final var candidateBidirectionalScore = minDistancesForward.get(currBackward)
+						+ minDistancesBackward.get(currBackward);
+					final var center = CENTER_VERTEX_FINDER.findCenterVertex(currBackward, candidateBidirectionalScore,
 						pqForward, pqBackward);
 
 					return PATH_SUMMARY_CREATOR.createBidirectionalPath(start, center, end, predecessorTreeForward, predecessorTreeBackward);
@@ -96,20 +98,21 @@ public class BidirectionalDijkstraPathfinder implements PathfindingStrategy{
 		return PATH_SUMMARY_CREATOR.createBidirectionalPath(start, start, end, predecessorTreeForward, predecessorTreeBackward);
 	}
 
-	private void visitVertex(final ScoredGraphVertex curr, final Graph graph, final Queue<ScoredGraphVertex> pq,
-			final Map<Vertex, Edge> predecessorTree, final Map<Vertex, Double> minDistances){
-		final var currVertex = curr.vertex();
-		final var distanceSoFar = curr.score();
-		if(distanceSoFar > minDistances.getOrDefault(currVertex, Double.MAX_VALUE))
+	private void visitVertex(final Vertex currentVertex, final Graph graph, final Queue<Vertex> pq, final Map<Vertex, Edge> predecessorTree,
+			final Map<Vertex, Double> minDistances){
+		final var distanceSoFar = currentVertex.getWeight();
+		if(distanceSoFar > minDistances.getOrDefault(currentVertex, Double.MAX_VALUE))
 			return;
 
-		for(final var edge : graph.getVertexEdges(currVertex)){
-			final var neighbour = edge.getTo();
+		for(final var edge : graph.getVertexEdges(currentVertex)){
+			final var neighbor = edge.getTo();
 			final var distance = distanceSoFar + calculator.calculateWeight(edge);
-			if(distance < minDistances.getOrDefault(neighbour, Double.MAX_VALUE)){
-				minDistances.put(neighbour, distance);
-				predecessorTree.put(neighbour, edge);
-				pq.add(new ScoredGraphVertex(neighbour, distance));
+			if(distance < minDistances.getOrDefault(neighbor, Double.MAX_VALUE)){
+				minDistances.put(neighbor, distance);
+				predecessorTree.put(neighbor, edge);
+				neighbor.setWeight(distance);
+				pq.remove(neighbor);
+				pq.add(neighbor);
 			}
 		}
 	}

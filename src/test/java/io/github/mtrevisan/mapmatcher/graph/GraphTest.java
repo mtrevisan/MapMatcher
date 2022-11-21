@@ -14,12 +14,12 @@ class GraphTest{
 	@Test
 	void should_return_the_edges_of_an_vertex(){
 		Vertex vertex = new Vertex("1", Coordinates.of(1, 1));
-		Vertex firstNeighbour = new Vertex("2", Coordinates.of(1, 1));
-		Vertex secondNeighbour = new Vertex("3", Coordinates.of(1, 1));
+		Vertex firstNeighbor = new Vertex("2", Coordinates.of(1, 1));
+		Vertex secondNeighbor = new Vertex("3", Coordinates.of(1, 1));
 		Graph graph = new GraphBuilder()
 			.addVertex(vertex)
-			.addVertex(firstNeighbour)
-			.addVertex(secondNeighbour)
+			.addVertex(firstNeighbor)
+			.addVertex(secondNeighbor)
 			.connectByIds("1", "2", 50.)
 			.connectByIds("1", "3", 50.)
 			.asGraph();
@@ -27,8 +27,8 @@ class GraphTest{
 		Collection<Edge> result = graph.getVertexEdges(vertex);
 
 		Collection<Edge> expected = new ArrayList<>(Arrays.asList(
-			new Edge(vertex, firstNeighbour, 50.),
-			new Edge(vertex, secondNeighbour, 50.)
+			new Edge(vertex, firstNeighbor, 50.),
+			new Edge(vertex, secondNeighbor, 50.)
 		));
 		Assertions.assertEquals(expected, result);
 	}
@@ -48,22 +48,22 @@ class GraphTest{
 	@Test
 	void should_return_reversed_graph(){
 		final Vertex vertex = new Vertex("1", Coordinates.of(1, 1));
-		final Vertex firstNeighbour = new Vertex("2", Coordinates.of(1, 1));
-		final Vertex secondNeighbour = new Vertex("3", Coordinates.of(1, 1));
+		final Vertex firstNeighbor = new Vertex("2", Coordinates.of(1, 1));
+		final Vertex secondNeighbor = new Vertex("3", Coordinates.of(1, 1));
 		Graph graph = new GraphBuilder()
 			.addVertex(vertex)
-			.addVertex(firstNeighbour)
-			.addVertex(secondNeighbour)
+			.addVertex(firstNeighbor)
+			.addVertex(secondNeighbor)
 			.connectByIds("1", "2", 50.)
 			.connectByIds("1", "3", 50.)
 			.asGraph();
 
 		final Graph result = graph.reversed();
 
-		Collection<Edge> expectedFirst = List.of(new Edge(firstNeighbour, vertex, 50.));
-		Assertions.assertEquals(expectedFirst, result.getVertexEdges(firstNeighbour));
-		Collection<Edge> expectedSecond = List.of(new Edge(secondNeighbour, vertex, 50.));
-		Assertions.assertEquals(expectedSecond, result.getVertexEdges(secondNeighbour));
+		Collection<Edge> expectedFirst = List.of(new Edge(firstNeighbor, vertex, 50.));
+		Assertions.assertEquals(expectedFirst, result.getVertexEdges(firstNeighbor));
+		Collection<Edge> expectedSecond = List.of(new Edge(secondNeighbor, vertex, 50.));
+		Assertions.assertEquals(expectedSecond, result.getVertexEdges(secondNeighbor));
 	}
 
 	@Test
@@ -85,19 +85,19 @@ class GraphTest{
 	@Test
 	void should_return_graph_edges(){
 		Vertex vertex = new Vertex("1", Coordinates.of(1, 1));
-		Vertex firstNeighbour = new Vertex("2", Coordinates.of(1, 1));
-		Vertex secondNeighbour = new Vertex("3", Coordinates.of(1, 1));
+		Vertex firstNeighbor = new Vertex("2", Coordinates.of(1, 1));
+		Vertex secondNeighbor = new Vertex("3", Coordinates.of(1, 1));
 		Graph graph = new GraphBuilder()
 			.addVertex(vertex)
-			.addVertex(firstNeighbour)
-			.addVertex(secondNeighbour)
+			.addVertex(firstNeighbor)
+			.addVertex(secondNeighbor)
 			.connectByIds("1", "2", 50.)
 			.connectByIds("1", "3", 50.)
 			.asGraph();
 
 		Collection<Edge> result = graph.edges();
 
-		Collection<Edge> expected = List.of(new Edge(vertex, firstNeighbour, 50.), new Edge(vertex, secondNeighbour, 50.));
+		Collection<Edge> expected = List.of(new Edge(vertex, firstNeighbor, 50.), new Edge(vertex, secondNeighbor, 50.));
 		Assertions.assertEquals(expected, result);
 	}
 
