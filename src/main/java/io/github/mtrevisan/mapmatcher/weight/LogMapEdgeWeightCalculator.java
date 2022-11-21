@@ -27,8 +27,6 @@ package io.github.mtrevisan.mapmatcher.weight;
 import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Point;
 
 import java.util.Collection;
 import java.util.HashMap;
