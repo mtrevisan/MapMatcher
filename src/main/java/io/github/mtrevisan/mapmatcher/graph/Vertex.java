@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Objects;
 
@@ -32,18 +32,18 @@ import java.util.Objects;
 public class Vertex{
 
 	private final String id;
-	private final Geometry geometry;
+	private final Coordinate coordinate;
 	private double weight;
 
 
-	public Vertex(final String id, final Geometry geometry){
+	public Vertex(final String id, final Coordinate geometry){
 		this.id = id;
-		this.geometry = geometry;
+		this.coordinate = geometry;
 	}
 
-	public Vertex(final String id, final Geometry geometry, final double weight){
+	public Vertex(final String id, final Coordinate geometry, final double weight){
 		this.id = id;
-		this.geometry = geometry;
+		this.coordinate = geometry;
 		this.weight = weight;
 	}
 
@@ -51,8 +51,8 @@ public class Vertex{
 		return id;
 	}
 
-	public Geometry getGeometry(){
-		return geometry;
+	public Coordinate getCoordinate(){
+		return coordinate;
 	}
 
 	public double getWeight(){
@@ -81,7 +81,7 @@ public class Vertex{
 
 	@Override
 	public String toString(){
-		return "Vertex{" + "id=" + id + ", coordinates=" + geometry + ", weight=" + weight + "}";
+		return "Vertex{" + "id=" + id + ", coordinates=" + coordinate + ", weight=" + weight + "}";
 	}
 
 }

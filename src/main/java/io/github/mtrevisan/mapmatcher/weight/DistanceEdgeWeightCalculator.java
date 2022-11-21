@@ -37,7 +37,7 @@ public class DistanceEdgeWeightCalculator implements EdgeWeightCalculator{
 
 	@Override
 	public double calculateWeight(final Vertex from, final Vertex to){
-		return from.getGeometry().distance(to.getGeometry());
+		return from.getCoordinate().distance(to.getCoordinate());
 	}
 
 }

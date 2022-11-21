@@ -51,7 +51,9 @@ public class Graph{
 	}
 
 	private Map<Vertex, List<Edge>> deepImmutableCopy(final Map<Vertex, List<Edge>> adjacencyList){
-		return adjacencyList.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> List.copyOf(entry.getValue())));
+		return adjacencyList.entrySet()
+			.stream()
+			.collect(Collectors.toMap(Map.Entry::getKey, entry -> List.copyOf(entry.getValue())));
 	}
 
 	public Graph reversed(){

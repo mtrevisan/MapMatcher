@@ -69,8 +69,8 @@ public class Application{
 		final PathfindingStrategy strategy = new AStarPathfinder(calculator);
 //		final PathfindingStrategy strategy = new ViterbiPathfinder(calculator);
 //		final PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
-		final Vertex start = new Vertex("START", FACTORY.createPoint(new Coordinate(12.11, 45.66)));
-		final Vertex end = new Vertex("END", FACTORY.createPoint(new Coordinate(12.41, 45.66)));
+		final Vertex start = new Vertex("START", new Coordinate(12.11, 45.66));
+		final Vertex end = new Vertex("END", new Coordinate(12.41, 45.66));
 
 		final Coordinate vertex11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate vertex12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
@@ -143,79 +143,42 @@ public class Application{
 
 	private static Graph extractGraph(final LineString[] edges, final Coordinates[] observations, final double radius,
 			final Vertex start, final Vertex end){
-		final List<Set<LineString>> observedLayers = extractObservedLayers(edges, observations, radius);
+		final Set<LineString> observedEdges = extractObservedEdges(edges, observations, radius);
 
-		//add vertices:
 		final GraphBuilder graphBuilder = new GraphBuilder()
 			.addVertex(start)
 			.addVertex(end);
-		final Set<LineString> firstLayer = observedLayers.get(0);
-		observedLayers.stream()
-			.flatMap(Set::stream)
-			.distinct()
-			.forEach(edge -> {
-				final String id = Integer.toString(edge.hashCode());
-				graphBuilder.addVertex(new Vertex(id, edge));
-			});
 
-		//calculate inner weights
-//		for(final LineString edge : edges){
-//			//FIXME find the closest observation?
-//			for(int i = 0; i < observedLayers.size(); i ++){
-//				if(observedLayers.get(i).contains(edge)){
-//					final Coordinates closestObservation = observations[i];
-//					final String previousStateID = Integer.toString(previousGeometry.hashCode());
-//					final String currentStateID = Integer.toString(currentGeometry.hashCode());
-//					final double edgeCost = edgeCost(previousGeometry, currentGeometry);
-//					graphBuilder.connectByIds(previousStateID, currentStateID, edgeCost);
-//				}
-//			}
-//
-//		}
-//
-//		for(int n = 1; n < observations.length; n ++){
-//			final Coordinates observation = observations[n];
-//			final Set<LineString> observedLayer = observedLayers.get(n);
-//
-//			final double nodeCost = nodeCost(observation.getPoint(), currentGeometry);
-//			final String currentStateID = Integer.toString(currentGeometry.hashCode());
-//			for(final Geometry previousGeometry : observedLayers.get(n - 1)){
-//				final String previousStateID = Integer.toString(previousGeometry.hashCode());
-//				final double edgeCost = edgeCost(previousGeometry, currentGeometry);
-//				graphBuilder.connectByIds(previousStateID, currentStateID, nodeCost + edgeCost);
-//			}
-//			n ++;
-//		}
-
-		//add start->inner state connections
+		//add vertices:
 		final String startStateID = start.getId();
-		firstLayer.forEach(edge -> {
-			final String currentStateID = Integer.toString(edge.hashCode());
-			graphBuilder.connectByIds(startStateID, currentStateID, 0.);
-		});
-		//add inner state->end connections
 		final String endStateID = end.getId();
-		final Set<LineString> lastLayer = observedLayers.get(observedLayers.size() - 1);
-		lastLayer.forEach(edge -> {
-			final String currentStateID = Integer.toString(edge.hashCode());
-			graphBuilder.connectByIds(currentStateID, endStateID, 0.);
-		});
+		for(final LineString geometry : observedEdges){
+			final Coordinate startCoordinate = geometry.getCoordinateN(0);
+			final Coordinate endCoordinate = geometry.getCoordinateN(geometry.getNumPoints() - 1);
+			final String startCoordinateID = Integer.toString(startCoordinate.hashCode());
+			final String endCoordinateID = Integer.toString(endCoordinate.hashCode());
+			graphBuilder.addVertex(new Vertex(startCoordinateID, startCoordinate));
+			graphBuilder.addVertex(new Vertex(endCoordinateID, endCoordinate));
+			graphBuilder.connectByIds(startCoordinateID, endCoordinateID);
+
+			//add start->inner state connections
+			graphBuilder.connectByIds(startStateID, startCoordinateID, 0.);
+			//add inner state->end connections
+			graphBuilder.connectByIds(endCoordinateID, endStateID, 0.);
+		}
 
 		return graphBuilder
 			.asGraph();
 	}
 
-	private static List<Set<LineString>> extractObservedLayers(final LineString[] edges, final Coordinates[] observations,
+	private static Set<LineString> extractObservedEdges(final LineString[] edges, final Coordinates[] observations,
 			final double radius){
-		final List<Set<LineString>> observationsEdges = new ArrayList<>(observations.length);
+		final Set<LineString> observationsEdges = new HashSet<>(edges.length);
 		for(final Coordinates observation : observations){
 			final Polygon surrounding = createSurrounding(observation.getPoint().getCoordinate(), radius);
-
-			final Set<LineString> observationEdges = new HashSet<>(edges.length);
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge))
-					observationEdges.add(edge);
-			observationsEdges.add(observationEdges);
+					observationsEdges.add(edge);
 		}
 		return observationsEdges;
 	}

@@ -5,8 +5,6 @@ import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,15 +16,10 @@ import java.util.Set;
 
 class SingleDirectionalPathSummaryTest{
 
-	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
-	private static final int SRID_WGS84 = 4326;
-	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
-
-
 	@Test
 	void should_return_path_consisting_of_vertices(){
-		Vertex first = new Vertex("1", FACTORY.createPoint(new Coordinate(1., 2.)));
-		Vertex second = new Vertex("2", FACTORY.createPoint(new Coordinate(2., 2.)));
+		Vertex first = new Vertex("1", new Coordinate(1., 2.));
+		Vertex second = new Vertex("2", new Coordinate(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(new Edge(first, second, 50.)));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
@@ -48,8 +41,8 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
 		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", FACTORY.createPoint(new Coordinate(1., 2.))),
-				new Vertex("2", FACTORY.createPoint(new Coordinate(2., 2.))), 50.)));
+			new Edge(new Vertex("1", new Coordinate(1., 2.)),
+				new Vertex("2", new Coordinate(2., 2.)), 50.)));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		int result = pathSummary.numberOfVertices();
@@ -70,8 +63,8 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_visited_vertices(){
 		Set<Vertex> visitedVertices = new HashSet<>(Arrays.asList(
-			new Vertex("1", FACTORY.createPoint(new Coordinate(1., 1.))),
-			new Vertex("2", FACTORY.createPoint(new Coordinate(2., 2.)))
+			new Vertex("1", new Coordinate(1., 1.)),
+			new Vertex("2", new Coordinate(2., 2.))
 		));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<Edge>(), visitedVertices);
 
@@ -83,8 +76,8 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_path_distance(){
 		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", FACTORY.createPoint(new Coordinate(14.552797, 121.058805))),
-				new Vertex("2", FACTORY.createPoint(new Coordinate(14.593999, 120.994260))), 50.)));
+			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
+				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		double result = pathSummary.totalDistance();
@@ -95,8 +88,8 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_path_duration(){
 		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", FACTORY.createPoint(new Coordinate(14.552797, 121.058805))),
-				new Vertex("2", FACTORY.createPoint(new Coordinate(14.593999, 120.994260))), 50.)));
+			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
+				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		double result = pathSummary.totalDuration();
@@ -106,9 +99,9 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_search_boundaries(){
-		final Vertex firstVertex = new Vertex("1", FACTORY.createPoint(new Coordinate(1., 1.)));
-		final Vertex secondVertex = new Vertex("2", FACTORY.createPoint(new Coordinate(3., 3.)));
-		final Vertex thirdVertex = new Vertex("3", FACTORY.createPoint(new Coordinate(5., 1.)));
+		final Vertex firstVertex = new Vertex("1", new Coordinate(1., 1.));
+		final Vertex secondVertex = new Vertex("2", new Coordinate(3., 3.));
+		final Vertex thirdVertex = new Vertex("3", new Coordinate(5., 1.));
 		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(),
 			new HashSet<>(Arrays.asList(firstVertex, secondVertex, thirdVertex)));
 
@@ -127,8 +120,8 @@ class SingleDirectionalPathSummaryTest{
 
 
 		path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", FACTORY.createPoint(new Coordinate(14.552797, 121.058805))),
-				new Vertex("2", FACTORY.createPoint(new Coordinate(14.593999, 120.994260))), 50.)));
+			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
+				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
 		pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		Assertions.assertTrue(pathSummary.isFound());
