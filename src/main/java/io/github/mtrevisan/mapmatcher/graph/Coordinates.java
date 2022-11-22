@@ -24,20 +24,13 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.Objects;
 
 
 public class Coordinates{
-
-	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
-	private static final int SRID_WGS84 = 4326;
-	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
-
 
 	private final Point point;
 
@@ -52,7 +45,7 @@ public class Coordinates{
 		if(longitude < -180. || longitude > 180.)
 			throw new IllegalArgumentException("Longitude must be between -180 and 180 inclusive");
 
-		point = FACTORY.createPoint(new Coordinate(longitude, latitude));
+		point = WGS84GeometryHelper.createPoint(latitude, longitude);
 	}
 
 	public double getLatitude(){

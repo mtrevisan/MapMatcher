@@ -28,21 +28,17 @@ import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -51,11 +47,6 @@ import java.util.Set;
  * @see <a href="https://en.wikipedia.org/wiki/Viterbi_algorithm">Viterbi algorithm</a>
  */
 public class ViterbiMapMatching implements MapMatchingStrategy{
-
-	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
-	private static final int SRID_WGS84 = 4326;
-	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
-
 
 	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
 
@@ -163,8 +154,8 @@ System.out.println(Arrays.toString(path[maxProbabilityState]));
 
 	protected void createEmissionProbability(final Coordinates[] observations, final double[][] emissionProbability, final Graph graph){
 		for(int observationIndex = 0; observationIndex < observations.length; observationIndex ++){
-			final Geometry point = FACTORY.createPoint(
-				new Coordinate(observations[observationIndex].getLongitude(), observations[observationIndex].getLatitude())
+			final Geometry point = WGS84GeometryHelper.createPoint(
+				observations[observationIndex].getLatitude(), observations[observationIndex].getLongitude()
 			);
 			//step 1. Calculate dist(p_i, r_j)
 			final int n = emissionProbability[0].length;

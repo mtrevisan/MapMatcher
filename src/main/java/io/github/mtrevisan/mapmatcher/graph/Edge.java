@@ -24,20 +24,14 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.Objects;
 
 
 public class Edge{
-
-	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
-	private static final int SRID_WGS84 = 4326;
-	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
-
 
 	private final Vertex from;
 	private final Vertex to;
@@ -80,7 +74,7 @@ public class Edge{
 
 	public LineString getLineString(){
 		if(geometry == null)
-			geometry = FACTORY.createLineString(new Coordinate[]{
+			geometry = WGS84GeometryHelper.createLineString(new Coordinate[]{
 				from.getGeometry().getGeometryN(0).getCoordinate(),
 				to.getGeometry().getGeometryN(to.getGeometry().getNumGeometries() - 1).getCoordinate()
 			});

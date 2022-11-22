@@ -28,16 +28,14 @@ import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.GraphBuilder;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.PrecisionModel;
-import org.locationtech.jts.util.GeometricShapeFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,10 +52,6 @@ import java.util.Set;
  * https://github.com/valhalla/valhalla/blob/master/docs/meili/algorithms.md
  */
 public class Application{
-
-	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
-	private static final int SRID_WGS84 = 4326;
-	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
 
 	private static final double SIGMA_OBSERVATION = 4.07;
 	private static final double BETA = 3.;
@@ -80,12 +74,12 @@ public class Application{
 		final Coordinate vertex52 = new Coordinate(12.297776825477285, 45.7345547621876);
 		final Coordinate vertex62 = new Coordinate(12.322785599913317, 45.610885391198394);
 
-		final LineString edge1 = FACTORY.createLineString(new Coordinate[]{vertex11, vertex12_31_41});
-		final LineString edge2 = FACTORY.createLineString(new Coordinate[]{vertex12_31_41, vertex22, vertex23});
-		final LineString edge3 = FACTORY.createLineString(new Coordinate[]{vertex12_31_41, vertex32_51_61});
-		final LineString edge4 = FACTORY.createLineString(new Coordinate[]{vertex12_31_41, vertex42});
-		final LineString edge5 = FACTORY.createLineString(new Coordinate[]{vertex32_51_61, vertex52});
-		final LineString edge6 = FACTORY.createLineString(new Coordinate[]{vertex32_51_61, vertex62});
+		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex11, vertex12_31_41});
+		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex22, vertex23});
+		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex32_51_61});
+		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex42});
+		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex52});
+		final LineString edge6 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex62});
 
 		final Coordinates[] observations1 = new Coordinates[]{
 			Coordinates.of(45.64824627395467, 12.142791962642718),
@@ -178,26 +172,12 @@ public class Application{
 			final double radius){
 		final Set<LineString> observationsEdges = new HashSet<>(edges.length);
 		for(final Coordinates observation : observations){
-			final Polygon surrounding = createSurrounding(observation.getPoint().getCoordinate(), radius);
+			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation.getPoint().getCoordinate(), radius);
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge))
 					observationsEdges.add(edge);
 		}
 		return observationsEdges;
-	}
-
-	private static Polygon createSurrounding(final Coordinate origin, final double radius){
-		final double lat = Math.toRadians(origin.getY());
-		//precision is within 1 cm [m/°]
-		final double metersPerDegreeInLatitude = 111_132.954 - 559.822 * StrictMath.cos(2. * lat)
-			+ 1.175 * StrictMath.cos(4. * lat);
-		final double metersPerDegreesInLongitude = 111_132.954 * StrictMath.cos(lat);
-
-		final GeometricShapeFactory gsf = new GeometricShapeFactory(FACTORY);
-		gsf.setWidth(radius * 2. / metersPerDegreesInLongitude);
-		gsf.setHeight(radius * 2. / metersPerDegreeInLatitude);
-		gsf.setCentre(origin);
-		return gsf.createEllipse();
 	}
 
 }

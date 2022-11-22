@@ -24,20 +24,14 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.Objects;
 
 
 public class Vertex{
-
-	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
-	private static final int SRID_WGS84 = 4326;
-	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
-
 
 	private final String id;
 	private final Geometry geometry;
@@ -45,7 +39,7 @@ public class Vertex{
 
 	public Vertex(final String id, final Coordinate coordinate){
 		this.id = id;
-		this.geometry = FACTORY.createPoint(coordinate);
+		this.geometry = WGS84GeometryHelper.createPoint(coordinate);
 	}
 
 	public Vertex(final String id, final Geometry geometry){
