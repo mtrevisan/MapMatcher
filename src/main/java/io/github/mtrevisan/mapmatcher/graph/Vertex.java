@@ -25,42 +25,40 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.Objects;
 
 
 public class Vertex{
 
+	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
+	private static final int SRID_WGS84 = 4326;
+	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
+
+
 	private final String id;
-	private final Coordinate coordinate;
-	private double weight;
+	private final Geometry geometry;
 
 
-	public Vertex(final String id, final Coordinate geometry){
+	public Vertex(final String id, final Coordinate coordinate){
 		this.id = id;
-		this.coordinate = geometry;
+		this.geometry = FACTORY.createPoint(coordinate);
 	}
 
-	public Vertex(final String id, final Coordinate geometry, final double weight){
+	public Vertex(final String id, final Geometry geometry){
 		this.id = id;
-		this.coordinate = geometry;
-		this.weight = weight;
+		this.geometry = geometry;
 	}
 
 	public String getId(){
 		return id;
 	}
 
-	public Coordinate getCoordinate(){
-		return coordinate;
-	}
-
-	public double getWeight(){
-		return weight;
-	}
-
-	public void setWeight(final double weight){
-		this.weight = weight;
+	public Geometry getGeometry(){
+		return geometry;
 	}
 
 	@Override
@@ -81,7 +79,7 @@ public class Vertex{
 
 	@Override
 	public String toString(){
-		return "Vertex{" + "id=" + id + ", coordinates=" + coordinate + ", weight=" + weight + "}";
+		return "Vertex{" + "id=" + id + ", coordinates=" + geometry + "}";
 	}
 
 }

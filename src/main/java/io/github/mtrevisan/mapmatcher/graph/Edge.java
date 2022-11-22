@@ -80,7 +80,10 @@ public class Edge{
 
 	public LineString getLineString(){
 		if(geometry == null)
-			geometry = FACTORY.createLineString(new Coordinate[]{from.getCoordinate(), to.getCoordinate()});
+			geometry = FACTORY.createLineString(new Coordinate[]{
+				from.getGeometry().getGeometryN(0).getCoordinate(),
+				to.getGeometry().getGeometryN(to.getGeometry().getNumGeometries() - 1).getCoordinate()
+			});
 		return geometry;
 	}
 

@@ -25,13 +25,12 @@
 package io.github.mtrevisan.mapmatcher;
 
 import io.github.mtrevisan.mapmatcher.graph.Coordinates;
-import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.GraphBuilder;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
-import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathfinder;
+import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
+import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathfindingStrategy;
 import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -40,10 +39,10 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -66,8 +65,8 @@ public class Application{
 
 	public static void main(final String[] args){
 		final LogMapEdgeWeightCalculator calculator = new LogMapEdgeWeightCalculator();
-		final PathfindingStrategy strategy = new AStarPathfinder(calculator);
-//		final PathfindingStrategy strategy = new ViterbiPathfinder(calculator);
+//		final MapMatchingStrategy strategy = new AStarMapMatching(calculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(calculator);
 //		final PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
 		final Vertex start = new Vertex("START", new Coordinate(12.11, 45.66));
 		final Vertex end = new Vertex("END", new Coordinate(12.41, 45.66));
@@ -109,62 +108,66 @@ public class Application{
 			Coordinates.of(45.66168736195718, 12.304641441251732),
 			Coordinates.of(45.66168736195718, 12.331349276005653)
 		};
-		final Coordinates[] observations = observations1;
+		final Coordinates[] observations = observations2;
 
 		final LineString[] edges = new LineString[]{edge1, edge2, edge3, edge4, edge5, edge6};
 		//[m]
 		final double radius = 2_000.;
 		final Graph graph = extractGraph(edges, observations, radius, start, end);
 
-		final List<List<Vertex>> paths = new ArrayList<>(observations.length);
-		for(final Coordinates observation : observations){
-			final Collection<Edge> startingNodes = graph.getVertexEdges(start);
-			calculator.updateEmissionProbability(observation, startingNodes);
-
-			//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
-			// correct segment
-			final double initialProbability = logPr(1. / graph.edges().size());
-			for(final Edge startingNode : startingNodes)
-				startingNode.setWeight(initialProbability + calculator.calculateWeight(startingNode.getTo(), null));
-
-			final PathSummary pathSummary = strategy.findPath(start, end, graph);
-			final List<Vertex> path = pathSummary.simplePath();
+		final PathSummary pathSummary = strategy.findPath(start, end, graph, observations);
+		final List<Vertex> path = pathSummary.simplePath();
+		if(path.size() > 2){
 			path.remove(0);
 			path.remove(path.size() - 1);
-			paths.add(path);
 		}
 
-		System.out.println(paths);
-	}
-
-	private static double logPr(final double probability){
-		return -StrictMath.log(probability);
+		System.out.println(path);
 	}
 
 	private static Graph extractGraph(final LineString[] edges, final Coordinates[] observations, final double radius,
 			final Vertex start, final Vertex end){
 		final Set<LineString> observedEdges = extractObservedEdges(edges, observations, radius);
 
-		final GraphBuilder graphBuilder = new GraphBuilder()
-			.addVertex(start)
-			.addVertex(end);
+		//construct topology
+		final Map<Coordinate, Set<Integer>> topology = new HashMap<>();
+		//FIXME to uncomment
+//		for(int i = 0; i < observedEdges.length; i ++){
+		for(int i = 0; i < edges.length; i ++){
+			final LineString edge = edges[i];
+			final Coordinate startCoordinate = edge.getCoordinateN(0);
+			final Coordinate endCoordinate = edge.getCoordinateN(edge.getNumPoints() - 1);
+			topology.computeIfAbsent(startCoordinate, k -> new HashSet<>(1))
+				.add(i);
+			topology.computeIfAbsent(endCoordinate, k -> new HashSet<>(1))
+				.add(i);
+		}
+		//remove unconnected vertices
+		topology.entrySet()
+			.removeIf(entry -> entry.getValue().size() == 1);
 
-		//add vertices:
-		final String startStateID = start.getId();
-		final String endStateID = end.getId();
-		for(final LineString geometry : observedEdges){
-			final Coordinate startCoordinate = geometry.getCoordinateN(0);
-			final Coordinate endCoordinate = geometry.getCoordinateN(geometry.getNumPoints() - 1);
-			final String startCoordinateID = Integer.toString(startCoordinate.hashCode());
-			final String endCoordinateID = Integer.toString(endCoordinate.hashCode());
-			graphBuilder.addVertex(new Vertex(startCoordinateID, startCoordinate));
-			graphBuilder.addVertex(new Vertex(endCoordinateID, endCoordinate));
-			graphBuilder.connectByIds(startCoordinateID, endCoordinateID);
+		//add vertices
+		final GraphBuilder graphBuilder = new GraphBuilder();
+//		graphBuilder.addVertex(start)
+//			.addVertex(end);
+		//FIXME to uncomment
+//		for(int i = 0; i < observedEdges.length; i ++){
+		for(int i = 0; i < edges.length; i ++){
+			final String edgeID = "E" + i;
+			graphBuilder.addVertex(new Vertex(edgeID, edges[i]));
+		}
 
-			//add start->inner state connections
-			graphBuilder.connectByIds(startStateID, startCoordinateID, 0.);
-			//add inner state->end connections
-			graphBuilder.connectByIds(endCoordinateID, endStateID, 0.);
+		//add connections:
+		for(final Set<Integer> values : topology.values()){
+			for(final Integer initialVertex : values){
+				//FIXME upon uncomment, adjust this code to retrieve the correct ID
+				final String initialVertexID = "E" + initialVertex;
+				for(final Integer finalVertex : values){
+					//FIXME upon uncomment, adjust this code to retrieve the correct ID
+					final String finalVertexID = "E" + finalVertex;
+					graphBuilder.connectByIds(initialVertexID, finalVertexID);
+				}
+			}
 		}
 
 		return graphBuilder

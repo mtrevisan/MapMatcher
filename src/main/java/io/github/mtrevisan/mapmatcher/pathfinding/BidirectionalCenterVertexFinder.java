@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
+import io.github.mtrevisan.mapmatcher.graph.ScoredGraphVertex;
 import io.github.mtrevisan.mapmatcher.graph.Vertex;
 
 import java.util.Map;

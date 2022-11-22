@@ -22,9 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.pathfinding;
-
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+package io.github.mtrevisan.mapmatcher.graph;
 
 
 public class ScoredGraphVertex implements Comparable<ScoredGraphVertex>{
@@ -33,22 +31,38 @@ public class ScoredGraphVertex implements Comparable<ScoredGraphVertex>{
 	private final double score;
 
 
-	ScoredGraphVertex(final Vertex vertex, final double score){
+	public ScoredGraphVertex(final Vertex vertex, final double score){
 		this.vertex = vertex;
 		this.score = score;
 	}
 
-	Vertex vertex(){
+	public Vertex vertex(){
 		return vertex;
 	}
 
-	double score(){
+	public double score(){
 		return score;
 	}
 
 	@Override
 	public int compareTo(final ScoredGraphVertex scoredGraphVertex){
 		return Double.compare(score, scoredGraphVertex.score);
+	}
+
+	@Override
+	public boolean equals(final Object obj){
+		if(this == obj)
+			return true;
+		if(obj == null || getClass() != obj.getClass())
+			return false;
+
+		final ScoredGraphVertex other = (ScoredGraphVertex)obj;
+		return vertex.equals(other.vertex);
+	}
+
+	@Override
+	public int hashCode(){
+		return vertex.hashCode();
 	}
 
 }

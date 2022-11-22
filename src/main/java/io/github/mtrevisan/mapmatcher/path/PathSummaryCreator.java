@@ -45,14 +45,14 @@ public class PathSummaryCreator{
 		return new SingleDirectionalPathSummary(fromEndToStart, predecessorTree.keySet());
 	}
 
-	public PathSummary createBidirectionalPath(final Vertex start, final Vertex mid, final Vertex end,
+	public PathSummary createBidirectionalPath(final Vertex start, final Vertex middle, final Vertex end,
 			final Map<Vertex, Edge> predecessorTreeStart, final Map<Vertex, Edge> predecessorTreeEnd){
-		final var fromMidToStart = reconstructPathFromPredecessorTree(mid, start, predecessorTreeStart);
+		final var fromMidToStart = reconstructPathFromPredecessorTree(middle, start, predecessorTreeStart);
 		Collections.reverse(fromMidToStart);
 
-		final var fromEndToMid = reconstructPathFromPredecessorTree(mid, end, predecessorTreeEnd);
+		final var fromEndToMid = reconstructPathFromPredecessorTree(middle, end, predecessorTreeEnd);
 
-		if((start != mid && fromMidToStart.isEmpty()) || (end != mid && fromEndToMid.isEmpty()))
+		if((start != middle && fromMidToStart.isEmpty()) || (end != middle && fromEndToMid.isEmpty()))
 			return new BidirectionalPathSummary(Collections.emptyList(), predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
 
 		fromMidToStart.addAll(fromEndToMid.stream().map(Edge::reversed).toList());
@@ -61,13 +61,13 @@ public class PathSummaryCreator{
 
 	private List<Edge> reconstructPathFromPredecessorTree(final Vertex from, final Vertex to, final Map<Vertex, Edge> predecessorTree){
 		final var result = new ArrayList<Edge>();
-		var currNode = from;
-		while(predecessorTree.containsKey(currNode) && !currNode.equals(to)){
-			final var edge = predecessorTree.get(currNode);
+		var currentNode = from;
+		while(predecessorTree.containsKey(currentNode) && !currentNode.equals(to)){
+			final var edge = predecessorTree.get(currentNode);
 			result.add(edge);
-			currNode = edge.getFrom();
+			currentNode = edge.getFrom();
 		}
-		return (currNode.equals(to)? result: new ArrayList<>());
+		return (currentNode.equals(to)? result: new ArrayList<>());
 	}
 
 }

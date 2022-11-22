@@ -68,7 +68,7 @@ public class GraphBuilder{
 	}
 
 	private void connectVertices(final Vertex from, final Vertex to, final double weight){
-		adjacencyList.computeIfAbsent(from, (e) -> new ArrayList<>())
+		adjacencyList.computeIfAbsent(from, k -> new ArrayList<>(1))
 			.add(new Edge(from, to, weight));
 	}
 

@@ -34,9 +34,9 @@ import java.util.List;
 
 public class AndrewMonotoneChainConvexHullCalculator implements ConvexHullCalculator{
 
-	private static final Comparator<Vertex> MIN_LAT_COMPARATOR =
-		Comparator.comparingDouble((Vertex v) -> v.getCoordinate().getY())
-			.thenComparingDouble(v -> v.getCoordinate().getX());
+	private static final Comparator<Vertex> MIN_Y_COMPARATOR =
+		Comparator.comparingDouble((Vertex v) -> v.getGeometry().getCentroid().getY())
+			.thenComparingDouble(v -> v.getGeometry().getCentroid().getX());
 
 
 	@Override
@@ -44,7 +44,7 @@ public class AndrewMonotoneChainConvexHullCalculator implements ConvexHullCalcul
 		if(vertices.size() <= 2)
 			return new ArrayList<>(vertices);
 
-		final var sortedByLat = vertices.stream().sorted(MIN_LAT_COMPARATOR)
+		final var sortedByLat = vertices.stream().sorted(MIN_Y_COMPARATOR)
 			.toList();
 
 		final var upperHull = new ArrayList<Vertex>();
@@ -71,9 +71,9 @@ public class AndrewMonotoneChainConvexHullCalculator implements ConvexHullCalcul
 	}
 
 	private boolean isCounterClockwiseTurn(final Vertex p, final Vertex q, final Vertex r){
-		final var pp = p.getCoordinate();
-		final var qq = q.getCoordinate();
-		final var rr = r.getCoordinate();
+		final var pp = p.getGeometry().getCentroid().getCoordinate();
+		final var qq = q.getGeometry().getCentroid().getCoordinate();
+		final var rr = r.getGeometry().getCentroid().getCoordinate();
 		return ((qq.getY() - rr.getY()) * (pp.getX() - rr.getX()) >= (qq.getX() - rr.getX()) * (pp.getY() - rr.getY()));
 	}
 

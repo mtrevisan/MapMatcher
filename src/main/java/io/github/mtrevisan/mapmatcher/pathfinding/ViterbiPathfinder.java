@@ -30,8 +30,11 @@ import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 
 /**
@@ -51,29 +54,50 @@ public class ViterbiPathfinder implements PathfindingStrategy{
 	@Override
 	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph){
 		//for a node, this is the node immediately preceding it on the cheapest path from start to the given node currently known
-		final var predecessorTree = new HashMap<Vertex, Edge>();
+		final int numberOfVertices = graph.vertices().size();
+		final var predecessorTree = new HashMap<Vertex, Edge>(numberOfVertices);
 		predecessorTree.put(start, null);
+
+		//the current best guess as to how cheap a path could be from start to finish if it goes through the given node
+		final var fScores = new HashMap<String, Double>(numberOfVertices);
+		fScores.put(start.getId(), 0.);
 
 		//set of discovered nodes that may need to be (re-)expanded
 		final var queue = new LinkedList<Vertex>();
 		queue.add(start);
+		final var seenVertices = new HashSet<String>(numberOfVertices);
 		while(!queue.isEmpty()){
 			final var current = queue.pop();
 			if(current.equals(end))
 				break;
 
-			for(final var edge : graph.getVertexEdges(current)){
-				final var neighbor = edge.getTo();
-				final var newWeight = current.getWeight() + calculator.calculateWeight(edge);
-
-				if(newWeight < neighbor.getWeight()){
-					predecessorTree.put(neighbor, edge);
-
+			seenVertices.add(current.getId());
+			final var edges = graph.getVertexEdges(current);
+			var minProbability = Double.POSITIVE_INFINITY;
+			final var minProbabilityEdges = new HashMap<Double, Set<Edge>>(edges.size());
+			for(final var edge : edges){
+				final var probability = fScores.getOrDefault(edge.getTo().getId(), calculator.calculateWeight(edge.getFrom(), edge.getTo()))
+					+ calculator.calculateWeight(edge);
+				if(probability <= minProbability){
+					minProbability = probability;
+					minProbabilityEdges.computeIfAbsent(probability, k -> new HashSet<>(1))
+						.add(edge);
+				}
+			}
+			final var minEdges = minProbabilityEdges.getOrDefault(minProbability, Collections.emptySet());
+			for(final var minEdge : minEdges){
+				final var neighbor = minEdge.getTo();
+				final var neighborID = neighbor.getId();
+				final var newScore = minProbability + calculator.calculateWeight(neighbor, end);
+				final var alreadySeen = seenVertices.contains(neighborID);
+				if(!alreadySeen || newScore < fScores.get(neighborID)){
+					predecessorTree.put(neighbor, minEdge);
 					//store the cost of the cheapest path from start to this node
-					neighbor.setWeight(newWeight + calculator.calculateWeight(neighbor, end));
+					fScores.put(neighborID, newScore);
 				}
 
-				if(!queue.contains(neighbor))
+				if(!alreadySeen && !queue.contains(neighbor))
+					//further explore path
 					queue.add(neighbor);
 			}
 		}

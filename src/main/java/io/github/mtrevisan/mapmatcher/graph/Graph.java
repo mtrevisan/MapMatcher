@@ -64,7 +64,7 @@ public class Graph{
 		final var reversedAdjacencyList = new HashMap<Vertex, List<Edge>>();
 		for(final var entry : adjacencyList.entrySet())
 			for(final var edge : entry.getValue())
-				reversedAdjacencyList.computeIfAbsent(edge.getTo(), (e) -> new ArrayList<>())
+				reversedAdjacencyList.computeIfAbsent(edge.getTo(), k -> new ArrayList<>(1))
 					.add(edge.reversed());
 		return new Graph(reversedAdjacencyList, vertices);
 	}

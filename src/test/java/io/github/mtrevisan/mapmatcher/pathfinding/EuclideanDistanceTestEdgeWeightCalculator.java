@@ -14,8 +14,8 @@ public class EuclideanDistanceTestEdgeWeightCalculator implements EdgeWeightCalc
 
 	@Override
 	public double calculateWeight(final Vertex from, final Vertex to){
-		final var fromCoordinates = from.getCoordinate();
-		final var toCoordinates = to.getCoordinate();
+		final var fromCoordinates = from.getGeometry().getCentroid().getCoordinate();
+		final var toCoordinates = to.getGeometry().getCentroid().getCoordinate();
 		final var deltaY = fromCoordinates.getY() - toCoordinates.getY();
 		final var deltaX = fromCoordinates.getX() - toCoordinates.getX();
 		return Math.sqrt(deltaY * deltaY + deltaX * deltaX);

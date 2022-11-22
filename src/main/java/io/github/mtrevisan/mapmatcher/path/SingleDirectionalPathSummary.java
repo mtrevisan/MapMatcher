@@ -49,7 +49,7 @@ public class SingleDirectionalPathSummary implements PathSummary{
 	private final Set<Vertex> searchedVertices;
 
 
-	SingleDirectionalPathSummary(final List<Edge> path, final Set<Vertex> searchedVertices){
+	public SingleDirectionalPathSummary(final List<Edge> path, final Set<Vertex> searchedVertices){
 		this.path = path;
 		this.searchedVertices = searchedVertices;
 	}

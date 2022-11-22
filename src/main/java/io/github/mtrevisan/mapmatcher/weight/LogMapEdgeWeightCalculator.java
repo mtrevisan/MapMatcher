@@ -38,11 +38,11 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 	private static final double SIGMA_OBSERVATION = 4.07;
 	private static final double BETA = 3.;
 
-	private Map<Vertex, Double> emissionProbability;
+	private final Map<String, Double> emissionProbability = new HashMap<>();
 
 
 	public void updateEmissionProbability(final Coordinates observation, final Collection<Edge> edges){
-		emissionProbability = calculateEmissionProbability(observation, edges);
+		calculateEmissionProbability(observation, edges);
 	}
 
 	/**
@@ -85,23 +85,23 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 		return emissionProbability.getOrDefault(from, 0.);
 	}
 
-	private Map<Vertex, Double> calculateEmissionProbability(final Coordinates observation, final Collection<Edge> edges){
-		final Map<Vertex, Double> probabilities = new HashMap<>(edges.size());
-		double sum = 0.;
+	private void calculateEmissionProbability(final Coordinates observation, final Collection<Edge> edges){
+		double cumulativeDistance = 0.;
 		for(final Edge edge : edges){
-			final double distance = observation.getPoint().distance(edge.getLineString());
-			probabilities.put(edge.getTo(), distance);
-			sum += distance;
+			final double distance = (edge.getFrom().getId().equals("START") || edge.getTo().getId().equals("END")
+				? 1.
+				: observation.getPoint().distance(edge.getLineString()));
+			emissionProbability.put(edge.getTo().getId(), distance);
+			cumulativeDistance += distance;
 		}
-		sum = 0.;
+		double cumulativeProbability = 0.;
 		for(final Edge edge : edges){
-			final double value = sum / probabilities.get(edge.getTo());
-			probabilities.put(edge.getTo(), value);
-			sum += value;
+			final double probability = cumulativeDistance / emissionProbability.get(edge.getTo().getId());
+			emissionProbability.put(edge.getTo().getId(), probability);
+			cumulativeProbability += probability;
 		}
 		for(final Edge edge : edges)
-			probabilities.put(edge.getTo(), logPr(probabilities.get(edge.getTo()) / sum));
-		return probabilities;
+			emissionProbability.put(edge.getTo().getId(), logPr(emissionProbability.get(edge.getTo().getId()) / cumulativeProbability));
 	}
 
 	private static double logPr(final double probability){
@@ -111,7 +111,7 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 
 
 //	private static double edgeCost(final Geometry segment1, final Geometry segment2){
-//		return -StrictMath.log(transitionProbability(segment1, segment2));
+//		return logPr(transitionProbability(segment1, segment2));
 //	}
 //
 //	//exponential function of the difference between the route length (in degrees!) and the great circle distance (in degrees!)
@@ -132,7 +132,7 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 //	}
 //
 //	private static double nodeCost(final Point observation, final Geometry segment){
-//		return -StrictMath.log(emissionProbability(observation, segment));
+//		return logPr(emissionProbability(observation, segment));
 //	}
 //
 //	//A zero-mean gaussian observation error, Pr(o_i | r_i) = 1/(√(2 ⋅ π) ⋅ σ_o) ⋅ exp(-0.5 ⋅ (δ(o_i, x_i) / σ_o)^2)
