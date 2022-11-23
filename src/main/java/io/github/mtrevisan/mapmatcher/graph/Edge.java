@@ -32,6 +32,7 @@ import java.util.Objects;
 
 public class Edge{
 
+	private String id;
 	private final Node from;
 	private final Node to;
 	private final LineString geometry;
@@ -47,9 +48,21 @@ public class Edge{
 		if(geometry == null)
 			throw new IllegalArgumentException("geometry cannot be null");
 
+		id = "E-" + from.getId() + "-" + to.getId();
 		this.from = from;
 		this.to = to;
 		this.geometry = geometry;
+	}
+
+	public String getID(){
+		return id;
+	}
+
+	void setID(final String id){
+		if(id == null || id.length() == 0)
+			throw new IllegalArgumentException("`id` node cannot be null or empty");
+
+		this.id = id;
 	}
 
 	public Node getFrom(){
@@ -98,6 +111,11 @@ public class Edge{
 	@Override
 	public int hashCode(){
 		return Objects.hash(from, to, weight);
+	}
+
+	@Override
+	public String toString(){
+		return "Edge{id = " + id + ", from = " + from + ", to = " + to + ", weight = " + weight + "}";
 	}
 
 }

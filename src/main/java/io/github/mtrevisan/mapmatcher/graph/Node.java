@@ -34,13 +34,19 @@ import java.util.Set;
 
 public class Node{
 
+	private final String id;
 	private final Coordinate coordinate;
 
 	private final Set<Edge> outEdges = new HashSet<>(0);
 
 
-	public Node(final Coordinate coordinate){
+	public Node(final String id, final Coordinate coordinate){
+		this.id = id;
 		this.coordinate = coordinate;
+	}
+
+	public String getId(){
+		return id;
 	}
 
 	public Collection<Edge> geOutEdges(){
@@ -73,7 +79,7 @@ public class Node{
 
 	@Override
 	public String toString(){
-		return "Vertex{coordinates=" + coordinate + "}";
+		return "Node{id = " + id + ", coordinates = " + coordinate + "}";
 	}
 
 }

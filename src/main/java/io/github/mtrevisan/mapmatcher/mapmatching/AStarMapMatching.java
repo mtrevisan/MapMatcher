@@ -57,8 +57,8 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	public PathSummary findPath(final Graph graph, final Coordinate[] observations){
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
 		final var predecessorTree = new HashMap<Node, Edge>();
-		final Node start = new Node(null);
-		final Node end = new Node(null);
+		final Node start = new Node("START", null);
+		final Node end = new Node("END", null);
 		predecessorTree.put(start, null);
 
 		//the cost of the cheapest path from start to given node currently known

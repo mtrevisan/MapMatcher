@@ -73,12 +73,12 @@ public class Application{
 		final Coordinate vertex52 = new Coordinate(12.297776825477285, 45.7345547621876);
 		final Coordinate vertex62 = new Coordinate(12.322785599913317, 45.610885391198394);
 
-		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex11, vertex12_31_41});
-		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex22, vertex23});
-		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex32_51_61});
-		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex42});
-		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex52});
-		final LineString edge6 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex62});
+		final LineString edge0 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex11, vertex12_31_41});
+		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex22, vertex23});
+		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex32_51_61});
+		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex42});
+		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex52});
+		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex62});
 
 		final Coordinate[] observations1 = new Coordinate[]{
 			new Coordinate(12.142791962642718, 45.64824627395467),
@@ -101,9 +101,9 @@ public class Application{
 			new Coordinate(12.304641441251732, 45.66168736195718),
 			new Coordinate(12.331349276005653, 45.66168736195718)
 		};
-		final Coordinate[] observations = observations2;
+		final Coordinate[] observations = observations1;
 
-		final LineString[] edges = new LineString[]{edge1, edge2, edge3, edge4, edge5, edge6};
+		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		//[m]
 		final double radius = 500.;
 		final Graph graph = extractGraph(edges, observations, radius);
@@ -122,10 +122,17 @@ public class Application{
 		final Set<LineString> observedEdges = extractObservedEdges(edges, observations, radius);
 
 		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new EarthEllipsoidalCalculator());
+		int e = 0;
 		//FIXME to uncomment
 //		for(final LineString edge : observedEdges){
-		for(final LineString edge : edges)
-			graph.addApproximateEdge(edge);
+		for(final LineString edge : edges){
+			final String edgeID = "E" + e;
+			graph.addApproximateEdge(edgeID, edge);
+			//FIXME to uncomment
+//			graph.addApproximateEdge(edgeID + ".rev", edge.reverse());
+
+			e ++;
+		}
 		return graph;
 	}
 

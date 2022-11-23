@@ -52,6 +52,10 @@ public class NearLineMergeGraph implements Graph{
 	}
 
 	public Collection<Edge> addApproximateEdge(final LineString lineString){
+		return addApproximateEdge(null, lineString);
+	}
+
+	public Collection<Edge> addApproximateEdge(final String id, final LineString lineString){
 		final Collection<Edge> addedEdges = new HashSet<>(0);
 		if(lineString.isEmpty())
 			return addedEdges;
@@ -72,6 +76,8 @@ public class NearLineMergeGraph implements Graph{
 		for(final Node startNode : startNodes)
 			for(final Node endNode : endNodes){
 				final Edge edge = new Edge(startNode, endNode, lineString);
+				if(id != null)
+					edge.setID(id);
 				if(!edges.contains(edge)){
 					startNode.addOutEdge(edge);
 					edges.add(edge);
@@ -83,6 +89,8 @@ public class NearLineMergeGraph implements Graph{
 			for(final Node intersectionNode2 : intersectionNodes)
 				if(!intersectionNode1.equals(intersectionNode2)){
 					final Edge edge = new Edge(intersectionNode1, intersectionNode2, lineString);
+					if(id != null)
+						edge.setID(id);
 					if(!edges.contains(edge)){
 						intersectionNode1.addOutEdge(edge);
 						edges.add(edge);
@@ -96,7 +104,7 @@ public class NearLineMergeGraph implements Graph{
 	private Collection<Node> getApproximateNode(final Coordinate coordinate){
 		final Collection<Node> closest = getNodesNear(coordinate);
 		if(closest.isEmpty()){
-			final Node node = new Node(coordinate);
+			final Node node = new Node("", coordinate);
 			nodeMap.put(coordinate, node);
 			closest.add(node);
 		}

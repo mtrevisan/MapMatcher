@@ -23,8 +23,8 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_consisting_of_vertices(){
-		final Node first = new Node(new Coordinate(1., 2.));
-		final Node second = new Node(new Coordinate(2., 2.));
+		final Node first = new Node("0", new Coordinate(1., 2.));
+		final Node second = new Node("1", new Coordinate(2., 2.));
 		final List<Edge> path = new ArrayList<>(List.of(new Edge(first, second,
 			FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
 		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
@@ -46,8 +46,8 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
-		final Node first = new Node(new Coordinate(1., 2.));
-		final Node second = new Node(new Coordinate(2., 2.));
+		final Node first = new Node("0", new Coordinate(1., 2.));
+		final Node second = new Node("1", new Coordinate(2., 2.));
 		final List<Edge> path = new ArrayList<>(List.of(new Edge(first, second,
 			FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
 		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
@@ -69,8 +69,8 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_the_number_of_visited_vertices(){
-		final Node first = new Node(new Coordinate(1., 1.));
-		final Node second = new Node(new Coordinate(2., 2.));
+		final Node first = new Node("0", new Coordinate(1., 1.));
+		final Node second = new Node("1", new Coordinate(2., 2.));
 		final Set<Node> visitedVertices = new HashSet<>(Arrays.asList(first, second));
 		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(), visitedVertices);
 
@@ -81,8 +81,8 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_distance(){
-		final Node first = new Node(new Coordinate(14.552797, 121.058805));
-		final Node second = new Node(new Coordinate(14.593999, 120.994260));
+		final Node first = new Node("0", new Coordinate(14.552797, 121.058805));
+		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
 		final List<Edge> path = new ArrayList<>(List.of(new Edge(first, second,
 			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
 		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
@@ -94,8 +94,8 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_duration(){
-		final Node first = new Node(new Coordinate(14.552797, 121.058805));
-		final Node second = new Node(new Coordinate(14.593999, 120.994260));
+		final Node first = new Node("0", new Coordinate(14.552797, 121.058805));
+		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
 		final Edge edge = new Edge(first, second,
 			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
 		edge.setWeight(50.);
@@ -109,9 +109,9 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_search_boundaries(){
-		final Node firstNode = new Node(new Coordinate(1., 1.));
-		final Node secondNode = new Node(new Coordinate(3., 3.));
-		final Node thirdNode = new Node(new Coordinate(5., 1.));
+		final Node firstNode = new Node("0", new Coordinate(1., 1.));
+		final Node secondNode = new Node("1", new Coordinate(3., 3.));
+		final Node thirdNode = new Node("2", new Coordinate(5., 1.));
 		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(),
 			new HashSet<>(Arrays.asList(firstNode, secondNode, thirdNode)));
 
@@ -129,8 +129,8 @@ class SingleDirectionalPathSummaryTest{
 		Assertions.assertFalse(pathSummary.isFound());
 
 
-		final Node first = new Node(new Coordinate(14.552797, 121.058805));
-		final Node second = new Node(new Coordinate(14.593999, 120.994260));
+		final Node first = new Node("0", new Coordinate(14.552797, 121.058805));
+		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
 		path = new ArrayList<>(List.of(new Edge(first, second,
 			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
 		pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());

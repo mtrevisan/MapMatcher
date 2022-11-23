@@ -116,7 +116,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			}
 
 		if(maxProbabilityEdge != null){
-System.out.println(Arrays.toString(path.get(maxProbabilityEdge)));
+System.out.println(Arrays.toString(Arrays.stream(path.get(maxProbabilityEdge)).map(Edge::getID).toArray()));
 			final Set<Edge> vv = new HashSet<>(Arrays.asList(path.get(maxProbabilityEdge)));
 
 //			final List<Edge> vvv = new ArrayList<>(vv);
@@ -145,23 +145,19 @@ System.out.println(Arrays.toString(path.get(maxProbabilityEdge)));
 
 			//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
 			double cumulativeDistance = 0.;
-			for(final Edge edge : graph.edges()){
+			for(final Edge edge : graph.edges())
 				cumulativeDistance += emissionProbability.get(edge)[observationIndex];
-			}
 
 			//step 3. Calculate Pr(r_j | p_i)
-			for(final Edge edge : graph.edges()){
+			for(final Edge edge : graph.edges())
 				emissionProbability.get(edge)[observationIndex] = cumulativeDistance / emissionProbability.get(edge)[observationIndex];
-			}
 
 			//step 4. Calculate Pr(p_i | r_j)
 			double cumulativeProbability = 0.;
-			for(final Edge edge : graph.edges()){
+			for(final Edge edge : graph.edges())
 				cumulativeProbability += emissionProbability.get(edge)[observationIndex];
-			}
-			for(final Edge edge : graph.edges()){
+			for(final Edge edge : graph.edges())
 				emissionProbability.get(edge)[observationIndex] = logPr(emissionProbability.get(edge)[observationIndex] / cumulativeProbability);
-			}
 		}
 	}
 

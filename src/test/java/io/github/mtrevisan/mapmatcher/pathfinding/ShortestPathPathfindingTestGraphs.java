@@ -35,18 +35,18 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Node nodeA = new Node(new Coordinate(0., 0.));
-		final Node nodeB = new Node(new Coordinate(1., 1.));
-		final Node nodeC = new Node(new Coordinate(3., 1.));
-		final Node nodeD = new Node(new Coordinate(2., 0.));
-		final Node nodeE = new Node(new Coordinate(2., -1.));
-		final Node nodeF = new Node(new Coordinate(6., -1.));
-		final Node nodeG = new Node(new Coordinate(3., 1.));
-		final Node nodeH = new Node(new Coordinate(4., 1.));
-		final Node nodeI = new Node(new Coordinate(4., 3.));
-		final Node nodeJ = new Node(new Coordinate(4., 2.));
-		final Node nodeK = new Node(new Coordinate(6., 2.));
-		final Node nodeM = new Node(new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", new Coordinate(0., 0.));
+		final Node nodeB = new Node("1", new Coordinate(1., 1.));
+		final Node nodeC = new Node("2", new Coordinate(3., 1.));
+		final Node nodeD = new Node("3", new Coordinate(2., 0.));
+		final Node nodeE = new Node("4", new Coordinate(2., -1.));
+		final Node nodeF = new Node("5", new Coordinate(6., -1.));
+		final Node nodeG = new Node("6", new Coordinate(3., 1.));
+		final Node nodeH = new Node("7", new Coordinate(4., 1.));
+		final Node nodeI = new Node("8", new Coordinate(4., 3.));
+		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
+		final Node nodeK = new Node("10", new Coordinate(6., 2.));
+		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
 		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
@@ -88,18 +88,18 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Node nodeA = new Node(new Coordinate(0., 0.));
-		final Node nodeB = new Node(new Coordinate(1., 1.));
-		final Node nodeC = new Node(new Coordinate(3., 1.));
-		final Node nodeD = new Node(new Coordinate(2., 0.));
-		final Node nodeE = new Node(new Coordinate(2., -1.));
-		final Node nodeF = new Node(new Coordinate(6., -1.));
-		final Node nodeG = new Node(new Coordinate(3., 1.));
-		final Node nodeH = new Node(new Coordinate(4., 1.));
-		final Node nodeI = new Node(new Coordinate(4., 3.));
-		final Node nodeJ = new Node(new Coordinate(4., 2.));
-		final Node nodeK = new Node(new Coordinate(6., 2.));
-		final Node nodeM = new Node(new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", new Coordinate(0., 0.));
+		final Node nodeB = new Node("1", new Coordinate(1., 1.));
+		final Node nodeC = new Node("2", new Coordinate(3., 1.));
+		final Node nodeD = new Node("3", new Coordinate(2., 0.));
+		final Node nodeE = new Node("4", new Coordinate(2., -1.));
+		final Node nodeF = new Node("5", new Coordinate(6., -1.));
+		final Node nodeG = new Node("6", new Coordinate(3., 1.));
+		final Node nodeH = new Node("7", new Coordinate(4., 1.));
+		final Node nodeI = new Node("8", new Coordinate(4., 3.));
+		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
+		final Node nodeK = new Node("10", new Coordinate(6., 2.));
+		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
 		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
@@ -136,18 +136,18 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Node nodeA = new Node(new Coordinate(0., 0.));
-		final Node nodeB = new Node(new Coordinate(1., 1.));
-		final Node nodeC = new Node(new Coordinate(3., 1.));
-		final Node nodeD = new Node(new Coordinate(2., 0.));
-		final Node nodeE = new Node(new Coordinate(2., -1.));
-		final Node nodeF = new Node(new Coordinate(6., -1.));
-		final Node nodeG = new Node(new Coordinate(3., 1.));
-		final Node nodeH = new Node(new Coordinate(4., 1.));
-		final Node nodeI = new Node(new Coordinate(4., 3.));
-		final Node nodeJ = new Node(new Coordinate(4., 2.));
-		final Node nodeK = new Node(new Coordinate(6., 2.));
-		final Node nodeM = new Node(new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", new Coordinate(0., 0.));
+		final Node nodeB = new Node("1", new Coordinate(1., 1.));
+		final Node nodeC = new Node("2", new Coordinate(3., 1.));
+		final Node nodeD = new Node("3", new Coordinate(2., 0.));
+		final Node nodeE = new Node("4", new Coordinate(2., -1.));
+		final Node nodeF = new Node("5", new Coordinate(6., -1.));
+		final Node nodeG = new Node("6", new Coordinate(3., 1.));
+		final Node nodeH = new Node("7", new Coordinate(4., 1.));
+		final Node nodeI = new Node("8", new Coordinate(4., 3.));
+		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
+		final Node nodeK = new Node("10", new Coordinate(6., 2.));
+		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
 		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
@@ -190,18 +190,18 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Node nodeA = new Node(new Coordinate(0., 0.));
-		final Node nodeB = new Node(new Coordinate(1., 1.));
-		final Node nodeC = new Node(new Coordinate(3., 1.));
-		final Node nodeD = new Node(new Coordinate(2., 0.));
-		final Node nodeE = new Node(new Coordinate(2., -1.));
-		final Node nodeF = new Node(new Coordinate(6., -1.));
-		final Node nodeG = new Node(new Coordinate(3., 1.));
-		final Node nodeH = new Node(new Coordinate(4., 1.));
-		final Node nodeI = new Node(new Coordinate(4., 3.));
-		final Node nodeJ = new Node(new Coordinate(4., 2.));
-		final Node nodeK = new Node(new Coordinate(6., 2.));
-		final Node nodeM = new Node(new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", new Coordinate(0., 0.));
+		final Node nodeB = new Node("1", new Coordinate(1., 1.));
+		final Node nodeC = new Node("2", new Coordinate(3., 1.));
+		final Node nodeD = new Node("3", new Coordinate(2., 0.));
+		final Node nodeE = new Node("4", new Coordinate(2., -1.));
+		final Node nodeF = new Node("5", new Coordinate(6., -1.));
+		final Node nodeG = new Node("6", new Coordinate(3., 1.));
+		final Node nodeH = new Node("7", new Coordinate(4., 1.));
+		final Node nodeI = new Node("8", new Coordinate(4., 3.));
+		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
+		final Node nodeK = new Node("10", new Coordinate(6., 2.));
+		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
 		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));

@@ -17,8 +17,8 @@ class AndrewMonotoneChainConvexHullCalculatorTest{
 	@Test
 	void should_return_all_vertices_when_2_or_less_vertices_were_given(){
 		List<Node> vertices = new ArrayList<>(Arrays.asList(
-			new Node(new Coordinate(1., 1.)),
-			new Node(new Coordinate(2., 1.))
+			new Node("0", new Coordinate(1., 1.)),
+			new Node("1", new Coordinate(2., 1.))
 		));
 
 		AndrewMonotoneChainConvexHullCalculator convexHulkCalculator = new AndrewMonotoneChainConvexHullCalculator();
@@ -30,13 +30,13 @@ class AndrewMonotoneChainConvexHullCalculatorTest{
 	@Test
 	void should_remove_excess_vertices_and_determine_a_valid_convex_hull_when_given_7_points(){
 		ArrayList<Node> vertices = new ArrayList<>(Arrays.asList(
-			new Node(new Coordinate(3., 0.)),
-			new Node(new Coordinate(4., 2.)),
-			new Node(new Coordinate(1., 1.)),
-			new Node(new Coordinate(1., 2.)),
-			new Node(new Coordinate(0., 3.)),
-			new Node(new Coordinate(0., 0.)),
-			new Node(new Coordinate(3., 3.))
+			new Node("0", new Coordinate(3., 0.)),
+			new Node("1", new Coordinate(4., 2.)),
+			new Node("2", new Coordinate(1., 1.)),
+			new Node("3", new Coordinate(1., 2.)),
+			new Node("4", new Coordinate(0., 3.)),
+			new Node("5", new Coordinate(0., 0.)),
+			new Node("6", new Coordinate(3., 3.))
 		));
 
 		AndrewMonotoneChainConvexHullCalculator convexHulkCalculator = new AndrewMonotoneChainConvexHullCalculator();
@@ -50,14 +50,14 @@ class AndrewMonotoneChainConvexHullCalculatorTest{
 	@Test
 	void should_remove_excess_vertices_and_determine_a_valid_convex_hull_when_given_an_additional_point(){
 		ArrayList<Node> vertices = new ArrayList<>(Arrays.asList(
-			new Node(new Coordinate(3., 0.)),
-			new Node(new Coordinate(1., 1.)),
-			new Node(new Coordinate(2., 2.)),
-			new Node(new Coordinate(4., 4.)),
-			new Node(new Coordinate(0., 0.)),
-			new Node(new Coordinate(5., 1.)),
-			new Node(new Coordinate(1., 3.)),
-			new Node(new Coordinate(3., 3.))
+			new Node("0", new Coordinate(3., 0.)),
+			new Node("1", new Coordinate(1., 1.)),
+			new Node("2", new Coordinate(2., 2.)),
+			new Node("3", new Coordinate(4., 4.)),
+			new Node("4", new Coordinate(0., 0.)),
+			new Node("5", new Coordinate(5., 1.)),
+			new Node("6", new Coordinate(1., 3.)),
+			new Node("7", new Coordinate(3., 3.))
 		));
 
 		AndrewMonotoneChainConvexHullCalculator convexHulkCalculator = new AndrewMonotoneChainConvexHullCalculator();

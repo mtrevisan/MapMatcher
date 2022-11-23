@@ -25,8 +25,8 @@ class GraphTest{
 	@Test
 	void should_connect_two_vertices_in_graph(){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(5., new EarthEllipsoidalCalculator());
-		final Node from = new Node(new Coordinate(22.22, 33.33));
-		final Node to = new Node(new Coordinate(33.22, 44.33));
+		final Node from = new Node("0", new Coordinate(22.22, 33.33));
+		final Node to = new Node("1", new Coordinate(33.22, 44.33));
 
 		final LineString lineString = WGS84GeometryHelper.createLineString(new Coordinate[]{from.getCoordinate(), to.getCoordinate()});
 		final Set<Edge> addedEdges = (Set<Edge>)graph.addApproximateEdge(lineString);
@@ -39,9 +39,9 @@ class GraphTest{
 
 	@Test
 	void should_return_the_edges_of_an_vertex(){
-		final Node node = new Node(new Coordinate(1., 1.));
-		final Node firstNeighbor = new Node(new Coordinate(1., 2.));
-		final Node secondNeighbor = new Node(new Coordinate(1., 3.));
+		final Node node = new Node("0", new Coordinate(1., 1.));
+		final Node firstNeighbor = new Node("1", new Coordinate(1., 2.));
+		final Node secondNeighbor = new Node("2", new Coordinate(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(1., new EuclideanCalculator());
 		final LineString lineString12 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
 		graph.addApproximateEdge(lineString12);
@@ -61,9 +61,9 @@ class GraphTest{
 
 	@Test
 	void should_return_graph_vertices(){
-		final Node node = new Node(new Coordinate(1., 1.));
-		final Node firstNeighbor = new Node(new Coordinate(1., 2.));
-		final Node secondNeighbor = new Node(new Coordinate(1., 3.));
+		final Node node = new Node("0", new Coordinate(1., 1.));
+		final Node firstNeighbor = new Node("1", new Coordinate(1., 2.));
+		final Node secondNeighbor = new Node("2", new Coordinate(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(1., new EuclideanCalculator());
 		final LineString lineString12 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
 		graph.addApproximateEdge(lineString12);
@@ -77,9 +77,9 @@ class GraphTest{
 
 	@Test
 	void should_return_graph_edges(){
-		final Node node = new Node(new Coordinate(1., 1.));
-		final Node firstNeighbor = new Node(new Coordinate(1., 2.));
-		final Node secondNeighbor = new Node(new Coordinate(1., 3.));
+		final Node node = new Node("0", new Coordinate(1., 1.));
+		final Node firstNeighbor = new Node("1", new Coordinate(1., 2.));
+		final Node secondNeighbor = new Node("2", new Coordinate(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(1., new EuclideanCalculator());
 		final LineString lineString12 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
 		graph.addApproximateEdge(lineString12);
