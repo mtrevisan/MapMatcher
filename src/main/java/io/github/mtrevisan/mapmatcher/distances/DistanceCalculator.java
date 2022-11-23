@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,58 +22,16 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.graph;
+package io.github.mtrevisan.mapmatcher.distances;
 
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-
-import java.util.Objects;
+import org.locationtech.jts.geom.LineString;
 
 
-public class Vertex{
+public interface DistanceCalculator{
 
-	private final String id;
-	private final Geometry geometry;
+	double distance(Coordinate startPoint, Coordinate endPoint);
 
-
-	public Vertex(final String id, final Coordinate coordinate){
-		this.id = id;
-		this.geometry = WGS84GeometryHelper.createPoint(coordinate);
-	}
-
-	public Vertex(final String id, final Geometry geometry){
-		this.id = id;
-		this.geometry = geometry;
-	}
-
-	public String getId(){
-		return id;
-	}
-
-	public Geometry getGeometry(){
-		return geometry;
-	}
-
-	@Override
-	public boolean equals(final Object obj){
-		if(this == obj)
-			return true;
-		if(obj == null || getClass() != obj.getClass())
-			return false;
-
-		final Vertex other = (Vertex)obj;
-		return id.equals(other.id);
-	}
-
-	@Override
-	public int hashCode(){
-		return Objects.hash(id);
-	}
-
-	@Override
-	public String toString(){
-		return "Vertex{" + "id=" + id + ", coordinates=" + geometry + "}";
-	}
+	double distance(Coordinate point, LineString lineString);
 
 }

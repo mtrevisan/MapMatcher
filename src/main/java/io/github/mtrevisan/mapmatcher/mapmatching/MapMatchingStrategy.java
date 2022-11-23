@@ -24,14 +24,13 @@
  */
 package io.github.mtrevisan.mapmatcher.mapmatching;
 
-import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
+import org.locationtech.jts.geom.Coordinate;
 
 
 public interface MapMatchingStrategy{
 
-	PathSummary findPath(Vertex start, Vertex target, Graph graph, Coordinates[] observations);
+	PathSummary findPath(Graph graph, Coordinate[] observations);
 
 }

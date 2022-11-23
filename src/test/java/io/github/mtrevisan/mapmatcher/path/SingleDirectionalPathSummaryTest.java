@@ -1,10 +1,12 @@
 package io.github.mtrevisan.mapmatcher.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,99 +18,107 @@ import java.util.Set;
 
 class SingleDirectionalPathSummaryTest{
 
+	private static final GeometryFactory FACTORY = new GeometryFactory();
+
+
 	@Test
 	void should_return_path_consisting_of_vertices(){
-		Vertex first = new Vertex("1", new Coordinate(1., 2.));
-		Vertex second = new Vertex("2", new Coordinate(2., 2.));
-		List<Edge> path = new ArrayList<>(List.of(new Edge(first, second, 50.)));
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final Node first = new Node(new Coordinate(1., 2.));
+		final Node second = new Node(new Coordinate(2., 2.));
+		final List<Edge> path = new ArrayList<>(List.of(new Edge(first, second,
+			FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
+		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
-		List<Vertex> result = pathSummary.simplePath();
+		final List<Node> result = pathSummary.simplePath();
 
 		Assertions.assertEquals(new ArrayList<>(Arrays.asList(first, second)), result);
 	}
 
 	@Test
 	void should_return_empty_list_when_path_is_empty(){
-		List<Edge> path = new ArrayList<>();
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final List<Edge> path = new ArrayList<>();
+		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
-		List<Vertex> result = pathSummary.simplePath();
+		final List<Node> result = pathSummary.simplePath();
 
 		Assertions.assertEquals(new ArrayList<>(), result);
 	}
 
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
-		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", new Coordinate(1., 2.)),
-				new Vertex("2", new Coordinate(2., 2.)), 50.)));
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final Node first = new Node(new Coordinate(1., 2.));
+		final Node second = new Node(new Coordinate(2., 2.));
+		final List<Edge> path = new ArrayList<>(List.of(new Edge(first, second,
+			FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
+		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
-		int result = pathSummary.numberOfVertices();
+		final int result = pathSummary.numberOfVertices();
 
 		Assertions.assertEquals(2, result);
 	}
 
 	@Test
 	void should_return_0_when_path_is_empty(){
-		List<Edge> path = new ArrayList<>();
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final List<Edge> path = new ArrayList<>();
+		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
-		int result = pathSummary.numberOfVertices();
+		final int result = pathSummary.numberOfVertices();
 
 		Assertions.assertEquals(0, result);
 	}
 
 	@Test
 	void should_return_the_number_of_visited_vertices(){
-		Set<Vertex> visitedVertices = new HashSet<>(Arrays.asList(
-			new Vertex("1", new Coordinate(1., 1.)),
-			new Vertex("2", new Coordinate(2., 2.))
-		));
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<Edge>(), visitedVertices);
+		final Node first = new Node(new Coordinate(1., 1.));
+		final Node second = new Node(new Coordinate(2., 2.));
+		final Set<Node> visitedVertices = new HashSet<>(Arrays.asList(first, second));
+		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(), visitedVertices);
 
-		int result = pathSummary.totalVisitedVertices();
+		final int result = pathSummary.totalVisitedVertices();
 
 		Assertions.assertEquals(2, result);
 	}
 
 	@Test
 	void should_return_path_distance(){
-		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
-				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final Node first = new Node(new Coordinate(14.552797, 121.058805));
+		final Node second = new Node(new Coordinate(14.593999, 120.994260));
+		final List<Edge> path = new ArrayList<>(List.of(new Edge(first, second,
+			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
+		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
-		double result = pathSummary.totalDistance();
+		final double result = pathSummary.totalDistance();
 
 		Assertions.assertEquals(0.076_6, result, 0.000_05);
 	}
 
 	@Test
 	void should_return_path_duration(){
-		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
-				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final Node first = new Node(new Coordinate(14.552797, 121.058805));
+		final Node second = new Node(new Coordinate(14.593999, 120.994260));
+		final Edge edge = new Edge(first, second,
+			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
+		edge.setWeight(50.);
+		final List<Edge> path = new ArrayList<>(List.of(edge));
+		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
-		double result = pathSummary.totalDuration();
+		final double result = pathSummary.totalDuration();
 
 		Assertions.assertEquals(0.091_9, result, 0.000_05);
 	}
 
 	@Test
 	void should_return_path_search_boundaries(){
-		final Vertex firstVertex = new Vertex("1", new Coordinate(1., 1.));
-		final Vertex secondVertex = new Vertex("2", new Coordinate(3., 3.));
-		final Vertex thirdVertex = new Vertex("3", new Coordinate(5., 1.));
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(),
-			new HashSet<>(Arrays.asList(firstVertex, secondVertex, thirdVertex)));
+		final Node firstNode = new Node(new Coordinate(1., 1.));
+		final Node secondNode = new Node(new Coordinate(3., 3.));
+		final Node thirdNode = new Node(new Coordinate(5., 1.));
+		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(),
+			new HashSet<>(Arrays.asList(firstNode, secondNode, thirdNode)));
 
-		Collection<List<Vertex>> result = pathSummary.searchBoundaries();
+		final Collection<List<Node>> result = pathSummary.searchBoundaries();
 
 		Assertions.assertEquals(1, result.size());
-		Assertions.assertEquals(Arrays.asList(secondVertex, firstVertex, thirdVertex), result.toArray()[0]);
+		Assertions.assertEquals(Arrays.asList(secondNode, firstNode, thirdNode), result.toArray()[0]);
 	}
 
 	@Test
@@ -119,9 +129,10 @@ class SingleDirectionalPathSummaryTest{
 		Assertions.assertFalse(pathSummary.isFound());
 
 
-		path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
-				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
+		final Node first = new Node(new Coordinate(14.552797, 121.058805));
+		final Node second = new Node(new Coordinate(14.593999, 120.994260));
+		path = new ArrayList<>(List.of(new Edge(first, second,
+			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
 		pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
 
 		Assertions.assertTrue(pathSummary.isFound());

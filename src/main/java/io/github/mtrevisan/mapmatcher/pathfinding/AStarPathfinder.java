@@ -26,8 +26,8 @@ package io.github.mtrevisan.mapmatcher.pathfinding;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.graph.ScoredGraphVertex;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
 
@@ -50,14 +50,14 @@ public class AStarPathfinder implements PathfindingStrategy{
 	}
 
 	@Override
-	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph){
+	public PathSummary findPath(final Node start, final Node end, final Graph graph){
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
-		final var predecessorTree = new HashMap<Vertex, Edge>();
+		final var predecessorTree = new HashMap<Node, Edge>();
 		predecessorTree.put(start, null);
 
 		//the cost of the cheapest path from start to given node currently known
-		final var gScores = new HashMap<String, Double>();
-		gScores.put(start.getId(), 0.);
+		final var gScores = new HashMap<Node, Double>();
+		gScores.put(start, 0.);
 
 		//set of discovered nodes that may need to be (re-)expanded
 		final var queue = new PriorityQueue<ScoredGraphVertex>();
@@ -72,12 +72,12 @@ public class AStarPathfinder implements PathfindingStrategy{
 			if(current.equals(end))
 				break;
 
-			for(final var edge : graph.getVertexEdges(current)){
+			for(final var edge : current.geOutEdges()){
 				final var neighbor = edge.getTo();
-				final var newScore = gScores.get(current.getId()) + calculator.calculateWeight(edge);
+				final var newScore = gScores.get(current) + calculator.calculateWeight(edge);
 
-				if(newScore < gScores.getOrDefault(neighbor.getId(), Double.MAX_VALUE)){
-					gScores.put(neighbor.getId(), newScore);
+				if(newScore < gScores.getOrDefault(neighbor, Double.MAX_VALUE)){
+					gScores.put(neighbor, newScore);
 					predecessorTree.put(neighbor, edge);
 
 					fScore = newScore + heuristic(neighbor, end);
@@ -92,7 +92,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 	}
 
 	/** Estimates the cost to reach the final node from given node (emissionProbability). */
-	private double heuristic(final Vertex from, final Vertex to){
+	private double heuristic(final Node from, final Node to){
 		return calculator.calculateWeight(from, to);
 	}
 

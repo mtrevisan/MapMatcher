@@ -22,15 +22,16 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.weight;
+package io.github.mtrevisan.mapmatcher.distances;
 
-import io.github.mtrevisan.mapmatcher.graph.Coordinates;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 
 
 /**
  * @see <a href="https://github.com/grumlimited/geocalc/blob/master/src/main/java/com/grum/geocalc/EarthCalc.java">EarthCalc</a>
  */
-public class EarthEllipsoidalCalculator{
+public class EarthEllipsoidalCalculator implements DistanceCalculator{
 
 	//flattening of the ellipsoid, in WGS84 reference
 	private static final double EARTH_FLATTENING = 1. / 298.257_223_563;
@@ -47,17 +48,18 @@ public class EarthEllipsoidalCalculator{
 	/**
 	 * Calculate distance, (azimuth) bearing and final bearing between two points using inverse Vincenty formula.
 	 *
-	 * @param standPoint	The start point.
+	 * @param startPoint	The start point.
 	 * @param endPoint	The end point.
 	 * @return	The distance [m].
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
 	 */
-	public static double distance(final Coordinates standPoint, final Coordinates endPoint){
-		final double lambda1 = Math.toRadians(standPoint.getLongitude());
-		final double lambda2 = Math.toRadians(endPoint.getLongitude());
-		final double phi1 = Math.toRadians(standPoint.getLatitude());
-		final double phi2 = Math.toRadians(endPoint.getLatitude());
+	@Override
+	public double distance(final Coordinate startPoint, final Coordinate endPoint){
+		final double lambda1 = Math.toRadians(startPoint.getX());
+		final double lambda2 = Math.toRadians(endPoint.getX());
+		final double phi1 = Math.toRadians(startPoint.getY());
+		final double phi2 = Math.toRadians(endPoint.getY());
 
 		//U1 and U2 are the reduced latitude (latitude on the auxiliary sphere)
 		final double deltaLambda = lambda2 - lambda1;
@@ -125,6 +127,12 @@ public class EarthEllipsoidalCalculator{
 //		);
 
 		return distance;
+	}
+
+	@Override
+	public double distance(final Coordinate point, final LineString lineString){
+		//TODO
+		return 0.;
 	}
 
 	private static double reduce0_2pi(final double angle){

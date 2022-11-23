@@ -24,14 +24,14 @@
  */
 package io.github.mtrevisan.mapmatcher.mapmatching;
 
-import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.graph.ScoredGraphVertex;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,15 +54,17 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 	//TODO
 	@Override
-	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph, final Coordinates[] observations){
+	public PathSummary findPath(final Graph graph, final Coordinate[] observations){
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
-		final var predecessorTree = new HashMap<Vertex, Edge>();
+		final var predecessorTree = new HashMap<Node, Edge>();
+		final Node start = new Node(null);
+		final Node end = new Node(null);
 		predecessorTree.put(start, null);
 
 		//the cost of the cheapest path from start to given node currently known
-		final var gScoresPrevious = new HashMap<String, Double>();
-		final var gScoresNext = new HashMap<String, Double>();
-		gScoresPrevious.put(start.getId(), 0.);
+		final var gScoresPrevious = new HashMap<Node, Double>();
+		final var gScoresNext = new HashMap<Node, Double>();
+		gScoresPrevious.put(start, 0.);
 
 		//set of discovered nodes that may need to be (re-)expanded
 		final var queue = new PriorityQueue<ScoredGraphVertex>();
@@ -78,15 +80,15 @@ public class AStarMapMatching implements MapMatchingStrategy{
 				if(current.equals(end))
 					break;
 
-				final Collection<Edge> startingNodes = graph.getVertexEdges(current);
+				final Collection<Edge> startingNodes = current.geOutEdges();
 				calculator.updateEmissionProbability(observations[i], startingNodes);
 
-				for(final var edge : graph.getVertexEdges(current)){
+				for(final var edge : startingNodes){
 					final var neighbor = edge.getTo();
-					final var newScore = gScoresPrevious.get(current.getId()) + calculator.calculateWeight(edge);
+					final var newScore = gScoresPrevious.get(current) + calculator.calculateWeight(edge);
 
-					if(newScore < gScoresPrevious.getOrDefault(neighbor.getId(), Double.MAX_VALUE)){
-						gScoresPrevious.put(neighbor.getId(), newScore);
+					if(newScore < gScoresPrevious.getOrDefault(neighbor, Double.MAX_VALUE)){
+						gScoresPrevious.put(neighbor, newScore);
 						predecessorTree.put(neighbor, edge);
 
 						fScore = newScore + heuristic(neighbor, end);
@@ -102,7 +104,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	}
 
 	/** Estimates the cost to reach the final node from given node (emissionProbability). */
-	private double heuristic(final Vertex from, final Vertex to){
+	private double heuristic(final Node from, final Node to){
 		return calculator.calculateWeight(from, to);
 	}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,15 +22,25 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.graph;
+package io.github.mtrevisan.mapmatcher.distances;
 
-import java.text.MessageFormat;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 
 
-public class VertexNotPresentException extends RuntimeException{
+public class EuclideanCalculator implements DistanceCalculator{
 
-	public VertexNotPresentException(final String vertexID){
-		super(MessageFormat.format("Vertex with ID {0} is not present in the graph", vertexID));
+	@Override
+	public double distance(final Coordinate startPoint, final Coordinate endPoint){
+		final double deltaX = startPoint.getX() - endPoint.getX();
+		final double deltaY = startPoint.getY() - endPoint.getY();
+		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+	}
+
+	@Override
+	public double distance(final Coordinate point, final LineString lineString){
+		//TODO
+		return 0.;
 	}
 
 }

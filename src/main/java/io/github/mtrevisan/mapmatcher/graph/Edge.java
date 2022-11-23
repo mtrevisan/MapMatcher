@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -33,51 +32,43 @@ import java.util.Objects;
 
 public class Edge{
 
-	private final Vertex from;
-	private final Vertex to;
-	private LineString geometry;
+	private final Node from;
+	private final Node to;
+	private final LineString geometry;
+
 	private double weight;
 
 
-	public Edge(final Vertex from, final Vertex to, final double weight){
+	public Edge(final Node from, final Node to, final LineString geometry){
 		if(from == null)
-			throw new IllegalArgumentException("`from` vertex cannot be null");
+			throw new IllegalArgumentException("`from` node cannot be null");
 		if(to == null)
-			throw new IllegalArgumentException("`to` vertex cannot be null");
-
-		this.from = from;
-		this.to = to;
-		this.weight = weight;
-	}
-
-	public Edge(final Vertex from, final Vertex to, final LineString geometry, final double weight){
-		if(from == null)
-			throw new IllegalArgumentException("`from` vertex cannot be null");
-		if(to == null)
-			throw new IllegalArgumentException("`to` vertex cannot be null");
+			throw new IllegalArgumentException("`to` node cannot be null");
 		if(geometry == null)
 			throw new IllegalArgumentException("geometry cannot be null");
 
 		this.from = from;
 		this.to = to;
 		this.geometry = geometry;
-		this.weight = weight;
 	}
 
-	public Vertex getFrom(){
+	public Node getFrom(){
 		return from;
 	}
 
-	public Vertex getTo(){
+	public Node getTo(){
 		return to;
 	}
 
+	public Coordinate getFromCoordinate(){
+		return from.getCoordinate();
+	}
+
+	public Coordinate getToCoordinate(){
+		return to.getCoordinate();
+	}
+
 	public LineString getLineString(){
-		if(geometry == null)
-			geometry = WGS84GeometryHelper.createLineString(new Coordinate[]{
-				from.getGeometry().getGeometryN(0).getCoordinate(),
-				to.getGeometry().getGeometryN(to.getGeometry().getNumGeometries() - 1).getCoordinate()
-			});
 		return geometry;
 	}
 
@@ -90,10 +81,7 @@ public class Edge{
 	}
 
 	public Edge reversed(){
-		return (geometry != null
-			? new Edge(to, from, geometry.reverse(), weight)
-			: new Edge(to, from, weight)
-		);
+		return new Edge(to, from, geometry.reverse());
 	}
 
 	@Override

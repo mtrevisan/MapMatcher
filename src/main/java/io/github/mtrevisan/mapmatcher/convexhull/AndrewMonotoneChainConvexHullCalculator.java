@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.convexhull;
 
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,24 +34,24 @@ import java.util.List;
 
 public class AndrewMonotoneChainConvexHullCalculator implements ConvexHullCalculator{
 
-	private static final Comparator<Vertex> MIN_Y_COMPARATOR =
-		Comparator.comparingDouble((Vertex v) -> v.getGeometry().getCentroid().getY())
-			.thenComparingDouble(v -> v.getGeometry().getCentroid().getX());
+	private static final Comparator<Node> MIN_Y_COMPARATOR =
+		Comparator.comparingDouble((Node v) -> v.getCoordinate().getY())
+			.thenComparingDouble(v -> v.getCoordinate().getX());
 
 
 	@Override
-	public List<Vertex> calculateConvexHull(final Collection<Vertex> vertices){
+	public List<Node> calculateConvexHull(final Collection<Node> vertices){
 		if(vertices.size() <= 2)
 			return new ArrayList<>(vertices);
 
 		final var sortedByLat = vertices.stream().sorted(MIN_Y_COMPARATOR)
 			.toList();
 
-		final var upperHull = new ArrayList<Vertex>();
+		final var upperHull = new ArrayList<Node>();
 		for(final var vertex : sortedByLat)
 			filterCounterClockwise(upperHull, vertex);
 
-		final var lowerHull = new ArrayList<Vertex>();
+		final var lowerHull = new ArrayList<Node>();
 		for(int i = sortedByLat.size() - 1; i >= 0; i--){
 			final var vertex = sortedByLat.get(i);
 			filterCounterClockwise(lowerHull, vertex);
@@ -64,16 +64,16 @@ public class AndrewMonotoneChainConvexHullCalculator implements ConvexHullCalcul
 		return lowerHull;
 	}
 
-	private void filterCounterClockwise(final List<Vertex> lowerHull, final Vertex p){
+	private void filterCounterClockwise(final List<Node> lowerHull, final Node p){
 		while(lowerHull.size() >= 2 && isCounterClockwiseTurn(p, lowerHull.get(lowerHull.size() - 1), lowerHull.get(lowerHull.size() - 2)))
 			lowerHull.remove(lowerHull.size() - 1);
 		lowerHull.add(p);
 	}
 
-	private boolean isCounterClockwiseTurn(final Vertex p, final Vertex q, final Vertex r){
-		final var pp = p.getGeometry().getCentroid().getCoordinate();
-		final var qq = q.getGeometry().getCentroid().getCoordinate();
-		final var rr = r.getGeometry().getCentroid().getCoordinate();
+	private boolean isCounterClockwiseTurn(final Node p, final Node q, final Node r){
+		final var pp = p.getCoordinate();
+		final var qq = q.getCoordinate();
+		final var rr = r.getCoordinate();
 		return ((qq.getY() - rr.getY()) * (pp.getX() - rr.getX()) >= (qq.getX() - rr.getX()) * (pp.getY() - rr.getY()));
 	}
 

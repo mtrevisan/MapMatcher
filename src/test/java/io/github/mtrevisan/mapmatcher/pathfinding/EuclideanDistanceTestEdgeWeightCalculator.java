@@ -1,7 +1,7 @@
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
 
 
@@ -13,9 +13,9 @@ public class EuclideanDistanceTestEdgeWeightCalculator implements EdgeWeightCalc
 	}
 
 	@Override
-	public double calculateWeight(final Vertex from, final Vertex to){
-		final var fromCoordinates = from.getGeometry().getCentroid().getCoordinate();
-		final var toCoordinates = to.getGeometry().getCentroid().getCoordinate();
+	public double calculateWeight(final Node from, final Node to){
+		final var fromCoordinates = from.getCoordinate();
+		final var toCoordinates = to.getCoordinate();
 		final var deltaY = fromCoordinates.getY() - toCoordinates.getY();
 		final var deltaX = fromCoordinates.getX() - toCoordinates.getX();
 		return Math.sqrt(deltaY * deltaY + deltaX * deltaX);

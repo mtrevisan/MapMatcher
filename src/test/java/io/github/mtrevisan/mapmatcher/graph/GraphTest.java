@@ -1,104 +1,97 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.distances.EarthEllipsoidalCalculator;
+import io.github.mtrevisan.mapmatcher.distances.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 class GraphTest{
 
+	private static final GeometryFactory FACTORY = new GeometryFactory();
+
+
+	@Test
+	void should_connect_two_vertices_in_graph(){
+		final NearLineMergeGraph graph = new NearLineMergeGraph(5., new EarthEllipsoidalCalculator());
+		final Node from = new Node(new Coordinate(22.22, 33.33));
+		final Node to = new Node(new Coordinate(33.22, 44.33));
+
+		final LineString lineString = WGS84GeometryHelper.createLineString(new Coordinate[]{from.getCoordinate(), to.getCoordinate()});
+		final Set<Edge> addedEdges = (Set<Edge>)graph.addApproximateEdge(lineString);
+
+		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(from.getCoordinate()));
+		Assertions.assertEquals(1, fromNodes.size());
+		final Collection<Edge> edges = fromNodes.get(0).geOutEdges();
+		Assertions.assertEquals(addedEdges, edges);
+	}
+
 	@Test
 	void should_return_the_edges_of_an_vertex(){
-		Vertex vertex = new Vertex("1", new Coordinate(1., 1.));
-		Vertex firstNeighbor = new Vertex("2", new Coordinate(1., 1.));
-		Vertex secondNeighbor = new Vertex("3", new Coordinate(1., 1.));
-		Graph graph = new GraphBuilder()
-			.addVertex(vertex)
-			.addVertex(firstNeighbor)
-			.addVertex(secondNeighbor)
-			.connectByIds("1", "2", 50.)
-			.connectByIds("1", "3", 50.)
-			.asGraph();
+		final Node node = new Node(new Coordinate(1., 1.));
+		final Node firstNeighbor = new Node(new Coordinate(1., 2.));
+		final Node secondNeighbor = new Node(new Coordinate(1., 3.));
+		final NearLineMergeGraph graph = new NearLineMergeGraph(1., new EuclideanCalculator());
+		final LineString lineString12 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
+		graph.addApproximateEdge(lineString12);
+		final LineString lineString13 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), secondNeighbor.getCoordinate()});
+		graph.addApproximateEdge(lineString13);
 
-		Collection<Edge> result = graph.getVertexEdges(vertex);
+		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(node.getCoordinate()));
+		Assertions.assertEquals(1, fromNodes.size());
+		final Set<Edge> result = (Set<Edge>)fromNodes.get(0).geOutEdges();
 
-		Collection<Edge> expected = new ArrayList<>(Arrays.asList(
-			new Edge(vertex, firstNeighbor, 50.),
-			new Edge(vertex, secondNeighbor, 50.)
+		final Set<Edge> expected = new HashSet<>(Arrays.asList(
+			new Edge(node, firstNeighbor, lineString12),
+			new Edge(node, secondNeighbor, lineString13)
 		));
 		Assertions.assertEquals(expected, result);
 	}
 
 	@Test
-	void graph_shouldn_t_reflect_updates_made_to_the_builder_after_it_s_creation(){
-		GraphBuilder graphBuilder = new GraphBuilder();
-		Vertex vertex1 = new Vertex("1", new Coordinate(22.22, 33.33));
-		graphBuilder.addVertex(vertex1);
-		Graph result = graphBuilder.asGraph();
-		Vertex vertex2 = new Vertex("2", new Coordinate(22.22, 33.33));
-		graphBuilder.addVertex(vertex2);
-
-		Assertions.assertArrayEquals(new Vertex[]{vertex1}, result.vertices().toArray());
-	}
-
-	@Test
-	void should_return_reversed_graph(){
-		final Vertex vertex = new Vertex("1", new Coordinate(1., 1.));
-		final Vertex firstNeighbor = new Vertex("2", new Coordinate(1., 1.));
-		final Vertex secondNeighbor = new Vertex("3", new Coordinate(1., 1.));
-		Graph graph = new GraphBuilder()
-			.addVertex(vertex)
-			.addVertex(firstNeighbor)
-			.addVertex(secondNeighbor)
-			.connectByIds("1", "2", 50.)
-			.connectByIds("1", "3", 50.)
-			.asGraph();
-
-		final Graph result = graph.reversed();
-
-		Collection<Edge> expectedFirst = List.of(new Edge(firstNeighbor, vertex, 50.));
-		Assertions.assertEquals(expectedFirst, result.getVertexEdges(firstNeighbor));
-		Collection<Edge> expectedSecond = List.of(new Edge(secondNeighbor, vertex, 50.));
-		Assertions.assertEquals(expectedSecond, result.getVertexEdges(secondNeighbor));
-	}
-
-	@Test
 	void should_return_graph_vertices(){
-		Vertex first = new Vertex("1", new Coordinate(1., 1.));
-		Vertex second = new Vertex("2", new Coordinate(1., 1.));
-		Vertex third = new Vertex("3", new Coordinate(1., 1.));
-		Graph graph = new GraphBuilder()
-			.addVertex(first)
-			.addVertex(second)
-			.addVertex(third)
-			.asGraph();
+		final Node node = new Node(new Coordinate(1., 1.));
+		final Node firstNeighbor = new Node(new Coordinate(1., 2.));
+		final Node secondNeighbor = new Node(new Coordinate(1., 3.));
+		final NearLineMergeGraph graph = new NearLineMergeGraph(1., new EuclideanCalculator());
+		final LineString lineString12 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
+		graph.addApproximateEdge(lineString12);
+		final LineString lineString13 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), secondNeighbor.getCoordinate()});
+		graph.addApproximateEdge(lineString13);
 
-		Collection<Vertex> result = graph.vertices();
+		final Collection<Node> result = graph.nodes();
 
-		Assertions.assertArrayEquals(new Vertex[]{first, second, third}, result.toArray());
+		Assertions.assertArrayEquals(new Node[]{node, firstNeighbor, secondNeighbor}, result.toArray());
 	}
 
 	@Test
 	void should_return_graph_edges(){
-		Vertex vertex = new Vertex("1", new Coordinate(1., 1.));
-		Vertex firstNeighbor = new Vertex("2", new Coordinate(1., 1.));
-		Vertex secondNeighbor = new Vertex("3", new Coordinate(1., 1.));
-		Graph graph = new GraphBuilder()
-			.addVertex(vertex)
-			.addVertex(firstNeighbor)
-			.addVertex(secondNeighbor)
-			.connectByIds("1", "2", 50.)
-			.connectByIds("1", "3", 50.)
-			.asGraph();
+		final Node node = new Node(new Coordinate(1., 1.));
+		final Node firstNeighbor = new Node(new Coordinate(1., 2.));
+		final Node secondNeighbor = new Node(new Coordinate(1., 3.));
+		final NearLineMergeGraph graph = new NearLineMergeGraph(1., new EuclideanCalculator());
+		final LineString lineString12 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
+		graph.addApproximateEdge(lineString12);
+		final LineString lineString13 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), secondNeighbor.getCoordinate()});
+		graph.addApproximateEdge(lineString13);
 
-		Collection<Edge> result = graph.edges();
+		final Set<Edge> result = (Set<Edge>)graph.edges();
 
-		Collection<Edge> expected = List.of(new Edge(vertex, firstNeighbor, 50.), new Edge(vertex, secondNeighbor, 50.));
+		final Set<Edge> expected = new HashSet<>(List.of(
+			new Edge(node, firstNeighbor, lineString12),
+			new Edge(node, secondNeighbor, lineString13)
+		));
 		Assertions.assertEquals(expected, result);
 	}
 

@@ -25,13 +25,13 @@
 package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 
 
 public interface EdgeWeightCalculator{
 
 	double calculateWeight(Edge edge);
 
-	double calculateWeight(Vertex start, Vertex end);
+	double calculateWeight(Node start, Node end);
 
 }

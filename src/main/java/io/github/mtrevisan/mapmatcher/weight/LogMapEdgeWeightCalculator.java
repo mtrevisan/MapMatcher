@@ -24,9 +24,10 @@
  */
 package io.github.mtrevisan.mapmatcher.weight;
 
-import io.github.mtrevisan.mapmatcher.graph.Coordinates;
+import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,10 +39,16 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 	private static final double SIGMA_OBSERVATION = 4.07;
 	private static final double BETA = 3.;
 
-	private final Map<String, Double> emissionProbability = new HashMap<>();
+	private final DistanceCalculator distanceCalculator;
+
+	private final Map<Node, Double> emissionProbability = new HashMap<>();
 
 
-	public void updateEmissionProbability(final Coordinates observation, final Collection<Edge> edges){
+	public LogMapEdgeWeightCalculator(final DistanceCalculator distanceCalculator){
+		this.distanceCalculator = distanceCalculator;
+	}
+
+	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
 		calculateEmissionProbability(observation, edges);
 	}
 
@@ -81,27 +88,30 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 	 * </p>
 	 */
 	@Override
-	public double calculateWeight(final Vertex from, final Vertex to){
+	public double calculateWeight(final Node from, final Node to){
 		return emissionProbability.getOrDefault(from, 0.);
 	}
 
-	private void calculateEmissionProbability(final Coordinates observation, final Collection<Edge> edges){
+	private void calculateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
 		double cumulativeDistance = 0.;
 		for(final Edge edge : edges){
-			final double distance = (edge.getFrom().getId().equals("START") || edge.getTo().getId().equals("END")
+			//if start/end nodes, then distance is one
+			final double distance = (edge.getFrom() == null || edge.getTo() == null
 				? 1.
-				: observation.getPoint().distance(edge.getLineString()));
-			emissionProbability.put(edge.getTo().getId(), distance);
+				: distanceCalculator.distance(observation, edge.getLineString()));
+			emissionProbability.put(edge.getTo(), distance);
 			cumulativeDistance += distance;
 		}
 		double cumulativeProbability = 0.;
 		for(final Edge edge : edges){
-			final double probability = cumulativeDistance / emissionProbability.get(edge.getTo().getId());
-			emissionProbability.put(edge.getTo().getId(), probability);
+			final double probability = cumulativeDistance / emissionProbability.get(edge.getTo());
+			emissionProbability.put(edge.getTo(), probability);
 			cumulativeProbability += probability;
 		}
-		for(final Edge edge : edges)
-			emissionProbability.put(edge.getTo().getId(), logPr(emissionProbability.get(edge.getTo().getId()) / cumulativeProbability));
+		for(final Edge edge : edges){
+			final double probability = logPr(emissionProbability.get(edge.getTo()) / cumulativeProbability);
+			emissionProbability.put(edge.getTo(), probability);
+		}
 	}
 
 	private static double logPr(final double probability){

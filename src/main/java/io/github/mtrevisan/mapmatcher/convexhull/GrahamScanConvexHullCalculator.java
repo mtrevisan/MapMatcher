@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.convexhull;
 
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.ArrayList;
@@ -36,13 +36,13 @@ import java.util.List;
 
 public class GrahamScanConvexHullCalculator implements ConvexHullCalculator{
 
-	private static final Comparator<Vertex> MIN_Y_COMPARATOR =
-		Comparator.comparingDouble((Vertex v) -> v.getGeometry().getCentroid().getY())
-			.thenComparingDouble(v -> v.getGeometry().getCentroid().getX());
+	private static final Comparator<Node> MIN_Y_COMPARATOR =
+		Comparator.comparingDouble((Node v) -> v.getCoordinate().getY())
+			.thenComparingDouble(v -> v.getCoordinate().getX());
 
 
 	@Override
-	public List<Vertex> calculateConvexHull(final Collection<Vertex> vertices){
+	public List<Node> calculateConvexHull(final Collection<Node> vertices){
 		if(vertices.size() <= 2)
 			return new ArrayList<>(vertices);
 
@@ -53,7 +53,7 @@ public class GrahamScanConvexHullCalculator implements ConvexHullCalculator{
 			.sorted(Comparator.comparingDouble((target) -> angleFromSource(source, target)))
 			.toList();
 
-		final List<Vertex> result = new ArrayList<>();
+		final List<Node> result = new ArrayList<>();
 		result.add(source);
 		result.add(remaining.get(0));
 		result.add(remaining.get(1));
@@ -68,16 +68,16 @@ public class GrahamScanConvexHullCalculator implements ConvexHullCalculator{
 		return result;
 	}
 
-	private boolean isClockwiseTurn(final Vertex p, final Vertex q, final Vertex r){
-		final var pp = p.getGeometry().getCentroid().getCoordinate();
-		final var qq = q.getGeometry().getCentroid().getCoordinate();
-		final var rr = r.getGeometry().getCentroid().getCoordinate();
+	private boolean isClockwiseTurn(final Node p, final Node q, final Node r){
+		final var pp = p.getCoordinate();
+		final var qq = q.getCoordinate();
+		final var rr = r.getCoordinate();
 		return ((qq.getY() - rr.getY()) * (pp.getX() - rr.getX()) <= (qq.getX() - rr.getX()) * (pp.getY() - rr.getY()));
 	}
 
-	private double angleFromSource(final Vertex source, final Vertex target){
-		final Coordinate s = source.getGeometry().getCentroid().getCoordinate();
-		final Coordinate t = target.getGeometry().getCentroid().getCoordinate();
+	private double angleFromSource(final Node source, final Node target){
+		final Coordinate s = source.getCoordinate();
+		final Coordinate t = target.getCoordinate();
 		final var latDiff = s.getY() - t.getY();
 		final var lngDiff = s.getX() - t.getX();
 		return Math.atan2(latDiff, lngDiff);

@@ -24,40 +24,35 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
-import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 
-public class Coordinates{
+public class Node{
 
-	private final Point point;
+	private final Coordinate coordinate;
+
+	private final Set<Edge> outEdges = new HashSet<>(0);
 
 
-	public static Coordinates of(final double latitude, final double longitude){
-		return new Coordinates(latitude, longitude);
+	public Node(final Coordinate coordinate){
+		this.coordinate = coordinate;
 	}
 
-	private Coordinates(final double latitude, final double longitude){
-		if(latitude < -90. || latitude > 90.)
-			throw new IllegalArgumentException("Latitude must be between -90 and 90 inclusive");
-		if(longitude < -180. || longitude > 180.)
-			throw new IllegalArgumentException("Longitude must be between -180 and 180 inclusive");
-
-		point = WGS84GeometryHelper.createPoint(latitude, longitude);
+	public Collection<Edge> geOutEdges(){
+		return outEdges;
 	}
 
-	public double getLatitude(){
-		return point.getY();
+	public void addOutEdge(final Edge edge){
+		outEdges.add(edge);
 	}
 
-	public double getLongitude(){
-		return point.getX();
-	}
-
-	public Point getPoint(){
-		return point;
+	public Coordinate getCoordinate(){
+		return coordinate;
 	}
 
 	@Override
@@ -67,18 +62,18 @@ public class Coordinates{
 		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Coordinates other = (Coordinates)obj;
-		return (Double.compare(other.getLatitude(), getLatitude()) == 0 && Double.compare(other.getLongitude(), getLongitude()) == 0);
+		final Node other = (Node)obj;
+		return coordinate.equals(other.coordinate);
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(getLatitude(), getLongitude());
+		return Objects.hash(coordinate);
 	}
 
 	@Override
 	public String toString(){
-		return "Coordinates{" + "φ = " + getLatitude() + ", λ = " + getLongitude() + '}';
+		return "Vertex{coordinates=" + coordinate + "}";
 	}
 
 }

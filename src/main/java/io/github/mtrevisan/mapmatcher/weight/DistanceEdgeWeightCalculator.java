@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 
 
 public class DistanceEdgeWeightCalculator implements EdgeWeightCalculator{
@@ -36,8 +36,8 @@ public class DistanceEdgeWeightCalculator implements EdgeWeightCalculator{
 	}
 
 	@Override
-	public double calculateWeight(final Vertex from, final Vertex to){
-		return from.getGeometry().distance(to.getGeometry());
+	public double calculateWeight(final Node from, final Node to){
+		return from.getCoordinate().distance(to.getCoordinate());
 	}
 
 }

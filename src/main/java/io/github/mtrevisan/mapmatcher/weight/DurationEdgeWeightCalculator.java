@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 
 
 public class DurationEdgeWeightCalculator extends DistanceEdgeWeightCalculator{
@@ -42,7 +42,7 @@ public class DurationEdgeWeightCalculator extends DistanceEdgeWeightCalculator{
 	}
 
 	@Override
-	public double calculateWeight(final Vertex from, final Vertex to){
+	public double calculateWeight(final Node from, final Node to){
 		final var distance = super.calculateWeight(from, to);
 		//[s]
 		return distance * 60. / MAX_ALLOWED_WEIGHT;

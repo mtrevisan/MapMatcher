@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.path;
 import io.github.mtrevisan.mapmatcher.convexhull.AndrewMonotoneChainConvexHullCalculator;
 import io.github.mtrevisan.mapmatcher.convexhull.ConvexHullCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.weight.DistanceEdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.weight.DurationEdgeWeightCalculator;
@@ -46,18 +46,18 @@ public class BidirectionalPathSummary implements PathSummary{
 	private static final ConvexHullCalculator CONVEX_HULL_CALCULATOR = new AndrewMonotoneChainConvexHullCalculator();
 
 	private final List<Edge> path;
-	private final Set<Vertex> searchedVerticesFromStart;
-	private final Set<Vertex> searchedVerticesFromEnd;
+	private final Set<Node> searchedVerticesFromStart;
+	private final Set<Node> searchedVerticesFromEnd;
 
 
-	BidirectionalPathSummary(final List<Edge> path, final Set<Vertex> searchedVerticesFromStart, final Set<Vertex> searchedVerticesFromEnd){
+	BidirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVerticesFromStart, final Set<Node> searchedVerticesFromEnd){
 		this.path = path;
 		this.searchedVerticesFromStart = searchedVerticesFromStart;
 		this.searchedVerticesFromEnd = searchedVerticesFromEnd;
 	}
 
 	@Override
-	public List<Vertex> simplePath(){
+	public List<Node> simplePath(){
 		if(!isFound())
 			return Collections.emptyList();
 
@@ -91,7 +91,7 @@ public class BidirectionalPathSummary implements PathSummary{
 	}
 
 	@Override
-	public Collection<List<Vertex>> searchBoundaries(){
+	public Collection<List<Node>> searchBoundaries(){
 		return List.of(
 			CONVEX_HULL_CALCULATOR.calculateConvexHull(searchedVerticesFromStart),
 			CONVEX_HULL_CALCULATOR.calculateConvexHull(searchedVerticesFromEnd)

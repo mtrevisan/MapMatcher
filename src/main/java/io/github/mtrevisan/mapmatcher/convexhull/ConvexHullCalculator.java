@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.convexhull;
 
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +32,6 @@ import java.util.List;
 
 public interface ConvexHullCalculator{
 
-	List<Vertex> calculateConvexHull(Collection<Vertex> vertices);
+	List<Node> calculateConvexHull(Collection<Node> vertices);
 
 }

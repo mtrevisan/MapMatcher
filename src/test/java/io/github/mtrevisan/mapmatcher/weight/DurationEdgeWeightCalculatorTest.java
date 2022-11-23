@@ -1,7 +1,8 @@
 package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -27,9 +28,10 @@ class DurationEdgeWeightCalculatorTest{
 			double expectedDuration = expectedDurations[i];
 			double maxSpeed = maxSpeeds[i];
 			DurationEdgeWeightCalculator edgeWeightCalculator = new DurationEdgeWeightCalculator();
-			double actualDistance = edgeWeightCalculator.calculateWeight(new Edge(
-				new Vertex("1", fromCoordinates),
-				new Vertex("2", toCoordinates), maxSpeed));
+			final Edge edge = new Edge(new Node(fromCoordinates), new Node(toCoordinates),
+				WGS84GeometryHelper.createLineString(new Coordinate[]{fromCoordinates, toCoordinates}));
+			edge.setWeight(maxSpeed);
+			double actualDistance = edgeWeightCalculator.calculateWeight(edge);
 
 			Assertions.assertEquals(expectedDuration, actualDistance, 0.000_05);
 		}
@@ -54,8 +56,8 @@ class DurationEdgeWeightCalculatorTest{
 			DurationEdgeWeightCalculator edgeWeightCalculator = new DurationEdgeWeightCalculator();
 
 			double actualDistance = edgeWeightCalculator.calculateWeight(
-				new Vertex("1", fromCoordinates),
-				new Vertex("2", toCoordinates));
+				new Node(fromCoordinates),
+				new Node(toCoordinates));
 
 			Assertions.assertEquals(expectedDistance, actualDistance, 0.000_05);
 		}
