@@ -27,20 +27,19 @@ package io.github.mtrevisan.mapmatcher;
 import io.github.mtrevisan.mapmatcher.distances.AngularEarthEllipsoidalCalculator;
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.distances.EarthEllipsoidalCalculator;
+import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -59,9 +58,9 @@ public class Application{
 
 	public static void main(final String[] args){
 		final LogMapMatchingProbabilityCalculator edgeWeightCalculator = new LogMapMatchingProbabilityCalculator(new AngularEarthEllipsoidalCalculator());
-		final DistanceCalculator distanceCalculator = new AngularEarthEllipsoidalCalculator();
+//		final DistanceCalculator distanceCalculator = new AngularEarthEllipsoidalCalculator();
 //		final MapMatchingStrategy strategy = new AStarMapMatching(edgeWeightCalculator, distanceCalculator);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(edgeWeightCalculator, distanceCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(edgeWeightCalculator);
 
 		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
@@ -107,14 +106,9 @@ public class Application{
 		final double radius = 500.;
 		final Graph graph = extractGraph(edges, observations, radius);
 
-		final PathSummary pathSummary = strategy.findPath(graph, observations);
-		final List<Node> path = pathSummary.simplePath();
-		if(path.size() > 2){
-			path.remove(0);
-			path.remove(path.size() - 1);
-		}
+		final Edge[] path = strategy.findPath(graph, observations);
 
-		System.out.println(path);
+		System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 
 	private static Graph extractGraph(final LineString[] edges, final Coordinate[] observations, final double radius){

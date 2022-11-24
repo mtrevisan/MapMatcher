@@ -27,7 +27,6 @@ package io.github.mtrevisan.mapmatcher.weight;
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,12 +42,24 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 
 	private final DistanceCalculator distanceCalculator;
 
-	private final Map<Coordinate, Map<LineString, Double>> emissionProbability = new HashMap<>();
+	private double initialProbability;
+	private final Map<Edge, Double> emissionProbability = new HashMap<>();
 
 
 	public LogMapMatchingProbabilityCalculator(final DistanceCalculator distanceCalculator){
 		this.distanceCalculator = distanceCalculator;
 	}
+
+
+	public void calculateInitialProbability(final Coordinate observation, final Collection<Edge> segments){
+		initialProbability = logPr(1. / segments.size());
+	}
+
+	@Override
+	public double initialProbability(final Edge segment){
+		return initialProbability;
+	}
+
 
 	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> segments){
 		calculateEmissionProbability(observation, segments);
@@ -92,6 +103,7 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 		return toCoordinates.size();
 	}
 
+
 	/**
 	 * Calculate emission probability
 	 * <p>
@@ -110,29 +122,31 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 	 */
 	@Override
 	public double emissionProbability(final Coordinate observation, final Edge segment){
-		return emissionProbability.get(observation).getOrDefault(segment.getLineString(), Double.POSITIVE_INFINITY);
+		return emissionProbability.get(segment);
 	}
 
-	private void calculateEmissionProbability(final Coordinate observation, final Collection<Edge> segments){
-		final Map<LineString, Double> probabilities = emissionProbability.computeIfAbsent(observation, k -> new HashMap<>(segments.size()));
+	private void calculateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
+		//step 1. Calculate dist(p_i, r_j)
+		//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
 		double cumulativeDistance = 0.;
-		for(final Edge segment : segments){
-			final LineString lineString = segment.getLineString();
-			final double distance = distanceCalculator.distance(observation, lineString);
-			probabilities.put(lineString, distance);
+		for(final Edge edge : edges){
+			final double distance = distanceCalculator.distance(observation, edge.getLineString());
+			emissionProbability.put(edge, distance);
 			cumulativeDistance += distance;
 		}
+
+		//step 3. Calculate Pr(r_j | p_i)
 		double cumulativeProbability = 0.;
-		for(final Edge segment : segments){
-			final LineString lineString = segment.getLineString();
-			final double probability = cumulativeDistance / probabilities.get(lineString);
-			probabilities.put(lineString, probability);
+		for(final Edge edge : edges){
+			final double probability = cumulativeDistance / emissionProbability.get(edge);
+			emissionProbability.put(edge, probability);
 			cumulativeProbability += probability;
 		}
-		for(final Edge segment : segments){
-			final LineString lineString = segment.getLineString();
-			final double probability = logPr(probabilities.get(lineString) / cumulativeProbability);
-			probabilities.put(lineString, probability);
+
+		//step 4. Calculate Pr(p_i | r_j)
+		for(final Edge edge : edges){
+			final double logProbability = logPr(emissionProbability.get(edge) / cumulativeProbability);
+			emissionProbability.put(edge, logProbability);
 		}
 	}
 

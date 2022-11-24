@@ -29,8 +29,7 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.graph.ScoredGraphNode;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.weight.MapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
@@ -45,16 +44,16 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
 
-	private final LogMapMatchingProbabilityCalculator probabilityCalculator;
+	private final MapMatchingProbabilityCalculator probabilityCalculator;
 
 
-	public AStarMapMatching(final LogMapMatchingProbabilityCalculator probabilityCalculator){
+	public AStarMapMatching(final MapMatchingProbabilityCalculator probabilityCalculator){
 		this.probabilityCalculator = probabilityCalculator;
 	}
 
 	//TODO
 	@Override
-	public PathSummary findPath(final Graph graph, final Coordinate[] observations){
+	public Edge[] findPath(final Graph graph, final Coordinate[] observations){
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
 		final var predecessorTree = new HashMap<Node, Edge>();
 		final Node start = new Node("START", null);
@@ -83,7 +82,8 @@ final double fScore = 0.;
 					break;
 
 				final Collection<Edge> startingNodes = current.geOutEdges();
-				probabilityCalculator.updateEmissionProbability(observations[i], startingNodes);
+//FIXME
+//				probabilityCalculator.updateEmissionProbability(observations[i], startingNodes);
 
 				for(final var edge : startingNodes){
 					final var neighbor = edge.getTo();
@@ -105,7 +105,8 @@ final double newScore = 0.;
 			}
 		}
 
-		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
+//		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
+		return null;
 	}
 
 	/** Estimates the cost to reach the final node from given node (emissionProbability). */

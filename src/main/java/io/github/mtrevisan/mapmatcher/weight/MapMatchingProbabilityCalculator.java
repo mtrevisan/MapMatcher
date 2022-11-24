@@ -30,6 +30,8 @@ import org.locationtech.jts.geom.Coordinate;
 
 public interface MapMatchingProbabilityCalculator{
 
+	double initialProbability(Edge segment);
+
 	double emissionProbability(Coordinate observation, Edge segment);
 
 	double transitionProbability(Edge fromSegment, Edge toSegment);
