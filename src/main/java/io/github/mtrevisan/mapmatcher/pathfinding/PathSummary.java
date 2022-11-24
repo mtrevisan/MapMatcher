@@ -24,13 +24,15 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
+import io.github.mtrevisan.mapmatcher.graph.Node;
+
 import java.util.Collection;
 import java.util.List;
 
 
-public interface PathSummary<T>{
+public interface PathSummary{
 
-	List<T> simplePath();
+	List<Node> simplePath();
 
 	int numberOfVertices();
 
@@ -40,7 +42,7 @@ public interface PathSummary<T>{
 
 	double totalDuration();
 
-	Collection<List<T>> searchBoundaries();
+	Collection<List<Node>> searchBoundaries();
 
 	boolean isFound();
 

@@ -26,6 +26,7 @@ package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
+import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
@@ -38,6 +39,7 @@ import java.util.Set;
 public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabilityCalculator{
 
 	private static final double SIGMA_OBSERVATION = 4.07;
+//	private static final double SIGMA_OBSERVATION = 20.;
 	private static final double BETA = 3.;
 
 	private final DistanceCalculator distanceCalculator;
@@ -147,7 +149,19 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 	}
 
 	private void calculateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
-		//step 1. Calculate dist(p_i, r_j)
+		for(final Edge edge : edges){
+			double distance = distanceCalculator.distance(observation, edge.getLineString())
+				* (111_132.954 * StrictMath.cos(Math.toRadians(observation.getY())));
+//			final double sigma = SIGMA_OBSERVATION;
+			final double sigma = 200.;
+			distance /= sigma;
+			final double probability = logPr(Math.exp(-0.5 * distance * distance) / (Math.sqrt(2. * Math.PI) * sigma));
+System.out.println(distance + " ->\t" + probability);
+			emissionProbability.put(edge, probability);
+		}
+System.out.println("---");
+
+/*		//step 1. Calculate dist(p_i, r_j)
 		//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
 		double cumulativeDistance = 0.;
 		for(final Edge edge : edges){
@@ -168,7 +182,9 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 		for(final Edge edge : edges){
 			final double logProbability = logPr(emissionProbability.get(edge) / cumulativeProbability);
 			emissionProbability.put(edge, logProbability);
+System.out.println(logProbability);
 		}
+/**/
 	}
 
 	private static double logPr(final double probability){
