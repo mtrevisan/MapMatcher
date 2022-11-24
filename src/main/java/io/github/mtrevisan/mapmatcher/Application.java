@@ -102,7 +102,7 @@ public class Application{
 			Coordinates.of(45.66168736195718, 12.304641441251732),
 			Coordinates.of(45.66168736195718, 12.331349276005653)
 		};
-		final Coordinates[] observations = observations2;
+		final Coordinates[] observations = observations1;
 
 		final LineString[] edges = new LineString[]{edge1, edge2, edge3, edge4, edge5, edge6};
 		//[m]
