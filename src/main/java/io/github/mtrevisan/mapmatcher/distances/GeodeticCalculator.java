@@ -29,7 +29,6 @@ import org.locationtech.jts.geom.LineString;
 
 
 /**
- * @see <a href="http://www.movable-type.co.uk/scripts/latlong.html">Calculate distance, bearing and more between latitude/longitude points</a>
  * @see <a href="https://github.com/grumlimited/geocalc/blob/master/src/main/java/com/grum/geocalc/EarthCalc.java">EarthCalc</a>
  */
 public class GeodeticCalculator implements DistanceCalculator{
@@ -45,8 +44,14 @@ public class GeodeticCalculator implements DistanceCalculator{
 
 	//this corresponds to an accuracy of approximately 0.1 m
 	private static final double CONVERGENCE_THRESHOLD = 1.e-8;
-	private static final int ITERATION_LIMIT = 10;
+	private static final double EPSILON_COINCIDENT_POINT = 1.e-16;
+	private static final int ITERATION_LIMIT = 5;
 
+
+	@Override
+	public double distance(final Coordinate startPoint, final Coordinate endPoint){
+		return orthodromicDistance(startPoint, endPoint).distance;
+	}
 
 	/**
 	 * Calculate distance, (azimuth) bearing and final bearing between two points using inverse Vincenty formula.
@@ -57,12 +62,7 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
 	 */
-	@Override
-	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		return orthodromicDistance(startPoint, endPoint).distance;
-	}
-
-	private OrthodromicDistance orthodromicDistance(final Coordinate startPoint, final Coordinate endPoint){
+	private static OrthodromicDistance orthodromicDistance(final Coordinate startPoint, final Coordinate endPoint){
 		final double lambda1 = Math.toRadians(startPoint.getX());
 		final double lambda2 = Math.toRadians(endPoint.getX());
 		final double phi1 = Math.toRadians(startPoint.getY());
@@ -94,7 +94,8 @@ public class GeodeticCalculator implements DistanceCalculator{
 			final double tmp1 = cosU2 * sinLambda;
 			final double tmp2 = cosU1 * sinU2 - sinU1 * cosU2 * cosLambda;
 			sinSigma = Math.sqrt(tmp1 * tmp1 + tmp2 * tmp2);
-			if(sinSigma == 0.)
+			//this corresponds to an accuracy of approximately 0.1 m
+			if(Math.abs(sinSigma) < EPSILON_COINCIDENT_POINT)
 				//points are coincident
 				return new OrthodromicDistance();
 
@@ -124,13 +125,21 @@ public class GeodeticCalculator implements DistanceCalculator{
 			- bb / 6. * cos2SigmaM * (-3. + 4. * sinSigma * sinSigma) * (-3. + 4. * cos2SigmaM * cos2SigmaM)));
 
 		//angular distance on the sphere between points [rad]
-		final double angularDistance = aa * (sigma - deltaSigma);
+		final double angularDistance = sigma - deltaSigma;
 		//ellipsoidal distance between the two points [m]
-		final double distance = EARTH_POLAR_RADIUS * angularDistance;
+		final double distance = EARTH_POLAR_RADIUS * angularDistance * aa;
 		//forward azimuths at the points [rad]
-		final double initialBearing = reduce0_2pi(StrictMath.atan2(cosU2 * sinLambda, cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
+		//Note the special handling of exactly antipodal points where sin²σ = 0 (due to discontinuity `atan2(0, 0) = 0` but
+		// `atan2(ε, 0) = π/2`) - in which case bearing is always meridional, due north (or due south!)
+		final double initialBearing = (Math.abs(sinSigma) >= EPSILON_COINCIDENT_POINT
+			? reduce0_2pi(StrictMath.atan2(cosU2 * sinLambda, cosU1 * sinU2 - sinU1 * cosU2 * cosLambda))
+			: 0.
+		);
 		//[rad]
-		final double finalBearing = reduce0_2pi(StrictMath.atan2(cosU1 * sinLambda, -sinU1 * cosU2 + cosU1 * sinU2 * cosLambda));
+		final double finalBearing = (Math.abs(sinSigma) >= EPSILON_COINCIDENT_POINT
+			? reduce0_2pi(StrictMath.atan2(cosU1 * sinLambda, -sinU1 * cosU2 + cosU1 * sinU2 * cosLambda))
+			: Math.PI
+		);
 
 		final OrthodromicDistance od = new OrthodromicDistance();
 		od.angularDistance = angularDistance;
@@ -141,7 +150,72 @@ public class GeodeticCalculator implements DistanceCalculator{
 	}
 
 	/**
-	 * Calculate cross-track (angular) distance.
+	 * Destination given distance & bearing from start point (direct solution).
+	 *
+	 * @param origin	Origin position.
+	 * @param initialBearing	Azimuth of the geodesic [°].
+	 * @param distance	Length of the geodesic along the surface of the ellipsoid [m].
+	 * @return	The final position.
+	 */
+	private static OrthodromicDistance destination(final Coordinate origin, final double initialBearing, final double distance){
+		final double phi1 = Math.toRadians(origin.getY());
+		final double lambda1 = Math.toRadians(origin.getX());
+
+		final double tanU1 = (1. - EARTH_FLATTENING) * StrictMath.tan(phi1);
+		final double cosU1 = 1. / Math.sqrt(1. + tanU1 * tanU1);
+		final double sinU1 = tanU1 * cosU1;
+		final double sinAlpha1 = StrictMath.sin(Math.toRadians(initialBearing));
+		final double cosAlpha1 = StrictMath.cos(Math.toRadians(initialBearing));
+		//angular distance on the sphere from the equator to the first point
+		double angularDistance = StrictMath.atan2(tanU1, cosAlpha1);
+		//α is the azimuth of the geodesic at the equator
+		final double sinAlpha = cosU1 * sinAlpha1;
+		final double cos2Alpha = 1. - sinAlpha * sinAlpha;
+		final double u2 = cos2Alpha * (FF * FF - 1.);
+		final double aa = 1. + u2 / 16384. * (4096. + u2 * (-768. + u2 * (320. - 175. * u2)));
+		final double bb = u2 / 1024. * (256. + u2 * (-128. + u2 * (74. - 47. * u2)));
+
+		//σ is the angular distance on the sphere
+		double sigma = distance / (EARTH_POLAR_RADIUS * aa);
+		double sigmaPrime, sinSigma, cosSigma;
+		//σₘ is the angular distance on the sphere from the equator to the midpoint of the line
+		double cos2SigmaM;
+		int iteration = ITERATION_LIMIT;
+		do{
+			sinSigma = StrictMath.sin(sigma);
+			cosSigma = StrictMath.cos(sigma);
+			cos2SigmaM = StrictMath.cos(2. * angularDistance + sigma);
+			final double deltaSigma = bb * sinSigma * (cos2SigmaM + bb / 4. * (cosSigma * (-1. + 2. * cos2SigmaM * cos2SigmaM)
+				- bb / 6. * cos2SigmaM * (-3. + 4. * sinSigma * sinSigma) * (-3. + 4. * cos2SigmaM * cos2SigmaM)));
+			sigmaPrime = sigma;
+			sigma = distance / (EARTH_POLAR_RADIUS * aa) + deltaSigma;
+		}while(Math.abs(sigma - sigmaPrime) > CONVERGENCE_THRESHOLD && -- iteration > 0);
+		if(iteration == 100)
+			throw new IllegalStateException("Formula failed to converge");
+
+		final double x = sinU1 * sinSigma - cosU1 * cosSigma * cosAlpha1;
+		final double phi2 = StrictMath.atan2(sinU1 * cosSigma + cosU1 * sinSigma * cosAlpha1,
+			(1. - EARTH_FLATTENING) * Math.sqrt(sinAlpha * sinAlpha + x * x));
+		final double lambda = StrictMath.atan2(sinSigma * sinAlpha1, cosU1 * cosSigma - sinU1 * sinSigma * cosAlpha1);
+		final double cc = EARTH_FLATTENING / 16. * cos2Alpha * (4. + EARTH_FLATTENING * (4. - 3. * cos2Alpha));
+		final double ll = lambda - (1. - cc) * EARTH_FLATTENING * sinAlpha * (sigma + cc * sinSigma * (cos2SigmaM
+			+ cc * cosSigma * (-1. + 2. * cos2SigmaM * cos2SigmaM)));
+		final double lambda2 = lambda1 + ll;
+		//[rad]
+		final double finalBearing = StrictMath.atan2(sinAlpha, -x);
+
+		final OrthodromicDistance od = new OrthodromicDistance();
+		od.destination = new Coordinate(Math.toDegrees(lambda2), Math.toDegrees(phi2));
+		od.angularDistance = sigma;
+		od.distance = distance;
+		od.initialBearing = initialBearing;
+		od.finalBearing = finalBearing;
+		return od;
+	}
+
+
+	/**
+	 * Calculate cross-track (angular) distance on a spherical geometry.
 	 *
 	 * @param point	The point
 	 * @param lineString	The list of track points.
@@ -202,11 +276,15 @@ public class GeodeticCalculator implements DistanceCalculator{
 //	}
 
 	private static class OrthodromicDistance{
+		Coordinate destination;
+
+		//[rad]
 		double angularDistance;
 		//ellipsoidal distance between the two points [m]
 		double distance;
 		//forward azimuths at the points [rad]
 		double initialBearing;
+		//[rad]
 		double finalBearing;
 	}
 

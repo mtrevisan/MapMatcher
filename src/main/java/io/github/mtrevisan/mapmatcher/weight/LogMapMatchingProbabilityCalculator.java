@@ -155,7 +155,7 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 	}
 
 
-
+//FIXME
 //	private static double edgeCost(final Geometry segment1, final Geometry segment2){
 //		return logPr(transitionProbability(segment1, segment2));
 //	}
