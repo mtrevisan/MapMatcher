@@ -78,6 +78,21 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 	 *    	<dd><code>r_ij = 0</code>, thus <code>a_ij = 1</code>, and <code>-ln(a_ij) = 0</code></dd>
 	 * </dl>
 	 * </p>
+	 *
+	 * Otherwise
+	 *
+	 * <p>
+	 * Pr(r_i-1 -> r_i) = dist(o_i-1, o_i) / lengthOfShortestPath(r_i-1, r_i), with o_i-1 at r_i-1 and o_i at r_i
+	 * </p>
+	 *
+	 * Otherwise
+	 *
+	 * <p>
+	 * Exponential function of the difference between the route length (in degrees!) and the great circle distance (in degrees!)
+	 * between o_t and o_t+1
+	 *
+	 * Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |dist(o_i-1, o_i) - pathDistance(r_i-1, r_i)|)
+	 * </p>
 	 */
 	@Override
 	public double transitionProbability(Edge fromSegment, Edge toSegment){
@@ -118,6 +133,12 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 	 * <code>r_j<code> over the summation of the distances from <code>o_i</code> to all the candidate segments, and then use reciprocal
 	 * relation of the probability based on distances to approximate observation probability.
 	 * This leads to: <code>Pr(r_j | o_i) = 1 / (δ(o_i, r_j) / sum(k=1..n of δ(o_i, r_k)))</code>
+	 * </p>
+	 *
+	 * Otherwise
+	 *
+	 * <p>
+	 * Pr(o_i | r_j) = 1 / (√(2 ⋅  π) ⋅ σ) ⋅ exp(-0.5 ⋅ (dist(o_i, r_j) / σ)^2), where σ = 20 m (empirically)
 	 * </p>
 	 */
 	@Override
