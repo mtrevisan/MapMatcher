@@ -46,9 +46,9 @@ public class Edge{
 		if(to == null)
 			throw new IllegalArgumentException("`to` node cannot be null");
 		if(geometry == null)
-			throw new IllegalArgumentException("geometry cannot be null");
+			throw new IllegalArgumentException("`geometry` cannot be null");
 
-		id = "E-" + from.getId() + "-" + to.getId();
+		id = "E-" + from.getID() + "-" + to.getID();
 		this.from = from;
 		this.to = to;
 		this.geometry = geometry;
@@ -60,7 +60,7 @@ public class Edge{
 
 	void setID(final String id){
 		if(id == null || id.length() == 0)
-			throw new IllegalArgumentException("`id` node cannot be null or empty");
+			throw new IllegalArgumentException("`id` cannot be null or empty");
 
 		this.id = id;
 	}

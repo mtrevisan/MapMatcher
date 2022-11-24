@@ -28,7 +28,7 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 
 
-public class VertexCountEdgeWeightCalculator implements EdgeWeightCalculator{
+public class NodeCountEdgeWeightCalculator implements EdgeWeightCalculator{
 
 	@Override
 	public double calculateWeight(final Edge edge){

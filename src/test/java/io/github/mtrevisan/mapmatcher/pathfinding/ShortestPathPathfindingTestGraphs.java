@@ -5,7 +5,7 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
-import io.github.mtrevisan.mapmatcher.weight.VertexCountEdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.weight.NodeCountEdgeWeightCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
@@ -120,7 +120,7 @@ class ShortestPathPathfindingTestGraphs{
 		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(), new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
-	static TestGraphSummary vertexCountTestGraphConnected(){
+	static TestGraphSummary nodeCountTestGraphConnected(){
         /*
          Test graph structure
               H(1,4) ---- I(3,4)  --- M(3,6)
@@ -171,10 +171,10 @@ class ShortestPathPathfindingTestGraphs{
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
 		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(Arrays.asList(nodeA, nodeB, nodeI, nodeM)),
-			new VertexCountEdgeWeightCalculator());
+			new NodeCountEdgeWeightCalculator());
 	}
 
-	static TestGraphSummary vertexCountTestGraphDisconnected(){
+	static TestGraphSummary nodeCountTestGraphDisconnected(){
         /*
          Test graph structure
               H(1,4)      I(3,4)  --- M(3,6)
@@ -219,7 +219,7 @@ class ShortestPathPathfindingTestGraphs{
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
-		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(), new VertexCountEdgeWeightCalculator());
+		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(), new NodeCountEdgeWeightCalculator());
 	}
 
 

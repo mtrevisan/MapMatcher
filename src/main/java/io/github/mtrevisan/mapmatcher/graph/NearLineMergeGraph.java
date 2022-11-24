@@ -73,13 +73,20 @@ public class NearLineMergeGraph implements Graph{
 		intersectionNodes.retainAll(endNodes);
 		startNodes.removeAll(intersectionNodes);
 		endNodes.removeAll(intersectionNodes);
-		for(final Node startNode : startNodes)
-			for(final Node endNode : endNodes){
-				final Edge edge = new Edge(startNode, endNode, lineString);
-				if(id != null)
+		for(final Node fromNode : startNodes)
+			for(final Node toNode : endNodes){
+				final Edge edge = new Edge(fromNode, toNode, lineString);
+				if(id != null){
 					edge.setID(id);
+
+					String nodeID = (fromNode.getID() != null && fromNode.getID().length() > 0? fromNode.getID() + ",": "N:");
+					fromNode.setID(nodeID + edge.getID() + "/from");
+					nodeID = (toNode.getID() != null && toNode.getID().length() > 0? toNode.getID() + ",": "N:");
+					toNode.setID(nodeID + edge.getID() + "/to");
+				}
 				if(!edges.contains(edge)){
-					startNode.addOutEdge(edge);
+					fromNode.addOutEdge(edge);
+					toNode.addOutEdge(edge);
 					edges.add(edge);
 
 					addedEdges.add(edge);
@@ -89,10 +96,15 @@ public class NearLineMergeGraph implements Graph{
 			for(final Node intersectionNode2 : intersectionNodes)
 				if(!intersectionNode1.equals(intersectionNode2)){
 					final Edge edge = new Edge(intersectionNode1, intersectionNode2, lineString);
-					if(id != null)
+					if(id != null){
 						edge.setID(id);
+
+						final String nodeID = (edge.getID() != null && edge.getID().length() > 0? edge.getID() + ",": "N:");
+						edge.setID(nodeID + edge.getID() + "/from-to");
+					}
 					if(!edges.contains(edge)){
 						intersectionNode1.addOutEdge(edge);
+						intersectionNode2.addOutEdge(edge);
 						edges.add(edge);
 
 						addedEdges.add(edge);

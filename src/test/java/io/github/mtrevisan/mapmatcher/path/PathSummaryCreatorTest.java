@@ -19,7 +19,7 @@ class PathSummaryCreatorTest{
 	private static final GeometryFactory FACTORY = new GeometryFactory();
 
 	@Test
-	void should_return_path_between_start_and_end_vertex_present_in_predecessor_tree(){
+	void should_return_path_between_start_and_end_node_present_in_predecessor_tree(){
 		Node start = new Node("0", new Coordinate(1., 1.));
 		Node middle = new Node("1", new Coordinate(1., 2.));
 		Node end = new Node("2", new Coordinate(1., 3.));
@@ -36,7 +36,7 @@ class PathSummaryCreatorTest{
 	}
 
 	@Test
-	void should_return_an_empty_path_when_start_vertex_and_end_vertex_are_not_connected_in_predecessor_tree(){
+	void should_return_an_empty_path_when_start_node_and_end_node_are_not_connected_in_predecessor_tree(){
 		Node start = new Node("0", new Coordinate(1., 1.));
 		Node randomNode = new Node("1", new Coordinate(1., 1.));
 		Node middle = new Node("2", new Coordinate(1., 1.));
@@ -55,7 +55,7 @@ class PathSummaryCreatorTest{
 	}
 
 	@Test
-	void should_return_an_empty_path_when_start_vertex_and_mid_vertex_are_not_connected_in_predecessor_tree(){
+	void should_return_an_empty_path_when_start_node_and_mid_node_are_not_connected_in_predecessor_tree(){
 		Node start = new Node("0", new Coordinate(1., 1.));
 		Node randomNode = new Node("1", new Coordinate(1., 2.));
 		Node middle = new Node("2", new Coordinate(1., 3.));
@@ -75,7 +75,7 @@ class PathSummaryCreatorTest{
 	}
 
 	@Test
-	void should_return_an_empty_path_when_mid_vertex_and_end_vertex_are_not_connected_in_predecessor_tree(){
+	void should_return_an_empty_path_when_mid_node_and_end_node_are_not_connected_in_predecessor_tree(){
 		Node start = new Node("0", new Coordinate(1., 1.));
 		Node randomNode = new Node("1", new Coordinate(1., 2.));
 		Node middle = new Node("2", new Coordinate(1., 3.));

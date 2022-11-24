@@ -74,8 +74,11 @@ public class EarthEllipsoidalCalculator implements DistanceCalculator{
 		//difference in longitude of the points on the auxiliary sphere
 		double lambda = deltaLambda;
 		double lambdaPrime, sinLambda, cosLambda;
-		double sigma, sinSigma, cosSigma, cos2SigmaM;
-		//alpha is the forward azimuth of the geodesic at the equator, if it were extended that far
+		//σ is the angular distance on the sphere
+		double sigma, sinSigma, cosSigma;
+		//σₘ is the angular distance on the sphere from the equator to the midpoint of the line
+		double cos2SigmaM;
+		//α is the forward azimuth of the geodesic at the equator, if it were extended that far
 		double cos2Alpha;
 		int iteration = ITERATION_LIMIT;
 		do{
@@ -115,8 +118,8 @@ public class EarthEllipsoidalCalculator implements DistanceCalculator{
 
 		//ellipsoidal distance between the two points [m]
 		final double distance = EARTH_POLAR_RADIUS * aa * (sigma - deltaSigma);
-		//angular separation between points [°]
-		final double angularSeparation = Math.toDegrees(sigma);
+		//angular distance on the sphere between points [°]
+		final double angularDistance = Math.toDegrees(sigma);
 		//forward azimuths at the points [°]
 //		final double initialBearing = Math.toDegrees(
 //			reduce0_2pi(StrictMath.atan2(cosU2 * sinLambda, cosU1 * sinU2 - sinU1 * cosU2 * cosLambda))

@@ -27,10 +27,10 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.graph.ScoredGraphVertex;
+import io.github.mtrevisan.mapmatcher.graph.ScoredGraphNode;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
@@ -45,11 +45,11 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
 
-	private final LogMapEdgeWeightCalculator calculator;
+	private final LogMapMatchingProbabilityCalculator probabilityCalculator;
 
 
-	public AStarMapMatching(final LogMapEdgeWeightCalculator calculator){
-		this.calculator = calculator;
+	public AStarMapMatching(final LogMapMatchingProbabilityCalculator probabilityCalculator){
+		this.probabilityCalculator = probabilityCalculator;
 	}
 
 	//TODO
@@ -67,32 +67,37 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		gScoresPrevious.put(start, 0.);
 
 		//set of discovered nodes that may need to be (re-)expanded
-		final var queue = new PriorityQueue<ScoredGraphVertex>();
+		final var queue = new PriorityQueue<ScoredGraphNode>();
 		//NOTE: the score here is `gScore[n] + h(n)`; it represents the current best guess as to how cheap a path could be from start to
 		// finish if it goes through the given node
-		var fScore = heuristic(start, end);
-		queue.add(new ScoredGraphVertex(start, fScore));
+//FIXME
+//		var fScore = heuristic(start, end);
+final double fScore = 0.;
+		queue.add(new ScoredGraphNode(start, fScore));
 
 		for(int i = 0; i < observations.length; i ++){
 			while(!queue.isEmpty()){
 				final var current = queue.poll()
-					.vertex();
+					.node();
 				if(current.equals(end))
 					break;
 
 				final Collection<Edge> startingNodes = current.geOutEdges();
-				calculator.updateEmissionProbability(observations[i], startingNodes);
+				probabilityCalculator.updateEmissionProbability(observations[i], startingNodes);
 
 				for(final var edge : startingNodes){
 					final var neighbor = edge.getTo();
-					final var newScore = gScoresPrevious.get(current) + calculator.calculateWeight(edge);
+//FIXME
+//					final var newScore = gScoresPrevious.get(current) + probabilityCalculator.transitionProbability(current, edge);
+final double newScore = 0.;
 
 					if(newScore < gScoresPrevious.getOrDefault(neighbor, Double.MAX_VALUE)){
 						gScoresPrevious.put(neighbor, newScore);
 						predecessorTree.put(neighbor, edge);
 
-						fScore = newScore + heuristic(neighbor, end);
-						final ScoredGraphVertex sgv = new ScoredGraphVertex(neighbor, fScore);
+//FIXME
+//						fScore = newScore + heuristic(neighbor, end);
+						final ScoredGraphNode sgv = new ScoredGraphNode(neighbor, fScore);
 						if(!queue.contains(sgv))
 							queue.add(sgv);
 					}
@@ -104,8 +109,8 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	}
 
 	/** Estimates the cost to reach the final node from given node (emissionProbability). */
-	private double heuristic(final Node from, final Node to){
-		return calculator.calculateWeight(from, to);
+	private double heuristic(final Coordinate observation, final Edge segment){
+		return probabilityCalculator.emissionProbability(observation, segment);
 	}
 
 }

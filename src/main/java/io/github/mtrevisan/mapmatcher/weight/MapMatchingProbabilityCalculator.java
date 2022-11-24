@@ -22,47 +22,16 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.graph;
+package io.github.mtrevisan.mapmatcher.weight;
+
+import io.github.mtrevisan.mapmatcher.graph.Edge;
+import org.locationtech.jts.geom.Coordinate;
 
 
-public class ScoredGraphVertex implements Comparable<ScoredGraphVertex>{
+public interface MapMatchingProbabilityCalculator{
 
-	private final Node node;
-	private final double score;
+	double emissionProbability(Coordinate observation, Edge segment);
 
-
-	public ScoredGraphVertex(final Node node, final double score){
-		this.node = node;
-		this.score = score;
-	}
-
-	public Node vertex(){
-		return node;
-	}
-
-	public double score(){
-		return score;
-	}
-
-	@Override
-	public int compareTo(final ScoredGraphVertex scoredGraphVertex){
-		return Double.compare(score, scoredGraphVertex.score);
-	}
-
-	@Override
-	public boolean equals(final Object obj){
-		if(this == obj)
-			return true;
-		if(obj == null || getClass() != obj.getClass())
-			return false;
-
-		final ScoredGraphVertex other = (ScoredGraphVertex)obj;
-		return node.equals(other.node);
-	}
-
-	@Override
-	public int hashCode(){
-		return node.hashCode();
-	}
+	double transitionProbability(Edge fromSegment, Edge toSegment);
 
 }

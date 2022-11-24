@@ -29,7 +29,7 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Arrays;
@@ -47,12 +47,12 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
 
-	private final EdgeWeightCalculator edgeWeightCalculator;
+	private final LogMapMatchingProbabilityCalculator probabilityCalculator;
 	private final DistanceCalculator distanceCalculator;
 
 
-	public ViterbiMapMatching(final EdgeWeightCalculator edgeWeightCalculator, final DistanceCalculator distanceCalculator){
-		this.edgeWeightCalculator = edgeWeightCalculator;
+	public ViterbiMapMatching(final LogMapMatchingProbabilityCalculator mapMatchingProbabilityCalculator, final DistanceCalculator distanceCalculator){
+		this.probabilityCalculator = mapMatchingProbabilityCalculator;
 		this.distanceCalculator = distanceCalculator;
 	}
 
@@ -62,7 +62,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		final int m = observations.length;
 		final Map<Edge, double[]> fScores = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
-//		final var predecessorTree = new HashMap<Vertex, Edge>(n);
+//		final var predecessorTree = new HashMap<Node, Edge>(n);
 //		predecessorTree.put(start, null);
 
 		//calculate emission probability matrix
@@ -81,12 +81,13 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		double minProbability;
 		Edge maxProbabilityEdge;
 		for(int i = 1; i < m; i ++){
+			probabilityCalculator.updateEmissionProbability(observations[i], graph.edges());
+
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
 			for(final Edge currentEdge : graph.edges()){
 				minProbability = Double.POSITIVE_INFINITY;
 				for(final Edge fromEdge : graph.edges()){
-					final var tmp = edgeWeightCalculator.calculateWeight(fromEdge);
-					final double probability = fScores.get(fromEdge)[i - 1] + tmp;
+					final double probability = fScores.get(fromEdge)[i - 1] + probabilityCalculator.transitionProbability(fromEdge, currentEdge);
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;
@@ -101,6 +102,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 					}
 				}
 			}
+
 			path.clear();
 			path.putAll(newPath);
 			newPath.clear();
@@ -137,11 +139,9 @@ System.out.println(Arrays.toString(Arrays.stream(path.get(maxProbabilityEdge)).m
 			final Coordinate point = observations[observationIndex];
 			//step 1. Calculate dist(p_i, r_j)
 			final int m = observations.length;
-			for(final Edge edge : graph.edges()){
-				//calculate distance from current position to segment
+			for(final Edge edge : graph.edges())
 				emissionProbability.computeIfAbsent(edge, k -> new double[m])[observationIndex]
 					= distanceCalculator.distance(point, edge.getLineString());
-			}
 
 			//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
 			double cumulativeDistance = 0.;
@@ -166,10 +166,10 @@ System.out.println(Arrays.toString(Arrays.stream(path.get(maxProbabilityEdge)).m
 	}
 
 //	@Override
-//	public PathSummary findPath2(final Vertex start, final Vertex end, final Graph graph, final Coordinates[] observations){
+//	public PathSummary findPath2(final Node start, final Node end, final Graph graph, final Coordinates[] observations){
 //		//for a node, this is the node immediately preceding it on the cheapest path from start to the given node currently known
 //		final int numberOfVertices = graph.vertices().size();
-//		final var predecessorTree = new HashMap<Vertex, Edge>(numberOfVertices);
+//		final var predecessorTree = new HashMap<Node, Edge>(numberOfVertices);
 //		predecessorTree.put(start, null);
 //
 //		//the current best guess as to how cheap a path could be from start to finish if it goes through the given node
@@ -183,9 +183,9 @@ System.out.println(Arrays.toString(Arrays.stream(path.get(maxProbabilityEdge)).m
 //		final var fScoresNext = new HashMap<String, Double>(numberOfVertices);
 //
 //		//set of discovered nodes that may need to be (re-)expanded
-//		final var queue = new LinkedList<Vertex>();
+//		final var queue = new LinkedList<Node>();
 //		for(final var observation : observations){
-//			final var startingNodes = graph.getVertexEdges(start);
+//			final var startingNodes = start.getOutEdges();
 //			calculator.updateEmissionProbability(observation, startingNodes);
 //
 //			queue.clear();
@@ -197,7 +197,7 @@ System.out.println(Arrays.toString(Arrays.stream(path.get(maxProbabilityEdge)).m
 //					break;
 //
 //				seenVertices.add(current.getId());
-//				final var edges = graph.getVertexEdges(current);
+//				final var edges = current.getOutEdges();
 //				var minProbability = Double.POSITIVE_INFINITY;
 //				final var minProbabilityEdges = new HashMap<Double, Set<Edge>>(edges.size());
 //				for(final var edge : edges){

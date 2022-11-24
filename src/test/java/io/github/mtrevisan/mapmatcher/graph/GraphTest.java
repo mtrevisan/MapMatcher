@@ -38,7 +38,7 @@ class GraphTest{
 	}
 
 	@Test
-	void should_return_the_edges_of_an_vertex(){
+	void should_return_the_edges_of_an_node(){
 		final Node node = new Node("0", new Coordinate(1., 1.));
 		final Node firstNeighbor = new Node("1", new Coordinate(1., 2.));
 		final Node secondNeighbor = new Node("2", new Coordinate(1., 3.));

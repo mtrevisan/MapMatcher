@@ -26,30 +26,32 @@ package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Node;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
-public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
+public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabilityCalculator{
 
 	private static final double SIGMA_OBSERVATION = 4.07;
 	private static final double BETA = 3.;
 
 	private final DistanceCalculator distanceCalculator;
 
-	private final Map<Node, Double> emissionProbability = new HashMap<>();
+	private final Map<Coordinate, Map<LineString, Double>> emissionProbability = new HashMap<>();
 
 
-	public LogMapEdgeWeightCalculator(final DistanceCalculator distanceCalculator){
+	public LogMapMatchingProbabilityCalculator(final DistanceCalculator distanceCalculator){
 		this.distanceCalculator = distanceCalculator;
 	}
 
-	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
-		calculateEmissionProbability(observation, edges);
+	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> segments){
+		calculateEmissionProbability(observation, segments);
 	}
 
 	/**
@@ -67,8 +69,27 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 	 * </p>
 	 */
 	@Override
-	public double calculateWeight(final Edge edge){
-		return (edge.getFrom().equals(edge.getTo())? 0.: 1.);
+	public double transitionProbability(Edge fromSegment, Edge toSegment){
+		final int intersectingPoints = intersectionPoints(fromSegment, toSegment);
+		return (intersectingPoints == 2? 0.: (intersectingPoints == 1? 1.: Double.POSITIVE_INFINITY));
+	}
+
+	/**
+	 * Retrieve the number of points this edge's vertices intersects the given edge's vertices.
+	 *
+	 * @param fromSegment	The incoming segment.
+	 * @param toSegment	The outgoing segment.
+	 * @return	The number of intersecting vertices.
+	 */
+	private static int intersectionPoints(final Edge fromSegment, final Edge toSegment){
+		final Set<Coordinate> fromCoordinates = new HashSet<>(2);
+		fromCoordinates.add(fromSegment.getFromCoordinate());
+		fromCoordinates.add(fromSegment.getToCoordinate());
+		final Set<Coordinate> toCoordinates = new HashSet<>(2);
+		toCoordinates.add(toSegment.getFromCoordinate());
+		toCoordinates.add(toSegment.getToCoordinate());
+		toCoordinates.retainAll(fromCoordinates);
+		return toCoordinates.size();
 	}
 
 	/**
@@ -88,29 +109,30 @@ public class LogMapEdgeWeightCalculator implements EdgeWeightCalculator{
 	 * </p>
 	 */
 	@Override
-	public double calculateWeight(final Node from, final Node to){
-		return emissionProbability.getOrDefault(from, 0.);
+	public double emissionProbability(final Coordinate observation, final Edge segment){
+		return emissionProbability.get(observation).getOrDefault(segment.getLineString(), Double.POSITIVE_INFINITY);
 	}
 
-	private void calculateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
+	private void calculateEmissionProbability(final Coordinate observation, final Collection<Edge> segments){
+		final Map<LineString, Double> probabilities = emissionProbability.computeIfAbsent(observation, k -> new HashMap<>(segments.size()));
 		double cumulativeDistance = 0.;
-		for(final Edge edge : edges){
-			//if start/end nodes, then distance is one
-			final double distance = (edge.getFrom() == null || edge.getTo() == null
-				? 1.
-				: distanceCalculator.distance(observation, edge.getLineString()));
-			emissionProbability.put(edge.getTo(), distance);
+		for(final Edge segment : segments){
+			final LineString lineString = segment.getLineString();
+			final double distance = distanceCalculator.distance(observation, lineString);
+			probabilities.put(lineString, distance);
 			cumulativeDistance += distance;
 		}
 		double cumulativeProbability = 0.;
-		for(final Edge edge : edges){
-			final double probability = cumulativeDistance / emissionProbability.get(edge.getTo());
-			emissionProbability.put(edge.getTo(), probability);
+		for(final Edge segment : segments){
+			final LineString lineString = segment.getLineString();
+			final double probability = cumulativeDistance / probabilities.get(lineString);
+			probabilities.put(lineString, probability);
 			cumulativeProbability += probability;
 		}
-		for(final Edge edge : edges){
-			final double probability = logPr(emissionProbability.get(edge.getTo()) / cumulativeProbability);
-			emissionProbability.put(edge.getTo(), probability);
+		for(final Edge segment : segments){
+			final LineString lineString = segment.getLineString();
+			final double probability = logPr(probabilities.get(lineString) / cumulativeProbability);
+			probabilities.put(lineString, probability);
 		}
 	}
 

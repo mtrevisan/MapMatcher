@@ -34,8 +34,7 @@ import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
-import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
@@ -59,26 +58,26 @@ public class Application{
 
 
 	public static void main(final String[] args){
-		final EdgeWeightCalculator edgeWeightCalculator = new LogMapEdgeWeightCalculator(new AngularEarthEllipsoidalCalculator());
+		final LogMapMatchingProbabilityCalculator edgeWeightCalculator = new LogMapMatchingProbabilityCalculator(new AngularEarthEllipsoidalCalculator());
 		final DistanceCalculator distanceCalculator = new AngularEarthEllipsoidalCalculator();
 //		final MapMatchingStrategy strategy = new AStarMapMatching(edgeWeightCalculator, distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(edgeWeightCalculator, distanceCalculator);
 
-		final Coordinate vertex11 = new Coordinate(12.159747628109386, 45.66132709541773);
-		final Coordinate vertex12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
-		final Coordinate vertex22 = new Coordinate(12.242949896905884, 45.69828882177029);
-		final Coordinate vertex23 = new Coordinate(12.200627355552967, 45.732876303059044);
-		final Coordinate vertex32_51_61 = new Coordinate(12.343946870589775, 45.65931029901404);
-		final Coordinate vertex42 = new Coordinate(12.25545428412434, 45.61054896081151);
-		final Coordinate vertex52 = new Coordinate(12.297776825477285, 45.7345547621876);
-		final Coordinate vertex62 = new Coordinate(12.322785599913317, 45.610885391198394);
+		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = new Coordinate(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = new Coordinate(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = new Coordinate(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = new Coordinate(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
 
-		final LineString edge0 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex11, vertex12_31_41});
-		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex22, vertex23});
-		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex32_51_61});
-		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex42});
-		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex52});
-		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex62});
+		final LineString edge0 = WGS84GeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
 
 		final Coordinate[] observations1 = new Coordinate[]{
 			new Coordinate(12.142791962642718, 45.64824627395467),

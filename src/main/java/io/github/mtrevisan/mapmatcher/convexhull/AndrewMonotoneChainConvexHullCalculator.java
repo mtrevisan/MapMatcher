@@ -48,13 +48,13 @@ public class AndrewMonotoneChainConvexHullCalculator implements ConvexHullCalcul
 			.toList();
 
 		final var upperHull = new ArrayList<Node>();
-		for(final var vertex : sortedByLat)
-			filterCounterClockwise(upperHull, vertex);
+		for(final var node : sortedByLat)
+			filterCounterClockwise(upperHull, node);
 
 		final var lowerHull = new ArrayList<Node>();
 		for(int i = sortedByLat.size() - 1; i >= 0; i--){
-			final var vertex = sortedByLat.get(i);
-			filterCounterClockwise(lowerHull, vertex);
+			final var node = sortedByLat.get(i);
+			filterCounterClockwise(lowerHull, node);
 		}
 
 		upperHull.remove(upperHull.size() - 1);

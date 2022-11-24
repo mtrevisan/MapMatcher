@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.pathfinding;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.graph.ScoredGraphVertex;
+import io.github.mtrevisan.mapmatcher.graph.ScoredGraphNode;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
 
@@ -60,15 +60,15 @@ public class AStarPathfinder implements PathfindingStrategy{
 		gScores.put(start, 0.);
 
 		//set of discovered nodes that may need to be (re-)expanded
-		final var queue = new PriorityQueue<ScoredGraphVertex>();
+		final var queue = new PriorityQueue<ScoredGraphNode>();
 		//NOTE: the score here is `gScore[n] + h(n)`; it represents the current best guess as to how cheap a path could be from start to
 		// finish if it goes through the given node
 		var fScore = heuristic(start, end);
-		queue.add(new ScoredGraphVertex(start, fScore));
+		queue.add(new ScoredGraphNode(start, fScore));
 
 		while(!queue.isEmpty()){
 			final var current = queue.poll()
-				.vertex();
+				.node();
 			if(current.equals(end))
 				break;
 
@@ -81,7 +81,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 					predecessorTree.put(neighbor, edge);
 
 					fScore = newScore + heuristic(neighbor, end);
-					final ScoredGraphVertex sgv = new ScoredGraphVertex(neighbor, fScore);
+					final ScoredGraphNode sgv = new ScoredGraphNode(neighbor, fScore);
 					if(!queue.contains(sgv))
 						queue.add(sgv);
 				}

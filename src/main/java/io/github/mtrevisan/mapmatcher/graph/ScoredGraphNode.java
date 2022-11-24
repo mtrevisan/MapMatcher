@@ -24,48 +24,29 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import org.locationtech.jts.geom.Coordinate;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+public class ScoredGraphNode implements Comparable<ScoredGraphNode>{
 
-
-public class Node{
-
-	private String id;
-	private final Coordinate coordinate;
-
-	private final Set<Edge> outEdges = new HashSet<>(0);
+	private final Node node;
+	private final double score;
 
 
-	public Node(final String id, final Coordinate coordinate){
-		this.id = id;
-		this.coordinate = coordinate;
+	public ScoredGraphNode(final Node node, final double score){
+		this.node = node;
+		this.score = score;
 	}
 
-	public String getID(){
-		return id;
+	public Node node(){
+		return node;
 	}
 
-	public void setID(final String id){
-		if(id == null || id.length() == 0)
-			throw new IllegalArgumentException("`id` cannot be null or empty");
-
-		this.id = id;
+	public double score(){
+		return score;
 	}
 
-	public Collection<Edge> geOutEdges(){
-		return outEdges;
-	}
-
-	public void addOutEdge(final Edge edge){
-		outEdges.add(edge);
-	}
-
-	public Coordinate getCoordinate(){
-		return coordinate;
+	@Override
+	public int compareTo(final ScoredGraphNode scoredGraphNode){
+		return Double.compare(score, scoredGraphNode.score);
 	}
 
 	@Override
@@ -75,18 +56,13 @@ public class Node{
 		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Node other = (Node)obj;
-		return coordinate.equals(other.coordinate);
+		final ScoredGraphNode other = (ScoredGraphNode)obj;
+		return node.equals(other.node);
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(coordinate);
-	}
-
-	@Override
-	public String toString(){
-		return "Node{id = " + id + ", coordinates = " + coordinate + "}";
+		return node.hashCode();
 	}
 
 }
