@@ -25,14 +25,17 @@
 package io.github.mtrevisan.mapmatcher;
 
 import io.github.mtrevisan.mapmatcher.distances.AngularGeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.mapmatching.AStarMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.weight.MapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
@@ -57,9 +60,10 @@ public class Application{
 
 	public static void main(final String[] args){
 		final LogMapMatchingProbabilityCalculator edgeWeightCalculator = new LogMapMatchingProbabilityCalculator(new AngularGeodeticCalculator());
-//		final DistanceCalculator distanceCalculator = new AngularEarthEllipsoidalCalculator();
-//		final MapMatchingStrategy strategy = new AStarMapMatching(edgeWeightCalculator, distanceCalculator);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(edgeWeightCalculator);
+		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+		final MapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(distanceCalculator);
+		final MapMatchingStrategy strategy = new AStarMapMatching(probabilityCalculator);
+//		final MapMatchingStrategy strategy = new ViterbiMapMatching(edgeWeightCalculator);
 
 		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
