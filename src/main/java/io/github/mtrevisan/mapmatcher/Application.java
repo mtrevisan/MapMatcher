@@ -54,10 +54,6 @@ import java.util.Set;
  */
 public class Application{
 
-	private static final double SIGMA_OBSERVATION = 4.07;
-	private static final double BETA = 3.;
-
-
 	public static void main(final String[] args){
 		final LogMapMatchingProbabilityCalculator edgeWeightCalculator = new LogMapMatchingProbabilityCalculator(new AngularGeodeticCalculator());
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
