@@ -25,22 +25,23 @@
 package io.github.mtrevisan.mapmatcher.distances;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 
 
 public class EuclideanCalculator implements DistanceCalculator{
 
+	private static final GeometryFactory FACTORY = new GeometryFactory();
+
+
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		final double deltaX = startPoint.getX() - endPoint.getX();
-		final double deltaY = startPoint.getY() - endPoint.getY();
-		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+		return startPoint.distance(endPoint);
 	}
 
 	@Override
 	public double distance(final Coordinate point, final LineString lineString){
-		//TODO
-		return 0.;
+		return FACTORY.createPoint(point).distance(lineString);
 	}
 
 }

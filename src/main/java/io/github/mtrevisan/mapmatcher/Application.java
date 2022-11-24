@@ -24,9 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher;
 
-import io.github.mtrevisan.mapmatcher.distances.AngularEarthEllipsoidalCalculator;
-import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
-import io.github.mtrevisan.mapmatcher.distances.EarthEllipsoidalCalculator;
+import io.github.mtrevisan.mapmatcher.distances.AngularGeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
@@ -57,7 +56,7 @@ public class Application{
 
 
 	public static void main(final String[] args){
-		final LogMapMatchingProbabilityCalculator edgeWeightCalculator = new LogMapMatchingProbabilityCalculator(new AngularEarthEllipsoidalCalculator());
+		final LogMapMatchingProbabilityCalculator edgeWeightCalculator = new LogMapMatchingProbabilityCalculator(new AngularGeodeticCalculator());
 //		final DistanceCalculator distanceCalculator = new AngularEarthEllipsoidalCalculator();
 //		final MapMatchingStrategy strategy = new AStarMapMatching(edgeWeightCalculator, distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(edgeWeightCalculator);
@@ -114,15 +113,13 @@ public class Application{
 	private static Graph extractGraph(final LineString[] edges, final Coordinate[] observations, final double radius){
 		final Set<LineString> observedEdges = extractObservedEdges(edges, observations, radius);
 
-		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new EarthEllipsoidalCalculator());
+		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
 		int e = 0;
 		//FIXME to uncomment
 //		for(final LineString edge : observedEdges){
 		for(final LineString edge : edges){
 			final String edgeID = "E" + e;
 			graph.addApproximateEdge(edgeID, edge);
-			//FIXME to uncomment
-//			graph.addApproximateEdge(edgeID + ".rev", edge.reverse());
 
 			e ++;
 		}

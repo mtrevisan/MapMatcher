@@ -9,7 +9,7 @@ class VincentyDistanceCalculatorTest{
 
 	@Test
 	void should_calculate_approximate_distance_in_km_between__startCoordinates_and__endCoordinates_close_to_expectedDistance(){
-		final DistanceCalculator calculator = new EarthEllipsoidalCalculator();
+		final DistanceCalculator calculator = new GeodeticCalculator();
 		final Coordinate[] coordinates = new Coordinate[]{
 			new Coordinate(121.058805, 14.552797),
 			new Coordinate(120.994260, 14.593999),

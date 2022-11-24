@@ -28,7 +28,7 @@ class DurationEdgeWeightCalculatorTest{
 			double expectedDuration = expectedDurations[i];
 			double maxSpeed = maxSpeeds[i];
 			DurationEdgeWeightCalculator edgeWeightCalculator = new DurationEdgeWeightCalculator();
-			final Edge edge = new Edge(new Node("0", fromCoordinates), new Node("1", toCoordinates),
+			final Edge edge = Edge.createBidirectionalEdge(new Node("0", fromCoordinates), new Node("1", toCoordinates),
 				WGS84GeometryHelper.createLineString(new Coordinate[]{fromCoordinates, toCoordinates}));
 			edge.setWeight(maxSpeed);
 			double actualDistance = edgeWeightCalculator.calculateWeight(edge);

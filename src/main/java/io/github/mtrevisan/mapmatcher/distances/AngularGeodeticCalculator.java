@@ -33,7 +33,7 @@ import org.locationtech.jts.geom.Point;
 /**
  * @see <a href="https://github.com/grumlimited/geocalc/blob/master/src/main/java/com/grum/geocalc/EarthCalc.java">EarthCalc</a>
  */
-public class AngularEarthEllipsoidalCalculator implements DistanceCalculator{
+public class AngularGeodeticCalculator implements DistanceCalculator{
 
 	/**
 	 * Calculate distance, (azimuth) bearing and final bearing between two points using inverse Vincenty formula.

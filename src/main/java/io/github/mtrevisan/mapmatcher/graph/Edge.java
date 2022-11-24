@@ -33,14 +33,25 @@ import java.util.Objects;
 public class Edge{
 
 	private String id;
-	private final Node from;
-	private final Node to;
-	private final LineString geometry;
+	protected final Node from;
+	protected final Node to;
+	protected final LineString geometry;
 
+	private boolean bidirectional;
 	private double weight;
 
 
-	public Edge(final Node from, final Node to, final LineString geometry){
+	public static Edge createBidirectionalEdge(final Node from, final Node to, final LineString geometry){
+		final Edge edge = new Edge(from, to, geometry);
+		edge.setBidirectional();
+		return edge;
+	}
+
+	public static Edge createDirectEdge(final Node from, final Node to, final LineString geometry){
+		return new Edge(from, to, geometry);
+	}
+
+	private Edge(final Node from, final Node to, final LineString geometry){
 		if(from == null)
 			throw new IllegalArgumentException("`from` node cannot be null");
 		if(to == null)
@@ -85,6 +96,14 @@ public class Edge{
 		return geometry;
 	}
 
+	public boolean isBidirectional(){
+		return bidirectional;
+	}
+
+	void setBidirectional(){
+		bidirectional = true;
+	}
+
 	public double getWeight(){
 		return weight;
 	}
@@ -94,7 +113,7 @@ public class Edge{
 	}
 
 	public Edge reversed(){
-		return new Edge(to, from, geometry.reverse());
+		return createBidirectionalEdge(to, from, geometry.reverse());
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.distances.EarthEllipsoidalCalculator;
 import io.github.mtrevisan.mapmatcher.distances.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class GraphTest{
 
 	@Test
 	void should_connect_two_vertices_in_graph(){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(5., new EarthEllipsoidalCalculator());
+		final NearLineMergeGraph graph = new NearLineMergeGraph(5., new GeodeticCalculator());
 		final Node from = new Node("0", new Coordinate(22.22, 33.33));
 		final Node to = new Node("1", new Coordinate(33.22, 44.33));
 
@@ -53,8 +53,8 @@ class GraphTest{
 		final Set<Edge> result = (Set<Edge>)fromNodes.get(0).geOutEdges();
 
 		final Set<Edge> expected = new HashSet<>(Arrays.asList(
-			new Edge(node, firstNeighbor, lineString12),
-			new Edge(node, secondNeighbor, lineString13)
+			Edge.createBidirectionalEdge(node, firstNeighbor, lineString12),
+			Edge.createBidirectionalEdge(node, secondNeighbor, lineString13)
 		));
 		Assertions.assertEquals(expected, result);
 	}
@@ -89,8 +89,8 @@ class GraphTest{
 		final Set<Edge> result = (Set<Edge>)graph.edges();
 
 		final Set<Edge> expected = new HashSet<>(List.of(
-			new Edge(node, firstNeighbor, lineString12),
-			new Edge(node, secondNeighbor, lineString13)
+			Edge.createBidirectionalEdge(node, firstNeighbor, lineString12),
+			Edge.createBidirectionalEdge(node, secondNeighbor, lineString13)
 		));
 		Assertions.assertEquals(expected, result);
 	}
