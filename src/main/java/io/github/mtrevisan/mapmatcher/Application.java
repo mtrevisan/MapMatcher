@@ -35,13 +35,21 @@ import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -111,6 +119,79 @@ if(path != null)
 	System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 
+//	public static void main(final String[] args){
+//		final double observationStandardDeviation = 200.;
+//		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+//		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation,
+//			distanceCalculator);
+//		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
+//
+//		final Coordinate[] observations1 = new Coordinate[]{
+//			new Coordinate(12.142791962642718, 45.64824627395467),
+//			new Coordinate(12.166829013921557, 45.658700732309484),
+//			new Coordinate(12.190331908504874, 45.663553924585955),
+//			new Coordinate(12.219176370039179, 45.65720735774349),
+//			new Coordinate(12.237871854367, 45.65310037232308),
+//			new Coordinate(12.243213421318018, 45.675125223889154),
+//			new Coordinate(12.23894016775725, 45.691544896329816),
+//			new Coordinate(12.237337697671506, 45.70684070823364),
+//			new Coordinate(12.23306444411162, 45.725861366408196),
+//			new Coordinate(12.215971429868546, 45.731454445518864)
+//		};
+//		final Coordinate[] observations2 = new Coordinate[]{
+//			new Coordinate(12.172704737567187, 45.59108565830172),
+//			new Coordinate(12.229859503941071, 45.627705048963094),
+//			new Coordinate(12.241610951232218, 45.6422714215264),
+//			new Coordinate(12.243213421318018, 45.65646065552491),
+//			new Coordinate(12.272057882852266, 45.662060679461206),
+//			new Coordinate(12.304641441251732, 45.66168736195718),
+//			new Coordinate(12.331349276005653, 45.66168736195718)
+//		};
+//		final Coordinate[] observations = observations2;
+//
+//		final LineString[] edges = readEdges();
+//		//all italy
+//		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 1_000_000.);
+//		final Graph graph = extractGraph(observedEdges, 200.);
+//
+//		final Edge[] path = strategy.findPath(graph, observations);
+//
+//		if(path != null)
+//			System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
+//	}
+
+	private static LineString[] readEdges(){
+		final List<String> lines = readFile("src/main/resources/map.eura.txt");
+
+		final List<LineString> edges = new ArrayList<>();
+		try{
+			final WKTReader reader = WGS84GeometryHelper.getWktReader();
+			for(final String line : lines){
+				final Geometry segment = reader.read(line);
+				edges.add((LineString)segment);
+			}
+		}
+		catch(final ParseException e){
+			e.printStackTrace();
+		}
+		return edges.toArray(LineString[]::new);
+	}
+
+	private static List<String> readFile(final String filename){
+		final List<String> lines = new ArrayList<>();
+		final File f = new File(filename);
+		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
+			String readLine;
+			while((readLine = br.readLine()) != null)
+				if(!readLine.isEmpty())
+					lines.add(readLine);
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		return lines;
+	}
+
 	private static Graph extractGraph(final Collection<LineString> edges, final double radius){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
 		int e = 0;
@@ -125,7 +206,7 @@ if(path != null)
 
 	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
 			final double radius){
-		final List<LineString> observationsEdges = new ArrayList<>(edges.length);
+		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
 		for(final Coordinate observation : observations){
 			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation, radius);
 			for(final LineString edge : edges)

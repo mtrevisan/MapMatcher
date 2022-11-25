@@ -28,6 +28,8 @@ import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateArrays;
 import org.locationtech.jts.geom.LineString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,6 +40,9 @@ import java.util.TreeMap;
 
 
 public class NearLineMergeGraph implements Graph{
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(NearLineMergeGraph.class);
+
 
 	private final Set<Edge> edges = new HashSet<>();
 	private final Map<Coordinate, Node> nodeMap = new TreeMap<>();
@@ -103,6 +108,8 @@ public class NearLineMergeGraph implements Graph{
 					edges.add(edge);
 
 					addedEdges.add(edge);
+
+					LOGGER.debug("Connect edge {} to node {} and {}", edge.getID(), fromNode.getID(), toNode.getID());
 				}
 			}
 		for(final Node intersectionNode1 : intersectionNodes)
@@ -122,6 +129,8 @@ public class NearLineMergeGraph implements Graph{
 						edges.add(edge);
 
 						addedEdges.add(edge);
+
+						LOGGER.debug("Connect edge {} to intersection node {} and {}", edge.getID(), intersectionNode1.getID(), intersectionNode2.getID());
 					}
 				}
 		return addedEdges;

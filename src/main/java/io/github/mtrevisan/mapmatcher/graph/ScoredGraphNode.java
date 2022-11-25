@@ -27,17 +27,17 @@ package io.github.mtrevisan.mapmatcher.graph;
 
 public class ScoredGraphNode implements Comparable<ScoredGraphNode>{
 
-	private final Edge edge;
+	private final Node node;
 	private final double score;
 
 
-	public ScoredGraphNode(final Edge edge, final double score){
-		this.edge = edge;
+	public ScoredGraphNode(final Node node, final double score){
+		this.node = node;
 		this.score = score;
 	}
 
-	public Edge edge(){
-		return edge;
+	public Node node(){
+		return node;
 	}
 
 	@Override
@@ -53,12 +53,12 @@ public class ScoredGraphNode implements Comparable<ScoredGraphNode>{
 			return false;
 
 		final ScoredGraphNode other = (ScoredGraphNode)obj;
-		return edge.equals(other.edge);
+		return node.equals(other.node);
 	}
 
 	@Override
 	public int hashCode(){
-		return edge.hashCode();
+		return node.hashCode();
 	}
 
 }

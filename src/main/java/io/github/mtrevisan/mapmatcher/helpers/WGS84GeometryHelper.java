@@ -30,6 +30,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
 
@@ -39,6 +40,12 @@ public class WGS84GeometryHelper{
 	private static final int SRID_WGS84 = 4326;
 	private static final GeometryFactory FACTORY = new GeometryFactory(PRECISION_MODEL, SRID_WGS84);
 
+	private static final WKTReader WKT_READER = new WKTReader(FACTORY);
+
+
+	public static WKTReader getWktReader(){
+		return WKT_READER;
+	}
 
 	public static Point createPoint(final double latitude, final double longitude){
 		return createPoint(new Coordinate(longitude, latitude));
