@@ -24,15 +24,12 @@
  */
 package io.github.mtrevisan.mapmatcher.path;
 
-import io.github.mtrevisan.mapmatcher.convexhull.AndrewMonotoneChainConvexHullCalculator;
-import io.github.mtrevisan.mapmatcher.convexhull.ConvexHullCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.weight.DistanceEdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.weight.DurationEdgeWeightCalculator;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +40,6 @@ public class BidirectionalPathSummary implements PathSummary{
 
 	private static final DistanceEdgeWeightCalculator DISTANCE_CALCULATOR = new DistanceEdgeWeightCalculator();
 	private static final DurationEdgeWeightCalculator DURATION_CALCULATOR = new DurationEdgeWeightCalculator();
-	private static final ConvexHullCalculator CONVEX_HULL_CALCULATOR = new AndrewMonotoneChainConvexHullCalculator();
 
 	private final List<Edge> path;
 	private final Set<Node> searchedVerticesFromStart;
@@ -88,14 +84,6 @@ public class BidirectionalPathSummary implements PathSummary{
 		return path.stream()
 			.mapToDouble(DURATION_CALCULATOR::calculateWeight)
 			.sum();
-	}
-
-	@Override
-	public Collection<List<Node>> searchBoundaries(){
-		return List.of(
-			CONVEX_HULL_CALCULATOR.calculateConvexHull(searchedVerticesFromStart),
-			CONVEX_HULL_CALCULATOR.calculateConvexHull(searchedVerticesFromEnd)
-		);
 	}
 
 	@Override

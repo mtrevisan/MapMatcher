@@ -24,9 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
-import io.github.mtrevisan.mapmatcher.graph.Edge;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
 
 
 public class GeodeticHelper{

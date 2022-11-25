@@ -10,7 +10,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -105,20 +104,6 @@ class SingleDirectionalPathSummaryTest{
 		final double result = pathSummary.totalDuration();
 
 		Assertions.assertEquals(0.091_9, result, 0.000_05);
-	}
-
-	@Test
-	void should_return_path_search_boundaries(){
-		final Node firstNode = new Node("0", new Coordinate(1., 1.));
-		final Node secondNode = new Node("1", new Coordinate(3., 3.));
-		final Node thirdNode = new Node("2", new Coordinate(5., 1.));
-		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(),
-			new HashSet<>(Arrays.asList(firstNode, secondNode, thirdNode)));
-
-		final Collection<List<Node>> result = pathSummary.searchBoundaries();
-
-		Assertions.assertEquals(1, result.size());
-		Assertions.assertEquals(Arrays.asList(secondNode, firstNode, thirdNode), result.toArray()[0]);
 	}
 
 	@Test

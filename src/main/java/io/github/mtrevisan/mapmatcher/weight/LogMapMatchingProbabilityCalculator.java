@@ -25,9 +25,7 @@
 package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
-import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
