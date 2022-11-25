@@ -107,7 +107,7 @@ public class Application{
 
 		final Edge[] path = strategy.findPath(graph, observations);
 
-		System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
+System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 
 	private static Graph extractGraph(final LineString[] edges, final Coordinate[] observations, final double radius){

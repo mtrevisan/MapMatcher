@@ -67,7 +67,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 		//construction of Viterbi matrix
 		double minProbability;
-		Edge maxProbabilityEdge;
+		Edge minProbabilityEdge;
 		for(int i = 1; i < m; i ++){
 			probabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
 
@@ -79,11 +79,11 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;
-						maxProbabilityEdge = fromEdge;
+						minProbabilityEdge = fromEdge;
 						fScores.get(currentEdge)[i] = probability + probabilityCalculator.emissionProbability(observations[i], fromEdge);
 
 						//record path
-						System.arraycopy(path.computeIfAbsent(maxProbabilityEdge, k -> new Edge[m]), 0,
+						System.arraycopy(path.computeIfAbsent(minProbabilityEdge, k -> new Edge[m]), 0,
 							newPath.computeIfAbsent(currentEdge, k -> new Edge[m]), 0, i);
 						newPath.get(currentEdge)[i] = currentEdge;
 					}
@@ -97,13 +97,13 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 		//compute the Viterbi path
 		minProbability = Double.POSITIVE_INFINITY;
-		maxProbabilityEdge = null;
+		minProbabilityEdge = null;
 		for(final Edge edge : graphEdges)
 			if(fScores.get(edge)[m - 1] < minProbability){
 				minProbability = fScores.get(edge)[m - 1];
-				maxProbabilityEdge = edge;
+				minProbabilityEdge = edge;
 			}
-		return (maxProbabilityEdge != null? path.get(maxProbabilityEdge): null);
+		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
 	}
 
 }
