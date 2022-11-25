@@ -58,12 +58,4 @@ public interface Graph{
 	 */
 	Iterator<Edge> edgeIterator();
 
-	/**
-	 * Tests whether this graph contains the given {@link Edge}.
-	 *
-	 * @param e	The directed edge to query.
-	 * @return	Whether the graph contains the directed edge.
-	 */
-	boolean contains(final Edge e);
-
 }

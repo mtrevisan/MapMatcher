@@ -51,6 +51,13 @@ public class Edge{
 		return new Edge(from, to, geometry);
 	}
 
+	private Edge(final String id){
+		this.id = id;
+		from = null;
+		to = null;
+		geometry = null;
+	}
+
 	private Edge(final Node from, final Node to, final LineString geometry){
 		if(from == null)
 			throw new IllegalArgumentException("`from` node cannot be null");

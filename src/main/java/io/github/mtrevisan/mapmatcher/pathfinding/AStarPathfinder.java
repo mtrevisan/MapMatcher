@@ -32,6 +32,7 @@ import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.PriorityQueue;
 
 
@@ -55,38 +56,46 @@ public class AStarPathfinder implements PathfindingStrategy{
 		final var predecessorTree = new HashMap<Node, Edge>();
 		predecessorTree.put(start, null);
 
-		//the cost of the cheapest path from start to given node currently known
-		final var gScores = new HashMap<Node, Double>();
-		gScores.put(start, 0.);
-
-		//set of discovered nodes that may need to be (re-)expanded
-		final var queue = new PriorityQueue<ScoredGraphNode>();
-		//NOTE: the score here is `gScore[n] + h(n)`; it represents the current best guess as to how cheap a path could be from start to
-		// finish if it goes through the given node
-		var fScore = heuristic(start, end);
-		queue.add(new ScoredGraphNode(start, fScore));
-
-		while(!queue.isEmpty()){
-			final var current = queue.poll()
-				.node();
-			if(current.equals(end))
-				break;
-
-			for(final var edge : current.geOutEdges()){
-				final var neighbor = edge.getTo();
-				final var newScore = gScores.get(current) + calculator.calculateWeight(edge);
-
-				if(newScore < gScores.getOrDefault(neighbor, Double.MAX_VALUE)){
-					gScores.put(neighbor, newScore);
-					predecessorTree.put(neighbor, edge);
-
-					fScore = newScore + heuristic(neighbor, end);
-					final ScoredGraphNode sgv = new ScoredGraphNode(neighbor, fScore);
-					if(!queue.contains(sgv))
-						queue.add(sgv);
-				}
-			}
-		}
+		//TODO
+//		//the cost of the cheapest path from start to given node currently known
+//		final var gScores = new HashMap<Node, Double>();
+//		gScores.put(start, 0.);
+//
+//		final var seenNodes = new HashSet<Node>();
+//
+//		//set of discovered nodes that may need to be (re-)expanded
+//		final var queue = new PriorityQueue<ScoredGraphNode>();
+//		//NOTE: the score here is `gScore[n] + h(n)`; it represents the current best guess as to how cheap a path could be from start to
+//		// finish if it goes through the given node
+//		var fScore = heuristic(start, end);
+//		queue.add(new ScoredGraphNode(start, fScore));
+//
+//		while(!queue.isEmpty()){
+//			final var current = queue.poll()
+//				.edge();
+//			if(current.equals(end))
+//				break;
+//
+//			for(final var edge : current.geOutEdges()){
+//				final var neighbor = edge.getTo();
+//				if(seenNodes.contains(neighbor))
+//					continue;
+//
+//				final var newScore = gScores.get(current) + calculator.calculateWeight(edge);
+//
+//				if(newScore < gScores.getOrDefault(neighbor, Double.MAX_VALUE)){
+//					gScores.put(neighbor, newScore);
+//					predecessorTree.put(neighbor, edge);
+//
+//					fScore = newScore + heuristic(neighbor, end);
+//					final ScoredGraphNode sgv = new ScoredGraphNode(neighbor, fScore);
+//					if(!queue.contains(sgv))
+//						queue.add(sgv);
+//				}
+//			}
+//
+//			seenNodes.add(current);
+//		}
 
 		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
 	}

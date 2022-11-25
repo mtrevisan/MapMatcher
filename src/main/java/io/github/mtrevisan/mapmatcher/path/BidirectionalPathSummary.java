@@ -41,6 +41,7 @@ public class BidirectionalPathSummary implements PathSummary{
 	private static final DistanceEdgeWeightCalculator DISTANCE_CALCULATOR = new DistanceEdgeWeightCalculator();
 	private static final DurationEdgeWeightCalculator DURATION_CALCULATOR = new DurationEdgeWeightCalculator();
 
+
 	private final List<Edge> path;
 	private final Set<Node> searchedVerticesFromStart;
 	private final Set<Node> searchedVerticesFromEnd;

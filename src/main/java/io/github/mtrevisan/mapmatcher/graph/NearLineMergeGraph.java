@@ -185,15 +185,4 @@ public class NearLineMergeGraph implements Graph{
 		return edges.iterator();
 	}
 
-	/**
-	 * Tests whether this graph contains the given {@link Edge}.
-	 *
-	 * @param e	The directed edge to query.
-	 * @return	Whether the graph contains the directed edge.
-	 */
-	@Override
-	public boolean contains(final Edge e){
-		return edges.contains(e);
-	}
-
 }

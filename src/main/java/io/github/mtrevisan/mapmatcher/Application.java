@@ -31,15 +31,18 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
-import io.github.mtrevisan.mapmatcher.mapmatching.AStarMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
+import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -57,8 +60,7 @@ public class Application{
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation,
 			distanceCalculator);
-		final MapMatchingStrategy strategy = new AStarMapMatching(probabilityCalculator);
-//		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
 
 		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
@@ -100,9 +102,8 @@ public class Application{
 		final Coordinate[] observations = observations1;
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		//[m]
-		final double radius = 500.;
-		final Graph graph = extractGraph(edges, observations, radius);
+		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = extractGraph(observedEdges, 500.);
 
 		final Edge[] path = strategy.findPath(graph, observations);
 
@@ -110,13 +111,9 @@ if(path != null)
 	System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 
-	private static Graph extractGraph(final LineString[] edges, final Coordinate[] observations, final double radius){
-		final Set<LineString> observedEdges = extractObservedEdges(edges, observations, radius);
-
+	private static Graph extractGraph(final Collection<LineString> edges, final double radius){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
 		int e = 0;
-		//FIXME to uncomment
-//		for(final LineString edge : observedEdges){
 		for(final LineString edge : edges){
 			final String edgeID = "E" + e;
 			graph.addApproximateEdge(edgeID, edge);
@@ -126,9 +123,9 @@ if(path != null)
 		return graph;
 	}
 
-	private static Set<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
+	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
 			final double radius){
-		final Set<LineString> observationsEdges = new HashSet<>(edges.length);
+		final List<LineString> observationsEdges = new ArrayList<>(edges.length);
 		for(final Coordinate observation : observations){
 			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation, radius);
 			for(final LineString edge : edges)
