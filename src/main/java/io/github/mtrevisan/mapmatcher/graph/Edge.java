@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -33,52 +32,83 @@ import java.util.Objects;
 
 public class Edge{
 
-	private final Vertex from;
-	private final Vertex to;
-	private LineString geometry;
+	private String id;
+	protected final Node from;
+	protected final Node to;
+	protected final LineString geometry;
+
+	private boolean bidirectional;
 	private double weight;
 
 
-	public Edge(final Vertex from, final Vertex to, final double weight){
-		if(from == null)
-			throw new IllegalArgumentException("`from` vertex cannot be null");
-		if(to == null)
-			throw new IllegalArgumentException("`to` vertex cannot be null");
-
-		this.from = from;
-		this.to = to;
-		this.weight = weight;
+	public static Edge createBidirectionalEdge(final Node from, final Node to, final LineString geometry){
+		final Edge edge = new Edge(from, to, geometry);
+		edge.setBidirectional();
+		return edge;
 	}
 
-	public Edge(final Vertex from, final Vertex to, final LineString geometry, final double weight){
-		if(from == null)
-			throw new IllegalArgumentException("`from` vertex cannot be null");
-		if(to == null)
-			throw new IllegalArgumentException("`to` vertex cannot be null");
-		if(geometry == null)
-			throw new IllegalArgumentException("geometry cannot be null");
+	public static Edge createDirectEdge(final Node from, final Node to, final LineString geometry){
+		return new Edge(from, to, geometry);
+	}
 
+	private Edge(final String id){
+		this.id = id;
+		from = null;
+		to = null;
+		geometry = null;
+	}
+
+	private Edge(final Node from, final Node to, final LineString geometry){
+		if(from == null)
+			throw new IllegalArgumentException("`from` node cannot be null");
+		if(to == null)
+			throw new IllegalArgumentException("`to` node cannot be null");
+		if(geometry == null)
+			throw new IllegalArgumentException("`geometry` cannot be null");
+
+		id = "E-" + from.getID() + "-" + to.getID();
 		this.from = from;
 		this.to = to;
 		this.geometry = geometry;
-		this.weight = weight;
 	}
 
-	public Vertex getFrom(){
+	public String getID(){
+		return id;
+	}
+
+	void setID(final String id){
+		if(id == null || id.length() == 0)
+			throw new IllegalArgumentException("`id` cannot be null or empty");
+
+		this.id = id;
+	}
+
+	public Node getFrom(){
 		return from;
 	}
 
-	public Vertex getTo(){
+	public Node getTo(){
 		return to;
 	}
 
+	public Coordinate getFromCoordinate(){
+		return from.getCoordinate();
+	}
+
+	public Coordinate getToCoordinate(){
+		return to.getCoordinate();
+	}
+
 	public LineString getLineString(){
-		if(geometry == null)
-			geometry = WGS84GeometryHelper.createLineString(new Coordinate[]{
-				from.getGeometry().getGeometryN(0).getCoordinate(),
-				to.getGeometry().getGeometryN(to.getGeometry().getNumGeometries() - 1).getCoordinate()
-			});
 		return geometry;
+	}
+
+	public boolean isBidirectional(){
+		return bidirectional;
+	}
+
+	void setBidirectional(){
+		bidirectional = true;
 	}
 
 	public double getWeight(){
@@ -90,10 +120,7 @@ public class Edge{
 	}
 
 	public Edge reversed(){
-		return (geometry != null
-			? new Edge(to, from, geometry.reverse(), weight)
-			: new Edge(to, from, weight)
-		);
+		return createBidirectionalEdge(to, from, geometry.reverse());
 	}
 
 	@Override
@@ -110,6 +137,11 @@ public class Edge{
 	@Override
 	public int hashCode(){
 		return Objects.hash(from, to, weight);
+	}
+
+	@Override
+	public String toString(){
+		return "Edge{id = " + id + ", from = " + from + ", to = " + to + ", weight = " + weight + "}";
 	}
 
 }

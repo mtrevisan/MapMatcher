@@ -28,7 +28,7 @@ class AStarPathfinderTest{
 
 	@Test
 	void should_return_the_shortest_path3(){
-		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.vertexCountTestGraphConnected();
+		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.nodeCountTestGraphConnected();
 		PathfindingStrategy pathfinder = new AStarPathfinder(testGraph.getCalculator());
 
 		PathSummary path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
@@ -38,7 +38,7 @@ class AStarPathfinderTest{
 
 	@Test
 	void should_return_the_shortest_path4(){
-		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.vertexCountTestGraphDisconnected();
+		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.nodeCountTestGraphDisconnected();
 		PathfindingStrategy pathfinder = new AStarPathfinder(testGraph.getCalculator());
 
 		PathSummary path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());

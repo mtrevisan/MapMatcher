@@ -26,12 +26,13 @@ package io.github.mtrevisan.mapmatcher.pathfinding;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.ScoredGraphVertex;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.graph.ScoredGraph;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
-import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.PriorityQueue;
 
 
@@ -50,49 +51,55 @@ public class AStarPathfinder implements PathfindingStrategy{
 	}
 
 	@Override
-	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph){
+	public PathSummary findPath(final Node start, final Node end, final Graph graph){
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
-		final var predecessorTree = new HashMap<Vertex, Edge>();
+		final var predecessorTree = new HashMap<Node, Edge>();
 		predecessorTree.put(start, null);
 
 		//the cost of the cheapest path from start to given node currently known
-		final var gScores = new HashMap<String, Double>();
-		gScores.put(start.getId(), 0.);
+		final var gScores = new HashMap<Node, Double>();
+		gScores.put(start, 0.);
+
+		final var seenNodes = new HashSet<Node>();
 
 		//set of discovered nodes that may need to be (re-)expanded
-		final var queue = new PriorityQueue<ScoredGraphVertex>();
+		final var queue = new PriorityQueue<ScoredGraph<Node>>();
 		//NOTE: the score here is `gScore[n] + h(n)`; it represents the current best guess as to how cheap a path could be from start to
 		// finish if it goes through the given node
 		var fScore = heuristic(start, end);
-		queue.add(new ScoredGraphVertex(start, fScore));
+		queue.add(new ScoredGraph<>(start, fScore));
 
 		while(!queue.isEmpty()){
 			final var current = queue.poll()
-				.vertex();
+				.node();
 			if(current.equals(end))
 				break;
 
-			for(final var edge : graph.getVertexEdges(current)){
+			for(final var edge : current.geOutEdges()){
 				final var neighbor = edge.getTo();
-				final var newScore = gScores.get(current.getId()) + calculator.calculateWeight(edge);
+				if(seenNodes.contains(neighbor))
+					continue;
 
-				if(newScore < gScores.getOrDefault(neighbor.getId(), Double.MAX_VALUE)){
-					gScores.put(neighbor.getId(), newScore);
+				final var newScore = gScores.get(current) + calculator.calculateWeight(edge);
+				if(newScore < gScores.getOrDefault(neighbor, Double.MAX_VALUE)){
+					gScores.put(neighbor, newScore);
 					predecessorTree.put(neighbor, edge);
 
 					fScore = newScore + heuristic(neighbor, end);
-					final ScoredGraphVertex sgv = new ScoredGraphVertex(neighbor, fScore);
+					final ScoredGraph<Node> sgv = new ScoredGraph<>(neighbor, fScore);
 					if(!queue.contains(sgv))
 						queue.add(sgv);
 				}
 			}
+
+			seenNodes.add(current);
 		}
 
 		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
 	}
 
 	/** Estimates the cost to reach the final node from given node (emissionProbability). */
-	private double heuristic(final Vertex from, final Vertex to){
+	private double heuristic(final Node from, final Node to){
 		return calculator.calculateWeight(from, to);
 	}
 

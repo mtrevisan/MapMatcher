@@ -24,15 +24,12 @@
  */
 package io.github.mtrevisan.mapmatcher.path;
 
-import io.github.mtrevisan.mapmatcher.convexhull.AndrewMonotoneChainConvexHullCalculator;
-import io.github.mtrevisan.mapmatcher.convexhull.ConvexHullCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.DistanceEdgeWeightCalculator;
-import io.github.mtrevisan.mapmatcher.weight.DurationEdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -41,23 +38,23 @@ import java.util.stream.Collectors;
 
 public class BidirectionalPathSummary implements PathSummary{
 
-	private static final DistanceEdgeWeightCalculator DISTANCE_CALCULATOR = new DistanceEdgeWeightCalculator();
-	private static final DurationEdgeWeightCalculator DURATION_CALCULATOR = new DurationEdgeWeightCalculator();
-	private static final ConvexHullCalculator CONVEX_HULL_CALCULATOR = new AndrewMonotoneChainConvexHullCalculator();
+	private static final DistanceCalculator DISTANCE_CALCULATOR = new DistanceCalculator();
+	private static final DurationCalculator DURATION_CALCULATOR = new DurationCalculator();
+
 
 	private final List<Edge> path;
-	private final Set<Vertex> searchedVerticesFromStart;
-	private final Set<Vertex> searchedVerticesFromEnd;
+	private final Set<Node> searchedVerticesFromStart;
+	private final Set<Node> searchedVerticesFromEnd;
 
 
-	BidirectionalPathSummary(final List<Edge> path, final Set<Vertex> searchedVerticesFromStart, final Set<Vertex> searchedVerticesFromEnd){
+	BidirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVerticesFromStart, final Set<Node> searchedVerticesFromEnd){
 		this.path = path;
 		this.searchedVerticesFromStart = searchedVerticesFromStart;
 		this.searchedVerticesFromEnd = searchedVerticesFromEnd;
 	}
 
 	@Override
-	public List<Vertex> simplePath(){
+	public List<Node> simplePath(){
 		if(!isFound())
 			return Collections.emptyList();
 
@@ -88,14 +85,6 @@ public class BidirectionalPathSummary implements PathSummary{
 		return path.stream()
 			.mapToDouble(DURATION_CALCULATOR::calculateWeight)
 			.sum();
-	}
-
-	@Override
-	public Collection<List<Vertex>> searchBoundaries(){
-		return List.of(
-			CONVEX_HULL_CALCULATOR.calculateConvexHull(searchedVerticesFromStart),
-			CONVEX_HULL_CALCULATOR.calculateConvexHull(searchedVerticesFromEnd)
-		);
 	}
 
 	@Override

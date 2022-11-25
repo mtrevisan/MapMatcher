@@ -24,17 +24,19 @@
  */
 package io.github.mtrevisan.mapmatcher.mapmatching;
 
-import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.ScoredGraphVertex;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
-import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.graph.ScoredGraph;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 
@@ -43,67 +45,85 @@ import java.util.PriorityQueue;
  */
 public class AStarMapMatching implements MapMatchingStrategy{
 
-	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
+	private final InitialProbabilityCalculator initialProbabilityCalculator;
+	private final TransitionProbabilityCalculator transitionProbabilityCalculator;
+	private final EmissionProbabilityCalculator emissionProbabilityCalculator;
 
-	private final LogMapEdgeWeightCalculator calculator;
 
-
-	public AStarMapMatching(final LogMapEdgeWeightCalculator calculator){
-		this.calculator = calculator;
+	public AStarMapMatching(final InitialProbabilityCalculator initialProbabilityCalculator,
+			final TransitionProbabilityCalculator transitionProbabilityCalculator,
+			final EmissionProbabilityCalculator emissionProbabilityCalculator){
+		this.initialProbabilityCalculator = initialProbabilityCalculator;
+		this.transitionProbabilityCalculator = transitionProbabilityCalculator;
+		this.emissionProbabilityCalculator = emissionProbabilityCalculator;
 	}
 
-	//TODO
+	//TODO finish implementing the real A* algorithm
 	@Override
-	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph, final Coordinates[] observations){
-		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
-		final var predecessorTree = new HashMap<Vertex, Edge>();
-		predecessorTree.put(start, null);
+	public Edge[] findPath(final Graph graph, final Coordinate[] observations){
+		final Collection<Edge> graphEdges = graph.edges();
 
-		//the cost of the cheapest path from start to given node currently known
-		final var gScoresPrevious = new HashMap<String, Double>();
-		final var gScoresNext = new HashMap<String, Double>();
-		gScoresPrevious.put(start.getId(), 0.);
+		final int n = graphEdges.size();
+		final int m = observations.length;
+		final Map<Edge, double[]> fScores = new HashMap<>();
+		final Map<Edge, Edge[]> path = new HashMap<>();
+
+		final var seenNodes = new HashSet<Node>();
 
 		//set of discovered nodes that may need to be (re-)expanded
-		final var queue = new PriorityQueue<ScoredGraphVertex>();
-		//NOTE: the score here is `gScore[n] + h(n)`; it represents the current best guess as to how cheap a path could be from start to
-		// finish if it goes through the given node
-		var fScore = heuristic(start, end);
-		queue.add(new ScoredGraphVertex(start, fScore));
+		final var queue = new PriorityQueue<ScoredGraph<Edge>>();
 
-		for(int i = 0; i < observations.length; i ++){
-			while(!queue.isEmpty()){
-				final var current = queue.poll()
-					.vertex();
-				if(current.equals(end))
-					break;
+		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
+		// correct segment
+		initialProbabilityCalculator.calculateInitialProbability(observations[0], graphEdges);
+		emissionProbabilityCalculator.updateEmissionProbability(observations[0], graphEdges);
+		for(final Edge edge : graphEdges){
+			final double probability = initialProbabilityCalculator.initialProbability(edge)
+				+ emissionProbabilityCalculator.emissionProbability(observations[0], edge);
+			queue.add(new ScoredGraph<>(edge, probability));
+			fScores.computeIfAbsent(edge, k -> new double[m])[0] = probability;
+			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
+		}
 
-				final Collection<Edge> startingNodes = graph.getVertexEdges(current);
-				calculator.updateEmissionProbability(observations[i], startingNodes);
+		double minProbability;
+		Edge minProbabilityEdge;
+		for(int i = 1; i < m; i ++){
+			emissionProbabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
 
-				for(final var edge : graph.getVertexEdges(current)){
-					final var neighbor = edge.getTo();
-					final var newScore = gScoresPrevious.get(current.getId()) + calculator.calculateWeight(edge);
+			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
+			for(final Edge currentEdge : graphEdges){
+				minProbability = Double.POSITIVE_INFINITY;
+				for(final Edge fromEdge : graphEdges){
+					final double probability = fScores.get(fromEdge)[i - 1]
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, currentEdge);
+					if(probability < minProbability){
+						//record minimum probability
+						minProbability = probability;
+						minProbabilityEdge = fromEdge;
+						fScores.get(currentEdge)[i] = probability
+							+ emissionProbabilityCalculator.emissionProbability(observations[i], currentEdge);
 
-					if(newScore < gScoresPrevious.getOrDefault(neighbor.getId(), Double.MAX_VALUE)){
-						gScoresPrevious.put(neighbor.getId(), newScore);
-						predecessorTree.put(neighbor, edge);
-
-						fScore = newScore + heuristic(neighbor, end);
-						final ScoredGraphVertex sgv = new ScoredGraphVertex(neighbor, fScore);
-						if(!queue.contains(sgv))
-							queue.add(sgv);
+						//record path
+						System.arraycopy(path.computeIfAbsent(minProbabilityEdge, k -> new Edge[m]), 0,
+							newPath.computeIfAbsent(currentEdge, k -> new Edge[m]), 0, i);
+						newPath.get(currentEdge)[i] = currentEdge;
 					}
 				}
 			}
+
+			path.clear();
+			path.putAll(newPath);
+			newPath.clear();
 		}
 
-		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
-	}
-
-	/** Estimates the cost to reach the final node from given node (emissionProbability). */
-	private double heuristic(final Vertex from, final Vertex to){
-		return calculator.calculateWeight(from, to);
+		minProbability = Double.POSITIVE_INFINITY;
+		minProbabilityEdge = null;
+		for(final Edge edge : graphEdges)
+			if(fScores.get(edge)[m - 1] < minProbability){
+				minProbability = fScores.get(edge)[m - 1];
+				minProbabilityEdge = edge;
+			}
+		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
 	}
 
 }

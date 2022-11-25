@@ -25,11 +25,11 @@
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 
 
 public interface PathfindingStrategy{
 
-	PathSummary findPath(Vertex start, Vertex target, Graph graph);
+	PathSummary findPath(Node start, Node target, Graph graph);
 
 }

@@ -24,23 +24,16 @@
  */
 package io.github.mtrevisan.mapmatcher.mapmatching;
 
-import io.github.mtrevisan.mapmatcher.graph.Coordinates;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
-import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
-import org.locationtech.jts.geom.Geometry;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
+import org.locationtech.jts.geom.Coordinate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 
 /**
@@ -48,221 +41,77 @@ import java.util.Set;
  */
 public class ViterbiMapMatching implements MapMatchingStrategy{
 
-	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
+	private final InitialProbabilityCalculator initialProbabilityCalculator;
+	private final TransitionProbabilityCalculator transitionProbabilityCalculator;
+	private final EmissionProbabilityCalculator emissionProbabilityCalculator;
 
-	private final LogMapEdgeWeightCalculator calculator;
 
-
-	public ViterbiMapMatching(final LogMapEdgeWeightCalculator calculator){
-		this.calculator = calculator;
+	public ViterbiMapMatching(final InitialProbabilityCalculator initialProbabilityCalculator,
+			final TransitionProbabilityCalculator transitionProbabilityCalculator,
+			final EmissionProbabilityCalculator emissionProbabilityCalculator){
+		this.initialProbabilityCalculator = initialProbabilityCalculator;
+		this.transitionProbabilityCalculator = transitionProbabilityCalculator;
+		this.emissionProbabilityCalculator = emissionProbabilityCalculator;
 	}
 
 	@Override
-	public PathSummary findPath(final Vertex start, final Vertex end, final Graph graph, final Coordinates[] observations){
-		final int n = graph.vertices().size();
-		final int m = observations.length;
-		final double[][] fScores = new double[m][n];
-		int[][] path = new int[n][m];
-//		final var predecessorTree = new HashMap<Vertex, Edge>(n);
-//		predecessorTree.put(start, null);
+	public Edge[] findPath(final Graph graph, final Coordinate[] observations){
+		final Collection<Edge> graphEdges = graph.edges();
 
-		//calculate emission probability matrix
-		final double[][] emissionProbability = new double[m][n];
-		createEmissionProbability(observations, emissionProbability, graph);
+		final int n = graphEdges.size();
+		final int m = observations.length;
+		final Map<Edge, double[]> fScores = new HashMap<>();
+		final Map<Edge, Edge[]> path = new HashMap<>();
 
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
-//		final double initialProbability = logPr(1. / graph.edges().size());
-//		for(final Edge startingNode : startingNodes)
-//			startingNode.setWeight(initialProbability + calculator.calculateWeight(startingNode.getTo(), null));
-		for(int state = 0; state < n; state ++){
-			fScores[0][state] = /*initialProbability[state] +*/ emissionProbability[0][state];
-			path[state][0] = state;
+		initialProbabilityCalculator.calculateInitialProbability(observations[0], graphEdges);
+		emissionProbabilityCalculator.updateEmissionProbability(observations[0], graphEdges);
+		for(final Edge edge : graphEdges){
+			fScores.computeIfAbsent(edge, k -> new double[m])[0] = initialProbabilityCalculator.initialProbability(edge)
+				+ emissionProbabilityCalculator.emissionProbability(observations[0], edge);
+			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
 		}
 
-		//construction of Viterbi matrix
 		double minProbability;
-		int maxProbabilityState;
+		Edge minProbabilityEdge;
 		for(int i = 1; i < m; i ++){
-			final int[][] newPath = new int[n][m];
-			for(int currentState = 0; currentState < n; currentState ++){
-				final var currentStateID = "E" + currentState;
+			emissionProbabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
 
+			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
+			for(final Edge currentEdge : graphEdges){
 				minProbability = Double.POSITIVE_INFINITY;
-				for(int fromState = 0; fromState < n; fromState ++){
-					final var fromStateID = "E" + fromState;
-					final var fromStateVertex = graph.vertices().stream()
-						.filter(v -> v.getId().equals(fromStateID))
-						.findFirst()
-						.get();
-
-					final Edge edge = graph.getVertexEdges(fromStateVertex).stream()
-						.filter(e -> e.getFrom().getId().equals(fromStateID) && e.getTo().getId().equals(currentStateID))
-						.findFirst()
-						.orElse(null);
-					final var tmp = (edge == null? Double.POSITIVE_INFINITY: calculator.calculateWeight(edge));
-					final double probability = fScores[i - 1][fromState] + tmp;
+				for(final Edge fromEdge : graphEdges){
+					final double probability = fScores.get(fromEdge)[i - 1]
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, currentEdge);
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;
-						maxProbabilityState = fromState;
-						fScores[i][currentState] = probability + emissionProbability[i][currentState];
-//						predecessorTree.put(edge.getTo(), edge);
+						minProbabilityEdge = fromEdge;
+						fScores.get(currentEdge)[i] = probability
+							+ emissionProbabilityCalculator.emissionProbability(observations[i], currentEdge);
 
 						//record path
-						System.arraycopy(path[maxProbabilityState], 0, newPath[currentState], 0, i);
-						newPath[currentState][i] = currentState;
+						System.arraycopy(path.computeIfAbsent(minProbabilityEdge, k -> new Edge[m]), 0,
+							newPath.computeIfAbsent(currentEdge, k -> new Edge[m]), 0, i);
+						newPath.get(currentEdge)[i] = currentEdge;
 					}
 				}
 			}
-			path = newPath;
+
+			path.clear();
+			path.putAll(newPath);
+			newPath.clear();
 		}
 
-		//compute the Viterbi path
 		minProbability = Double.POSITIVE_INFINITY;
-		maxProbabilityState = -1;
-		for(int state = 0; state < n; state ++){
-			if(fScores[m - 1][state] < minProbability){
-				minProbability = fScores[m - 1][state];
-				maxProbabilityState = state;
+		minProbabilityEdge = null;
+		for(final Edge edge : graphEdges)
+			if(fScores.get(edge)[m - 1] < minProbability){
+				minProbability = fScores.get(edge)[m - 1];
+				minProbabilityEdge = edge;
 			}
-		}
-
-		final Set<Vertex> vv = new LinkedHashSet<>();
-		if(maxProbabilityState >= 0){
-System.out.println(Arrays.toString(path[maxProbabilityState]));
-			for(final int id : path[maxProbabilityState]){
-				final var vID = "E" + id;
-				final var vx = graph.vertices().stream()
-					.filter(v -> v.getId().equals(vID))
-					.findFirst()
-					.get();
-				vv.add(vx);
-			}
-			final List<Vertex> vvv = new ArrayList<>(vv);
-
-			final var predecessorTree = new HashMap<Vertex, Edge>(n);
-			predecessorTree.put(vvv.get(0), null);
-			for(int i = 1; i < vvv.size(); i ++){
-				final Edge edge = new Edge(vvv.get(i - 1), vvv.get(i), 0.);
-				predecessorTree.put(edge.getTo(), edge);
-			}
-			return PATH_SUMMARY_CREATOR.createUnidirectionalPath(vvv.get(0), vvv.get(vvv.size() - 1), predecessorTree);
-		}
-		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, Collections.emptyMap());
+		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
 	}
-
-	protected void createEmissionProbability(final Coordinates[] observations, final double[][] emissionProbability, final Graph graph){
-		for(int observationIndex = 0; observationIndex < observations.length; observationIndex ++){
-			final Geometry point = WGS84GeometryHelper.createPoint(
-				observations[observationIndex].getLatitude(), observations[observationIndex].getLongitude()
-			);
-			//step 1. Calculate dist(p_i, r_j)
-			final int n = emissionProbability[0].length;
-			for(int k = 0; k < n; k ++){
-				final var stateID = "E" + k;
-				final var state = graph.vertices().stream()
-					.filter(v -> v.getId().equals(stateID))
-					.findFirst()
-					.get()
-					.getGeometry();
-				//calculate distance from current position to segment
-				emissionProbability[observationIndex][k] = point.distance(state);
-			}
-
-			//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
-			double cumulativeDistance = 0.;
-			for(int k = 0; k < n; k ++){
-				cumulativeDistance += emissionProbability[observationIndex][k];
-			}
-
-			//step 3. Calculate Pr(r_j | p_i)
-			for(int k = 0; k < n; k ++){
-				emissionProbability[observationIndex][k] = cumulativeDistance / emissionProbability[observationIndex][k];
-			}
-
-			//step 4. Calculate Pr(p_i | r_j)
-			double cumulativeProbability = 0.;
-			for(int k = 0; k < n; k ++){
-				cumulativeProbability += emissionProbability[observationIndex][k];
-			}
-			for(int k = 0; k < n; k ++){
-				emissionProbability[observationIndex][k] = logPr(emissionProbability[observationIndex][k] / cumulativeProbability);
-			}
-		}
-	}
-
-	private static double logPr(final double probability){
-		return -StrictMath.log(probability);
-	}
-
-//	@Override
-//	public PathSummary findPath2(final Vertex start, final Vertex end, final Graph graph, final Coordinates[] observations){
-//		//for a node, this is the node immediately preceding it on the cheapest path from start to the given node currently known
-//		final int numberOfVertices = graph.vertices().size();
-//		final var predecessorTree = new HashMap<Vertex, Edge>(numberOfVertices);
-//		predecessorTree.put(start, null);
-//
-//		//the current best guess as to how cheap a path could be from start to finish if it goes through the given node
-//		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
-//		// correct segment
-////		final double initialProbability = logPr(1. / graph.edges().size());
-////		for(final Edge startingNode : startingNodes)
-////			startingNode.setWeight(initialProbability + calculator.calculateWeight(startingNode.getTo(), null));
-//		final var fScoresPrevious = new HashMap<String, Double>(numberOfVertices);
-//		fScoresPrevious.put(start.getId(), 0.);
-//		final var fScoresNext = new HashMap<String, Double>(numberOfVertices);
-//
-//		//set of discovered nodes that may need to be (re-)expanded
-//		final var queue = new LinkedList<Vertex>();
-//		for(final var observation : observations){
-//			final var startingNodes = graph.getVertexEdges(start);
-//			calculator.updateEmissionProbability(observation, startingNodes);
-//
-//			queue.clear();
-//			queue.add(start);
-//			final var seenVertices = new HashSet<String>(numberOfVertices);
-//			while(!queue.isEmpty()){
-//				final var current = queue.pop();
-//				if(current.equals(end))
-//					break;
-//
-//				seenVertices.add(current.getId());
-//				final var edges = graph.getVertexEdges(current);
-//				var minProbability = Double.POSITIVE_INFINITY;
-//				final var minProbabilityEdges = new HashMap<Double, Set<Edge>>(edges.size());
-//				for(final var edge : edges){
-//					final var probability = fScoresPrevious.getOrDefault(edge.getTo().getId(), calculator.calculateWeight(edge.getFrom(), edge.getTo()))
-//						+ calculator.calculateWeight(edge);
-//					if(probability <= minProbability){
-//						minProbability = probability;
-//						minProbabilityEdges.computeIfAbsent(probability, k -> new HashSet<>(1))
-//							.add(edge);
-//					}
-//				}
-//				final var minEdges = minProbabilityEdges.getOrDefault(minProbability, Collections.emptySet());
-//				for(final var minEdge : minEdges){
-//					final var neighbor = minEdge.getTo();
-//					final var neighborID = neighbor.getId();
-//					if(!seenVertices.contains(neighborID)){
-//						predecessorTree.put(neighbor, minEdge);
-//						//store the cost of the cheapest path from start to this node
-//						final var newScore = minProbability + calculator.calculateWeight(neighbor, end);
-//						fScoresNext.put(neighborID, newScore + calculator.calculateWeight(minEdge));
-//
-//						if(!queue.contains(neighbor))
-//							//further explore path
-//							queue.add(neighbor);
-//					}
-//				}
-//			}
-//
-//			fScoresPrevious.clear();
-//			fScoresPrevious.putAll(fScoresNext);
-//			fScoresNext.clear();
-//		}
-//
-//		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
-//	}
 
 }

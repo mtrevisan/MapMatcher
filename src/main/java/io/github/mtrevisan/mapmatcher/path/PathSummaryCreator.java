@@ -25,19 +25,20 @@
 package io.github.mtrevisan.mapmatcher.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class PathSummaryCreator{
 
-	public PathSummary createUnidirectionalPath(final Vertex start, final Vertex end,
-			final Map<Vertex, Edge> predecessorTree){
+	public PathSummary createUnidirectionalPath(final Node start, final Node end,
+			final Map<Node, Edge> predecessorTree){
 		final var fromEndToStart = reconstructPathFromPredecessorTree(end, start, predecessorTree);
 
 		Collections.reverse(fromEndToStart);
@@ -45,8 +46,8 @@ public class PathSummaryCreator{
 		return new SingleDirectionalPathSummary(fromEndToStart, predecessorTree.keySet());
 	}
 
-	public PathSummary createBidirectionalPath(final Vertex start, final Vertex middle, final Vertex end,
-			final Map<Vertex, Edge> predecessorTreeStart, final Map<Vertex, Edge> predecessorTreeEnd){
+	public PathSummary createBidirectionalPath(final Node start, final Node middle, final Node end,
+			final Map<Node, Edge> predecessorTreeStart, final Map<Node, Edge> predecessorTreeEnd){
 		final var fromMidToStart = reconstructPathFromPredecessorTree(middle, start, predecessorTreeStart);
 		Collections.reverse(fromMidToStart);
 
@@ -59,15 +60,15 @@ public class PathSummaryCreator{
 		return new BidirectionalPathSummary(fromMidToStart, predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
 	}
 
-	private List<Edge> reconstructPathFromPredecessorTree(final Vertex from, final Vertex to, final Map<Vertex, Edge> predecessorTree){
+	private List<Edge> reconstructPathFromPredecessorTree(final Node from, final Node to, final Map<Node, Edge> predecessorTree){
 		final var result = new ArrayList<Edge>();
 		var currentNode = from;
-		while(predecessorTree.containsKey(currentNode) && !currentNode.equals(to)){
+		while(predecessorTree.containsKey(currentNode) && !Objects.equals(currentNode, to)){
 			final var edge = predecessorTree.get(currentNode);
 			result.add(edge);
 			currentNode = edge.getFrom();
 		}
-		return (currentNode.equals(to)? result: new ArrayList<>());
+		return (Objects.equals(currentNode, to)? result: new ArrayList<>());
 	}
 
 }

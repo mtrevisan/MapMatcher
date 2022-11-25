@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -24,63 +24,38 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.Iterator;
 
 
-public class Graph{
+public interface Graph{
 
-	private final Map<Vertex, List<Edge>> adjacencyList;
-	private final Map<String, Vertex> vertices;
-	private final ConcurrentHashMap<Graph, Graph> cache = new ConcurrentHashMap<>();
+	/**
+	 * Returns the nodes that have been added to this graph.
+	 *
+	 * @return	The nodes.
+	 */
+	Collection<Node> nodes();
 
+	/**
+	 * Returns an iterator over the nodes in this graph.
+	 *
+	 * @return	The node iterator.
+	 */
+	Iterator<Node> nodeIterator();
 
-	Graph(final Map<Vertex, List<Edge>> adjacencyList, final Map<String, Vertex> vertices){
-		this.adjacencyList = deepImmutableCopy(adjacencyList);
-		this.vertices = new HashMap<>(vertices);
-	}
+	/**
+	 * Returns the edges that have been added to this graph.
+	 *
+	 * @return	The edges.
+	 */
+	Collection<Edge> edges();
 
-	public Collection<Edge> getVertexEdges(final Vertex node){
-		return adjacencyList.getOrDefault(node, Collections.emptyList());
-	}
-
-	private Map<Vertex, List<Edge>> deepImmutableCopy(final Map<Vertex, List<Edge>> adjacencyList){
-		return adjacencyList.entrySet()
-			.stream()
-			.collect(Collectors.toMap(Map.Entry::getKey, entry -> List.copyOf(entry.getValue())));
-	}
-
-	public Graph reversed(){
-		return cache.computeIfAbsent(this, Graph::computeReversedGraph);
-	}
-
-	private Graph computeReversedGraph(){
-		final var reversedAdjacencyList = new HashMap<Vertex, List<Edge>>();
-		for(final var entry : adjacencyList.entrySet())
-			for(final var edge : entry.getValue())
-				reversedAdjacencyList.computeIfAbsent(edge.getTo(), k -> new ArrayList<>(1))
-					.add(edge.reversed());
-		return new Graph(reversedAdjacencyList, vertices);
-	}
-
-	public Collection<Vertex> vertices(){
-		return vertices.values();
-	}
-
-	public Collection<Edge> edges(){
-		return adjacencyList.values().stream()
-			.collect(ArrayList::new, List::addAll, List::addAll);
-	}
-
-	@Override
-	public String toString(){
-		return "Graph{" + "adjacencyList=" + adjacencyList + ", vertices=" + vertices + '}';
-	}
+	/**
+	 * Returns an iterator over the edges in this graph, in the order in which they were added.
+	 *
+	 * @return	The edge iterator.
+	 */
+	Iterator<Edge> edgeIterator();
 
 }

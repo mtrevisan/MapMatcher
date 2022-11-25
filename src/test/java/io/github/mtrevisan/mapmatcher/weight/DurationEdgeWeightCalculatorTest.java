@@ -1,7 +1,9 @@
 package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -26,10 +28,11 @@ class DurationEdgeWeightCalculatorTest{
 			Coordinate toCoordinates = coordinates[(i << 1) + 1];
 			double expectedDuration = expectedDurations[i];
 			double maxSpeed = maxSpeeds[i];
-			DurationEdgeWeightCalculator edgeWeightCalculator = new DurationEdgeWeightCalculator();
-			double actualDistance = edgeWeightCalculator.calculateWeight(new Edge(
-				new Vertex("1", fromCoordinates),
-				new Vertex("2", toCoordinates), maxSpeed));
+			DurationCalculator edgeWeightCalculator = new DurationCalculator();
+			final Edge edge = Edge.createBidirectionalEdge(new Node("0", fromCoordinates), new Node("1", toCoordinates),
+				WGS84GeometryHelper.createLineString(new Coordinate[]{fromCoordinates, toCoordinates}));
+			edge.setWeight(maxSpeed);
+			double actualDistance = edgeWeightCalculator.calculateWeight(edge);
 
 			Assertions.assertEquals(expectedDuration, actualDistance, 0.000_05);
 		}
@@ -51,11 +54,11 @@ class DurationEdgeWeightCalculatorTest{
 			Coordinate fromCoordinates = coordinates[i << 1];
 			Coordinate toCoordinates = coordinates[(i << 1) + 1];
 			double expectedDistance = expectedDistances[i];
-			DurationEdgeWeightCalculator edgeWeightCalculator = new DurationEdgeWeightCalculator();
+			DurationCalculator edgeWeightCalculator = new DurationCalculator();
 
 			double actualDistance = edgeWeightCalculator.calculateWeight(
-				new Vertex("1", fromCoordinates),
-				new Vertex("2", toCoordinates));
+				new Node("0", fromCoordinates),
+				new Node("1", toCoordinates));
 
 			Assertions.assertEquals(expectedDistance, actualDistance, 0.000_05);
 		}

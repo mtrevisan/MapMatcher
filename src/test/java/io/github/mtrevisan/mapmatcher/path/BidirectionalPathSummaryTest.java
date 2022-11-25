@@ -1,14 +1,15 @@
 package io.github.mtrevisan.mapmatcher.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,14 +17,18 @@ import java.util.Set;
 
 class BidirectionalPathSummaryTest{
 
+	private static final GeometryFactory FACTORY = new GeometryFactory();
+
+
 	@Test
 	void should_return_path_consisting_of_vertices(){
-		Vertex first = new Vertex("1", new Coordinate(1., 2.));
-		Vertex second = new Vertex("2", new Coordinate(2., 2.));
-		List<Edge> path = new ArrayList<>(List.of(new Edge(first, second, 50.)));
+		Node first = new Node("0", new Coordinate(1., 2.));
+		Node second = new Node("1", new Coordinate(2., 2.));
+		List<Edge> path = new ArrayList<>(List.of(Edge.createBidirectionalEdge(first, second,
+			FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
-		List<Vertex> result = pathSummary.simplePath();
+		List<Node> result = pathSummary.simplePath();
 
 		Assertions.assertEquals(Arrays.asList(first, second), result);
 	}
@@ -32,16 +37,17 @@ class BidirectionalPathSummaryTest{
 	void should_return_empty_list_when_path_is_empty(){
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(new ArrayList<>(), new HashSet<>(), new HashSet<>());
 
-		List<Vertex> result = pathSummary.simplePath();
+		List<Node> result = pathSummary.simplePath();
 
 		Assertions.assertTrue(result.isEmpty());
 	}
 
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
-		List<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", new Coordinate(1., 2.)),
-				new Vertex("2", new Coordinate(2., 2.)), 50.)));
+		final Node first = new Node("0", new Coordinate(1., 2.));
+		final Node second = new Node("1", new Coordinate(2., 2.));
+		List<Edge> path = new ArrayList<>(List.of(Edge.createBidirectionalEdge(first, second,
+			FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
 		int result = pathSummary.numberOfVertices();
@@ -61,9 +67,9 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_the_number_of_visited_vertices(){
-		Set<Vertex> visitedVertices = new HashSet<>(Arrays.asList(
-			new Vertex("1", new Coordinate(1., 1.)),
-			new Vertex("2", new Coordinate(2., 2.))
+		Set<Node> visitedVertices = new HashSet<>(Arrays.asList(
+			new Node("0", new Coordinate(1., 1.)),
+			new Node("1", new Coordinate(2., 2.))
 		));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(new ArrayList<>(), visitedVertices, visitedVertices);
 
@@ -74,9 +80,10 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_distance(){
-		ArrayList<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
-				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
+		final Node first = new Node("0", new Coordinate(14.552797, 121.058805));
+		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
+		ArrayList<Edge> path = new ArrayList<>(List.of(Edge.createBidirectionalEdge(first, second,
+			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
 		double result = pathSummary.totalDistance();
@@ -86,30 +93,17 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_duration(){
-		ArrayList<Edge> path = new ArrayList<>(List.of(
-			new Edge(new Vertex("1", new Coordinate(14.552797, 121.058805)),
-				new Vertex("2", new Coordinate(14.593999, 120.994260)), 50.)));
+		final Node first = new Node("0", new Coordinate(14.552797, 121.058805));
+		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
+		final Edge edge = Edge.createBidirectionalEdge(first, second,
+			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
+		edge.setWeight(50.);
+		ArrayList<Edge> path = new ArrayList<>(List.of(edge));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
 		double result = pathSummary.totalDuration();
 
 		Assertions.assertEquals(0.091_9, result, 0.000_05);
-	}
-
-	@Test
-	void should_return_path_search_boundaries(){
-		final Vertex firstVertex = new Vertex("1", new Coordinate(1., 1.));
-		final Vertex secondVertex = new Vertex("2", new Coordinate(3., 3.));
-		final Vertex thirdVertex = new Vertex("3", new Coordinate(5., 1.));
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(new ArrayList<>(),
-			new HashSet<>(Arrays.asList(firstVertex, secondVertex, thirdVertex)),
-			new HashSet<>(Arrays.asList(thirdVertex, firstVertex, secondVertex)));
-
-		Collection<List<Vertex>> result = pathSummary.searchBoundaries();
-
-		Assertions.assertEquals(2, result.size());
-		Assertions.assertEquals(Arrays.asList(secondVertex, firstVertex, thirdVertex), result.toArray()[0]);
-		Assertions.assertEquals(Arrays.asList(secondVertex, firstVertex, thirdVertex), result.toArray()[1]);
 	}
 
 	@Test
@@ -121,12 +115,12 @@ class BidirectionalPathSummaryTest{
 		Assertions.assertFalse(pathSummary.isFound());
 
 
-		Vertex vertex1 = new Vertex("1", new Coordinate(14.552797, 121.058805));
-		Vertex vertex2 = new Vertex("2", new Coordinate(14.593999, 120.994260));
-		path = new ArrayList<>(List.of(new Edge(vertex1, vertex2, 50.)));
+		Node node1 = new Node("0", new Coordinate(14.552797, 121.058805));
+		Node node2 = new Node("1", new Coordinate(14.593999, 120.994260));
+		path = new ArrayList<>(List.of(Edge.createBidirectionalEdge(node1, node2, FACTORY.createLineString(new Coordinate[]{node1.getCoordinate(), node2.getCoordinate()}))));
 		pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
-		Assertions.assertEquals(Arrays.asList(vertex1, vertex2), pathSummary.simplePath());
+		Assertions.assertEquals(Arrays.asList(node1, node2), pathSummary.simplePath());
 		Assertions.assertTrue(pathSummary.isFound());
 	}
 

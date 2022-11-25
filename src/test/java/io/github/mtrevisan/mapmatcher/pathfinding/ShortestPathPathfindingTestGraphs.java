@@ -1,11 +1,13 @@
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
+import io.github.mtrevisan.mapmatcher.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.GraphBuilder;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
-import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
-import io.github.mtrevisan.mapmatcher.weight.VertexCountEdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +15,9 @@ import java.util.List;
 
 
 class ShortestPathPathfindingTestGraphs{
+
+	private static final GeometryFactory FACTORY = new GeometryFactory();
+
 
 	static TestGraphSummary euclideanDistanceTestGraphConnected(){
         /*
@@ -30,50 +35,40 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Vertex vertexA = new Vertex("1", new Coordinate(0., 0.));
-		final Vertex vertexB = new Vertex("2", new Coordinate(1., 1.));
-		final Vertex vertexC = new Vertex("3", new Coordinate(3., 1.));
-		final Vertex vertexD = new Vertex("4", new Coordinate(2., 0.));
-		final Vertex vertexE = new Vertex("5", new Coordinate(2., -1.));
-		final Vertex vertexF = new Vertex("6", new Coordinate(6., -1.));
-		final Vertex vertexG = new Vertex("7", new Coordinate(3., 1.));
-		final Vertex vertexH = new Vertex("8", new Coordinate(4., 1.));
-		final Vertex vertexI = new Vertex("9", new Coordinate(4., 3.));
-		final Vertex vertexJ = new Vertex("10", new Coordinate(4., 2.));
-		final Vertex vertexK = new Vertex("11", new Coordinate(6., 2.));
-		final Vertex vertexM = new Vertex("12", new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", new Coordinate(0., 0.));
+		final Node nodeB = new Node("1", new Coordinate(1., 1.));
+		final Node nodeC = new Node("2", new Coordinate(3., 1.));
+		final Node nodeD = new Node("3", new Coordinate(2., 0.));
+		final Node nodeE = new Node("4", new Coordinate(2., -1.));
+		final Node nodeF = new Node("5", new Coordinate(6., -1.));
+		final Node nodeG = new Node("6", new Coordinate(3., 1.));
+		final Node nodeH = new Node("7", new Coordinate(4., 1.));
+		final Node nodeI = new Node("8", new Coordinate(4., 3.));
+		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
+		final Node nodeK = new Node("10", new Coordinate(6., 2.));
+		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
-		final GraphBuilder gb = new GraphBuilder();
-		gb.addVertex(vertexA)
-			.addVertex(vertexB)
-			.addVertex(vertexC)
-			.addVertex(vertexD)
-			.addVertex(vertexE)
-			.addVertex(vertexF)
-			.addVertex(vertexG)
-			.addVertex(vertexH)
-			.addVertex(vertexI)
-			.addVertex(vertexJ)
-			.addVertex(vertexK)
-			.addVertex(vertexM)
-			.connect(vertexA, vertexD, 50.)
-			.connect(vertexA, vertexC, 50.)
-			.connect(vertexA, vertexB, 50.)
-			.connect(vertexB, vertexG, 50.)
-			.connect(vertexB, vertexI, 50.)
-			.connect(vertexG, vertexH, 50.)
-			.connect(vertexH, vertexI, 50.)
-			.connect(vertexI, vertexM, 50.)
-			.connect(vertexD, vertexJ, 50.)
-			.connect(vertexC, vertexD, 50.)
-			.connect(vertexC, vertexE, 50.)
-			.connect(vertexE, vertexF, 50.)
-			.connect(vertexF, vertexK, 50.)
-			.connect(vertexK, vertexM, 50.)
-			.connect(vertexJ, vertexK, 50.)
-			.connect(vertexJ, vertexI, 50.);
+		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeG.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeI.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeG.getCoordinate(), nodeH.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeH.getCoordinate(), nodeI.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeI.getCoordinate(), nodeM.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeD.getCoordinate(), nodeJ.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeD.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeE.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeE.getCoordinate(), nodeF.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeF.getCoordinate(), nodeK.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeK.getCoordinate(), nodeM.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeK.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeI.getCoordinate()}));
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)),
+		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
+		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
+		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(Arrays.asList(nodeA, nodeB, nodeI, nodeM)),
 			new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
@@ -93,49 +88,39 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Vertex vertexA = new Vertex("1", new Coordinate(0., 0.));
-		final Vertex vertexB = new Vertex("2", new Coordinate(1., 1.));
-		final Vertex vertexC = new Vertex("3", new Coordinate(3., 1.));
-		final Vertex vertexD = new Vertex("4", new Coordinate(2., 0.));
-		final Vertex vertexE = new Vertex("5", new Coordinate(2., -1.));
-		final Vertex vertexF = new Vertex("6", new Coordinate(6., -1.));
-		final Vertex vertexG = new Vertex("7", new Coordinate(3., 1.));
-		final Vertex vertexH = new Vertex("8", new Coordinate(4., 1.));
-		final Vertex vertexI = new Vertex("9", new Coordinate(4., 3.));
-		final Vertex vertexJ = new Vertex("10", new Coordinate(4., 2.));
-		final Vertex vertexK = new Vertex("11", new Coordinate(6., 2.));
-		final Vertex vertexM = new Vertex("12", new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", new Coordinate(0., 0.));
+		final Node nodeB = new Node("1", new Coordinate(1., 1.));
+		final Node nodeC = new Node("2", new Coordinate(3., 1.));
+		final Node nodeD = new Node("3", new Coordinate(2., 0.));
+		final Node nodeE = new Node("4", new Coordinate(2., -1.));
+		final Node nodeF = new Node("5", new Coordinate(6., -1.));
+		final Node nodeG = new Node("6", new Coordinate(3., 1.));
+		final Node nodeH = new Node("7", new Coordinate(4., 1.));
+		final Node nodeI = new Node("8", new Coordinate(4., 3.));
+		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
+		final Node nodeK = new Node("10", new Coordinate(6., 2.));
+		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
-		final GraphBuilder gb = new GraphBuilder();
-		gb.addVertex(vertexA)
-			.addVertex(vertexB)
-			.addVertex(vertexC)
-			.addVertex(vertexD)
-			.addVertex(vertexE)
-			.addVertex(vertexF)
-			.addVertex(vertexG)
-			.addVertex(vertexH)
-			.addVertex(vertexI)
-			.addVertex(vertexJ)
-			.addVertex(vertexK)
-			.addVertex(vertexM)
-			.connect(vertexA, vertexD, 50.)
-			.connect(vertexA, vertexC, 50.)
-			.connect(vertexA, vertexB, 50.)
-			.connect(vertexB, vertexG, 50.)
-			.connect(vertexG, vertexH, 50.)
-			.connect(vertexI, vertexM, 50.)
-			.connect(vertexC, vertexD, 50.)
-			.connect(vertexC, vertexE, 50.)
-			.connect(vertexF, vertexK, 50.)
-			.connect(vertexK, vertexM, 50.)
-			.connect(vertexJ, vertexK, 50.)
-			.connect(vertexJ, vertexI, 50.);
+		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeG.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeG.getCoordinate(), nodeH.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeI.getCoordinate(), nodeM.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeD.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeE.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeF.getCoordinate(), nodeK.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeK.getCoordinate(), nodeM.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeK.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeI.getCoordinate()}));
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(), new EuclideanDistanceTestEdgeWeightCalculator());
+		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
+		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
+		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(), new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
-	static TestGraphSummary vertexCountTestGraphConnected(){
+	static TestGraphSummary nodeCountTestGraphConnected(){
         /*
          Test graph structure
               H(1,4) ---- I(3,4)  --- M(3,6)
@@ -151,55 +136,45 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Vertex vertexA = new Vertex("1", new Coordinate(0., 0.));
-		final Vertex vertexB = new Vertex("2", new Coordinate(1., 1.));
-		final Vertex vertexC = new Vertex("3", new Coordinate(3., 1.));
-		final Vertex vertexD = new Vertex("4", new Coordinate(2., 0.));
-		final Vertex vertexE = new Vertex("5", new Coordinate(2., -1.));
-		final Vertex vertexF = new Vertex("6", new Coordinate(6., -1.));
-		final Vertex vertexG = new Vertex("7", new Coordinate(3., 1.));
-		final Vertex vertexH = new Vertex("8", new Coordinate(4., 1.));
-		final Vertex vertexI = new Vertex("9", new Coordinate(4., 3.));
-		final Vertex vertexJ = new Vertex("10", new Coordinate(4., 2.));
-		final Vertex vertexK = new Vertex("11", new Coordinate(6., 2.));
-		final Vertex vertexM = new Vertex("12", new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", new Coordinate(0., 0.));
+		final Node nodeB = new Node("1", new Coordinate(1., 1.));
+		final Node nodeC = new Node("2", new Coordinate(3., 1.));
+		final Node nodeD = new Node("3", new Coordinate(2., 0.));
+		final Node nodeE = new Node("4", new Coordinate(2., -1.));
+		final Node nodeF = new Node("5", new Coordinate(6., -1.));
+		final Node nodeG = new Node("6", new Coordinate(3., 1.));
+		final Node nodeH = new Node("7", new Coordinate(4., 1.));
+		final Node nodeI = new Node("8", new Coordinate(4., 3.));
+		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
+		final Node nodeK = new Node("10", new Coordinate(6., 2.));
+		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
-		final GraphBuilder gb = new GraphBuilder();
-		gb.addVertex(vertexA)
-			.addVertex(vertexB)
-			.addVertex(vertexC)
-			.addVertex(vertexD)
-			.addVertex(vertexE)
-			.addVertex(vertexF)
-			.addVertex(vertexG)
-			.addVertex(vertexH)
-			.addVertex(vertexI)
-			.addVertex(vertexJ)
-			.addVertex(vertexK)
-			.addVertex(vertexM)
-			.connect(vertexA, vertexD, 50.)
-			.connect(vertexA, vertexC, 50.)
-			.connect(vertexA, vertexB, 50.)
-			.connect(vertexB, vertexG, 50.)
-			.connect(vertexB, vertexI, 50.)
-			.connect(vertexG, vertexH, 50.)
-			.connect(vertexH, vertexI, 50.)
-			.connect(vertexI, vertexM, 50.)
-			.connect(vertexD, vertexJ, 50.)
-			.connect(vertexC, vertexD, 50.)
-			.connect(vertexC, vertexE, 50.)
-			.connect(vertexC, vertexF, 50.)
-			.connect(vertexE, vertexF, 50.)
-			.connect(vertexF, vertexK, 50.)
-			.connect(vertexK, vertexM, 50.)
-			.connect(vertexJ, vertexK, 50.)
-			.connect(vertexJ, vertexI, 50.);
+		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeG.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeI.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeG.getCoordinate(), nodeH.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeH.getCoordinate(), nodeI.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeI.getCoordinate(), nodeM.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeD.getCoordinate(), nodeJ.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeD.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeE.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeF.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeE.getCoordinate(), nodeF.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeF.getCoordinate(), nodeK.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeK.getCoordinate(), nodeM.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeK.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeI.getCoordinate()}));
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(Arrays.asList(vertexA, vertexB, vertexI, vertexM)),
-			new VertexCountEdgeWeightCalculator());
+		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
+		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
+		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(Arrays.asList(nodeA, nodeB, nodeI, nodeM)),
+			new NodeCountCalculator());
 	}
 
-	static TestGraphSummary vertexCountTestGraphDisconnected(){
+	static TestGraphSummary nodeCountTestGraphDisconnected(){
         /*
          Test graph structure
               H(1,4)      I(3,4)  --- M(3,6)
@@ -215,59 +190,49 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Vertex vertexA = new Vertex("1", new Coordinate(0., 0.));
-		final Vertex vertexB = new Vertex("2", new Coordinate(1., 1.));
-		final Vertex vertexC = new Vertex("3", new Coordinate(3., 1.));
-		final Vertex vertexD = new Vertex("4", new Coordinate(2., 0.));
-		final Vertex vertexE = new Vertex("5", new Coordinate(2., -1.));
-		final Vertex vertexF = new Vertex("6", new Coordinate(6., -1.));
-		final Vertex vertexG = new Vertex("7", new Coordinate(3., 1.));
-		final Vertex vertexH = new Vertex("8", new Coordinate(4., 1.));
-		final Vertex vertexI = new Vertex("9", new Coordinate(4., 3.));
-		final Vertex vertexJ = new Vertex("10", new Coordinate(4., 2.));
-		final Vertex vertexK = new Vertex("11", new Coordinate(6., 2.));
-		final Vertex vertexM = new Vertex("12", new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", new Coordinate(0., 0.));
+		final Node nodeB = new Node("1", new Coordinate(1., 1.));
+		final Node nodeC = new Node("2", new Coordinate(3., 1.));
+		final Node nodeD = new Node("3", new Coordinate(2., 0.));
+		final Node nodeE = new Node("4", new Coordinate(2., -1.));
+		final Node nodeF = new Node("5", new Coordinate(6., -1.));
+		final Node nodeG = new Node("6", new Coordinate(3., 1.));
+		final Node nodeH = new Node("7", new Coordinate(4., 1.));
+		final Node nodeI = new Node("8", new Coordinate(4., 3.));
+		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
+		final Node nodeK = new Node("10", new Coordinate(6., 2.));
+		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
-		final GraphBuilder gb = new GraphBuilder();
-		gb.addVertex(vertexA)
-			.addVertex(vertexB)
-			.addVertex(vertexC)
-			.addVertex(vertexD)
-			.addVertex(vertexE)
-			.addVertex(vertexF)
-			.addVertex(vertexG)
-			.addVertex(vertexH)
-			.addVertex(vertexI)
-			.addVertex(vertexJ)
-			.addVertex(vertexK)
-			.addVertex(vertexM)
-			.connect(vertexA, vertexD, 50.)
-			.connect(vertexA, vertexC, 50.)
-			.connect(vertexA, vertexB, 50.)
-			.connect(vertexB, vertexG, 50.)
-			.connect(vertexG, vertexH, 50.)
-			.connect(vertexI, vertexM, 50.)
-			.connect(vertexC, vertexD, 50.)
-			.connect(vertexC, vertexE, 50.)
-			.connect(vertexF, vertexK, 50.)
-			.connect(vertexK, vertexM, 50.)
-			.connect(vertexJ, vertexK, 50.)
-			.connect(vertexJ, vertexI, 50.);
+		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeG.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeG.getCoordinate(), nodeH.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeI.getCoordinate(), nodeM.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeD.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeE.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeF.getCoordinate(), nodeK.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeK.getCoordinate(), nodeM.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeK.getCoordinate()}));
+		gb.addApproximateEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeI.getCoordinate()}));
 
-		return new TestGraphSummary(gb.asGraph(), vertexA, vertexM, new ArrayList<>(), new VertexCountEdgeWeightCalculator());
+		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
+		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
+		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(), new NodeCountCalculator());
 	}
 
 
 	static class TestGraphSummary{
 
 		private final Graph graph;
-		private final Vertex start;
-		private final Vertex end;
-		private final List<Vertex> shortestPath;
+		private final Node start;
+		private final Node end;
+		private final List<Node> shortestPath;
 		private final EdgeWeightCalculator calculator;
 
 
-		TestGraphSummary(final Graph graph, final Vertex start, final Vertex end, final List<Vertex> shortestPath,
+		TestGraphSummary(final Graph graph, final Node start, final Node end, final List<Node> shortestPath,
 				final EdgeWeightCalculator calculator){
 			this.graph = graph;
 			this.start = start;
@@ -280,15 +245,15 @@ class ShortestPathPathfindingTestGraphs{
 			return graph;
 		}
 
-		final Vertex getStart(){
+		final Node getStart(){
 			return start;
 		}
 
-		final Vertex getEnd(){
+		final Node getEnd(){
 			return end;
 		}
 
-		final List<Vertex> getShortestPath(){
+		final List<Node> getShortestPath(){
 			return shortestPath;
 		}
 

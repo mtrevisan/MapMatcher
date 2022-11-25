@@ -24,23 +24,37 @@
  */
 package io.github.mtrevisan.mapmatcher;
 
-import io.github.mtrevisan.mapmatcher.graph.Coordinates;
+import io.github.mtrevisan.mapmatcher.distances.AngularGeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.GraphBuilder;
-import io.github.mtrevisan.mapmatcher.graph.Vertex;
+import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.LogMapEdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogBayesianEmissionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicTransitionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalculator;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -53,126 +67,153 @@ import java.util.Set;
  */
 public class Application{
 
-	private static final double SIGMA_OBSERVATION = 4.07;
-	private static final double BETA = 3.;
-
-
 	public static void main(final String[] args){
-		final LogMapEdgeWeightCalculator calculator = new LogMapEdgeWeightCalculator();
-//		final MapMatchingStrategy strategy = new AStarMapMatching(calculator);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(calculator);
-//		final PathfindingStrategy strategy = new BidirectionalDijkstraPathfinder(calculator);
-		final Vertex start = new Vertex("START", new Coordinate(12.11, 45.66));
-		final Vertex end = new Vertex("END", new Coordinate(12.41, 45.66));
+		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator();
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
 
-		final Coordinate vertex11 = new Coordinate(12.159747628109386, 45.66132709541773);
-		final Coordinate vertex12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
-		final Coordinate vertex22 = new Coordinate(12.242949896905884, 45.69828882177029);
-		final Coordinate vertex23 = new Coordinate(12.200627355552967, 45.732876303059044);
-		final Coordinate vertex32_51_61 = new Coordinate(12.343946870589775, 45.65931029901404);
-		final Coordinate vertex42 = new Coordinate(12.25545428412434, 45.61054896081151);
-		final Coordinate vertex52 = new Coordinate(12.297776825477285, 45.7345547621876);
-		final Coordinate vertex62 = new Coordinate(12.322785599913317, 45.610885391198394);
+		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = new Coordinate(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = new Coordinate(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = new Coordinate(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = new Coordinate(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
 
-		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex11, vertex12_31_41});
-		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex22, vertex23});
-		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex32_51_61});
-		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex12_31_41, vertex42});
-		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex52});
-		final LineString edge6 = WGS84GeometryHelper.createLineString(new Coordinate[]{vertex32_51_61, vertex62});
+		final LineString edge0 = WGS84GeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
 
-		final Coordinates[] observations1 = new Coordinates[]{
-			Coordinates.of(45.64824627395467, 12.142791962642718),
-			Coordinates.of(45.658700732309484, 12.166829013921557),
-			Coordinates.of(45.663553924585955, 12.190331908504874),
-			Coordinates.of(45.65720735774349, 12.219176370039179),
-			Coordinates.of(45.65310037232308, 12.237871854367),
-			Coordinates.of(45.675125223889154, 12.243213421318018),
-			Coordinates.of(45.691544896329816, 12.23894016775725),
-			Coordinates.of(45.70684070823364, 12.237337697671506),
-			Coordinates.of(45.725861366408196, 12.23306444411162),
-			Coordinates.of(45.731454445518864, 12.215971429868546)
+		final Coordinate[] observations1 = new Coordinate[]{
+			new Coordinate(12.142791962642718, 45.64824627395467),
+			new Coordinate(12.166829013921557, 45.658700732309484),
+			new Coordinate(12.190331908504874, 45.663553924585955),
+			new Coordinate(12.219176370039179, 45.65720735774349),
+			new Coordinate(12.237871854367, 45.65310037232308),
+			new Coordinate(12.243213421318018, 45.675125223889154),
+			new Coordinate(12.23894016775725, 45.691544896329816),
+			new Coordinate(12.237337697671506, 45.70684070823364),
+			new Coordinate(12.23306444411162, 45.725861366408196),
+			new Coordinate(12.215971429868546, 45.731454445518864)
 		};
-		final Coordinates[] observations2 = new Coordinates[]{
-			Coordinates.of(45.59108565830172, 12.172704737567187),
-			Coordinates.of(45.627705048963094, 12.229859503941071),
-			Coordinates.of(45.6422714215264, 12.241610951232218),
-			Coordinates.of(45.65646065552491, 12.243213421318018),
-			Coordinates.of(45.662060679461206, 12.272057882852266),
-			Coordinates.of(45.66168736195718, 12.304641441251732),
-			Coordinates.of(45.66168736195718, 12.331349276005653)
+		final Coordinate[] observations2 = new Coordinate[]{
+			new Coordinate(12.172704737567187, 45.59108565830172),
+			new Coordinate(12.229859503941071, 45.627705048963094),
+			new Coordinate(12.241610951232218, 45.6422714215264),
+			new Coordinate(12.243213421318018, 45.65646065552491),
+			new Coordinate(12.272057882852266, 45.662060679461206),
+			new Coordinate(12.304641441251732, 45.66168736195718),
+			new Coordinate(12.331349276005653, 45.66168736195718)
 		};
-		final Coordinates[] observations = observations1;
+		final Coordinate[] observations = observations1;
 
-		final LineString[] edges = new LineString[]{edge1, edge2, edge3, edge4, edge5, edge6};
-		//[m]
-		final double radius = 2_000.;
-		final Graph graph = extractGraph(edges, observations, radius, start, end);
+		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = extractGraph(observedEdges, 500.);
 
-		final PathSummary pathSummary = strategy.findPath(start, end, graph, observations);
-		final List<Vertex> path = pathSummary.simplePath();
-		if(path.size() > 2){
-			path.remove(0);
-			path.remove(path.size() - 1);
-		}
+		final Edge[] path = strategy.findPath(graph, observations);
 
-		System.out.println(path);
+if(path != null)
+	System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 
-	private static Graph extractGraph(final LineString[] edges, final Coordinates[] observations, final double radius,
-			final Vertex start, final Vertex end){
-		final Set<LineString> observedEdges = extractObservedEdges(edges, observations, radius);
+//	public static void main(final String[] args){
+//		final double observationStandardDeviation = 200.;
+//		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+//		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation,
+//			distanceCalculator);
+//		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
+//
+//		final Coordinate[] observations1 = new Coordinate[]{
+//			new Coordinate(12.142791962642718, 45.64824627395467),
+//			new Coordinate(12.166829013921557, 45.658700732309484),
+//			new Coordinate(12.190331908504874, 45.663553924585955),
+//			new Coordinate(12.219176370039179, 45.65720735774349),
+//			new Coordinate(12.237871854367, 45.65310037232308),
+//			new Coordinate(12.243213421318018, 45.675125223889154),
+//			new Coordinate(12.23894016775725, 45.691544896329816),
+//			new Coordinate(12.237337697671506, 45.70684070823364),
+//			new Coordinate(12.23306444411162, 45.725861366408196),
+//			new Coordinate(12.215971429868546, 45.731454445518864)
+//		};
+//		final Coordinate[] observations2 = new Coordinate[]{
+//			new Coordinate(12.172704737567187, 45.59108565830172),
+//			new Coordinate(12.229859503941071, 45.627705048963094),
+//			new Coordinate(12.241610951232218, 45.6422714215264),
+//			new Coordinate(12.243213421318018, 45.65646065552491),
+//			new Coordinate(12.272057882852266, 45.662060679461206),
+//			new Coordinate(12.304641441251732, 45.66168736195718),
+//			new Coordinate(12.331349276005653, 45.66168736195718)
+//		};
+//		final Coordinate[] observations = observations2;
+//
+//		final LineString[] edges = readEdges();
+//		//all italy
+//		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 1_000_000.);
+//		final Graph graph = extractGraph(observedEdges, 200.);
+//
+//		final Edge[] path = strategy.findPath(graph, observations);
+//
+//		if(path != null)
+//			System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
+//	}
 
-		//construct topology
-		final Map<Coordinate, Set<Integer>> topology = new HashMap<>();
-		//FIXME to uncomment
-//		for(int i = 0; i < observedEdges.length; i ++){
-		for(int i = 0; i < edges.length; i ++){
-			final LineString edge = edges[i];
-			final Coordinate startCoordinate = edge.getCoordinateN(0);
-			final Coordinate endCoordinate = edge.getCoordinateN(edge.getNumPoints() - 1);
-			topology.computeIfAbsent(startCoordinate, k -> new HashSet<>(1))
-				.add(i);
-			topology.computeIfAbsent(endCoordinate, k -> new HashSet<>(1))
-				.add(i);
-		}
-		//remove unconnected vertices
-		topology.entrySet()
-			.removeIf(entry -> entry.getValue().size() == 1);
+	private static LineString[] readEdges(){
+		final List<String> lines = readFile("src/main/resources/map.eura.txt");
 
-		//add vertices
-		final GraphBuilder graphBuilder = new GraphBuilder();
-//		graphBuilder.addVertex(start)
-//			.addVertex(end);
-		//FIXME to uncomment
-//		for(int i = 0; i < observedEdges.length; i ++){
-		for(int i = 0; i < edges.length; i ++){
-			final String edgeID = "E" + i;
-			graphBuilder.addVertex(new Vertex(edgeID, edges[i]));
-		}
-
-		//add connections:
-		for(final Set<Integer> values : topology.values()){
-			for(final Integer initialVertex : values){
-				//FIXME upon uncomment, adjust this code to retrieve the correct ID
-				final String initialVertexID = "E" + initialVertex;
-				for(final Integer finalVertex : values){
-					//FIXME upon uncomment, adjust this code to retrieve the correct ID
-					final String finalVertexID = "E" + finalVertex;
-					graphBuilder.connectByIds(initialVertexID, finalVertexID);
-				}
+		final List<LineString> edges = new ArrayList<>();
+		try{
+			final WKTReader reader = WGS84GeometryHelper.getWktReader();
+			for(final String line : lines){
+				final Geometry segment = reader.read(line);
+				edges.add((LineString)segment);
 			}
 		}
-
-		return graphBuilder
-			.asGraph();
+		catch(final ParseException e){
+			e.printStackTrace();
+		}
+		return edges.toArray(LineString[]::new);
 	}
 
-	private static Set<LineString> extractObservedEdges(final LineString[] edges, final Coordinates[] observations,
+	private static List<String> readFile(final String filename){
+		final List<String> lines = new ArrayList<>();
+		final File f = new File(filename);
+		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
+			String readLine;
+			while((readLine = br.readLine()) != null)
+				if(!readLine.isEmpty())
+					lines.add(readLine);
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		return lines;
+	}
+
+	private static Graph extractGraph(final Collection<LineString> edges, final double radius){
+		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
+		int e = 0;
+		for(final LineString edge : edges){
+			final String edgeID = "E" + e;
+			graph.addApproximateEdge(edgeID, edge);
+
+			e ++;
+		}
+		return graph;
+	}
+
+	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
 			final double radius){
-		final Set<LineString> observationsEdges = new HashSet<>(edges.length);
-		for(final Coordinates observation : observations){
-			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation.getPoint().getCoordinate(), radius);
+		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
+		for(final Coordinate observation : observations){
+			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation, radius);
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge))
 					observationsEdges.add(edge);
