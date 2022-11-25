@@ -33,7 +33,12 @@ import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogBayesianEmissionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicTransitionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
@@ -63,12 +68,12 @@ import java.util.Set;
 public class Application{
 
 	public static void main(final String[] args){
-		final double observationStandardDeviation = 200.;
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
-		final LogProbabilityCalculator probabilityCalculator = new LogProbabilityCalculator(observationStandardDeviation,
-			distanceCalculator);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
-//		final MapMatchingStrategy strategy = new AStarMapMatching(probabilityCalculator);
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator();
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
 
 		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);

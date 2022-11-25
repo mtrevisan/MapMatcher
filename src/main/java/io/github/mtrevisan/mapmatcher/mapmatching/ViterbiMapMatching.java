@@ -26,7 +26,9 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
@@ -39,11 +41,17 @@ import java.util.Map;
  */
 public class ViterbiMapMatching implements MapMatchingStrategy{
 
-	private final LogProbabilityCalculator probabilityCalculator;
+	private final InitialProbabilityCalculator initialProbabilityCalculator;
+	private final TransitionProbabilityCalculator transitionProbabilityCalculator;
+	private final EmissionProbabilityCalculator emissionProbabilityCalculator;
 
 
-	public ViterbiMapMatching(final LogProbabilityCalculator mapMatchingProbabilityCalculator){
-		this.probabilityCalculator = mapMatchingProbabilityCalculator;
+	public ViterbiMapMatching(final InitialProbabilityCalculator initialProbabilityCalculator,
+			final TransitionProbabilityCalculator transitionProbabilityCalculator,
+			final EmissionProbabilityCalculator emissionProbabilityCalculator){
+		this.initialProbabilityCalculator = initialProbabilityCalculator;
+		this.transitionProbabilityCalculator = transitionProbabilityCalculator;
+		this.emissionProbabilityCalculator = emissionProbabilityCalculator;
 	}
 
 	@Override
@@ -57,29 +65,31 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
-		probabilityCalculator.calculateInitialProbability(observations[0], graphEdges);
-		probabilityCalculator.updateEmissionProbability(observations[0], graphEdges);
+		initialProbabilityCalculator.calculateInitialProbability(observations[0], graphEdges);
+		emissionProbabilityCalculator.updateEmissionProbability(observations[0], graphEdges);
 		for(final Edge edge : graphEdges){
-			fScores.computeIfAbsent(edge, k -> new double[m])[0] = probabilityCalculator.initialProbability(edge)
-				+ probabilityCalculator.emissionProbability(observations[0], edge);
+			fScores.computeIfAbsent(edge, k -> new double[m])[0] = initialProbabilityCalculator.initialProbability(edge)
+				+ emissionProbabilityCalculator.emissionProbability(observations[0], edge);
 			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
 		}
 
 		double minProbability;
 		Edge minProbabilityEdge;
 		for(int i = 1; i < m; i ++){
-			probabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
+			emissionProbabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
 			for(final Edge currentEdge : graphEdges){
 				minProbability = Double.POSITIVE_INFINITY;
 				for(final Edge fromEdge : graphEdges){
-					final double probability = fScores.get(fromEdge)[i - 1] + probabilityCalculator.transitionProbability(fromEdge, currentEdge);
+					final double probability = fScores.get(fromEdge)[i - 1]
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, currentEdge);
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;
 						minProbabilityEdge = fromEdge;
-						fScores.get(currentEdge)[i] = probability + probabilityCalculator.emissionProbability(observations[i], currentEdge);
+						fScores.get(currentEdge)[i] = probability
+							+ emissionProbabilityCalculator.emissionProbability(observations[i], currentEdge);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(minProbabilityEdge, k -> new Edge[m]), 0,

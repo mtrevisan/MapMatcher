@@ -24,43 +24,17 @@
  */
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
-import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import org.locationtech.jts.geom.Coordinate;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 
-public class LogProbabilityCalculator implements ProbabilityCalculator{
+public class TopologicTransitionCalculator implements TransitionProbabilityCalculator{
 
 	private static final double BETA = 3.;
 	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
-
-	private final double observationStandardDeviation;
-	private final DistanceCalculator distanceCalculator;
-
-	private double initialProbability;
-	private final Map<Edge, Double> emissionProbability = new HashMap<>();
-
-
-	public LogProbabilityCalculator(final double observationStandardDeviation, final DistanceCalculator distanceCalculator){
-		this.observationStandardDeviation = observationStandardDeviation;
-		this.distanceCalculator = distanceCalculator;
-	}
-
-
-	public void calculateInitialProbability(final Coordinate observation, final Collection<Edge> segments){
-		initialProbability = logPr(1. / segments.size());
-	}
-
-	@Override
-	public double initialProbability(final Edge segment){
-		return initialProbability;
-	}
 
 
 	/**
@@ -96,7 +70,7 @@ public class LogProbabilityCalculator implements ProbabilityCalculator{
 	public double transitionProbability(Edge fromSegment, Edge toSegment){
 		final int intersectingPoints = intersectionPoints(fromSegment, toSegment);
 		final double a = (intersectingPoints == 2? 1.: (intersectingPoints == 1? TRANSITION_PROBABILITY_CONNECTED_EDGES: 0.));
-		return logPr(a / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES));
+		return InitialProbabilityCalculator.logPr(a / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES));
 	}
 
 	/**
@@ -115,72 +89,6 @@ public class LogProbabilityCalculator implements ProbabilityCalculator{
 		toCoordinates.add(toSegment.getToCoordinate());
 		toCoordinates.retainAll(fromCoordinates);
 		return toCoordinates.size();
-	}
-
-
-	/**
-	 * Calculate emission probability
-	 * <p>
-	 * With the Bayesian rule: <code>Pr(o_i | r_j) = Pr(r_j | o_i) ⋅ Pr(o_i) / sum(k=1..n of Pr(r_k | o_i) ⋅ Pr(o_i))</code>, where
-	 * <code>i=1..m, j=1..n</code> presume that <code>Pr(o_i)</code> follows a uniform distribution, therefore:
-	 * <code>Pr(o_i | r_j) = Pr(r_j | o_i) / sum(k=1..n of Pr(r_k | o_i))</code>
-	 * <code>Pr(r_j | o_i)</code> is the probability that is the correct segment out of the candidate segments given that measured location
-	 * is <code>o_i</code>.
-	 * It's computed by assuming that, for most of the GPS points, the closer a segment is to the observed point, the higher the
-	 * probabilities that it is the correct segment. Considering the relationship of distance and observation probability as an inverse
-	 * proportion, first it's computed the probability of the perpendicular distance from GPS point <code>o_i</code> to the segment
-	 * <code>r_j<code> over the summation of the distances from <code>o_i</code> to all the candidate segments, and then use reciprocal
-	 * relation of the probability based on distances to approximate observation probability.
-	 * This leads to: <code>Pr(r_j | o_i) = 1 / (δ(o_i, r_j) / sum(k=1..n of δ(o_i, r_k)))</code>
-	 * </p>
-	 *
-	 * Otherwise
-	 *
-	 * <p>
-	 * Pr(o_i | r_j) = 1 / (√(2 ⋅  π) ⋅ σ) ⋅ exp(-0.5 ⋅ (dist(o_i, r_j) / σ)^2), where σ = 20 m (empirically)
-	 * </p>
-	 */
-	@Override
-	public double emissionProbability(final Coordinate observation, final Edge segment){
-		return emissionProbability.get(segment);
-	}
-
-	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
-/**		for(final Edge edge : edges){
-			final double factor = Math.toRadians(GeodeticHelper.meanRadiusOfCurvature(observation.getY()));
-			final double tmp = distanceCalculator.distance(observation, edge.getLineString()) * factor / observationStandardDeviation;
-			final double probability = logPr(Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation));
-			emissionProbability.put(edge, probability);
-		}
-/**/
-
-/**/		//step 1. Calculate dist(p_i, r_j)
-		//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
-		double cumulativeDistance = 0.;
-		for(final Edge edge : edges){
-			final double distance = distanceCalculator.distance(observation, edge.getLineString());
-			emissionProbability.put(edge, distance);
-			cumulativeDistance += distance;
-		}
-
-		//step 3. Calculate Pr(r_j | p_i)
-		double cumulativeProbability = 0.;
-		for(final Edge edge : edges){
-			final double probability = cumulativeDistance / emissionProbability.get(edge);
-			emissionProbability.put(edge, probability);
-			cumulativeProbability += probability;
-		}
-
-		//step 4. Calculate Pr(p_i | r_j)
-		for(final Edge edge : edges){
-			final double logProbability = logPr(emissionProbability.get(edge) / cumulativeProbability);
-			emissionProbability.put(edge, logProbability);
-		}
-/**/
-	}
-
-	private static double logPr(final double probability){
-		return -StrictMath.log(probability);
 	}
 
 
@@ -204,17 +112,6 @@ public class LogProbabilityCalculator implements ProbabilityCalculator{
 //		//		final double delta = Math.abs(routeLength(segment1, segment2) - segment1.distance(segment2));
 //		final double delta = segment1.distance(segment2);
 //		return BETA * StrictMath.exp(-BETA * delta);
-//	}
-//
-//	private static double nodeCost(final Point observation, final Geometry segment){
-//		return logPr(emissionProbability(observation, segment));
-//	}
-//
-//	//A zero-mean gaussian observation error, Pr(o_i | r_i) = 1/(√(2 ⋅ π) ⋅ σ_o) ⋅ exp(-0.5 ⋅ (δ(o_i, x_i) / σ_o)^2)
-//	private static double emissionProbability(final Point observation, final Geometry segment){
-//		final double c = 1. / (StrictMath.sqrt(2. * Math.PI) * SIGMA_OBSERVATION);
-//		final double reducedDistance = observation.distance(segment) / SIGMA_OBSERVATION;
-//		return c * StrictMath.exp(-0.5 * reducedDistance * reducedDistance);
 //	}
 
 }

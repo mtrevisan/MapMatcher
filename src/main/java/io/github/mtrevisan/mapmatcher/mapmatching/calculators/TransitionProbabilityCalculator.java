@@ -25,14 +25,9 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import org.locationtech.jts.geom.Coordinate;
 
 
-public interface ProbabilityCalculator{
-
-	double initialProbability(Edge segment);
-
-	double emissionProbability(Coordinate observation, Edge segment);
+public interface TransitionProbabilityCalculator{
 
 	double transitionProbability(Edge fromSegment, Edge toSegment);
 
