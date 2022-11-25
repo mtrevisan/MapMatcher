@@ -26,12 +26,16 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.graph.ScoredGraph;
 import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 
 /**
@@ -55,13 +59,20 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		final Map<Edge, double[]> fScores = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
+		final var seenNodes = new HashSet<Node>();
+
+		//set of discovered nodes that may need to be (re-)expanded
+		final var queue = new PriorityQueue<ScoredGraph<Edge>>();
+
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
 		probabilityCalculator.calculateInitialProbability(observations[0], graphEdges);
 		probabilityCalculator.updateEmissionProbability(observations[0], graphEdges);
 		for(final Edge edge : graphEdges){
-			fScores.computeIfAbsent(edge, k -> new double[m])[0] = probabilityCalculator.initialProbability(edge)
+			final double probability = probabilityCalculator.initialProbability(edge)
 				+ probabilityCalculator.emissionProbability(observations[0], edge);
+			queue.add(new ScoredGraph<>(edge, probability));
+			fScores.computeIfAbsent(edge, k -> new double[m])[0] = probability;
 			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
 		}
 

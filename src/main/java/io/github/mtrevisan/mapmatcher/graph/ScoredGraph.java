@@ -25,24 +25,24 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
 
-public class ScoredGraphNode implements Comparable<ScoredGraphNode>{
+public class ScoredGraph<T> implements Comparable<ScoredGraph<T>>{
 
-	private final Node node;
+	private final T node;
 	private final double score;
 
 
-	public ScoredGraphNode(final Node node, final double score){
+	public ScoredGraph(final T node, final double score){
 		this.node = node;
 		this.score = score;
 	}
 
-	public Node node(){
+	public T node(){
 		return node;
 	}
 
 	@Override
-	public int compareTo(final ScoredGraphNode scoredGraphNode){
-		return Double.compare(score, scoredGraphNode.score);
+	public int compareTo(final ScoredGraph scoredGraph){
+		return Double.compare(score, scoredGraph.score);
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class ScoredGraphNode implements Comparable<ScoredGraphNode>{
 		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final ScoredGraphNode other = (ScoredGraphNode)obj;
+		final ScoredGraph<?> other = (ScoredGraph<?>)obj;
 		return node.equals(other.node);
 	}
 

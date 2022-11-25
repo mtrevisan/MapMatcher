@@ -38,6 +38,7 @@ import java.util.Set;
 public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabilityCalculator{
 
 	private static final double BETA = 3.;
+	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
 
 	private final double observationStandardDeviation;
 	private final DistanceCalculator distanceCalculator;
@@ -94,7 +95,8 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 	@Override
 	public double transitionProbability(Edge fromSegment, Edge toSegment){
 		final int intersectingPoints = intersectionPoints(fromSegment, toSegment);
-		return (intersectingPoints == 2? 0.: (intersectingPoints == 1? 1.: Double.POSITIVE_INFINITY));
+		final double a = (intersectingPoints == 2? 1.: (intersectingPoints == 1? TRANSITION_PROBABILITY_CONNECTED_EDGES: 0.));
+		return logPr(a / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES));
 	}
 
 	/**
