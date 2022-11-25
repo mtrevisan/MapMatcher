@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
@@ -39,10 +39,10 @@ import java.util.Map;
  */
 public class ViterbiMapMatching implements MapMatchingStrategy{
 
-	private final LogMapMatchingProbabilityCalculator probabilityCalculator;
+	private final LogProbabilityCalculator probabilityCalculator;
 
 
-	public ViterbiMapMatching(final LogMapMatchingProbabilityCalculator mapMatchingProbabilityCalculator){
+	public ViterbiMapMatching(final LogProbabilityCalculator mapMatchingProbabilityCalculator){
 		this.probabilityCalculator = mapMatchingProbabilityCalculator;
 	}
 
@@ -65,7 +65,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
 		}
 
-		//construction of Viterbi matrix
 		double minProbability;
 		Edge minProbabilityEdge;
 		for(int i = 1; i < m; i ++){
@@ -80,7 +79,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 						//record minimum probability
 						minProbability = probability;
 						minProbabilityEdge = fromEdge;
-						fScores.get(currentEdge)[i] = probability + probabilityCalculator.emissionProbability(observations[i], fromEdge);
+						fScores.get(currentEdge)[i] = probability + probabilityCalculator.emissionProbability(observations[i], currentEdge);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(minProbabilityEdge, k -> new Edge[m]), 0,
@@ -95,7 +94,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			newPath.clear();
 		}
 
-		//compute the Viterbi path
 		minProbability = Double.POSITIVE_INFINITY;
 		minProbabilityEdge = null;
 		for(final Edge edge : graphEdges)

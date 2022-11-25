@@ -44,7 +44,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 
-class ViterbiMapMatchingTest{
+class AStarMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1(){
@@ -52,7 +52,7 @@ class ViterbiMapMatchingTest{
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 		final LogProbabilityCalculator probabilityCalculator = new LogProbabilityCalculator(observationStandardDeviation,
 			distanceCalculator);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
+		final MapMatchingStrategy strategy = new AStarMapMatching(probabilityCalculator);
 
 		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
@@ -95,11 +95,11 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E3_E2(){
-		final double observationStandardDeviation = 440;
+		final double observationStandardDeviation = 440.;
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 		final LogProbabilityCalculator probabilityCalculator = new LogProbabilityCalculator(observationStandardDeviation,
 			distanceCalculator);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
+		final MapMatchingStrategy strategy = new AStarMapMatching(probabilityCalculator);
 
 		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);

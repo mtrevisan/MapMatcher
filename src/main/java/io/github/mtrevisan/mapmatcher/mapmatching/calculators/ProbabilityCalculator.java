@@ -22,13 +22,13 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.weight;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import org.locationtech.jts.geom.Coordinate;
 
 
-public interface MapMatchingProbabilityCalculator{
+public interface ProbabilityCalculator{
 
 	double initialProbability(Edge segment);
 

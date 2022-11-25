@@ -33,7 +33,7 @@ import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
-import io.github.mtrevisan.mapmatcher.weight.LogMapMatchingProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,9 +65,10 @@ public class Application{
 	public static void main(final String[] args){
 		final double observationStandardDeviation = 200.;
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
-		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation,
+		final LogProbabilityCalculator probabilityCalculator = new LogProbabilityCalculator(observationStandardDeviation,
 			distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
+//		final MapMatchingStrategy strategy = new AStarMapMatching(probabilityCalculator);
 
 		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);

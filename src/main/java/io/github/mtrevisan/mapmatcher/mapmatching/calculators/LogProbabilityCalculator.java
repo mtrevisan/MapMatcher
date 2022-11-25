@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.weight;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabilityCalculator{
+public class LogProbabilityCalculator implements ProbabilityCalculator{
 
 	private static final double BETA = 3.;
 	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
@@ -47,7 +47,7 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 	private final Map<Edge, Double> emissionProbability = new HashMap<>();
 
 
-	public LogMapMatchingProbabilityCalculator(final double observationStandardDeviation, final DistanceCalculator distanceCalculator){
+	public LogProbabilityCalculator(final double observationStandardDeviation, final DistanceCalculator distanceCalculator){
 		this.observationStandardDeviation = observationStandardDeviation;
 		this.distanceCalculator = distanceCalculator;
 	}
@@ -146,7 +146,7 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 	}
 
 	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
-/*		for(final Edge edge : edges){
+/**		for(final Edge edge : edges){
 			final double factor = Math.toRadians(GeodeticHelper.meanRadiusOfCurvature(observation.getY()));
 			final double tmp = distanceCalculator.distance(observation, edge.getLineString()) * factor / observationStandardDeviation;
 			final double probability = logPr(Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation));

@@ -2,7 +2,7 @@ package io.github.mtrevisan.mapmatcher.pathfinding;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 
 
 public class EuclideanDistanceTestEdgeWeightCalculator implements EdgeWeightCalculator{

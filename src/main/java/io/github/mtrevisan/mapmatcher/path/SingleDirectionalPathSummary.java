@@ -27,8 +27,8 @@ package io.github.mtrevisan.mapmatcher.path;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
-import io.github.mtrevisan.mapmatcher.weight.DistanceEdgeWeightCalculator;
-import io.github.mtrevisan.mapmatcher.weight.DurationEdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,8 +38,8 @@ import java.util.stream.Collectors;
 
 public class SingleDirectionalPathSummary implements PathSummary{
 
-	private static final DistanceEdgeWeightCalculator DISTANCE_CALCULATOR = new DistanceEdgeWeightCalculator();
-	private static final DurationEdgeWeightCalculator DURATION_CALCULATOR = new DurationEdgeWeightCalculator();
+	private static final DistanceCalculator DISTANCE_CALCULATOR = new DistanceCalculator();
+	private static final DurationCalculator DURATION_CALCULATOR = new DurationCalculator();
 
 	private final List<Edge> path;
 	private final Set<Node> searchedVertices;

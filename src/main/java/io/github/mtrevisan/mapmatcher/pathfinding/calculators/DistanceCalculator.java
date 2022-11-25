@@ -22,22 +22,22 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.weight;
+package io.github.mtrevisan.mapmatcher.pathfinding.calculators;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 
 
-public class NodeCountEdgeWeightCalculator implements EdgeWeightCalculator{
+public class DistanceCalculator implements EdgeWeightCalculator{
 
 	@Override
 	public double calculateWeight(final Edge edge){
-		return 1.;
+		return calculateWeight(edge.getFrom(), edge.getTo());
 	}
 
 	@Override
 	public double calculateWeight(final Node from, final Node to){
-		return 1.;
+		return from.getCoordinate().distance(to.getCoordinate());
 	}
 
 }

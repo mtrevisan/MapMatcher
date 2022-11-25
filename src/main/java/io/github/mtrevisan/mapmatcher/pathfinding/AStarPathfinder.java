@@ -29,7 +29,7 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.graph.ScoredGraph;
 import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
-import io.github.mtrevisan.mapmatcher.weight.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 
 import java.util.HashMap;
 import java.util.HashSet;
