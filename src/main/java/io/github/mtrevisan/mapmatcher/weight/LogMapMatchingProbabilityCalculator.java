@@ -25,6 +25,7 @@
 package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import org.locationtech.jts.geom.Coordinate;
@@ -38,17 +39,17 @@ import java.util.Set;
 
 public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabilityCalculator{
 
-	private static final double SIGMA_OBSERVATION = 4.07;
-//	private static final double SIGMA_OBSERVATION = 20.;
 	private static final double BETA = 3.;
 
+	private final double observationStandardDeviation;
 	private final DistanceCalculator distanceCalculator;
 
 	private double initialProbability;
 	private final Map<Edge, Double> emissionProbability = new HashMap<>();
 
 
-	public LogMapMatchingProbabilityCalculator(final DistanceCalculator distanceCalculator){
+	public LogMapMatchingProbabilityCalculator(final double observationStandardDeviation, final DistanceCalculator distanceCalculator){
+		this.observationStandardDeviation = observationStandardDeviation;
 		this.distanceCalculator = distanceCalculator;
 	}
 
@@ -62,10 +63,6 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 		return initialProbability;
 	}
 
-
-	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> segments){
-		calculateEmissionProbability(observation, segments);
-	}
 
 	/**
 	 * Calculate transition probability
@@ -148,20 +145,16 @@ public class LogMapMatchingProbabilityCalculator implements MapMatchingProbabili
 		return emissionProbability.get(segment);
 	}
 
-	private void calculateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
-		for(final Edge edge : edges){
-			double distance = distanceCalculator.distance(observation, edge.getLineString())
-				* (111_132.954 * StrictMath.cos(Math.toRadians(observation.getY())));
-//			final double sigma = SIGMA_OBSERVATION;
-			final double sigma = 200.;
-			distance /= sigma;
-			final double probability = logPr(Math.exp(-0.5 * distance * distance) / (Math.sqrt(2. * Math.PI) * sigma));
-System.out.println(distance + " ->\t" + probability);
+	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){
+/*		for(final Edge edge : edges){
+			final double factor = Math.toRadians(GeodeticHelper.meanRadiusOfCurvature(observation.getY()));
+			final double tmp = distanceCalculator.distance(observation, edge.getLineString()) * factor / observationStandardDeviation;
+			final double probability = logPr(Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation));
 			emissionProbability.put(edge, probability);
 		}
-System.out.println("---");
+/**/
 
-/*		//step 1. Calculate dist(p_i, r_j)
+/**/		//step 1. Calculate dist(p_i, r_j)
 		//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
 		double cumulativeDistance = 0.;
 		for(final Edge edge : edges){
@@ -182,7 +175,6 @@ System.out.println("---");
 		for(final Edge edge : edges){
 			final double logProbability = logPr(emissionProbability.get(edge) / cumulativeProbability);
 			emissionProbability.put(edge, logProbability);
-System.out.println(logProbability);
 		}
 /**/
 	}

@@ -41,9 +41,6 @@ public class Node{
 
 
 	public Node(final String id, final Coordinate coordinate){
-		if(coordinate == null)
-			throw new IllegalArgumentException("`coordinate` node cannot be null");
-
 		this.id = id;
 		this.coordinate = coordinate;
 	}

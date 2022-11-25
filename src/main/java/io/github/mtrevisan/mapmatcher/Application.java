@@ -55,11 +55,12 @@ import java.util.Set;
 public class Application{
 
 	public static void main(final String[] args){
-		final LogMapMatchingProbabilityCalculator edgeWeightCalculator = new LogMapMatchingProbabilityCalculator(new AngularGeodeticCalculator());
+		final double observationStandardDeviation = 200.;
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
-		final MapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(distanceCalculator);
+		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation,
+			distanceCalculator);
 		final MapMatchingStrategy strategy = new AStarMapMatching(probabilityCalculator);
-//		final MapMatchingStrategy strategy = new ViterbiMapMatching(edgeWeightCalculator);
+//		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
 
 		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
 		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
@@ -107,7 +108,8 @@ public class Application{
 
 		final Edge[] path = strategy.findPath(graph, observations);
 
-System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
+if(path != null)
+	System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 
 	private static Graph extractGraph(final LineString[] edges, final Coordinate[] observations, final double radius){

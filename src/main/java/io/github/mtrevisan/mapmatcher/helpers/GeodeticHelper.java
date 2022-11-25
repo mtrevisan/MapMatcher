@@ -24,19 +24,22 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
+import io.github.mtrevisan.mapmatcher.graph.Edge;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 
 
 public class GeodeticHelper{
 
 	//flattening of the ellipsoid, in WGS84 reference (f = 1 - EARTH_POLAR_RADIUS/EARTH_EQUATORIAL_RADIUS)
-	private static final double EARTH_FLATTENING = 1. / 298.257_223_563;
+	public static final double EARTH_FLATTENING = 1. / 298.257_223_563;
+	private static final double FF = 1. / (1. - EARTH_FLATTENING);
+	//e^2 = (2 - f) * f
+	public static final double EARTH_ECCENTRICITY_2 = (2. - EARTH_FLATTENING) * EARTH_FLATTENING;
 	//length of semi-major axis of the ellipsoid (radius at the equator), in WGS84 reference [m]
-	private static final double EARTH_EQUATORIAL_RADIUS = 6_378_137.;
+	public static final double EARTH_EQUATORIAL_RADIUS = 6_378_137.0;
 	//length of semi-minor axis of the ellipsoid (radius at the poles) [m]
-	private static final double EARTH_POLAR_RADIUS = (1. - EARTH_FLATTENING) * EARTH_EQUATORIAL_RADIUS;
-	//ff = 1 / (1 - f)
-	private static final double FF = EARTH_EQUATORIAL_RADIUS / EARTH_POLAR_RADIUS;
+	public static final double EARTH_POLAR_RADIUS = (1. - EARTH_FLATTENING) * EARTH_EQUATORIAL_RADIUS;
 
 	//this corresponds to an accuracy of approximately 0.1 m
 	private static final double CONVERGENCE_THRESHOLD = 1.e-8;
@@ -84,7 +87,7 @@ public class GeodeticHelper{
 	 *
 	 * @param startPoint	The start point.
 	 * @param endPoint	The end point.
-	 * @return	The distance [m].
+	 * @return	The distance.
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
 	 */
@@ -144,8 +147,9 @@ public class GeodeticHelper{
 			throw new IllegalStateException("Formula failed to converge");
 
 		final double u2 = cos2Alpha * (FF * FF - 1.);
-		final double aa = 1. + u2 / 16384. * (4096. + u2 * (-768. + u2 * (320. - 175. * u2)));
-		final double bb = u2 / 1024. * (256. + u2 * (-128. + u2 * (74. - 47. * u2)));
+		final double k1 = (Math.sqrt(1. + u2) - 1.) / (Math.sqrt(1. + u2) + 1.);
+		final double aa = (1. + k1 * k1 / 4.) / (1. - k1);
+		final double bb = k1 * (1. - 3./8. * k1 * k1);
 		final double deltaSigma = bb * sinSigma * (cos2SigmaM
 			+ bb / 4. * (cosSigma * (-1. + 2. * cos2SigmaM * cos2SigmaM)
 			- bb / 6. * cos2SigmaM * (-3. + 4. * sinSigma * sinSigma) * (-3. + 4. * cos2SigmaM * cos2SigmaM)));
@@ -175,8 +179,51 @@ public class GeodeticHelper{
 		return od;
 	}
 
+//	/**
+//	 * Calculate orthodromic distance, (azimuth) bearing and final bearing between a point and a line string using inverse Vincenty formula.
+//	 *
+//	 * @param point	The point.
+//	 * @param lineString	The line string.
+//	 * @return	The distance (positive means right of course, negative means left).
+//	 *
+//	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
+//	 */
+//	public static OrthodromicDistance distance(final Coordinate point, final LineString lineString){
+//		final int size = lineString.getNumPoints();
+//		for(int i = 1; i < size; i ++){
+//			final Coordinate pointA = lineString.getCoordinateN(i - 1);
+//			final Coordinate pointB = lineString.getCoordinateN(i);
+//			final OrthodromicDistance distanceAB = distance(pointA, pointB);
+//
+//			double low = 0.;
+//			double high = distanceAB.distance;
+//			while(low <= high){
+//				final double middle = low + (high - low) / 2.;
+//				final Coordinate pointMiddle = destination(pointA, distanceAB.initialBearing, middle).destination;
+//				final OrthodromicDistance distancePM = distance(point, pointMiddle);
+//				if(sortedArray[middle] < key){
+//					low = middle + 1;
+//				}
+//				else if(sortedArray[middle] > key){
+//					high = middle - 1;
+//				}
+//				else if(sortedArray[middle] == key){
+//					index = middle;
+//					break;
+//				}
+//			}
+//			//TODO
+//		}
+//		final OrthodromicDistance od = new OrthodromicDistance();
+//		od.angularDistance = angularDistance;
+//		od.distance = distance;
+//		od.initialBearing = initialBearing;
+//		od.finalBearing = finalBearing;
+//		return od;
+//	}
+
 	/**
-	 * Destination given distance & bearing from start point (direct solution).
+	 * Destination given distance & bearing from start point using direct Vincenty formula.
 	 *
 	 * @param origin	Origin position.
 	 * @param initialBearing	Azimuth of the geodesic [°].
@@ -190,33 +237,36 @@ public class GeodeticHelper{
 		final double tanU1 = (1. - EARTH_FLATTENING) * StrictMath.tan(phi1);
 		final double cosU1 = 1. / Math.sqrt(1. + tanU1 * tanU1);
 		final double sinU1 = tanU1 * cosU1;
-		final double sinAlpha1 = StrictMath.sin(Math.toRadians(initialBearing));
-		final double cosAlpha1 = StrictMath.cos(Math.toRadians(initialBearing));
+		final double alpha1 = Math.toRadians(initialBearing);
+		final double sinAlpha1 = StrictMath.sin(alpha1);
+		final double cosAlpha1 = StrictMath.cos(alpha1);
 		//angular distance on the sphere from the equator to the first point
 		double angularDistance = StrictMath.atan2(tanU1, cosAlpha1);
 		//α is the azimuth of the geodesic at the equator
 		final double sinAlpha = cosU1 * sinAlpha1;
 		final double cos2Alpha = 1. - sinAlpha * sinAlpha;
 		final double u2 = cos2Alpha * (FF * FF - 1.);
-		final double aa = 1. + u2 / 16384. * (4096. + u2 * (-768. + u2 * (320. - 175. * u2)));
-		final double bb = u2 / 1024. * (256. + u2 * (-128. + u2 * (74. - 47. * u2)));
+		final double k1 = (Math.sqrt(1. + u2) - 1.) / (Math.sqrt(1. + u2) + 1.);
+		final double aa = (1. + k1 * k1 / 4.) / (1. - k1);
+		final double bb = k1 * (1. - 3./8. * k1 * k1);
 
 		//σ is the angular distance on the sphere
 		double sigma = distance / (EARTH_POLAR_RADIUS * aa);
 		double sigmaPrime, sinSigma, cosSigma;
 		//σₘ is the angular distance on the sphere from the equator to the midpoint of the line
 		double cos2SigmaM;
+		final double sigma1 = StrictMath.atan2(tanU1, cosAlpha1);
 		int iteration = ITERATION_LIMIT;
 		do{
 			sinSigma = StrictMath.sin(sigma);
 			cosSigma = StrictMath.cos(sigma);
-			cos2SigmaM = StrictMath.cos(2. * angularDistance + sigma);
+			cos2SigmaM = StrictMath.cos(2. * sigma1 + sigma);
 			final double deltaSigma = bb * sinSigma * (cos2SigmaM + bb / 4. * (cosSigma * (-1. + 2. * cos2SigmaM * cos2SigmaM)
 				- bb / 6. * cos2SigmaM * (-3. + 4. * sinSigma * sinSigma) * (-3. + 4. * cos2SigmaM * cos2SigmaM)));
 			sigmaPrime = sigma;
 			sigma = distance / (EARTH_POLAR_RADIUS * aa) + deltaSigma;
 		}while(Math.abs(sigma - sigmaPrime) > CONVERGENCE_THRESHOLD && -- iteration > 0);
-		if(iteration == 100)
+		if(iteration == 0)
 			throw new IllegalStateException("Formula failed to converge");
 
 		final double x = sinU1 * sinSigma - cosU1 * cosSigma * cosAlpha1;
@@ -226,7 +276,7 @@ public class GeodeticHelper{
 		final double cc = EARTH_FLATTENING / 16. * cos2Alpha * (4. + EARTH_FLATTENING * (4. - 3. * cos2Alpha));
 		final double ll = lambda - (1. - cc) * EARTH_FLATTENING * sinAlpha * (sigma + cc * sinSigma * (cos2SigmaM
 			+ cc * cosSigma * (-1. + 2. * cos2SigmaM * cos2SigmaM)));
-		final double lambda2 = lambda1 + ll;
+		final double lambda2 = ll + lambda1;
 		//[rad]
 		final double finalBearing = StrictMath.atan2(sinAlpha, -x);
 
@@ -239,6 +289,46 @@ public class GeodeticHelper{
 		return od;
 	}
 
+
+	/**
+	 * Earth mean radius of curvature by latitude.
+	 *
+	 * @param latitude	The latitude [deg].
+	 * @return	The geocentric mean radius [m].
+	 *
+	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
+	 */
+	public static double meanRadiusOfCurvature(final double latitude){
+		final double m = meridionalRadiusOfCurvature(latitude);
+		final double n = primeVerticalRadiusOfCurvature(latitude);
+		return 2. * m * n / (m + n);
+	}
+
+	/**
+	 * Earth meridional radius of curvature by latitude.
+	 *
+	 * @param latitude	The latitude [deg].
+	 * @return	The meridional radius [m].
+	 *
+	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
+	 */
+	public static double meridionalRadiusOfCurvature(final double latitude){
+		final double tmp = primeVerticalRadiusOfCurvature(latitude) / EARTH_EQUATORIAL_RADIUS;
+		return tmp * tmp * tmp * (1. - EARTH_ECCENTRICITY_2) * EARTH_EQUATORIAL_RADIUS;
+	}
+
+	/**
+	 * Earth prime vertical radius of curvature by latitude.
+	 *
+	 * @param latitude	The latitude [deg].
+	 * @return	The prime vertical radius [m].
+	 *
+	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
+	 */
+	public static double primeVerticalRadiusOfCurvature(final double latitude){
+		final double sinLat = StrictMath.sin(Math.toRadians(latitude));
+		return EARTH_EQUATORIAL_RADIUS / Math.sqrt(1. - EARTH_ECCENTRICITY_2 * sinLat * sinLat);
+	}
 
 	private static double reduce0_2pi(final double angle){
 		return (angle + 2. * Math.PI) % (2. * Math.PI);

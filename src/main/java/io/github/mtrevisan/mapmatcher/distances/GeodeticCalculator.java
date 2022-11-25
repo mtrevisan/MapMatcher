@@ -40,7 +40,8 @@ public class GeodeticCalculator implements DistanceCalculator{
 	}
 
 	/**
-	 * Calculate cross-track (angular) distance on a spherical geometry.
+	 * Calculate cross-track distance on a spherical geometry.
+	 * TODO: to be checked!
 	 *
 	 * @param point	The point
 	 * @param lineString	The list of track points.
@@ -55,19 +56,18 @@ public class GeodeticCalculator implements DistanceCalculator{
 			final GeodeticHelper.OrthodromicDistance distance01 = GeodeticHelper.distance(trackPoints[i - 1], trackPoints[i]);
 
 			//(angular) distance from start point to third point
-			final double delta13 = distance0P.getDistance();
+			final double delta13 = distance0P.getAngularDistance();
 			//(initial) bearing from start point to third point
 			final double theta13 = distance0P.getInitialBearing();
 			//(initial) bearing from start point to end point
 			final double theta12 = distance01.getInitialBearing();
 			final double distance = StrictMath.asin(StrictMath.sin(delta13) * StrictMath.sin(theta13 - theta12));
 
-			if(distance < minimumDistance)
+			if(Math.abs(distance) < Math.abs(minimumDistance))
 				minimumDistance = distance;
 		}
-		return minimumDistance;
+		return minimumDistance * GeodeticHelper.EARTH_POLAR_RADIUS;
 	}
-
 
 //	//[km]
 //	private static final double EARTH_RADIUS = 6371.;
