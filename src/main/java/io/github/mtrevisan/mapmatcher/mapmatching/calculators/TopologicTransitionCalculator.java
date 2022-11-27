@@ -68,8 +68,19 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	 */
 	@Override
 	public double transitionProbability(Edge fromSegment, Edge toSegment){
+		//NOTE: edges are bidirectional, so this code works
 		final int intersectingPoints = intersectionPoints(fromSegment, toSegment);
 		final double a = (intersectingPoints == 2? 1.: (intersectingPoints == 1? TRANSITION_PROBABILITY_CONNECTED_EDGES: 0.));
+
+//		double a = 0;
+//		final Coordinate fromToCoordinate = fromSegment.getTo().getCoordinate();
+//		final Coordinate toFromCoordinate = toSegment.getFrom().getCoordinate();
+//		if(fromToCoordinate.equals(toFromCoordinate))
+//			a = TRANSITION_PROBABILITY_CONNECTED_EDGES;
+//		else if(fromToCoordinate.equals(toSegment.getTo().getCoordinate())
+//				&& fromSegment.getFrom().getCoordinate().equals(toFromCoordinate))
+//			a = 1.;
+
 		return InitialProbabilityCalculator.logPr(a / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES));
 	}
 

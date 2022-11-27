@@ -70,29 +70,29 @@ public class AStarPathfinder implements PathfindingStrategy{
 		queue.add(new ScoredGraph<>(start, fScore));
 
 		while(!queue.isEmpty()){
-			final var current = queue.poll()
-				.node();
-			if(current.equals(end))
+			final var fromNode = queue.poll()
+				.element();
+			if(fromNode.equals(end))
 				break;
 
-			for(final var edge : current.geOutEdges()){
-				final var neighbor = edge.getTo();
-				if(seenNodes.contains(neighbor))
+			for(final var edge : fromNode.geOutEdges()){
+				final var toNode = edge.getTo();
+				if(seenNodes.contains(toNode))
 					continue;
 
-				final var newScore = gScores.get(current) + calculator.calculateWeight(edge);
-				if(newScore < gScores.getOrDefault(neighbor, Double.MAX_VALUE)){
-					gScores.put(neighbor, newScore);
-					predecessorTree.put(neighbor, edge);
+				final var newScore = gScores.get(fromNode) + calculator.calculateWeight(edge);
+				if(newScore < gScores.getOrDefault(toNode, Double.POSITIVE_INFINITY)){
+					gScores.put(toNode, newScore);
+					predecessorTree.put(toNode, edge);
 
-					fScore = newScore + heuristic(neighbor, end);
-					final ScoredGraph<Node> sgv = new ScoredGraph<>(neighbor, fScore);
+					fScore = newScore + heuristic(toNode, end);
+					final ScoredGraph<Node> sgv = new ScoredGraph<>(toNode, fScore);
 					if(!queue.contains(sgv))
 						queue.add(sgv);
 				}
 			}
 
-			seenNodes.add(current);
+			seenNodes.add(fromNode);
 		}
 
 		return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);

@@ -189,7 +189,7 @@ class ViterbiMapMatchingTest{
 
 		final Edge[] path = strategy.findPath(graph, observations);
 
-		final String expected = "[E3, E3, E3, E2, E2, E2, E2]";
+		final String expected = "[E3, E3, E3, E2rev, E2rev, E2rev, E2rev]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 
@@ -198,8 +198,8 @@ class ViterbiMapMatchingTest{
 		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
-			final String edgeID = "E" + e;
-			graph.addApproximateEdge(edgeID, edge);
+			graph.addApproximateDirectEdge("E" + e, edge);
+			graph.addApproximateDirectEdge("E" + e + "rev", edge.reverse());
 
 			e ++;
 		}

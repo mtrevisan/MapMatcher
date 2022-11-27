@@ -37,15 +37,8 @@ public class Edge{
 	protected final Node to;
 	protected final LineString geometry;
 
-	private boolean bidirectional;
 	private double weight;
 
-
-	public static Edge createBidirectionalEdge(final Node from, final Node to, final LineString geometry){
-		final Edge edge = new Edge(from, to, geometry);
-		edge.setBidirectional();
-		return edge;
-	}
 
 	public static Edge createDirectEdge(final Node from, final Node to, final LineString geometry){
 		return new Edge(from, to, geometry);
@@ -103,14 +96,6 @@ public class Edge{
 		return geometry;
 	}
 
-	public boolean isBidirectional(){
-		return bidirectional;
-	}
-
-	void setBidirectional(){
-		bidirectional = true;
-	}
-
 	public double getWeight(){
 		return weight;
 	}
@@ -120,7 +105,7 @@ public class Edge{
 	}
 
 	public Edge reversed(){
-		return createBidirectionalEdge(to, from, geometry.reverse());
+		return createDirectEdge(to, from, geometry.reverse());
 	}
 
 	@Override

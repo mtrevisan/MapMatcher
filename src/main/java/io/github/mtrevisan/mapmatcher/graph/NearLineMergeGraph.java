@@ -56,23 +56,11 @@ public class NearLineMergeGraph implements Graph{
 		this.distanceCalculator = distanceCalculator;
 	}
 
-	public Collection<Edge> addApproximateEdge(final LineString lineString){
-		return addApproximateEdge(null, lineString);
-	}
-
-	public Collection<Edge> addApproximateEdge(final String id, final LineString lineString){
-		return addApproximateDirectEdge(id, lineString, true);
-	}
-
 	public Collection<Edge> addApproximateDirectEdge(final LineString lineString){
 		return addApproximateDirectEdge(null, lineString);
 	}
 
 	public Collection<Edge> addApproximateDirectEdge(final String id, final LineString lineString){
-		return addApproximateDirectEdge(id, lineString, false);
-	}
-
-	private Collection<Edge> addApproximateDirectEdge(final String id, final LineString lineString, final boolean bidirectionalEdge){
 		final Collection<Edge> addedEdges = new HashSet<>(0);
 		if(lineString.isEmpty())
 			return addedEdges;
@@ -90,9 +78,7 @@ public class NearLineMergeGraph implements Graph{
 		intersectionNodes.retainAll(endNodes);
 		for(final Node fromNode : startNodes)
 			for(final Node toNode : endNodes){
-				final Edge edge = Edge.createBidirectionalEdge(fromNode, toNode, lineString);
-				if(bidirectionalEdge)
-					edge.setBidirectional();
+				final Edge edge = Edge.createDirectEdge(fromNode, toNode, lineString);
 				if(id != null){
 					edge.setID(id);
 
@@ -103,8 +89,6 @@ public class NearLineMergeGraph implements Graph{
 				}
 				if(!edges.contains(edge)){
 					fromNode.addOutEdge(edge);
-					if(bidirectionalEdge)
-						toNode.addOutEdge(edge);
 					edges.add(edge);
 
 					addedEdges.add(edge);
@@ -115,8 +99,7 @@ public class NearLineMergeGraph implements Graph{
 		for(final Node intersectionNode1 : intersectionNodes)
 			for(final Node intersectionNode2 : intersectionNodes)
 				if(!intersectionNode1.equals(intersectionNode2)){
-					final Edge edge = Edge.createBidirectionalEdge(intersectionNode1, intersectionNode2, lineString);
-					edge.setBidirectional();
+					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2, lineString);
 					if(id != null){
 						edge.setID(id);
 

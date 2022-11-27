@@ -26,18 +26,19 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.graph.ScoredGraph;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
 
 
 /**
@@ -58,7 +59,6 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		this.emissionProbabilityCalculator = emissionProbabilityCalculator;
 	}
 
-	//TODO finish implementing the real A* algorithm
 	@Override
 	public Edge[] findPath(final Graph graph, final Coordinate[] observations){
 		final Collection<Edge> graphEdges = graph.edges();
@@ -68,10 +68,8 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		final Map<Edge, double[]> fScores = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
-		final var seenNodes = new HashSet<Node>();
-
 		//set of discovered nodes that may need to be (re-)expanded
-		final var queue = new PriorityQueue<ScoredGraph<Edge>>();
+		final Queue<ScoredGraph<Edge>> queue = new PriorityQueue<>();
 
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
@@ -80,33 +78,39 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		for(final Edge edge : graphEdges){
 			final double probability = initialProbabilityCalculator.initialProbability(edge)
 				+ emissionProbabilityCalculator.emissionProbability(observations[0], edge);
-			queue.add(new ScoredGraph<>(edge, probability));
 			fScores.computeIfAbsent(edge, k -> new double[m])[0] = probability;
 			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
+
+			queue.add(new ScoredGraph<>(edge, probability));
 		}
 
-		double minProbability;
-		Edge minProbabilityEdge;
 		for(int i = 1; i < m; i ++){
 			emissionProbabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
-			for(final Edge currentEdge : graphEdges){
-				minProbability = Double.POSITIVE_INFINITY;
-				for(final Edge fromEdge : graphEdges){
+			while(!queue.isEmpty()){
+				//FIXME If ties are broken so the queue behaves in a LIFO manner, A* will behave like depth-first search among equal cost
+				// paths (avoiding exploring more than one equally optimal solution)
+				final Edge fromEdge = queue.poll()
+					.element();
+				//TODO termination condition: i == m - 1 && currentEdge is best (?)
+
+				for(final Edge toEdge : fromEdge.getTo().geOutEdges()){
 					final double probability = fScores.get(fromEdge)[i - 1]
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, currentEdge);
-					if(probability < minProbability){
-						//record minimum probability
-						minProbability = probability;
-						minProbabilityEdge = fromEdge;
-						fScores.get(currentEdge)[i] = probability
-							+ emissionProbabilityCalculator.emissionProbability(observations[i], currentEdge);
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge);
+					if(probability < fScores.get(toEdge)[i - 1]){
+						fScores.get(toEdge)[i] = probability;
+
+						final double newProbability = probability
+							+ emissionProbabilityCalculator.emissionProbability(observations[i], toEdge);
+						final ScoredGraph<Edge> sg = new ScoredGraph<>(toEdge, newProbability);
+						if(!queue.contains(sg))
+							queue.add(sg);
 
 						//record path
-						System.arraycopy(path.computeIfAbsent(minProbabilityEdge, k -> new Edge[m]), 0,
-							newPath.computeIfAbsent(currentEdge, k -> new Edge[m]), 0, i);
-						newPath.get(currentEdge)[i] = currentEdge;
+						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,
+							newPath.computeIfAbsent(toEdge, k -> new Edge[m]), 0, i);
+						newPath.get(toEdge)[i] = toEdge;
 					}
 				}
 			}
@@ -116,8 +120,15 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			newPath.clear();
 		}
 
-		minProbability = Double.POSITIVE_INFINITY;
-		minProbabilityEdge = null;
+		//TODO it is important that the same node doesn't appear in the priority queue more than once (each entry corresponding to a
+		// different path to the node, and each with a different cost). A standard approach here is to check if a node about to be added
+		// already appears in the priority queue. If it does, then the priority and parent pointers are changed to correspond to the lower
+		// cost path. A standard binary heap based priority queue does not directly support the operation of searching for one of its
+		// elements, but it can be augmented with a hash table that maps elements to their position in the heap, allowing this
+		// decrease-priority operation to be performed in logarithmic time. Alternatively, a Fibonacci heap can perform the same
+		// decrease-priority operations in constant amortized time.
+		double minProbability = Double.POSITIVE_INFINITY;
+		Edge minProbabilityEdge = null;
 		for(final Edge edge : graphEdges)
 			if(fScores.get(edge)[m - 1] < minProbability){
 				minProbability = fScores.get(edge)[m - 1];

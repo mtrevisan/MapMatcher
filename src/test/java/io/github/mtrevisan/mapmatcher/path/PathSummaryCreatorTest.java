@@ -24,9 +24,9 @@ class PathSummaryCreatorTest{
 		Node middle = new Node("1", new Coordinate(1., 2.));
 		Node end = new Node("2", new Coordinate(1., 3.));
 		Map<Node, Edge> predecessorTree = new LinkedHashMap<>(2);
-		predecessorTree.put(middle, Edge.createBidirectionalEdge(start, middle,
+		predecessorTree.put(middle, Edge.createDirectEdge(start, middle,
 			FACTORY.createLineString(new Coordinate[]{start.getCoordinate(), middle.getCoordinate()})));
-		predecessorTree.put(end, Edge.createBidirectionalEdge(middle, end,
+		predecessorTree.put(end, Edge.createDirectEdge(middle, end,
 			FACTORY.createLineString(new Coordinate[]{middle.getCoordinate(), end.getCoordinate()})));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
@@ -42,9 +42,9 @@ class PathSummaryCreatorTest{
 		Node middle = new Node("2", new Coordinate(1., 1.));
 		Node end = new Node("3", new Coordinate(1., 1.));
 		Map<Node, Edge> predecessorTree = new LinkedHashMap<>(2);
-		predecessorTree.put(middle, Edge.createBidirectionalEdge(randomNode, middle,
+		predecessorTree.put(middle, Edge.createDirectEdge(randomNode, middle,
 			FACTORY.createLineString(new Coordinate[]{randomNode.getCoordinate(), middle.getCoordinate()})));
-		predecessorTree.put(end, Edge.createBidirectionalEdge(middle, end,
+		predecessorTree.put(end, Edge.createDirectEdge(middle, end,
 			FACTORY.createLineString(new Coordinate[]{middle.getCoordinate(), end.getCoordinate()})));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
@@ -61,10 +61,10 @@ class PathSummaryCreatorTest{
 		Node middle = new Node("2", new Coordinate(1., 3.));
 		Node end = new Node("3", new Coordinate(1., 4.));
 		Map<Node, Edge> predecessorTreeStart = new LinkedHashMap<>(1);
-		predecessorTreeStart.put(middle, Edge.createBidirectionalEdge(randomNode, middle,
+		predecessorTreeStart.put(middle, Edge.createDirectEdge(randomNode, middle,
 			FACTORY.createLineString(new Coordinate[]{randomNode.getCoordinate(), middle.getCoordinate()})));
 		Map<Node, Edge> predecessorTreeEnd = new LinkedHashMap<>(1);
-		predecessorTreeEnd.put(middle, Edge.createBidirectionalEdge(end, middle,
+		predecessorTreeEnd.put(middle, Edge.createDirectEdge(end, middle,
 			FACTORY.createLineString(new Coordinate[]{end.getCoordinate(), middle.getCoordinate()})));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
@@ -81,10 +81,10 @@ class PathSummaryCreatorTest{
 		Node middle = new Node("2", new Coordinate(1., 3.));
 		Node end = new Node("3", new Coordinate(1., 4.));
 		Map<Node, Edge> predecessorTreeStart = new LinkedHashMap<>(1);
-		predecessorTreeStart.put(middle, Edge.createBidirectionalEdge(start, middle,
+		predecessorTreeStart.put(middle, Edge.createDirectEdge(start, middle,
 			FACTORY.createLineString(new Coordinate[]{start.getCoordinate(), middle.getCoordinate()})));
 		Map<Node, Edge> predecessorTreeEnd = new LinkedHashMap<>(1);
-		predecessorTreeEnd.put(middle, Edge.createBidirectionalEdge(randomNode, middle,
+		predecessorTreeEnd.put(middle, Edge.createDirectEdge(randomNode, middle,
 			FACTORY.createLineString(new Coordinate[]{randomNode.getCoordinate(), middle.getCoordinate()})));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();

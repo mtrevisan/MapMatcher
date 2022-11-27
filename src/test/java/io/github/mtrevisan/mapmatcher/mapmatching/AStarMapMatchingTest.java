@@ -198,8 +198,8 @@ class AStarMapMatchingTest{
 		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
-			final String edgeID = "E" + e;
-			graph.addApproximateEdge(edgeID, edge);
+			graph.addApproximateDirectEdge("E" + e, edge);
+			graph.addApproximateDirectEdge("E" + e + "rev", edge.reverse());
 
 			e ++;
 		}
