@@ -189,7 +189,7 @@ class ViterbiMapMatchingTest{
 
 		final Edge[] path = strategy.findPath(graph, observations);
 
-		final String expected = "[E3, E3, E3, E2rev, E2rev, E2rev, E2rev]";
+		final String expected = "[E3rev, E3rev, E3rev, E2, E2, E2, E2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 

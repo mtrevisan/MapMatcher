@@ -66,40 +66,18 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	 * Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |dist(o_i-1, o_i) - pathDistance(r_i-1, r_i)|)
 	 * </p>
 	 */
+	//TODO add direction of travel between the current observation and the previous one
 	@Override
 	public double transitionProbability(Edge fromSegment, Edge toSegment){
-		//NOTE: edges are bidirectional, so this code works
-		final int intersectingPoints = intersectionPoints(fromSegment, toSegment);
-		final double a = (intersectingPoints == 2? 1.: (intersectingPoints == 1? TRANSITION_PROBABILITY_CONNECTED_EDGES: 0.));
-
-//		double a = 0;
-//		final Coordinate fromToCoordinate = fromSegment.getTo().getCoordinate();
-//		final Coordinate toFromCoordinate = toSegment.getFrom().getCoordinate();
-//		if(fromToCoordinate.equals(toFromCoordinate))
-//			a = TRANSITION_PROBABILITY_CONNECTED_EDGES;
-//		else if(fromToCoordinate.equals(toSegment.getTo().getCoordinate())
-//				&& fromSegment.getFrom().getCoordinate().equals(toFromCoordinate))
-//			a = 1.;
-
+		double a = 0;
+		final Coordinate fromToCoordinate = fromSegment.getTo().getCoordinate();
+		final Coordinate toFromCoordinate = toSegment.getFrom().getCoordinate();
+		if(fromToCoordinate.equals(toFromCoordinate))
+			a = TRANSITION_PROBABILITY_CONNECTED_EDGES;
+		else if(fromToCoordinate.equals(toSegment.getTo().getCoordinate())
+				&& fromSegment.getFrom().getCoordinate().equals(toFromCoordinate))
+			a = 1.;
 		return InitialProbabilityCalculator.logPr(a / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES));
-	}
-
-	/**
-	 * Retrieve the number of points this edge's vertices intersects the given edge's vertices.
-	 *
-	 * @param fromSegment	The incoming segment.
-	 * @param toSegment	The outgoing segment.
-	 * @return	The number of intersecting vertices.
-	 */
-	private static int intersectionPoints(final Edge fromSegment, final Edge toSegment){
-		final Set<Coordinate> fromCoordinates = new HashSet<>(2);
-		fromCoordinates.add(fromSegment.getFromCoordinate());
-		fromCoordinates.add(fromSegment.getToCoordinate());
-		final Set<Coordinate> toCoordinates = new HashSet<>(2);
-		toCoordinates.add(toSegment.getFromCoordinate());
-		toCoordinates.add(toSegment.getToCoordinate());
-		toCoordinates.retainAll(fromCoordinates);
-		return toCoordinates.size();
 	}
 
 
