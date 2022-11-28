@@ -28,12 +28,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
-class AStarPathfinderTest{
+class AStarPathFinderTest{
 
 	@Test
 	void should_return_the_shortest_path1(){
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.euclideanDistanceTestGraphConnected();
-		PathfindingStrategy pathfinder = new AStarPathfinder(testGraph.getCalculator());
+		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
 		PathSummary path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
 
@@ -43,7 +43,7 @@ class AStarPathfinderTest{
 	@Test
 	void should_return_the_shortest_path2(){
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.euclideanDistanceTestGraphDisconnected();
-		PathfindingStrategy pathfinder = new AStarPathfinder(testGraph.getCalculator());
+		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
 		PathSummary path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
 
@@ -53,7 +53,7 @@ class AStarPathfinderTest{
 	@Test
 	void should_return_the_shortest_path3(){
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.nodeCountTestGraphConnected();
-		PathfindingStrategy pathfinder = new AStarPathfinder(testGraph.getCalculator());
+		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
 		PathSummary path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
 
@@ -63,7 +63,7 @@ class AStarPathfinderTest{
 	@Test
 	void should_return_the_shortest_path4(){
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.nodeCountTestGraphDisconnected();
-		PathfindingStrategy pathfinder = new AStarPathfinder(testGraph.getCalculator());
+		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
 		PathSummary path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
 

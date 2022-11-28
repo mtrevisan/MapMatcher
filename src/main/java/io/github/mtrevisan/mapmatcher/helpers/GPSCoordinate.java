@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,14 +22,26 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.pathfinding;
+package io.github.mtrevisan.mapmatcher.helpers;
 
-import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
+import org.locationtech.jts.geom.Coordinate;
+
+import java.time.ZonedDateTime;
 
 
-public interface PathfindingStrategy{
+public class GPSCoordinate extends Coordinate{
 
-	PathSummary findPath(Node start, Node target, Graph graph);
+	private final ZonedDateTime timestamp;
+
+
+	public GPSCoordinate(final double longitude, final double latitude, final ZonedDateTime timestamp){
+		super(longitude, latitude);
+
+		this.timestamp = timestamp;
+	}
+
+	public ZonedDateTime getTimestamp(){
+		return timestamp;
+	}
 
 }

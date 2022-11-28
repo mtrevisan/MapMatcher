@@ -72,20 +72,32 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
-		initialProbabilityCalculator.calculateInitialProbability(observations[0], graphEdges);
-		emissionProbabilityCalculator.updateEmissionProbability(observations[0], graphEdges);
+		int i = extractNextObservation(observations, 0);
+		if(i < 0)
+			//no observations: cannot calculate path
+			return null;
+
+		Coordinate currentObservation = observations[i];
+		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
+		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		for(final Edge edge : graphEdges){
 			final double probability = initialProbabilityCalculator.initialProbability(edge)
-				+ emissionProbabilityCalculator.emissionProbability(observations[0], edge);
-			fScores.computeIfAbsent(edge, k -> new double[m])[0] = probability;
-			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
+				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge);
+			fScores.computeIfAbsent(edge, k -> new double[m])[i] = probability;
+			path.computeIfAbsent(edge, k -> new Edge[n])[i] = edge;
 
 			final FibonacciHeap.Node<Edge> frontierNode = frontier.add(edge, probability);
 			seenNodes.put(edge, frontierNode);
 		}
 
-		for(int i = 1; i < m; i ++){
-			emissionProbabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
+		int previousObservationIndex = i;
+		while(true){
+			final Coordinate previousObservation = observations[previousObservationIndex];
+			i = extractNextObservation(observations, previousObservationIndex + 1);
+			if(i < 0)
+				break;
+
+			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
 			while(!frontier.isEmpty()){
@@ -93,13 +105,13 @@ public class AStarMapMatching implements MapMatchingStrategy{
 				//TODO termination condition: i == m - 1 && currentEdge is best (?)
 
 				for(final Edge toEdge : fromEdge.geOutEdges()){
-					final double probability = fScores.get(fromEdge)[i - 1]
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, observations[i - 1], observations[i]);
-					if(probability < fScores.get(toEdge)[i - 1]){
+					final double probability = fScores.get(fromEdge)[previousObservationIndex]
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation);
+					if(probability < fScores.get(toEdge)[previousObservationIndex]){
 						fScores.get(toEdge)[i] = probability;
 
 						final double newProbability = probability
-							+ emissionProbabilityCalculator.emissionProbability(observations[i], toEdge);
+							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge);
 						//NOTE: it is important that the same node doesn't appear in the priority queue more than once (each entry corresponding
 						// to a different path to the node, and each with a different cost).
 						// A standard approach here is to check if a node about to be added already appears in the priority queue. If it does,
@@ -127,16 +139,25 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			path.clear();
 			path.putAll(newPath);
 			newPath.clear();
+
+			previousObservationIndex = i;
 		}
 
 		double minProbability = Double.POSITIVE_INFINITY;
 		Edge minProbabilityEdge = null;
 		for(final Edge edge : graphEdges)
-			if(fScores.get(edge)[m - 1] < minProbability){
-				minProbability = fScores.get(edge)[m - 1];
+			if(fScores.get(edge)[previousObservationIndex] < minProbability){
+				minProbability = fScores.get(edge)[previousObservationIndex];
 				minProbabilityEdge = edge;
 			}
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
+	}
+
+	private static int extractNextObservation(final Coordinate[] observations, int index){
+		final int m = observations.length;
+		while(index < m && observations[index] == null)
+			index ++;
+		return (index < m? index: -1);
 	}
 
 	/**

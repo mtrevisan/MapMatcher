@@ -38,14 +38,14 @@ import java.util.HashSet;
 /**
  * @see <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A* search algorithm</a>
  */
-public class AStarPathfinder implements PathfindingStrategy{
+public class AStarPathFinder implements PathFindingStrategy{
 
 	private static final PathSummaryCreator PATH_SUMMARY_CREATOR = new PathSummaryCreator();
 
 	private final EdgeWeightCalculator calculator;
 
 
-	public AStarPathfinder(final EdgeWeightCalculator calculator){
+	public AStarPathFinder(final EdgeWeightCalculator calculator){
 		this.calculator = calculator;
 	}
 

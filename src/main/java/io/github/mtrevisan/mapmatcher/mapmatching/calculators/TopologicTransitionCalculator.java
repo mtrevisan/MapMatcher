@@ -25,14 +25,22 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
+import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
+
+import java.util.List;
 
 
 public class TopologicTransitionCalculator implements TransitionProbabilityCalculator{
 
-	private static final double BETA = 3.;
+	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
+
 	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
 
 
@@ -59,19 +67,36 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	 * Otherwise
 	 *
 	 * <p>
-	 * Exponential function of the difference between the route length (in degrees!) and the great circle distance (in degrees!)
-	 * between o_t and o_t+1
-	 * Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |dist(o_i-1, o_i) - pathDistance(r_i-1, r_i)|)
+	 * Exponential function of the difference between the route length and the great circle distance between o_t and o_t+1
+	 * Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |dist(o_i-1, o_i) - pathDistance(x_i-1, x_i)|) (β "can be" 3), where x is the projection of the
+	 * observation o onto the segment r
 	 * </p>
 	 */
 	@Override
-	public double transitionProbability(final Edge fromSegment, final Edge toSegment,
+	public double transitionProbability(final Edge fromSegment, final Edge toSegment, Graph graph,
 			final Coordinate previousObservation, final Coordinate currentObservation){
-		double a = 0;
-		final Coordinate fromToCoordinate = fromSegment.getTo().getCoordinate();
-		final Coordinate toFromCoordinate = toSegment.getFrom().getCoordinate();
+		double a = 0.;
 		final LineString fromSegmentLineString = fromSegment.getLineString();
-		if(fromToCoordinate.equals(toFromCoordinate)){
+		//if the node is the same
+		if(fromSegment.equals(toSegment)){
+			//search for a feasible path between the projection onto fromSegment and the one onto toSegment
+			final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
+				.simplePath();
+			if(!path.isEmpty()){
+				//calculate Along-Track Distance
+				double previousATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
+				double currentATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
+				if(previousATD == currentATD){
+					final LineString toSegmentLineString = toSegment.getLineString();
+					previousATD = WGS84GeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
+					currentATD = WGS84GeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
+				}
+				//NOTE: take into consideration the direction of travel
+				if(previousATD <= currentATD)
+					a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
+			}
+		}
+		else{
 			//calculate Along-Track Distance
 			double previousATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
 			double currentATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
@@ -82,22 +107,17 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 			}
 			//NOTE: take into consideration the direction of travel
 			if(previousATD <= currentATD)
-				a = TRANSITION_PROBABILITY_CONNECTED_EDGES;
-		}
-		else{
-			final Coordinate fromFromCoordinates = fromSegment.getFrom().getCoordinate();
-			final Coordinate toToCoordinates = toSegment.getTo().getCoordinate();
-			if(fromToCoordinate.equals(toToCoordinates) && fromFromCoordinates.equals(toFromCoordinate)){
-				//calculate Along-Track Distance
-				final double previousATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
-				final double currentATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
-				//NOTE: take into consideration the direction of travel
-				if(previousATD <= currentATD)
-					a = 1.;
-			}
+				a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 		}
 
-		return InitialProbabilityCalculator.logPr(a / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES));
+		//TODO account for speed (see sustainability-13-12820-v2.pdf, pag 9)?
+//		/** @see step 3 of {@link io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatchingTest#extractObservations} */
+//		final double elapsedTime = ChronoUnit.SECONDS.between(previousObservation.getTimestamp(), currentObservation.getTimestamp());
+//		final double distance = GeodeticHelper.distance(previousObservation, currentObservation)
+//			.getDistance();
+//		final double speed = distance / elapsedTime;
+
+		return InitialProbabilityCalculator.logPr(a);
 	}
 
 }

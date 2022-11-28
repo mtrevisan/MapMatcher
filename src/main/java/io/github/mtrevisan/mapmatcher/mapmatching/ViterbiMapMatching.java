@@ -65,29 +65,43 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
-		initialProbabilityCalculator.calculateInitialProbability(observations[0], graphEdges);
-		emissionProbabilityCalculator.updateEmissionProbability(observations[0], graphEdges);
+		int i = extractNextObservation(observations, 0);
+		if(i < 0)
+			//no observations: cannot calculate path
+			return null;
+
+		Coordinate currentObservation = observations[i];
+		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
+		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		for(final Edge edge : graphEdges){
-			fScores.computeIfAbsent(edge, k -> new double[m])[0] = initialProbabilityCalculator.initialProbability(edge)
-				+ emissionProbabilityCalculator.emissionProbability(observations[0], edge);
-			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
+			fScores.computeIfAbsent(edge, k -> new double[m])[i] = initialProbabilityCalculator.initialProbability(edge)
+				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge);
+			path.computeIfAbsent(edge, k -> new Edge[n])[i] = edge;
 		}
 
 		double minProbability;
-		for(int i = 1; i < m; i ++){
-			emissionProbabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
+		int previousObservationIndex = i;
+		while(true){
+			final Coordinate previousObservation = observations[previousObservationIndex];
+			i = extractNextObservation(observations, previousObservationIndex + 1);
+			if(i < 0)
+				break;
+
+			currentObservation = observations[i];
+
+			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
 			for(final Edge toEdge : graphEdges){
 				minProbability = Double.POSITIVE_INFINITY;
 				for(final Edge fromEdge : graphEdges){
-					final double probability = fScores.get(fromEdge)[i - 1]
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, observations[i - 1], observations[i]);
+					final double probability = fScores.get(fromEdge)[previousObservationIndex]
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation);
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;
 						fScores.get(toEdge)[i] = probability
-							+ emissionProbabilityCalculator.emissionProbability(observations[i], toEdge);
+							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,
@@ -100,16 +114,25 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			path.clear();
 			path.putAll(newPath);
 			newPath.clear();
+
+			previousObservationIndex = i;
 		}
 
 		minProbability = Double.POSITIVE_INFINITY;
 		Edge minProbabilityEdge = null;
 		for(final Edge edge : graphEdges)
-			if(fScores.get(edge)[m - 1] < minProbability){
-				minProbability = fScores.get(edge)[m - 1];
+			if(fScores.get(edge)[previousObservationIndex] < minProbability){
+				minProbability = fScores.get(edge)[previousObservationIndex];
 				minProbabilityEdge = edge;
 			}
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
+	}
+
+	private static int extractNextObservation(final Coordinate[] observations, int index){
+		final int m = observations.length;
+		while(index < m && observations[index] == null)
+			index ++;
+		return (index < m? index: -1);
 	}
 
 }

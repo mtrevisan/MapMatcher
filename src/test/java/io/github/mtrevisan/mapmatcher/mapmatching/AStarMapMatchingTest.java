@@ -30,6 +30,7 @@ import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
+import io.github.mtrevisan.mapmatcher.helpers.GPSCoordinate;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
@@ -44,6 +45,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -76,17 +79,18 @@ class AStarMapMatchingTest{
 		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
 		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
 
-		final Coordinate[] observations = new Coordinate[]{
-			new Coordinate(12.142791962642718, 45.64824627395467),
-			new Coordinate(12.166829013921557, 45.658700732309484),
-			new Coordinate(12.190331908504874, 45.663553924585955),
-			new Coordinate(12.219176370039179, 45.65720735774349),
-			new Coordinate(12.237871854367, 45.65310037232308),
-			new Coordinate(12.243213421318018, 45.675125223889154),
-			new Coordinate(12.23894016775725, 45.691544896329816),
-			new Coordinate(12.237337697671506, 45.70684070823364),
-			new Coordinate(12.23306444411162, 45.725861366408196),
-			new Coordinate(12.215971429868546, 45.731454445518864)
+		ZonedDateTime timestamp = ZonedDateTime.now();
+		final GPSCoordinate[] observations = new GPSCoordinate[]{
+			new GPSCoordinate(12.142791962642718, 45.64824627395467, timestamp),
+			new GPSCoordinate(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
@@ -125,17 +129,18 @@ class AStarMapMatchingTest{
 		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
 		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
 
-		final Coordinate[] observations = new Coordinate[]{
-			new Coordinate(12.142791962642718, 45.64824627395467),
-			new Coordinate(12.166829013921557, 45.658700732309484),
-			new Coordinate(12.190331908504874, 45.663553924585955),
-			new Coordinate(12.219176370039179, 45.65720735774349),
-			new Coordinate(12.237871854367, 45.65310037232308),
-			new Coordinate(12.243213421318018, 45.675125223889154),
-			new Coordinate(12.23894016775725, 45.691544896329816),
-			new Coordinate(12.237337697671506, 45.70684070823364),
-			new Coordinate(12.23306444411162, 45.725861366408196),
-			new Coordinate(12.215971429868546, 45.731454445518864)
+		ZonedDateTime timestamp = ZonedDateTime.now();
+		final GPSCoordinate[] observations = new GPSCoordinate[]{
+			new GPSCoordinate(12.142791962642718, 45.64824627395467, timestamp),
+			new GPSCoordinate(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
@@ -173,14 +178,15 @@ class AStarMapMatchingTest{
 		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
 		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
 
-		final Coordinate[] observations = new Coordinate[]{
-			new Coordinate(12.172704737567187, 45.59108565830172),
-			new Coordinate(12.229859503941071, 45.627705048963094),
-			new Coordinate(12.241610951232218, 45.6422714215264),
-			new Coordinate(12.243213421318018, 45.65646065552491),
-			new Coordinate(12.272057882852266, 45.662060679461206),
-			new Coordinate(12.304641441251732, 45.66168736195718),
-			new Coordinate(12.331349276005653, 45.66168736195718)
+		ZonedDateTime timestamp = ZonedDateTime.now();
+		final GPSCoordinate[] observations = new GPSCoordinate[]{
+			new GPSCoordinate(12.172704737567187, 45.59108565830172, timestamp),
+			new GPSCoordinate(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
@@ -194,6 +200,26 @@ class AStarMapMatchingTest{
 	}
 
 
+	/**
+	 * Extract a set of candidate road links within a certain distance to all observation.
+	 *
+	 * @param edges	The set of road links.
+	 * @param observations	The observations.
+	 * @param radius	The radius.
+	 * @return	The list of road links whose distance is less than the given radius from each observation.
+	 */
+	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
+			final double radius){
+		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
+		for(final Coordinate observation : observations){
+			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation, radius);
+			for(final LineString edge : edges)
+				if(surrounding.intersects(edge))
+					observationsEdges.add(edge);
+		}
+		return observationsEdges;
+	}
+
 	private static Graph extractGraph(final Collection<LineString> edges, final double radius){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
 		int e = 0;
@@ -204,18 +230,6 @@ class AStarMapMatchingTest{
 			e ++;
 		}
 		return graph;
-	}
-
-	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
-		final double radius){
-		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
-		for(final Coordinate observation : observations){
-			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation, radius);
-			for(final LineString edge : edges)
-				if(surrounding.intersects(edge))
-					observationsEdges.add(edge);
-		}
-		return observationsEdges;
 	}
 
 }
