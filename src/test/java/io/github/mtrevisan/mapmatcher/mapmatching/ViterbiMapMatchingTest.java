@@ -32,8 +32,9 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.GPSCoordinate;
 import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
-import io.github.mtrevisan.mapmatcher.helpers.KalmanFilter;
 import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.kalman.GPSPositionFilter;
+import io.github.mtrevisan.mapmatcher.helpers.kalman.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogBayesianEmissionCalculator;
@@ -286,25 +287,27 @@ class ViterbiMapMatchingTest{
 		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
 
 		//step 1. Use Kalman filter to smooth the coordinates
-		/** @see {@link io.github.mtrevisan.mapmatcher.helpers.KalmanFilter} */
-		//TODO
-		final KalmanFilter kalmanFilter = new KalmanFilter();
-		kalmanFilter.initializeState(observations[0], 0.1f);
-		feasibleObservations[0] = kalmanFilter.getCoordinate();
+		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(100.);
+		feasibleObservations[0] = observations[0];
 		for(int i = 1; i < observations.length; i ++){
-			kalmanFilter.process(observations[i], 5.5f, 0.1f);
-			feasibleObservations[i] = kalmanFilter.getCoordinate();
+			kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
+				ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
+			final double[] position = kalmanFilter.getPosition();
+			feasibleObservations[i] = new GPSCoordinate(position[1], position[0], observations[i].getTimestamp());
 		}
 
 		//step 2. Retain all observation that are within a certain radius from an edge
-		for(int i = 0; i < observations.length; i ++){
-			final GPSCoordinate observation = observations[i];
+		for(int i = 0; i < feasibleObservations.length; i ++){
+			final GPSCoordinate observation = feasibleObservations[i];
 			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation, radius);
+			boolean edgesFound = false;
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge)){
-					feasibleObservations[i] = observation;
+					edgesFound = true;
 					break;
 				}
+			if(!edgesFound)
+				feasibleObservations[i] = null;
 		}
 
 		//step 3. Enforce position feasibility (eliminate all outliers that cannot be reached within the interval elapsed).
