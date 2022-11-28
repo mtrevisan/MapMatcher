@@ -25,10 +25,11 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
+import org.locationtech.jts.geom.Coordinate;
 
 
 public interface TransitionProbabilityCalculator{
 
-	double transitionProbability(Edge fromSegment, Edge toSegment);
+	double transitionProbability(Edge fromSegment, Edge toSegment, Coordinate previousObservation, Coordinate currentObservation);
 
 }

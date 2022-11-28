@@ -32,10 +32,8 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbability
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -69,7 +67,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
 		//set of discovered nodes that may need to be (re-)expanded
-		final Queue<ScoredGraph<Edge>> queue = new PriorityQueue<>();
+		final Queue<ScoredGraph<Edge>> frontier = new PriorityQueue<>();
 
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
@@ -81,31 +79,31 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			fScores.computeIfAbsent(edge, k -> new double[m])[0] = probability;
 			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
 
-			queue.add(new ScoredGraph<>(edge, probability));
+			frontier.add(new ScoredGraph<>(edge, probability));
 		}
 
 		for(int i = 1; i < m; i ++){
 			emissionProbabilityCalculator.updateEmissionProbability(observations[i], graphEdges);
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
-			while(!queue.isEmpty()){
+			while(!frontier.isEmpty()){
 				//FIXME If ties are broken so the queue behaves in a LIFO manner, A* will behave like depth-first search among equal cost
 				// paths (avoiding exploring more than one equally optimal solution)
-				final Edge fromEdge = queue.poll()
+				final Edge fromEdge = frontier.poll()
 					.element();
 				//TODO termination condition: i == m - 1 && currentEdge is best (?)
 
-				for(final Edge toEdge : fromEdge.getTo().geOutEdges()){
+				for(final Edge toEdge : fromEdge.geOutEdges()){
 					final double probability = fScores.get(fromEdge)[i - 1]
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge);
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, observations[i - 1], observations[i]);
 					if(probability < fScores.get(toEdge)[i - 1]){
 						fScores.get(toEdge)[i] = probability;
 
 						final double newProbability = probability
 							+ emissionProbabilityCalculator.emissionProbability(observations[i], toEdge);
 						final ScoredGraph<Edge> sg = new ScoredGraph<>(toEdge, newProbability);
-						if(!queue.contains(sg))
-							queue.add(sg);
+						if(!frontier.contains(sg))
+							frontier.add(sg);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,

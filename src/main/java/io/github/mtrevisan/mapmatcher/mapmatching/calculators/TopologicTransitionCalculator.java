@@ -25,10 +25,9 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
+import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.locationtech.jts.geom.LineString;
 
 
 public class TopologicTransitionCalculator implements TransitionProbabilityCalculator{
@@ -62,45 +61,43 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	 * <p>
 	 * Exponential function of the difference between the route length (in degrees!) and the great circle distance (in degrees!)
 	 * between o_t and o_t+1
-	 *
 	 * Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |dist(o_i-1, o_i) - pathDistance(r_i-1, r_i)|)
 	 * </p>
 	 */
-	//TODO add direction of travel between the current observation and the previous one
 	@Override
-	public double transitionProbability(Edge fromSegment, Edge toSegment){
+	public double transitionProbability(final Edge fromSegment, final Edge toSegment,
+			final Coordinate previousObservation, final Coordinate currentObservation){
 		double a = 0;
 		final Coordinate fromToCoordinate = fromSegment.getTo().getCoordinate();
 		final Coordinate toFromCoordinate = toSegment.getFrom().getCoordinate();
-		if(fromToCoordinate.equals(toFromCoordinate))
-			a = TRANSITION_PROBABILITY_CONNECTED_EDGES;
-		else if(fromToCoordinate.equals(toSegment.getTo().getCoordinate())
-				&& fromSegment.getFrom().getCoordinate().equals(toFromCoordinate))
-			a = 1.;
+		final LineString fromSegmentLineString = fromSegment.getLineString();
+		if(fromToCoordinate.equals(toFromCoordinate)){
+			//calculate Along-Track Distance
+			double previousATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
+			double currentATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
+			if(previousATD == currentATD){
+				final LineString toSegmentLineString = toSegment.getLineString();
+				previousATD = WGS84GeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
+				currentATD = WGS84GeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
+			}
+			//NOTE: take into consideration the direction of travel
+			if(previousATD <= currentATD)
+				a = TRANSITION_PROBABILITY_CONNECTED_EDGES;
+		}
+		else{
+			final Coordinate fromFromCoordinates = fromSegment.getFrom().getCoordinate();
+			final Coordinate toToCoordinates = toSegment.getTo().getCoordinate();
+			if(fromToCoordinate.equals(toToCoordinates) && fromFromCoordinates.equals(toFromCoordinate)){
+				//calculate Along-Track Distance
+				final double previousATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
+				final double currentATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
+				//NOTE: take into consideration the direction of travel
+				if(previousATD <= currentATD)
+					a = 1.;
+			}
+		}
+
 		return InitialProbabilityCalculator.logPr(a / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES));
 	}
-
-
-//FIXME
-//	private static double edgeCost(final Geometry segment1, final Geometry segment2){
-//		return logPr(transitionProbability(segment1, segment2));
-//	}
-//
-//	//exponential function of the difference between the route length (in degrees!) and the great circle distance (in degrees!)
-//	//between o_t and o_t+1, Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |δ(o_i-1, o_i) - σ(x_i-1, x_i)|)
-//	/*
-//	Pr(r_i | r_i-1) = 1/(2 ⋅ π ⋅ σ_p) * exp(-0.5 ⋅ (||p_t - x_t_i||great_circle / σ_p)^2) where x_t_i is the point on road segment r_i
-//	nearest the measurement p_t at time t, and σ_p can be thought of as an estimate of the standard deviation of GPS noise
-//	(Newson and Krumm (2009) derive σ_p from the median absolute deviation over their dataset, arriving at a value of 4.07)
-//
-//	p(d_t) = 1/β ⋅ exp(-d_t / β) where d_t is the difference between the great circle distance and route-traveled distance between time t
-//	and t+1
-//	*/
-//	private static double transitionProbability(final Geometry segment1, final Geometry segment2){
-//		//calculating route distance is expensive (https://github.com/valhalla/valhalla/blob/master/docs/meili/algorithms.md)
-//		//		final double delta = Math.abs(routeLength(segment1, segment2) - segment1.distance(segment2));
-//		final double delta = segment1.distance(segment2);
-//		return BETA * StrictMath.exp(-BETA * delta);
-//	}
 
 }

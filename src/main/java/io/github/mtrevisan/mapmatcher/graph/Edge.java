@@ -27,6 +27,7 @@ package io.github.mtrevisan.mapmatcher.graph;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
+import java.util.Collection;
 import java.util.Objects;
 
 
@@ -84,12 +85,8 @@ public class Edge{
 		return to;
 	}
 
-	public Coordinate getFromCoordinate(){
-		return from.getCoordinate();
-	}
-
-	public Coordinate getToCoordinate(){
-		return to.getCoordinate();
+	public Collection<Edge> geOutEdges(){
+		return to.geOutEdges();
 	}
 
 	public LineString getLineString(){

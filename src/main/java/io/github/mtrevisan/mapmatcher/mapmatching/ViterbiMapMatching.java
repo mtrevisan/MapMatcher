@@ -82,7 +82,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 				for(final Edge fromEdge : graphEdges){
 					final double probability = fScores.get(fromEdge)[i - 1]
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge);
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, observations[i - 1], observations[i]);
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;

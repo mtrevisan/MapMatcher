@@ -31,6 +31,9 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.linearref.LengthLocationMap;
+import org.locationtech.jts.linearref.LinearLocation;
+import org.locationtech.jts.linearref.LocationIndexedLine;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
 
@@ -71,6 +74,14 @@ public class WGS84GeometryHelper{
 		gsf.setHeight(radius * 2. / metersPerDegreeInLatitude);
 		gsf.setCentre(origin);
 		return gsf.createEllipse();
+	}
+
+
+	public static double alongTrackDistance(final LineString line, final Coordinate coordinate){
+		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(line);
+		final LinearLocation location = locationIndexedLine.project(coordinate);
+		return new LengthLocationMap(line)
+			.getLength(location);
 	}
 
 }

@@ -58,7 +58,8 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	public double emissionProbability(final Coordinate observation, final Edge segment){
 		final double factor = Math.toRadians(GeodeticHelper.meanRadiusOfCurvature(observation.getY()));
 		final double tmp = distanceCalculator.distance(observation, segment.getLineString()) * factor / observationStandardDeviation;
-		return InitialProbabilityCalculator.logPr(Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation));
+		final double probability = Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
+		return InitialProbabilityCalculator.logPr(probability);
 	}
 
 }
