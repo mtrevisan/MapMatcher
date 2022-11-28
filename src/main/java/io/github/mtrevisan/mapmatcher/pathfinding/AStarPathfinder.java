@@ -71,7 +71,7 @@ public class AStarPathfinder implements PathfindingStrategy{
 
 		while(!queue.isEmpty()){
 			final var fromNode = queue.poll()
-				.element();
+				.getElement();
 			if(fromNode.equals(end))
 				break;
 

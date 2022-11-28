@@ -36,8 +36,12 @@ public class ScoredGraph<T> implements Comparable<ScoredGraph<T>>{
 		this.score = score;
 	}
 
-	public T element(){
+	public T getElement(){
 		return element;
+	}
+
+	public double getScore(){
+		return score;
 	}
 
 	@Override

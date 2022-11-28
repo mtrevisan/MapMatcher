@@ -32,8 +32,10 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbability
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -87,10 +89,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
 			while(!frontier.isEmpty()){
-				//FIXME If ties are broken so the queue behaves in a LIFO manner, A* will behave like depth-first search among equal cost
-				// paths (avoiding exploring more than one equally optimal solution)
-				final Edge fromEdge = frontier.poll()
-					.element();
+				final Edge fromEdge = lifoExtract(frontier);
 				//TODO termination condition: i == m - 1 && currentEdge is best (?)
 
 				for(final Edge toEdge : fromEdge.geOutEdges()){
@@ -133,6 +132,41 @@ public class AStarMapMatching implements MapMatchingStrategy{
 				minProbabilityEdge = edge;
 			}
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
+	}
+
+	/**
+	 * Extract the next element from priority queue.
+	 * <p>
+	 * Ties are broken so the queue behaves in a LIFO manner, A* will behave like depth-first search among equal cost paths (avoiding exploring more than one equally optimal solution)
+	 * </p>
+	 *
+	 * @param frontier	The priority queue.
+	 * @return	The Last-In First-Out min-priority element.
+	 */
+	private static Edge lifoExtract(final Queue<ScoredGraph<Edge>> frontier){
+		//collect elements with score equals to the first element of the queue
+		double minScore = Double.NaN;
+		final List<ScoredGraph<Edge>> minScores = new ArrayList<>(frontier.size());
+		while(!frontier.isEmpty()){
+			final ScoredGraph<Edge> nextElement = frontier.poll();
+			if(Double.isNaN(minScore)){
+				//first element initializes minimum score
+				minScore = nextElement.getScore();
+				minScores.add(nextElement);
+			}
+			else if(nextElement.getScore() == minScore)
+				//if next element extracted has the same score as the first one, store it
+				minScores.add(nextElement);
+			else
+				//if next element has a different (greater) score than the first one, break loop
+				break;
+		}
+		//extract LIFO element
+		final Edge fromEdge = minScores.remove(minScores.size() - 1)
+			.getElement();
+		//reinsert same score elements
+		frontier.addAll(minScores);
+		return fromEdge;
 	}
 
 }
