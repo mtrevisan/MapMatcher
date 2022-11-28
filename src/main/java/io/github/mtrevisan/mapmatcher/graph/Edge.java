@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
 import java.util.Collection;

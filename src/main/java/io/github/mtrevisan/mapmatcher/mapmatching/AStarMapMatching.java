@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.ScoredGraph;
+import io.github.mtrevisan.mapmatcher.helpers.FibonacciHeap;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
@@ -37,8 +37,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 
 /**
@@ -69,7 +67,8 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
 		//set of discovered nodes that may need to be (re-)expanded
-		final Queue<ScoredGraph<Edge>> frontier = new PriorityQueue<>();
+		final FibonacciHeap<Edge> frontier = new FibonacciHeap<>();
+		final Map<Edge, FibonacciHeap.Node<Edge>> seenNodes = new HashMap<>(n);
 
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
@@ -81,7 +80,8 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			fScores.computeIfAbsent(edge, k -> new double[m])[0] = probability;
 			path.computeIfAbsent(edge, k -> new Edge[n])[0] = edge;
 
-			frontier.add(new ScoredGraph<>(edge, probability));
+			final FibonacciHeap.Node<Edge> frontierNode = frontier.add(edge, probability);
+			seenNodes.put(edge, frontierNode);
 		}
 
 		for(int i = 1; i < m; i ++){
@@ -100,9 +100,21 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 						final double newProbability = probability
 							+ emissionProbabilityCalculator.emissionProbability(observations[i], toEdge);
-						final ScoredGraph<Edge> sg = new ScoredGraph<>(toEdge, newProbability);
-						if(!frontier.contains(sg))
-							frontier.add(sg);
+						//NOTE: it is important that the same node doesn't appear in the priority queue more than once (each entry corresponding
+						// to a different path to the node, and each with a different cost).
+						// A standard approach here is to check if a node about to be added already appears in the priority queue. If it does,
+						// then the priority and parent pointers are changed to correspond to the lower cost path. A standard binary heap based
+						// priority queue does not directly support the operation of searching for one of its elements, but it can be augmented
+						// with a hash table that maps elements to their position in the heap, allowing this decrease-priority operation to be
+						// performed in logarithmic time. Alternatively, a Fibonacci heap can perform the same decrease-priority operations in
+						// constant amortized time.
+						final FibonacciHeap.Node<Edge> toNode = seenNodes.get(toEdge);
+						if(toNode == null){
+							final FibonacciHeap.Node<Edge> frontierNode = frontier.add(toEdge, newProbability);
+							seenNodes.put(toEdge, frontierNode);
+						}
+						else if(newProbability < toNode.getKey())
+							frontier.decreaseKey(toNode, newProbability);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,
@@ -117,13 +129,6 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			newPath.clear();
 		}
 
-		//TODO it is important that the same node doesn't appear in the priority queue more than once (each entry corresponding to a
-		// different path to the node, and each with a different cost). A standard approach here is to check if a node about to be added
-		// already appears in the priority queue. If it does, then the priority and parent pointers are changed to correspond to the lower
-		// cost path. A standard binary heap based priority queue does not directly support the operation of searching for one of its
-		// elements, but it can be augmented with a hash table that maps elements to their position in the heap, allowing this
-		// decrease-priority operation to be performed in logarithmic time. Alternatively, a Fibonacci heap can perform the same
-		// decrease-priority operations in constant amortized time.
 		double minProbability = Double.POSITIVE_INFINITY;
 		Edge minProbabilityEdge = null;
 		for(final Edge edge : graphEdges)
@@ -143,18 +148,19 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	 * @param frontier	The priority queue.
 	 * @return	The Last-In First-Out min-priority element.
 	 */
-	private static Edge lifoExtract(final Queue<ScoredGraph<Edge>> frontier){
+	private static Edge lifoExtract(final FibonacciHeap<Edge> frontier){
 		//collect elements with score equals to the first element of the queue
 		double minScore = Double.NaN;
-		final List<ScoredGraph<Edge>> minScores = new ArrayList<>(frontier.size());
+		final List<FibonacciHeap.Node<Edge>> minScores = new ArrayList<>(frontier.size());
 		while(!frontier.isEmpty()){
-			final ScoredGraph<Edge> nextElement = frontier.poll();
+			final FibonacciHeap.Node<Edge> nextElement = frontier.peek();
+			frontier.poll();
 			if(Double.isNaN(minScore)){
 				//first element initializes minimum score
-				minScore = nextElement.getScore();
+				minScore = nextElement.getKey();
 				minScores.add(nextElement);
 			}
-			else if(nextElement.getScore() == minScore)
+			else if(nextElement.getKey() == minScore)
 				//if next element extracted has the same score as the first one, store it
 				minScores.add(nextElement);
 			else
@@ -163,9 +169,10 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		}
 		//extract LIFO element
 		final Edge fromEdge = minScores.remove(minScores.size() - 1)
-			.getElement();
+			.getData();
 		//reinsert same score elements
-		frontier.addAll(minScores);
+		for(final FibonacciHeap.Node<Edge> element : minScores)
+			frontier.add(element.getData(), element.getKey());
 		return fromEdge;
 	}
 
