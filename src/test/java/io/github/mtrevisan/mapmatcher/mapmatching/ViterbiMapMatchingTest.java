@@ -283,13 +283,20 @@ class ViterbiMapMatchingTest{
 
 	private static Coordinate[] extractObservations(final LineString[] edges, final GPSCoordinate[] observations, final double radius,
 			final double maxSpeed){
+		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
+
 		//step 1. Use Kalman filter to smooth the coordinates
 		/** @see {@link io.github.mtrevisan.mapmatcher.helpers.KalmanFilter} */
 		//TODO
 		final KalmanFilter kalmanFilter = new KalmanFilter();
+		kalmanFilter.initializeState(observations[0], 0.1f);
+		feasibleObservations[0] = kalmanFilter.getCoordinate();
+		for(int i = 1; i < observations.length; i ++){
+			kalmanFilter.process(observations[i], 5.5f, 0.1f);
+			feasibleObservations[i] = kalmanFilter.getCoordinate();
+		}
 
 		//step 2. Retain all observation that are within a certain radius from an edge
-		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
 		for(int i = 0; i < observations.length; i ++){
 			final GPSCoordinate observation = observations[i];
 			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation, radius);

@@ -30,7 +30,7 @@ import java.time.temporal.ChronoUnit;
 
 public class KalmanFilter{
 
-	private static final float MIN_ACCURACY = 3.f;
+	public static final float MIN_ACCURACY = 3.f;
 
 
 	private GPSCoordinate coordinate;
