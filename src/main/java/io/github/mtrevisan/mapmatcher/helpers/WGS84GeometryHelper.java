@@ -34,6 +34,7 @@ import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.linearref.LengthLocationMap;
 import org.locationtech.jts.linearref.LinearLocation;
 import org.locationtech.jts.linearref.LocationIndexedLine;
+import org.locationtech.jts.operation.distance.DistanceOp;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
 
@@ -82,6 +83,15 @@ public class WGS84GeometryHelper{
 		final LinearLocation location = locationIndexedLine.project(coordinate);
 		return new LengthLocationMap(line)
 			.getLength(location);
+	}
+
+	public static double crossTrackDistance(final LineString line, final Coordinate coordinate){
+		final Coordinate nearestPoint = onTrackClosestPoints(line, coordinate);
+		return nearestPoint.distance(coordinate);
+	}
+
+	public static Coordinate onTrackClosestPoints(final LineString line, final Coordinate coordinate){
+		return DistanceOp.nearestPoints(line, createPoint(coordinate))[0];
 	}
 
 }

@@ -69,31 +69,4 @@ public class GeodeticCalculator implements DistanceCalculator{
 		return minimumDistance * GeodeticHelper.EARTH_POLAR_RADIUS;
 	}
 
-//	//[km]
-//	private static final double EARTH_RADIUS = 6371.;
-//
-//
-//	public static double distance(final Coordinates standPoint, final Coordinates endPoint){
-//		var startLatitude = standPoint.getLatitude();
-//		final var startLongitude = standPoint.getLongitude();
-//		var endLatitude = endPoint.getLatitude();
-//		final var endLongitude = endPoint.getLongitude();
-//
-//		final var deltaLatitude = Math.toRadians(endLatitude - startLatitude);
-//		final var deltaLongitude = Math.toRadians(endLongitude - startLongitude);
-//
-//		startLatitude = Math.toRadians(startLatitude);
-//		endLatitude = Math.toRadians(endLatitude);
-//
-//		final var a = haversine(deltaLatitude) + StrictMath.cos(startLatitude) * StrictMath.cos(endLatitude) * haversine(deltaLongitude);
-//		final var c = 2. * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1. - a));
-//
-//		return EARTH_RADIUS * c;
-//	}
-//
-//	private static double haversine(final double val){
-//		final var arg = StrictMath.sin(val / 2.);
-//		return arg * arg;
-//	}
-
 }
