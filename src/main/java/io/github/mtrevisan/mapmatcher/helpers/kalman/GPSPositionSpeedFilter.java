@@ -34,8 +34,8 @@ public class GPSPositionSpeedFilter{
 
 	/*
 	 * Create a GPS filter that only tracks two dimensions of position and velocity.
-	 * The inherent assumption is that changes in velocity are randomly distributed around 0. Noise is a parameter you can use to alter
-	 * the expected noise. 1 is the original, and the higher it is, the more a path will be "smoothed".
+	 * The inherent assumption is that changes in velocity are randomly distributed around 0.
+	 * Noise that the higher `observationNoise` is, the more a path will be "smoothed".
 	 */
 	public GPSPositionSpeedFilter(final double processNoise, final double observationNoise){
 		//The state model has four dimensions: x, y, dx/dt, dy/dt.
@@ -67,8 +67,10 @@ public class GPSPositionSpeedFilter{
 			new double[]{0., observationNoise},
 		}));
 
-		//the start position is totally unknown, so give a high variance
+		//initial state
 		filter.setInitialStateEstimate(MatrixUtils.createRealMatrix(filter.getStateDimension(), 1));
+
+		//the start position is totally unknown, so give a high variance
 		final double trillion = 1_000. * 1_000. * 1_000. * 1_000.;
 		filter.setInitialEstimateCovariance(MatrixUtils.createRealIdentityMatrix(filter.getStateDimension())
 			.scalarMultiply(trillion));
@@ -88,6 +90,7 @@ public class GPSPositionSpeedFilter{
 		filter.setStateTransition(1, 3, timeLapse);
 	}
 
+	/** Extract filtered position. */
 	public double[] getPosition(){
 		final double[] latLon = new double[2];
 		latLon[0] = filter.getStateEstimate(0, 0);
@@ -95,8 +98,8 @@ public class GPSPositionSpeedFilter{
 		return latLon;
 	}
 
-	/** Extract speed with latitude/longitude-per-second units from a Kalman filter. */
-	private double[] getSpeed(){
+	/** Extract speed with latitude/longitude-per-second units. */
+	public double[] getSpeed(){
 		final double[] deltaLatLon = new double[2];
 		deltaLatLon[0] = filter.getStateEstimate(2, 0);
 		deltaLatLon[1] = filter.getStateEstimate(3, 0);

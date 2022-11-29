@@ -57,7 +57,9 @@ public class BidirectionalPathSummary implements PathSummary{
 		if(!isFound())
 			return Collections.emptyList();
 
-		final var withoutLast = path.stream().map(Edge::getFrom).collect(Collectors.toList());
+		final var withoutLast = path.stream()
+			.map(Edge::getFrom)
+			.collect(Collectors.toList());
 		withoutLast.add(path.get(path.size() - 1).getTo());
 		return withoutLast;
 	}

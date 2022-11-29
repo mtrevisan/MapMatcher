@@ -47,12 +47,12 @@ public class NearLineMergeGraph implements Graph{
 	private final Set<Edge> edges = new HashSet<>();
 	private final Map<Coordinate, Node> nodeMap = new TreeMap<>();
 
-	private final double radius;
+	private final double threshold;
 	private final DistanceCalculator distanceCalculator;
 
 
-	public NearLineMergeGraph(final double radius, final DistanceCalculator distanceCalculator){
-		this.radius = radius;
+	public NearLineMergeGraph(final double threshold, final DistanceCalculator distanceCalculator){
+		this.threshold = threshold;
 		this.distanceCalculator = distanceCalculator;
 	}
 
@@ -132,7 +132,7 @@ public class NearLineMergeGraph implements Graph{
 	public Collection<Node> getNodesNear(final Coordinate coordinate){
 		final Set<Node> closest = new HashSet<>();
 		for(final Map.Entry<Coordinate, Node> entry : nodeMap.entrySet())
-			if(distanceCalculator.distance(entry.getKey(), coordinate) < radius)
+			if(distanceCalculator.distance(entry.getKey(), coordinate) < threshold)
 				closest.add(entry.getValue());
 		return closest;
 	}

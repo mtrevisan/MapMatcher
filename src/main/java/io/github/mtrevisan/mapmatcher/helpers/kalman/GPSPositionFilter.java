@@ -33,8 +33,7 @@ public class GPSPositionFilter{
 
 
 	/*
-	 * Create a GPS filter that only tracks two dimensions of position and velocity.
-	 * The inherent assumption is that changes in velocity are randomly distributed around 0. Noise is a parameter you can use to alter
+	 * Create a GPS filter that only tracks one dimension of position.
 	 * the expected noise. 1 is the original, and the higher it is, the more a path will be "smoothed".
 	 */
 	public GPSPositionFilter(final double processNoise, final double observationNoise){
@@ -64,8 +63,10 @@ public class GPSPositionFilter{
 			new double[]{0., observationNoise},
 		}));
 
-		//the start position is totally unknown, so give a high variance
+		//initial state
 		filter.setInitialStateEstimate(MatrixUtils.createRealMatrix(filter.getStateDimension(), 1));
+
+		//the start position is totally unknown, so give a high variance
 		final double trillion = 1_000. * 1_000. * 1_000. * 1_000.;
 		filter.setInitialEstimateCovariance(MatrixUtils.createRealIdentityMatrix(filter.getStateDimension())
 			.scalarMultiply(trillion));
@@ -79,6 +80,7 @@ public class GPSPositionFilter{
 		filter.update();
 	}
 
+	/** Extract filtered position. */
 	public double[] getPosition(){
 		final double[] latLon = new double[2];
 		latLon[0] = filter.getStateEstimate(0, 0);

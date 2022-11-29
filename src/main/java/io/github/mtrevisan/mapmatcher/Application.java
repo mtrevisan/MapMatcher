@@ -196,8 +196,8 @@ if(path != null)
 		return lines;
 	}
 
-	private static Graph extractGraph(final Collection<LineString> edges, final double radius){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
+	private static Graph extractGraph(final Collection<LineString> edges, final double threshold){
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
@@ -209,10 +209,10 @@ if(path != null)
 	}
 
 	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
-			final double radius){
+			final double threshold){
 		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
 		for(final Coordinate observation : observations){
-			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, radius);
+			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge))
 					observationsEdges.add(edge);

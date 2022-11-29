@@ -205,14 +205,14 @@ class AStarMapMatchingTest{
 	 *
 	 * @param edges	The set of road links.
 	 * @param observations	The observations.
-	 * @param radius	The radius.
+	 * @param threshold	The threshold.
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
 	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
-			final double radius){
+			final double threshold){
 		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
 		for(final Coordinate observation : observations){
-			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, radius);
+			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge))
 					observationsEdges.add(edge);
@@ -220,8 +220,8 @@ class AStarMapMatchingTest{
 		return observationsEdges;
 	}
 
-	private static Graph extractGraph(final Collection<LineString> edges, final double radius){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
+	private static Graph extractGraph(final Collection<LineString> edges, final double threshold){
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);

@@ -31,6 +31,7 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.GPSCoordinate;
+import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import io.github.mtrevisan.mapmatcher.helpers.kalman.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
@@ -260,27 +261,28 @@ class ViterbiMapMatchingTest{
 	 *
 	 * @param edges	The set of road links.
 	 * @param observations	The observations.
-	 * @param radius	The radius.
+	 * @param threshold	The threshold.
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
 	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
-			final double radius){
+			final double threshold){
 		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
 		for(final Coordinate observation : observations)
-			observationsEdges.addAll(extractObservedEdges(edges, observation, radius));
+			observationsEdges.addAll(extractObservedEdges(edges, observation, threshold));
 		return observationsEdges;
 	}
 
-	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate observation, final double radius){
+	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate observation,
+			final double threshold){
 		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
-		final Polygon surrounding = JTSGeometryHelper.createCircle(observation, radius);
+		final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 		for(final LineString edge : edges)
 			if(surrounding.intersects(edge))
 				observationsEdges.add(edge);
 		return observationsEdges;
 	}
 
-	private static Coordinate[] extractObservations(final LineString[] edges, final GPSCoordinate[] observations, final double radius,
+	private static Coordinate[] extractObservations(final LineString[] edges, final GPSCoordinate[] observations, final double threshold,
 			final double maxSpeed){
 		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
 
@@ -297,7 +299,7 @@ class ViterbiMapMatchingTest{
 		//step 2. Retain all observation that are within a certain radius from an edge
 		for(int i = 0; i < feasibleObservations.length; i ++){
 			final GPSCoordinate observation = feasibleObservations[i];
-			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, radius);
+			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 			boolean edgesFound = false;
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge)){
@@ -308,26 +310,27 @@ class ViterbiMapMatchingTest{
 				feasibleObservations[i] = null;
 		}
 
+		//FIXME move inside TopologicTransitionCalculator
 		//step 3. Enforce position feasibility (eliminate all outliers that cannot be reached within the interval elapsed).
-//		int i = 0;
-//		while(true){
-//			final int current = extractNextObservation(feasibleObservations, i);
-//			if(current < 0)
-//				break;
-//
-//			final int next = extractNextObservation(feasibleObservations, current + 1);
-//			if(next < 0)
-//				break;
-//
-//			final double elapsedTime = ChronoUnit.SECONDS.between(feasibleObservations[current].getTimestamp(), feasibleObservations[next].getTimestamp());
-//			final double distance = GeodeticHelper.distance(feasibleObservations[current], feasibleObservations[next])
-//				.getDistance();
-//			final double speed = distance / elapsedTime;
-//			if(speed >= maxSpeed)
-//				feasibleObservations[next] = null;
-//			else
-//				i = next + 1;
-//		}
+		int i = 0;
+		while(true){
+			final int current = extractNextObservation(feasibleObservations, i);
+			if(current < 0)
+				break;
+
+			final int next = extractNextObservation(feasibleObservations, current + 1);
+			if(next < 0)
+				break;
+
+			final double elapsedTime = ChronoUnit.SECONDS.between(feasibleObservations[current].getTimestamp(), feasibleObservations[next].getTimestamp());
+			final double distance = GeodeticHelper.distance(feasibleObservations[current], feasibleObservations[next])
+				.getDistance();
+			final double speed = distance / elapsedTime;
+			if(speed >= maxSpeed)
+				feasibleObservations[next] = null;
+			else
+				i = next + 1;
+		}
 
 		return feasibleObservations;
 	}
@@ -339,8 +342,8 @@ class ViterbiMapMatchingTest{
 		return (index < m? index: -1);
 	}
 
-	private static Graph extractGraph(final Collection<LineString> edges, final double radius){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
+	private static Graph extractGraph(final Collection<LineString> edges, final double threshold){
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
