@@ -109,10 +109,12 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	private static boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation,
 			final LineString fromSegmentLineString, final Edge toSegment){
 		//calculate Along-Track Distance
+		//FIXME this is NOT the true ATD on an ellipsoid!
 		double previousATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
 		double currentATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
 		if(previousATD == currentATD){
 			final LineString toSegmentLineString = toSegment.getLineString();
+			//FIXME this is NOT the true ATD on an ellipsoid!
 			previousATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
 			currentATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
 		}

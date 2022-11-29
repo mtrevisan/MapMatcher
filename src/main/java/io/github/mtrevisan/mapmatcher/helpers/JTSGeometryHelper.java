@@ -26,6 +26,7 @@ package io.github.mtrevisan.mapmatcher.helpers;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineSegment;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -35,6 +36,7 @@ import org.locationtech.jts.linearref.LengthLocationMap;
 import org.locationtech.jts.linearref.LinearLocation;
 import org.locationtech.jts.linearref.LocationIndexedLine;
 import org.locationtech.jts.operation.distance.DistanceOp;
+import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
 
@@ -63,6 +65,13 @@ public class JTSGeometryHelper{
 		return FACTORY.createLineString(coordinates);
 	}
 
+	public static LineString createSimplifiedLineString(final Coordinate[] coordinates, final double distanceTolerance){
+		final LineString lineString = createLineString(coordinates);
+		final DouglasPeuckerSimplifier simplifier = new DouglasPeuckerSimplifier(lineString);
+		simplifier.setDistanceTolerance(distanceTolerance);
+		return (LineString)simplifier.getResultGeometry();
+	}
+
 	public static Polygon createCircle(final Coordinate origin, final double radius){
 		final double phi = Math.toRadians(origin.getY());
 		//precision is within 1 cm [m/°]
@@ -82,7 +91,6 @@ public class JTSGeometryHelper{
 		//projection of point onto line
 		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(line);
 		final LinearLocation point = locationIndexedLine.project(coordinate);
-
 		return new LengthLocationMap(line)
 			.getLength(point);
 	}

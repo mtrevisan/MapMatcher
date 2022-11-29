@@ -35,15 +35,6 @@ import org.locationtech.jts.geom.Point;
  */
 public class AngularGeodeticCalculator implements DistanceCalculator{
 
-	/**
-	 * Calculate distance, (azimuth) bearing and final bearing between two points using inverse Vincenty formula.
-	 *
-	 * @param startPoint	The start point.
-	 * @param endPoint	The end point.
-	 * @return	The distance [°].
-	 *
-	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
-	 */
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
 		final Point start = JTSGeometryHelper.createPoint(startPoint);

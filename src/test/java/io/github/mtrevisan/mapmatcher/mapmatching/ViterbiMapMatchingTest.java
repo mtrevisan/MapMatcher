@@ -250,7 +250,7 @@ class ViterbiMapMatchingTest{
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
-		final String expected = "[null, null, E3rev, E2, E2, E2, E2]";
+		final String expected = "[null, null, E3-rev, E2, E2, E2, E2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -317,19 +317,12 @@ class ViterbiMapMatchingTest{
 		return feasibleObservations;
 	}
 
-	private static int extractNextObservation(final Coordinate[] observations, int index){
-		final int m = observations.length;
-		while(index < m && observations[index] == null)
-			index ++;
-		return (index < m? index: -1);
-	}
-
 	private static Graph extractGraph(final Collection<LineString> edges, final double threshold){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
-			graph.addApproximateDirectEdge("E" + e + "rev", edge.reverse());
+			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
 
 			e ++;
 		}

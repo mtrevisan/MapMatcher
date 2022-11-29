@@ -54,7 +54,8 @@
 		<locationtech.jts-core.version>1.19.0</locationtech.jts-core.version>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<apache.math3.version>3.6.1</apache.math3.version>
-
+		<!-- https://mvnrepository.com/artifact/org.apache.sis.core/sis-referencing -->
+		<apache.sis.version>1.2</apache.sis.version>
 		<!-- Logging -->
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 		<slf4j.slf4j-api.version>2.0.5</slf4j.slf4j-api.version>
@@ -139,6 +140,16 @@
 			<artifactId>commons-math3</artifactId>
 			<version>${apache.math3.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.sis.core</groupId>
+			<artifactId>sis-referencing</artifactId>
+			<version>${apache.sis.version}</version>
+		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.apache.sis.core</groupId>-->
+<!--			<artifactId>sis-utility</artifactId>-->
+<!--			<version>${apache.sis.version}</version>-->
+<!--		</dependency>-->
 
 		<!-- Logger -->
 		<dependency>

@@ -24,8 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
-import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
+import org.apache.sis.referencing.CommonCRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -35,14 +35,25 @@ import org.locationtech.jts.geom.LineString;
  */
 public class GeodeticCalculator implements DistanceCalculator{
 
+	/**
+	 * Calculate orthodromic distance, (azimuth) bearing and final bearing between two points using inverse Vincenty formula.
+	 *
+	 * @param startPoint	The start point.
+	 * @param endPoint	The end point.
+	 * @return	The distance.
+	 *
+	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
+	 */
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		return GeodeticHelper.distance(startPoint, endPoint)
-			.getDistance();
+		final org.apache.sis.referencing.GeodeticCalculator calculator = org.apache.sis.referencing.GeodeticCalculator.create(CommonCRS.WGS84.geographic());
+		calculator.setStartGeographicPoint(startPoint.getY(), startPoint.getX());
+		calculator.setEndGeographicPoint(endPoint.getY(), endPoint.getX());
+		return calculator.getGeodesicDistance();
 	}
 
 	/**
-	 * Calculate cross-track distance on a spherical geometry.
+	 * Calculate cross-track distance.
 	 *
 	 * @param point	The point
 	 * @param lineString	The list of track points.
@@ -50,9 +61,9 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 */
 	@Override
 	public double distance(final Coordinate point, final LineString lineString){
+		//FIXME this is NOT the nearest point on an ellipsoid!
 		final Coordinate nearestPoint = JTSGeometryHelper.onTrackClosestPoint(lineString, point);
-		return GeodeticHelper.distance(point, nearestPoint)
-			.getDistance();
+		return distance(point, nearestPoint);
 	}
 
 }

@@ -231,7 +231,7 @@ class AStarMapMatchingTest{
 		int e = 0;
 		for(final LineString edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
-			graph.addApproximateDirectEdge("E" + e + "rev", edge.reverse());
+			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
 
 			e ++;
 		}
