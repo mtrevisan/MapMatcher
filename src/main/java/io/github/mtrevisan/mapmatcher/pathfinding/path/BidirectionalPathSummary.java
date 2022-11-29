@@ -22,11 +22,10 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.path;
+package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
 
@@ -47,7 +46,7 @@ public class BidirectionalPathSummary implements PathSummary{
 	private final Set<Node> searchedVerticesFromEnd;
 
 
-	BidirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVerticesFromStart, final Set<Node> searchedVerticesFromEnd){
+	public BidirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVerticesFromStart, final Set<Node> searchedVerticesFromEnd){
 		this.path = path;
 		this.searchedVerticesFromStart = searchedVerticesFromStart;
 		this.searchedVerticesFromEnd = searchedVerticesFromEnd;

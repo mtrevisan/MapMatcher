@@ -108,6 +108,7 @@ public class GPSPositionSpeedFilter{
 		return deltaLatLon;
 	}
 
+
 	public static void main(String[] args){
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -119,13 +120,13 @@ public class GPSPositionSpeedFilter{
 			new GPSCoordinate(12.273057882852266, 45.663060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
 			new GPSCoordinate(12.274057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
-		GPSPositionSpeedFilter filter = new GPSPositionSpeedFilter(100.);
-		GPSCoordinate[] filtered = new GPSCoordinate[observations.length];
+		final GPSPositionSpeedFilter filter = new GPSPositionSpeedFilter(100.);
+		final GPSCoordinate[] filtered = new GPSCoordinate[observations.length];
 		filtered[0] = observations[0];
 		for(int i = 1; i < observations.length; i ++){
 			filter.updatePosition(observations[i].getY(), observations[i].getX(), ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
-			double[] latLon = filter.getPosition();
-			filtered[i] = new GPSCoordinate(latLon[1], latLon[0], observations[i].getTimestamp());
+			final double[] position = filter.getPosition();
+			filtered[i] = new GPSCoordinate(position[1], position[0], observations[i].getTimestamp());
 		}
 	}
 

@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.helpers;
 import org.locationtech.jts.geom.Coordinate;
 
 
-//FIXME to be removed!
+//FIXME to be removed?
 public class GeodeticHelper{
 
 	//flattening of the ellipsoid, in WGS84 reference (f = 1 - EARTH_POLAR_RADIUS/EARTH_EQUATORIAL_RADIUS)

@@ -28,7 +28,8 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.FibonacciHeap;
-import io.github.mtrevisan.mapmatcher.path.PathSummaryCreator;
+import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummary;
+import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 
 import java.util.HashMap;

@@ -38,7 +38,7 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
 
-public class WGS84GeometryHelper{
+public class JTSGeometryHelper{
 
 	private static final PrecisionModel PRECISION_MODEL = new PrecisionModel(PrecisionModel.FLOATING);
 	private static final int SRID_WGS84 = 4326;

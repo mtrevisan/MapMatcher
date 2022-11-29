@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
+import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummary;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

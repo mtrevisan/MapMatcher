@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
@@ -84,12 +84,12 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 				.simplePath();
 			if(!path.isEmpty()){
 				//calculate Along-Track Distance
-				double previousATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
-				double currentATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
+				double previousATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
+				double currentATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
 				if(previousATD == currentATD){
 					final LineString toSegmentLineString = toSegment.getLineString();
-					previousATD = WGS84GeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
-					currentATD = WGS84GeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
+					previousATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
+					currentATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
 				}
 				//NOTE: take into consideration the direction of travel
 				if(previousATD <= currentATD)
@@ -98,12 +98,12 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 		}
 		else{
 			//calculate Along-Track Distance
-			double previousATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
-			double currentATD = WGS84GeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
+			double previousATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
+			double currentATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
 			if(previousATD == currentATD){
 				final LineString toSegmentLineString = toSegment.getLineString();
-				previousATD = WGS84GeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
-				currentATD = WGS84GeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
+				previousATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
+				currentATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
 			}
 			//NOTE: take into consideration the direction of travel
 			if(previousATD <= currentATD)

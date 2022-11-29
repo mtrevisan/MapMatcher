@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
@@ -46,14 +46,14 @@ public class AngularGeodeticCalculator implements DistanceCalculator{
 	 */
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		final Point start = WGS84GeometryHelper.createPoint(startPoint);
-		final Point end = WGS84GeometryHelper.createPoint(endPoint);
+		final Point start = JTSGeometryHelper.createPoint(startPoint);
+		final Point end = JTSGeometryHelper.createPoint(endPoint);
 		return start.distance(end);
 	}
 
 	@Override
 	public double distance(final Coordinate point, final LineString lineString){
-		final Point start = WGS84GeometryHelper.createPoint(point);
+		final Point start = JTSGeometryHelper.createPoint(point);
 		return start.distance(lineString);
 	}
 

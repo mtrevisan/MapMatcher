@@ -26,7 +26,8 @@ package io.github.mtrevisan.mapmatcher.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
+import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummary;
+import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummaryCreator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
