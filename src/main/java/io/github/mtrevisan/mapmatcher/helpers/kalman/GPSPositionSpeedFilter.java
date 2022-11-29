@@ -24,11 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.kalman;
 
-import io.github.mtrevisan.mapmatcher.helpers.GPSCoordinate;
 import org.apache.commons.math3.linear.MatrixUtils;
-
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 
 
 public class GPSPositionSpeedFilter{
@@ -41,7 +37,7 @@ public class GPSPositionSpeedFilter{
 	 * The inherent assumption is that changes in velocity are randomly distributed around 0. Noise is a parameter you can use to alter
 	 * the expected noise. 1 is the original, and the higher it is, the more a path will be "smoothed".
 	 */
-	public GPSPositionSpeedFilter(final double noise){
+	public GPSPositionSpeedFilter(final double processNoise, final double observationNoise){
 		//The state model has four dimensions: x, y, dx/dt, dy/dt.
 		//Each time step we can only observe position, not velocity, so the observation vector has only two dimensions.
 		filter = new KalmanFilter(4, 2);
@@ -58,18 +54,17 @@ public class GPSPositionSpeedFilter{
 		}));
 
 		//noise in the world
-		double pos = 0.000_001;
 		filter.setProcessNoiseCovariance(MatrixUtils.createRealMatrix(new double[][]{
-			new double[]{pos, 0., 0., 0.},
-			new double[]{0., pos, 0., 0.},
+			new double[]{processNoise, 0., 0., 0.},
+			new double[]{0., processNoise, 0., 0.},
 			new double[]{0., 0., 1., 0.},
 			new double[]{0., 0., 0., 1.}
 		}));
 
 		//noise in the observations
 		filter.setObservationNoiseCovariance(MatrixUtils.createRealMatrix(new double[][]{
-			new double[]{pos * noise, 0.},
-			new double[]{0., pos * noise},
+			new double[]{observationNoise, 0.},
+			new double[]{0., observationNoise},
 		}));
 
 		//the start position is totally unknown, so give a high variance
@@ -106,28 +101,6 @@ public class GPSPositionSpeedFilter{
 		deltaLatLon[0] = filter.getStateEstimate(2, 0);
 		deltaLatLon[1] = filter.getStateEstimate(3, 0);
 		return deltaLatLon;
-	}
-
-
-	public static void main(String[] args){
-		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			new GPSCoordinate(12.172704737567187, 45.59108565830172, timestamp),
-			new GPSCoordinate(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			new GPSCoordinate(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			new GPSCoordinate(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			new GPSCoordinate(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			new GPSCoordinate(12.273057882852266, 45.663060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			new GPSCoordinate(12.274057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
-		};
-		final GPSPositionSpeedFilter filter = new GPSPositionSpeedFilter(100.);
-		final GPSCoordinate[] filtered = new GPSCoordinate[observations.length];
-		filtered[0] = observations[0];
-		for(int i = 1; i < observations.length; i ++){
-			filter.updatePosition(observations[i].getY(), observations[i].getX(), ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
-			final double[] position = filter.getPosition();
-			filtered[i] = new GPSCoordinate(position[1], position[0], observations[i].getTimestamp());
-		}
 	}
 
 }

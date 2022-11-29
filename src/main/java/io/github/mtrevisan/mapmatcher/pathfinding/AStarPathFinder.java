@@ -54,6 +54,9 @@ public class AStarPathFinder implements PathFindingStrategy{
 	public PathSummary findPath(final Node start, final Node end, final Graph graph){
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
 		final var predecessorTree = new HashMap<Node, Edge>();
+		if(start.equals(end))
+			//early exit
+			return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
 		predecessorTree.put(start, null);
 
 		//the cost of the cheapest path from start to given node currently known

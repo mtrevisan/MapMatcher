@@ -285,7 +285,7 @@ class ViterbiMapMatchingTest{
 		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
 
 		//step 1. Use Kalman filter to smooth the coordinates
-		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(100.);
+		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
 		feasibleObservations[0] = observations[0];
 		for(int i = 1; i < observations.length; i ++){
 			kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
