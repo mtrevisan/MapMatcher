@@ -76,38 +76,27 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	public double transitionProbability(final Edge fromSegment, final Edge toSegment, Graph graph,
 			final Coordinate previousObservation, final Coordinate currentObservation){
 		double a = 0.;
-		final LineString fromSegmentLineString = fromSegment.getLineString();
-		//if the node is the same
-		if(fromSegment.equals(toSegment)){
-			//search for a feasible path between the projection onto fromSegment and the one onto toSegment
-			final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
-				.simplePath();
-			if(!path.isEmpty()){
-				//calculate Along-Track Distance
-				double previousATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
-				double currentATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
-				if(previousATD == currentATD){
-					final LineString toSegmentLineString = toSegment.getLineString();
-					previousATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
-					currentATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
+		//penalize u-turns: make then unreachable
+		final boolean segmentsAreReversed = (fromSegment.getFrom().getCoordinate().equals(toSegment.getTo().getCoordinate())
+			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
+		if(!segmentsAreReversed){
+			final LineString fromSegmentLineString = fromSegment.getLineString();
+			//if the node is the same
+			if(fromSegment.equals(toSegment)){
+				//search for a feasible path between the projection onto fromSegment and the one onto toSegment
+				final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
+					.simplePath();
+				if(!path.isEmpty()){
+					final boolean goingForward = isGoingForward(previousObservation, currentObservation, fromSegmentLineString, toSegment);
+					if(goingForward)
+						a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 				}
-				//NOTE: take into consideration the direction of travel
-				if(previousATD <= currentATD)
-					a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 			}
-		}
-		else{
-			//calculate Along-Track Distance
-			double previousATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
-			double currentATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
-			if(previousATD == currentATD){
-				final LineString toSegmentLineString = toSegment.getLineString();
-				previousATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
-				currentATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
+			else{
+				final boolean goingForward = isGoingForward(previousObservation, currentObservation, fromSegmentLineString, toSegment);
+				if(goingForward)
+					a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 			}
-			//NOTE: take into consideration the direction of travel
-			if(previousATD <= currentATD)
-				a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 		}
 
 		//TODO account for speed (see sustainability-13-12820-v2.pdf, pag 9)?
@@ -118,6 +107,19 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 //		final double speed = distance / elapsedTime;
 
 		return InitialProbabilityCalculator.logPr(a);
+	}
+
+	private static boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation,
+			final LineString fromSegmentLineString, final Edge toSegment){
+		//calculate Along-Track Distance
+		double previousATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
+		double currentATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
+		if(previousATD == currentATD){
+			final LineString toSegmentLineString = toSegment.getLineString();
+			previousATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
+			currentATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
+		}
+		return (previousATD <= currentATD);
 	}
 
 }

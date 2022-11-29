@@ -70,10 +70,10 @@ public class NearLineMergeGraph implements Graph{
 		if(coordinates.length <= 1)
 			return addedEdges;
 
-		final Coordinate startCoordinate = coordinates[0];
-		final Coordinate endCoordinate = coordinates[coordinates.length - 1];
-		final Collection<Node> startNodes = getApproximateNode(startCoordinate);
-		final Collection<Node> endNodes = getApproximateNode(endCoordinate);
+		final Collection<Node> startNodes = connectNodes(coordinates[0],
+			lineString.getCoordinateN(0));
+		final Collection<Node> endNodes = connectNodes(coordinates[coordinates.length - 1],
+			lineString.getCoordinateN(lineString.getNumPoints() - 1));
 		final Set<Node> intersectionNodes = new HashSet<>(startNodes);
 		intersectionNodes.retainAll(endNodes);
 		for(final Node fromNode : startNodes)
@@ -117,6 +117,31 @@ public class NearLineMergeGraph implements Graph{
 					}
 				}
 		return addedEdges;
+	}
+
+	private Collection<Node> connectNodes(final Coordinate origin, final Coordinate newCoordinate){
+		final Collection<Node> nodes = getApproximateNode(origin);
+		final Coordinate virtualStartCoordinate = calculateVirtualCoordinate(nodes, newCoordinate);
+		for(final Node node : nodes)
+			node.setCoordinate(virtualStartCoordinate);
+		return nodes;
+	}
+
+	//NOTE: not the true average, but close enough
+	private static Coordinate calculateVirtualCoordinate(final Collection<Node> nodes, final Coordinate newCoordinate){
+		final Node node = nodes.iterator()
+			.next();
+		//connect the new node to the middle point already calculated (get this point from the first node)
+		double latitude = node.getCoordinate().getY();
+		double longitude = node.getCoordinate().getX();
+		if(nodes.size() == 1){
+			//calculate the middle point between the (only) found node, plus the new one
+			final Coordinate coordinate = node.getCoordinate();
+			//NOTE: the points are close enough that simply a Euclidean mean is valid
+			latitude = (newCoordinate.getY() + coordinate.getY()) / 2.;
+			longitude = (newCoordinate.getX() + coordinate.getX()) / 2.;
+		}
+		return new Coordinate(longitude, latitude);
 	}
 
 	private Collection<Node> getApproximateNode(final Coordinate coordinate){
