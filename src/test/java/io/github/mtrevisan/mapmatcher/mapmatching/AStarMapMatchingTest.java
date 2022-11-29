@@ -105,7 +105,7 @@ class AStarMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability(){
-		final double observationStandardDeviation = 440.;
+		final double observationStandardDeviation = 0.04;
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator();
@@ -202,6 +202,12 @@ class AStarMapMatchingTest{
 
 	/**
 	 * Extract a set of candidate road links within a certain distance to all observation.
+	 * <p>
+	 * Measurement error <code>ε_m = ε_p + ε_r</code>, where </ode>ε_p</code> is the positioning error (<em>20 m</em>),
+	 * <code>ε_r = 0.5 * w / sin(α / 2)</code> is the road error, <code>w</code> is the road width (max <em>8 m</em>), and <code>α</code>
+	 * is the angle between two intersecting roads (consider it to be <em>90°</em>).
+	 * This lead to <code>ε_m = 20 + 5.7 = 26 m</code>, a savvy choice is <em>50 m</em>.
+	 * </p>
 	 *
 	 * @param edges	The set of road links.
 	 * @param observations	The observations.

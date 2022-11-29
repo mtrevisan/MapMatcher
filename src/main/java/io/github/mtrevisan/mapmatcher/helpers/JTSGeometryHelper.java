@@ -88,11 +88,11 @@ public class JTSGeometryHelper{
 	}
 
 	public static double crossTrackDistance(final LineString line, final Coordinate coordinate){
-		final Coordinate nearestPoint = onTrackClosestPoints(line, coordinate);
+		final Coordinate nearestPoint = onTrackClosestPoint(line, coordinate);
 		return nearestPoint.distance(coordinate);
 	}
 
-	public static Coordinate onTrackClosestPoints(final LineString line, final Coordinate coordinate){
+	public static Coordinate onTrackClosestPoint(final LineString line, final Coordinate coordinate){
 		return DistanceOp.nearestPoints(line, createPoint(coordinate))[0];
 	}
 

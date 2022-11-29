@@ -25,6 +25,7 @@
 package io.github.mtrevisan.mapmatcher.distances;
 
 import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -36,12 +37,12 @@ public class GeodeticCalculator implements DistanceCalculator{
 
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		return GeodeticHelper.distance(startPoint, endPoint).getDistance();
+		return GeodeticHelper.distance(startPoint, endPoint)
+			.getDistance();
 	}
 
 	/**
 	 * Calculate cross-track distance on a spherical geometry.
-	 * TODO: to be checked!
 	 *
 	 * @param point	The point
 	 * @param lineString	The list of track points.
@@ -49,24 +50,9 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 */
 	@Override
 	public double distance(final Coordinate point, final LineString lineString){
-		double minimumDistance = Double.POSITIVE_INFINITY;
-		final Coordinate[] trackPoints = lineString.getCoordinates();
-		for(int i = 1; i < trackPoints.length; i ++){
-			final GeodeticHelper.OrthodromicDistance distance0P = GeodeticHelper.distance(trackPoints[i - 1], point);
-			final GeodeticHelper.OrthodromicDistance distance01 = GeodeticHelper.distance(trackPoints[i - 1], trackPoints[i]);
-
-			//(angular) distance from start point to third point
-			final double delta13 = distance0P.getAngularDistance();
-			//(initial) bearing from start point to third point
-			final double theta13 = distance0P.getInitialBearing();
-			//(initial) bearing from start point to end point
-			final double theta12 = distance01.getInitialBearing();
-			final double distance = StrictMath.asin(StrictMath.sin(delta13) * StrictMath.sin(theta13 - theta12));
-
-			if(Math.abs(distance) < Math.abs(minimumDistance))
-				minimumDistance = distance;
-		}
-		return minimumDistance * GeodeticHelper.EARTH_POLAR_RADIUS;
+		final Coordinate nearestPoint = JTSGeometryHelper.onTrackClosestPoint(lineString, point);
+		return GeodeticHelper.distance(point, nearestPoint)
+			.getDistance();
 	}
 
 }

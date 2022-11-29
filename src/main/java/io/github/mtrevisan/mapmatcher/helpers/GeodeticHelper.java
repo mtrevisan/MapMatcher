@@ -27,7 +27,6 @@ package io.github.mtrevisan.mapmatcher.helpers;
 import org.locationtech.jts.geom.Coordinate;
 
 
-//FIXME to be removed?
 public class GeodeticHelper{
 
 	//flattening of the ellipsoid, in WGS84 reference (f = 1 - EARTH_POLAR_RADIUS/EARTH_EQUATORIAL_RADIUS)
@@ -177,49 +176,6 @@ public class GeodeticHelper{
 		od.finalBearing = finalBearing;
 		return od;
 	}
-
-//	/**
-//	 * Calculate orthodromic distance, (azimuth) bearing and final bearing between a point and a line string using inverse Vincenty formula.
-//	 *
-//	 * @param point	The point.
-//	 * @param lineString	The line string.
-//	 * @return	The distance (positive means right of course, negative means left).
-//	 *
-//	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
-//	 */
-//	public static OrthodromicDistance distance(final Coordinate point, final LineString lineString){
-//		final int size = lineString.getNumPoints();
-//		for(int i = 1; i < size; i ++){
-//			final Coordinate pointA = lineString.getCoordinateN(i - 1);
-//			final Coordinate pointB = lineString.getCoordinateN(i);
-//			final OrthodromicDistance distanceAB = distance(pointA, pointB);
-//
-//			double low = 0.;
-//			double high = distanceAB.distance;
-//			while(low <= high){
-//				final double middle = low + (high - low) / 2.;
-//				final Coordinate pointMiddle = destination(pointA, distanceAB.initialBearing, middle).destination;
-//				final OrthodromicDistance distancePM = distance(point, pointMiddle);
-//				if(sortedArray[middle] < key){
-//					low = middle + 1;
-//				}
-//				else if(sortedArray[middle] > key){
-//					high = middle - 1;
-//				}
-//				else if(sortedArray[middle] == key){
-//					index = middle;
-//					break;
-//				}
-//			}
-//			//TODO
-//		}
-//		final OrthodromicDistance od = new OrthodromicDistance();
-//		od.angularDistance = angularDistance;
-//		od.distance = distance;
-//		od.initialBearing = initialBearing;
-//		od.finalBearing = finalBearing;
-//		return od;
-//	}
 
 	/**
 	 * Destination given distance & bearing from start point using direct Vincenty formula.
