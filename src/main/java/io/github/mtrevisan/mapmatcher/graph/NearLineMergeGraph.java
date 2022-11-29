@@ -71,9 +71,9 @@ public class NearLineMergeGraph implements Graph{
 			return addedEdges;
 
 		final Collection<Node> startNodes = connectNodes(coordinates[0],
-			lineString.getCoordinateN(0));
+			lineString.getStartPoint().getCoordinate());
 		final Collection<Node> endNodes = connectNodes(coordinates[coordinates.length - 1],
-			lineString.getCoordinateN(lineString.getNumPoints() - 1));
+			lineString.getEndPoint().getCoordinate());
 		final Set<Node> intersectionNodes = new HashSet<>(startNodes);
 		intersectionNodes.retainAll(endNodes);
 		for(final Node fromNode : startNodes)

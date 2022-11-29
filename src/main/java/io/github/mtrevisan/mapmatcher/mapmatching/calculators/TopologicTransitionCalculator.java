@@ -61,15 +61,15 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	 * Otherwise
 	 *
 	 * <p>
-	 * Pr(r_i-1 -> r_i) = dist(o_i-1, o_i) / lengthOfShortestPath(r_i-1, r_i), with o_i-1 at r_i-1 and o_i at r_i
+	 * Pr(r_i-1 -> r_i) = dist(o_i-1, o_i) / pathDistance(x_i-1, x_i), where x_K is the projection of the observation o_k onto the segment r
 	 * </p>
 	 *
 	 * Otherwise
 	 *
 	 * <p>
 	 * Exponential function of the difference between the route length and the great circle distance between o_t and o_t+1
-	 * Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |dist(o_i-1, o_i) - pathDistance(x_i-1, x_i)|) (β "can be" 3), where x is the projection of the
-	 * observation o onto the segment r
+	 * Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |dist(o_i-1, o_i) - pathDistance(x_i-1, x_i)|) (β "can be" 3), where x_k is the projection of the
+	 * observation o_k onto the segment r
 	 * </p>
 	 */
 	@Override
@@ -77,9 +77,8 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 			final Coordinate previousObservation, final Coordinate currentObservation){
 		double a = 0.;
 		//penalize u-turns: make then unreachable
-		final boolean segmentsAreReversed = (fromSegment.getFrom().getCoordinate().equals(toSegment.getTo().getCoordinate())
-			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
-		if(!segmentsAreReversed){
+		final boolean segmentsReversed = isSegmentsReversed(fromSegment, toSegment);
+		if(!segmentsReversed){
 			final LineString fromSegmentLineString = fromSegment.getLineString();
 			//if the node is the same
 			if(fromSegment.equals(toSegment)){
@@ -99,14 +98,12 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 			}
 		}
 
-		//TODO account for speed (see sustainability-13-12820-v2.pdf, pag 9)?
-//		/** @see step 3 of {@link io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatchingTest#extractObservations} */
-//		final double elapsedTime = ChronoUnit.SECONDS.between(previousObservation.getTimestamp(), currentObservation.getTimestamp());
-//		final double distance = GeodeticHelper.distance(previousObservation, currentObservation)
-//			.getDistance();
-//		final double speed = distance / elapsedTime;
-
 		return InitialProbabilityCalculator.logPr(a);
+	}
+
+	private static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){
+		return (fromSegment.getFrom().getCoordinate().equals(toSegment.getTo().getCoordinate())
+			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
 	}
 
 	private static boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation,

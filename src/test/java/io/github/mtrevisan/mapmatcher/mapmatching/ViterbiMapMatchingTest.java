@@ -31,7 +31,6 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.GPSCoordinate;
-import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import io.github.mtrevisan.mapmatcher.helpers.kalman.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
@@ -99,7 +98,7 @@ class ViterbiMapMatchingTest{
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractGraph(observedEdges, 500.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400., 200.);
+		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
@@ -150,7 +149,7 @@ class ViterbiMapMatchingTest{
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractGraph(observedEdges, 500.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400., 200.);
+		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
@@ -201,7 +200,7 @@ class ViterbiMapMatchingTest{
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractGraph(observedEdges, 500.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 2_000., 200.);
+		final Coordinate[] filteredObservations = extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
@@ -248,10 +247,10 @@ class ViterbiMapMatchingTest{
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractGraph(observedEdges, 500.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400., 200.);
+		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
-		final String expected = "[null, null, E3rev, E2, E2, null, E2]";
+		final String expected = "[null, null, E3rev, E2, E2, E2, E2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -282,8 +281,7 @@ class ViterbiMapMatchingTest{
 		return observationsEdges;
 	}
 
-	private static Coordinate[] extractObservations(final LineString[] edges, final GPSCoordinate[] observations, final double threshold,
-			final double maxSpeed){
+	private static Coordinate[] extractObservations(final LineString[] edges, final GPSCoordinate[] observations, final double threshold){
 		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
 
 		//step 1. Use Kalman filter to smooth the coordinates
@@ -308,28 +306,6 @@ class ViterbiMapMatchingTest{
 				}
 			if(!edgesFound)
 				feasibleObservations[i] = null;
-		}
-
-		//FIXME move inside TopologicTransitionCalculator
-		//step 3. Enforce position feasibility (eliminate all outliers that cannot be reached within the interval elapsed).
-		int i = 0;
-		while(true){
-			final int current = extractNextObservation(feasibleObservations, i);
-			if(current < 0)
-				break;
-
-			final int next = extractNextObservation(feasibleObservations, current + 1);
-			if(next < 0)
-				break;
-
-			final double elapsedTime = ChronoUnit.SECONDS.between(feasibleObservations[current].getTimestamp(), feasibleObservations[next].getTimestamp());
-			final double distance = GeodeticHelper.distance(feasibleObservations[current], feasibleObservations[next])
-				.getDistance();
-			final double speed = distance / elapsedTime;
-			if(speed >= maxSpeed)
-				feasibleObservations[next] = null;
-			else
-				i = next + 1;
 		}
 
 		return feasibleObservations;

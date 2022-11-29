@@ -56,6 +56,7 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	 */
 	@Override
 	public double emissionProbability(final Coordinate observation, final Edge segment){
+		//NOTE: try to extract meters from JTS "distance"...
 		final double factor = Math.toRadians(GeodeticHelper.meanRadiusOfCurvature(observation.getY()));
 		final double tmp = distanceCalculator.distance(observation, segment.getLineString()) * factor / observationStandardDeviation;
 		final double probability = Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);

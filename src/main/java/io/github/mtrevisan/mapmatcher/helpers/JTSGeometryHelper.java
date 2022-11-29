@@ -79,10 +79,12 @@ public class JTSGeometryHelper{
 
 
 	public static double alongTrackDistance(final LineString line, final Coordinate coordinate){
+		//projection of point onto line
 		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(line);
-		final LinearLocation location = locationIndexedLine.project(coordinate);
+		final LinearLocation point = locationIndexedLine.project(coordinate);
+
 		return new LengthLocationMap(line)
-			.getLength(location);
+			.getLength(point);
 	}
 
 	public static double crossTrackDistance(final LineString line, final Coordinate coordinate){
@@ -92,6 +94,17 @@ public class JTSGeometryHelper{
 
 	public static Coordinate onTrackClosestPoints(final LineString line, final Coordinate coordinate){
 		return DistanceOp.nearestPoints(line, createPoint(coordinate))[0];
+	}
+
+	public static double distanceClosestPointsOnLineString(final LineString line, final Coordinate coordinate1,
+			final Coordinate coordinate2){
+		//projection of point onto line
+		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(line);
+		final LinearLocation point1 = locationIndexedLine.project(coordinate1);
+		final LinearLocation point2 = locationIndexedLine.project(coordinate2);
+
+		final LengthLocationMap lengthLocationMap = new LengthLocationMap(line);
+		return Math.abs(lengthLocationMap.getLength(point1) - lengthLocationMap.getLength(point2));
 	}
 
 }
