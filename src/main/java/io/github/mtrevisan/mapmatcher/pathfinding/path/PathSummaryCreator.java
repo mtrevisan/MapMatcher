@@ -67,7 +67,7 @@ public class PathSummaryCreator{
 			result.add(edge);
 			currentNode = edge.getFrom();
 		}
-		return (Objects.equals(currentNode, to)? result: new ArrayList<>());
+		return (Objects.equals(currentNode, to)? result: Collections.emptyList());
 	}
 
 }

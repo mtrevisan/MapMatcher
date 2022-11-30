@@ -50,7 +50,6 @@ public class RamerDouglasPeuckerSimplifier{
 	private final Coordinate[] points;
 	private final DistanceCalculator distanceCalculator;
 
-	private boolean[] usedPoints;
 	private double distanceTolerance;
 
 
@@ -75,7 +74,7 @@ public class RamerDouglasPeuckerSimplifier{
 	}
 
 	public Coordinate[] simplify(){
-		usedPoints = new boolean[points.length];
+		final boolean[] usedPoints = new boolean[points.length];
 		Arrays.fill(usedPoints, true);
 
 		int startIndex = 0;
@@ -94,9 +93,7 @@ public class RamerDouglasPeuckerSimplifier{
 				int maxIndex = startIndex;
 				for(int k = maxIndex + 1; k < endIndex; k ++)
 					if(usedPoints[k]){
-						//FIXME this is NOT the nearest point on an ellipsoid!
-//						final Coordinate nearestPoint = JTSGeometryHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
-final Coordinate nearestPoint = null;
+						final Coordinate nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
 						final double distance = distanceCalculator.distance(points[k], nearestPoint);
 						if(distance > maxDistance){
 							maxIndex = k;

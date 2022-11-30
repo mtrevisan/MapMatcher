@@ -57,7 +57,10 @@ public class SingleDirectionalPathSummary implements PathSummary{
 		final var withoutLast = path.stream()
 			.map(Edge::getFrom)
 			.collect(Collectors.toList());
-		withoutLast.add(path.get(path.size() - 1).getTo());
+		final Node nodeTo = path.get(path.size() - 1).getTo();
+		final Node lastNode = withoutLast.get(withoutLast.size() - 1);
+		if(!lastNode.equals(nodeTo))
+			withoutLast.add(nodeTo);
 		return withoutLast;
 	}
 

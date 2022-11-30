@@ -45,7 +45,7 @@ public class NearLineMergeGraph implements Graph{
 	private static final Logger LOGGER = LoggerFactory.getLogger(NearLineMergeGraph.class);
 
 
-	private final Set<Edge> edges = new HashSet<>();
+	private final Set<Edge> edges = new HashSet<>(0);
 	private final Map<Coordinate, Node> nodeMap = new TreeMap<>();
 
 	private final double threshold;
@@ -156,7 +156,7 @@ public class NearLineMergeGraph implements Graph{
 	}
 
 	public Collection<Node> getNodesNear(final Coordinate coordinate){
-		final Set<Node> closest = new HashSet<>();
+		final Set<Node> closest = new HashSet<>(0);
 		for(final Map.Entry<Coordinate, Node> entry : nodeMap.entrySet())
 			if(distanceCalculator.distance(entry.getKey(), coordinate) <= threshold)
 				closest.add(entry.getValue());

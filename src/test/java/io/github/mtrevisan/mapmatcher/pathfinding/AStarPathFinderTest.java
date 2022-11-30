@@ -38,7 +38,7 @@ class AStarPathFinderTest{
 
 		PathSummary path = pathfinder.findPath(testGraph.getStart(), testGraph.getStart(), testGraph.getGraph());
 
-		Assertions.assertTrue(path.simplePath().isEmpty());
+		Assertions.assertEquals(1, path.simplePath().size());
 	}
 
 	@Test

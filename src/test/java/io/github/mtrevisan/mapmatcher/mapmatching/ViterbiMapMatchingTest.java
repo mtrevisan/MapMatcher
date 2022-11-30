@@ -36,7 +36,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilit
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogBayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogGaussianEmissionCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicTransitionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicalTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalculator;
 import org.junit.jupiter.api.Assertions;
@@ -55,10 +55,10 @@ import java.util.Set;
 class ViterbiMapMatchingTest{
 
 	@Test
-	void should_match_E0_E1_with_bayesian_emission_probability(){
+	void should_match_E0_E1_with_bayesian_emission_probability_direct_graph(){
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
@@ -94,21 +94,21 @@ class ViterbiMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 50.);
+		final Graph graph = extractDirectGraph(observedEdges, 50.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
-		final String expected = "[null, E0, E0, E0, E3, E1, E1, E1, null, null]";
+		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
-	void should_match_E0_E1_with_gaussian_emission_probability(){
+	void should_match_E0_E1_with_gaussian_emission_probability_direct_graph(){
 		final double observationStandardDeviation = 5.;
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
 			distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
@@ -145,21 +145,21 @@ class ViterbiMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 50.);
+		final Graph graph = extractDirectGraph(observedEdges, 50.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
-		final String expected = "[null, E0, E0, E0, E3, E1, E1, E1, null, null]";
+		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
-	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations(){
+	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_direct_graph(){
 		final double observationStandardDeviation = 5.;
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
 			distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
@@ -196,21 +196,20 @@ class ViterbiMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 50.);
+		final Graph graph = extractDirectGraph(observedEdges, 50.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
-		final String expected = "[E0, E0, E0, E0, E3, E1, E1, E1, E1, E1]";
+		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
-
 	@Test
-	void should_match_E3_E2_with_bayesian_emission_probability(){
+	void should_match_E3_E2_with_bayesian_emission_probability_direct_graph(){
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
@@ -243,7 +242,205 @@ class ViterbiMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 50.);
+		final Graph graph = extractDirectGraph(observedEdges, 50.);
+
+		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Edge[] path = strategy.findPath(graph, filteredObservations);
+
+		final String expected = "[null, null, E2, E2, E2, E2, E2]";
+		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+	}
+
+
+	@Test
+	void should_match_E0_E1_with_bayesian_emission_probability_bidirectional_graph(){
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+
+		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = new Coordinate(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = new Coordinate(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = new Coordinate(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = new Coordinate(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
+
+		final LineString edge0 = JTSGeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
+
+		ZonedDateTime timestamp = ZonedDateTime.now();
+		final GPSCoordinate[] observations = new GPSCoordinate[]{
+			new GPSCoordinate(12.142791962642718, 45.64824627395467, timestamp),
+			new GPSCoordinate(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		};
+
+		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
+
+		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Edge[] path = strategy.findPath(graph, filteredObservations);
+
+		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
+		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+	}
+
+	@Test
+	void should_match_E0_E1_with_gaussian_emission_probability_bidirectional_graph(){
+		final double observationStandardDeviation = 5.;
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
+			distanceCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+
+		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = new Coordinate(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = new Coordinate(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = new Coordinate(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = new Coordinate(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
+
+		final LineString edge0 = JTSGeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
+
+		ZonedDateTime timestamp = ZonedDateTime.now();
+		final GPSCoordinate[] observations = new GPSCoordinate[]{
+			new GPSCoordinate(12.142791962642718, 45.64824627395467, timestamp),
+			new GPSCoordinate(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		};
+
+		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
+
+		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Edge[] path = strategy.findPath(graph, filteredObservations);
+
+		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
+		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+	}
+
+	@Test
+	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph(){
+		final double observationStandardDeviation = 5.;
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
+			distanceCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+
+		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = new Coordinate(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = new Coordinate(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = new Coordinate(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = new Coordinate(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
+
+		final LineString edge0 = JTSGeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
+
+		ZonedDateTime timestamp = ZonedDateTime.now();
+		final GPSCoordinate[] observations = new GPSCoordinate[]{
+			new GPSCoordinate(12.142791962642718, 45.64824627395467, timestamp),
+			new GPSCoordinate(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		};
+
+		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
+
+		final Coordinate[] filteredObservations = extractObservations(edges, observations, 2_000.);
+		final Edge[] path = strategy.findPath(graph, filteredObservations);
+
+		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
+		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+	}
+
+	@Test
+	void should_match_E3_E2_with_bayesian_emission_probability_bidirectional_graph(){
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+
+		final Coordinate node11 = new Coordinate(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = new Coordinate(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = new Coordinate(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = new Coordinate(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = new Coordinate(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
+
+		final LineString edge0 = JTSGeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
+
+		ZonedDateTime timestamp = ZonedDateTime.now();
+		final GPSCoordinate[] observations = new GPSCoordinate[]{
+			new GPSCoordinate(12.172704737567187, 45.59108565830172, timestamp),
+			new GPSCoordinate(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(2, ChronoUnit.SECONDS))),
+			new GPSCoordinate(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		};
+
+		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
@@ -315,12 +512,23 @@ class ViterbiMapMatchingTest{
 		return feasibleObservations;
 	}
 
-	private static Graph extractGraph(final Collection<LineString> edges, final double threshold){
+	private static Graph extractDirectGraph(final Collection<LineString> edges, final double threshold){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
-//			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
+
+			e ++;
+		}
+		return graph;
+	}
+
+	private static Graph extractBidirectionalGraph(final Collection<LineString> edges, final double threshold){
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
+		int e = 0;
+		for(final LineString edge : edges){
+			graph.addApproximateDirectEdge("E" + e, edge);
+			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
 
 			e ++;
 		}

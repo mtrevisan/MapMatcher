@@ -31,7 +31,9 @@ import io.github.mtrevisan.mapmatcher.helpers.FibonacciHeap;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummaryCreator;
+import io.github.mtrevisan.mapmatcher.pathfinding.path.SingleDirectionalPathSummary;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -52,11 +54,13 @@ public class AStarPathFinder implements PathFindingStrategy{
 
 	@Override
 	public PathSummary findPath(final Node start, final Node end, final Graph graph){
-		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
-		final var predecessorTree = new HashMap<Node, Edge>();
 		if(start.equals(end))
 			//early exit
-			return PATH_SUMMARY_CREATOR.createUnidirectionalPath(start, end, predecessorTree);
+			return new SingleDirectionalPathSummary(Collections.singletonList(Edge.createSelfEdge(start)),
+				Collections.singleton(start));
+
+		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
+		final var predecessorTree = new HashMap<Node, Edge>();
 		predecessorTree.put(start, null);
 
 		//the cost of the cheapest path from start to given node currently known

@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class TopologicTransitionCalculator implements TransitionProbabilityCalculator{
+public class TopologicalTransitionCalculator implements TransitionProbabilityCalculator{
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
@@ -48,7 +48,7 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	private final DistanceCalculator distanceCalculator;
 
 
-	public TopologicTransitionCalculator(final DistanceCalculator distanceCalculator){
+	public TopologicalTransitionCalculator(final DistanceCalculator distanceCalculator){
 		this.distanceCalculator = distanceCalculator;
 	}
 
@@ -87,25 +87,14 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 		//penalize u-turns: make then unreachable
 		final boolean segmentsReversed = isSegmentsReversed(fromSegment, toSegment);
 		if(!segmentsReversed){
-			final LineString fromSegmentLineString = fromSegment.getLineString();
 			//if the node is the same
-			if(fromSegment.equals(toSegment)){
-				//merge all the segments in path
-				final boolean goingForward = isGoingForward(previousObservation, currentObservation, fromSegmentLineString);
-				//FIXME
-//				if(goingForward)
-//					a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-				a = (goingForward? 1.: 0.9) / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-			}
+			if(fromSegment.equals(toSegment))
+				a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 			else{
-				final LineString lineString = extractPathAsLineString(fromSegment.getFrom(), toSegment.getTo(), graph);
-				if(lineString != null){
-					final boolean goingForward = isGoingForward(previousObservation, currentObservation, lineString);
-					//FIXME
-//					if(goingForward)
-//						a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-					a = (goingForward? 1.: 0.9) * TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-				}
+				final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
+					.simplePath();
+				if(!path.isEmpty())
+					a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 			}
 		}
 
@@ -143,8 +132,7 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 				for(final LineString edgeLineString : edges){
 					final Coordinate[] coordinates = edgeLineString.getCoordinates();
 					final int count = coordinates.length - (size > 0? 1: 0);
-					if(size > 0)
-						assert mergedCoordinates[size - 1].equals(coordinates[0]);
+					assert size == 0 || mergedCoordinates[size - 1].equals(coordinates[0]);
 					System.arraycopy(coordinates, (size > 0? 1: 0), mergedCoordinates, size, count);
 					size += count;
 				}

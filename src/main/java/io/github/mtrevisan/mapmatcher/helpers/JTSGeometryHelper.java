@@ -67,19 +67,18 @@ public class JTSGeometryHelper{
 		return (LineString)simplifier.getResultGeometry();
 	}
 
-	//FIXME to be removed
-//	public static Polygon createCircle(final Coordinate origin, final double radius){
-//		final double phi = Math.toRadians(origin.getY());
-//		//precision is within 1 cm [m/°]
-//		final double metersPerDegreeInLatitude = 111_132.954 - 559.822 * StrictMath.cos(2. * phi)
-//			+ 1.175 * StrictMath.cos(4. * phi);
-//		final double metersPerDegreesInLongitude = 111_132.954 * StrictMath.cos(phi);
-//
-//		final GeometricShapeFactory gsf = new GeometricShapeFactory(FACTORY);
-//		gsf.setWidth(radius * 2. / metersPerDegreesInLongitude);
-//		gsf.setHeight(radius * 2. / metersPerDegreeInLatitude);
-//		gsf.setCentre(origin);
-//		return gsf.createEllipse();
-//	}
+	public static Polygon createCircle(final Coordinate origin, final double radius){
+		final double phi = Math.toRadians(origin.getY());
+		//precision is within 1 cm [m/°]
+		final double metersPerDegreeInLatitude = 111_132.954 - 559.822 * StrictMath.cos(2. * phi)
+			+ 1.175 * StrictMath.cos(4. * phi);
+		final double metersPerDegreesInLongitude = 111_132.954 * StrictMath.cos(phi);
+
+		final GeometricShapeFactory gsf = new GeometricShapeFactory(FACTORY);
+		gsf.setWidth(radius * 2. / metersPerDegreesInLongitude);
+		gsf.setHeight(radius * 2. / metersPerDegreeInLatitude);
+		gsf.setCentre(origin);
+		return gsf.createEllipse();
+	}
 
 }

@@ -24,6 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
 import java.util.Collection;
@@ -44,11 +46,9 @@ public class Edge{
 		return new Edge(from, to, geometry);
 	}
 
-	private Edge(final String id){
-		this.id = id;
-		from = null;
-		to = null;
-		geometry = null;
+	public static Edge createSelfEdge(final Node node){
+		final LineString lineString = JTSGeometryHelper.createLineString(new Coordinate[]{node.getCoordinate(), node.getCoordinate()});
+		return new Edge(node, node, lineString);
 	}
 
 	private Edge(final Node from, final Node to, final LineString geometry){
@@ -59,7 +59,8 @@ public class Edge{
 		if(geometry == null)
 			throw new IllegalArgumentException("`geometry` cannot be null");
 
-		id = "E-" + from.getID() + "-" + to.getID();
+		id = "E-" + Objects.requireNonNullElse(from.getID(), "<null>")
+			+ "-" + Objects.requireNonNullElse(to.getID(), "<null>");
 		this.from = from;
 		this.to = to;
 		this.geometry = geometry;

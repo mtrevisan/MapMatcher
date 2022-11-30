@@ -37,7 +37,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogBayesianEmissionCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicTransitionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicalTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalculator;
 import org.locationtech.jts.geom.Coordinate;
@@ -71,7 +71,7 @@ public class Application{
 	public static void main(final String[] args){
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
@@ -119,7 +119,7 @@ public class Application{
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 1_000.);
+		final Graph graph = extractBidirectionalGraph(observedEdges, 1_000.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
@@ -172,7 +172,7 @@ if(path != null)
 	private static LineString[] readEdges(){
 		final List<String> lines = readFile("src/main/resources/map.eura.txt");
 
-		final List<LineString> edges = new ArrayList<>();
+		final List<LineString> edges = new ArrayList<>(lines.size());
 		try{
 			final WKTReader reader = JTSGeometryHelper.getWktReader();
 			for(final String line : lines){
@@ -264,7 +264,18 @@ if(path != null)
 		return feasibleObservations;
 	}
 
-	private static Graph extractGraph(final Collection<LineString> edges, final double threshold){
+	private static Graph extractDirectGraph(final Collection<LineString> edges, final double threshold){
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
+		int e = 0;
+		for(final LineString edge : edges){
+			graph.addApproximateDirectEdge("E" + e, edge);
+
+			e ++;
+		}
+		return graph;
+	}
+
+	private static Graph extractBidirectionalGraph(final Collection<LineString> edges, final double threshold){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
