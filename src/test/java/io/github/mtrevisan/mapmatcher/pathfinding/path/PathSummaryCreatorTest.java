@@ -22,11 +22,10 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.path;
+package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;

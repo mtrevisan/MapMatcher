@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class DurationEdgeWeightCalculatorTest{
 			double maxSpeed = maxSpeeds[i];
 			DurationCalculator edgeWeightCalculator = new DurationCalculator();
 			final Edge edge = Edge.createDirectEdge(new Node("0", fromCoordinates), new Node("1", toCoordinates),
-				WGS84GeometryHelper.createLineString(new Coordinate[]{fromCoordinates, toCoordinates}));
+				JTSGeometryHelper.createLineString(new Coordinate[]{fromCoordinates, toCoordinates}));
 			edge.setWeight(maxSpeed);
 			double actualDistance = edgeWeightCalculator.calculateWeight(edge);
 

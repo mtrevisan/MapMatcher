@@ -24,11 +24,22 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
+import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummary;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
 class AStarPathFinderTest{
+
+	@Test
+	void should_return_void_path(){
+		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.euclideanDistanceTestGraphConnected();
+		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
+
+		PathSummary path = pathfinder.findPath(testGraph.getStart(), testGraph.getStart(), testGraph.getGraph());
+
+		Assertions.assertTrue(path.simplePath().isEmpty());
+	}
 
 	@Test
 	void should_return_the_shortest_path1(){

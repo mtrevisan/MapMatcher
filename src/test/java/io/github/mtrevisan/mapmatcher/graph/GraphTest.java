@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -52,7 +52,7 @@ class GraphTest{
 		final Node from = new Node("0", new Coordinate(22.22, 33.33));
 		final Node to = new Node("1", new Coordinate(33.22, 44.33));
 
-		final LineString lineString = WGS84GeometryHelper.createLineString(new Coordinate[]{from.getCoordinate(), to.getCoordinate()});
+		final LineString lineString = JTSGeometryHelper.createLineString(new Coordinate[]{from.getCoordinate(), to.getCoordinate()});
 		final Set<Edge> addedEdges = (Set<Edge>)graph.addApproximateDirectEdge(lineString);
 
 		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(from.getCoordinate()));

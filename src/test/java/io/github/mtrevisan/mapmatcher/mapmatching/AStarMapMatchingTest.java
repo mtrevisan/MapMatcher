@@ -31,7 +31,7 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.GPSCoordinate;
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogBayesianEmissionCalculator;
@@ -72,12 +72,12 @@ class AStarMapMatchingTest{
 		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
 		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
 
-		final LineString edge0 = WGS84GeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
-		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
-		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
-		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
-		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
-		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
+		final LineString edge0 = JTSGeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -105,7 +105,7 @@ class AStarMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability(){
-		final double observationStandardDeviation = 440.;
+		final double observationStandardDeviation = 0.04;
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator();
@@ -122,12 +122,12 @@ class AStarMapMatchingTest{
 		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
 		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
 
-		final LineString edge0 = WGS84GeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
-		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
-		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
-		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
-		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
-		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
+		final LineString edge0 = JTSGeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -171,12 +171,12 @@ class AStarMapMatchingTest{
 		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
 		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
 
-		final LineString edge0 = WGS84GeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
-		final LineString edge1 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
-		final LineString edge2 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
-		final LineString edge3 = WGS84GeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
-		final LineString edge4 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
-		final LineString edge5 = WGS84GeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
+		final LineString edge0 = JTSGeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
+		final LineString edge1 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
+		final LineString edge2 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
+		final LineString edge3 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
+		final LineString edge4 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
+		final LineString edge5 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -202,17 +202,23 @@ class AStarMapMatchingTest{
 
 	/**
 	 * Extract a set of candidate road links within a certain distance to all observation.
+	 * <p>
+	 * Measurement error <code>ε_m = ε_p + ε_r</code>, where </ode>ε_p</code> is the positioning error (<em>20 m</em>),
+	 * <code>ε_r = 0.5 * w / sin(α / 2)</code> is the road error, <code>w</code> is the road width (max <em>8 m</em>), and <code>α</code>
+	 * is the angle between two intersecting roads (consider it to be <em>90°</em>).
+	 * This lead to <code>ε_m = 20 + 5.7 = 26 m</code>, a savvy choice is <em>50 m</em>.
+	 * </p>
 	 *
 	 * @param edges	The set of road links.
 	 * @param observations	The observations.
-	 * @param radius	The radius.
+	 * @param threshold	The threshold.
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
 	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
-			final double radius){
+			final double threshold){
 		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
 		for(final Coordinate observation : observations){
-			final Polygon surrounding = WGS84GeometryHelper.createCircle(observation, radius);
+			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 			for(final LineString edge : edges)
 				if(surrounding.intersects(edge))
 					observationsEdges.add(edge);
@@ -220,12 +226,12 @@ class AStarMapMatchingTest{
 		return observationsEdges;
 	}
 
-	private static Graph extractGraph(final Collection<LineString> edges, final double radius){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(radius, new GeodeticCalculator());
+	private static Graph extractGraph(final Collection<LineString> edges, final double threshold){
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
 		int e = 0;
 		for(final LineString edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
-			graph.addApproximateDirectEdge("E" + e + "rev", edge.reverse());
+			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
 
 			e ++;
 		}

@@ -22,11 +22,10 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.path;
+package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
 
@@ -36,21 +35,18 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class BidirectionalPathSummary implements PathSummary{
+public class SingleDirectionalPathSummary implements PathSummary{
 
 	private static final DistanceCalculator DISTANCE_CALCULATOR = new DistanceCalculator();
 	private static final DurationCalculator DURATION_CALCULATOR = new DurationCalculator();
 
-
 	private final List<Edge> path;
-	private final Set<Node> searchedVerticesFromStart;
-	private final Set<Node> searchedVerticesFromEnd;
+	private final Set<Node> searchedVertices;
 
 
-	BidirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVerticesFromStart, final Set<Node> searchedVerticesFromEnd){
+	public SingleDirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVertices){
 		this.path = path;
-		this.searchedVerticesFromStart = searchedVerticesFromStart;
-		this.searchedVerticesFromEnd = searchedVerticesFromEnd;
+		this.searchedVertices = searchedVertices;
 	}
 
 	@Override
@@ -58,7 +54,9 @@ public class BidirectionalPathSummary implements PathSummary{
 		if(!isFound())
 			return Collections.emptyList();
 
-		final var withoutLast = path.stream().map(Edge::getFrom).collect(Collectors.toList());
+		final var withoutLast = path.stream()
+			.map(Edge::getFrom)
+			.collect(Collectors.toList());
 		withoutLast.add(path.get(path.size() - 1).getTo());
 		return withoutLast;
 	}
@@ -70,7 +68,7 @@ public class BidirectionalPathSummary implements PathSummary{
 
 	@Override
 	public int totalVisitedVertices(){
-		return searchedVerticesFromStart.size() + searchedVerticesFromEnd.size();
+		return searchedVertices.size();
 	}
 
 	@Override

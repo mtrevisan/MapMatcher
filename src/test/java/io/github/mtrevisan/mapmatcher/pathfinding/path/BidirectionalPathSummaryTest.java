@@ -22,11 +22,11 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.path;
+package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.WGS84GeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -112,7 +112,7 @@ class BidirectionalPathSummaryTest{
 		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
 		ArrayList<Edge> path = new ArrayList<>(List.of(
 			Edge.createDirectEdge(first, second,
-				WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
+				JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
 		));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
 
@@ -126,7 +126,7 @@ class BidirectionalPathSummaryTest{
 		final Node first = new Node("0", new Coordinate(14.552797, 121.058805));
 		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
 		final Edge edge = Edge.createDirectEdge(first, second,
-			WGS84GeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
+			JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
 		edge.setWeight(50.);
 		ArrayList<Edge> path = new ArrayList<>(List.of(edge));
 		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());

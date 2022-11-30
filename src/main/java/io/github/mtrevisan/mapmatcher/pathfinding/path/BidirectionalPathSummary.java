@@ -22,11 +22,10 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.path;
+package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
 
@@ -36,18 +35,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class SingleDirectionalPathSummary implements PathSummary{
+public class BidirectionalPathSummary implements PathSummary{
 
 	private static final DistanceCalculator DISTANCE_CALCULATOR = new DistanceCalculator();
 	private static final DurationCalculator DURATION_CALCULATOR = new DurationCalculator();
 
+
 	private final List<Edge> path;
-	private final Set<Node> searchedVertices;
+	private final Set<Node> searchedVerticesFromStart;
+	private final Set<Node> searchedVerticesFromEnd;
 
 
-	public SingleDirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVertices){
+	public BidirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVerticesFromStart, final Set<Node> searchedVerticesFromEnd){
 		this.path = path;
-		this.searchedVertices = searchedVertices;
+		this.searchedVerticesFromStart = searchedVerticesFromStart;
+		this.searchedVerticesFromEnd = searchedVerticesFromEnd;
 	}
 
 	@Override
@@ -69,7 +71,7 @@ public class SingleDirectionalPathSummary implements PathSummary{
 
 	@Override
 	public int totalVisitedVertices(){
-		return searchedVertices.size();
+		return searchedVerticesFromStart.size() + searchedVerticesFromEnd.size();
 	}
 
 	@Override

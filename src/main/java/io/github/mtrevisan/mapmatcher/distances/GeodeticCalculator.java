@@ -24,7 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
-import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
+import org.apache.sis.referencing.CommonCRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -34,14 +35,25 @@ import org.locationtech.jts.geom.LineString;
  */
 public class GeodeticCalculator implements DistanceCalculator{
 
+	/**
+	 * Calculate orthodromic distance, (azimuth) bearing and final bearing between two points using inverse Vincenty formula.
+	 *
+	 * @param startPoint	The start point.
+	 * @param endPoint	The end point.
+	 * @return	The distance.
+	 *
+	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
+	 */
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		return GeodeticHelper.distance(startPoint, endPoint).getDistance();
+		final org.apache.sis.referencing.GeodeticCalculator calculator = org.apache.sis.referencing.GeodeticCalculator.create(CommonCRS.WGS84.geographic());
+		calculator.setStartGeographicPoint(startPoint.getY(), startPoint.getX());
+		calculator.setEndGeographicPoint(endPoint.getY(), endPoint.getX());
+		return calculator.getGeodesicDistance();
 	}
 
 	/**
-	 * Calculate cross-track distance on a spherical geometry.
-	 * TODO: to be checked!
+	 * Calculate cross-track distance.
 	 *
 	 * @param point	The point
 	 * @param lineString	The list of track points.
@@ -49,24 +61,9 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 */
 	@Override
 	public double distance(final Coordinate point, final LineString lineString){
-		double minimumDistance = Double.POSITIVE_INFINITY;
-		final Coordinate[] trackPoints = lineString.getCoordinates();
-		for(int i = 1; i < trackPoints.length; i ++){
-			final GeodeticHelper.OrthodromicDistance distance0P = GeodeticHelper.distance(trackPoints[i - 1], point);
-			final GeodeticHelper.OrthodromicDistance distance01 = GeodeticHelper.distance(trackPoints[i - 1], trackPoints[i]);
-
-			//(angular) distance from start point to third point
-			final double delta13 = distance0P.getAngularDistance();
-			//(initial) bearing from start point to third point
-			final double theta13 = distance0P.getInitialBearing();
-			//(initial) bearing from start point to end point
-			final double theta12 = distance01.getInitialBearing();
-			final double distance = StrictMath.asin(StrictMath.sin(delta13) * StrictMath.sin(theta13 - theta12));
-
-			if(Math.abs(distance) < Math.abs(minimumDistance))
-				minimumDistance = distance;
-		}
-		return minimumDistance * GeodeticHelper.EARTH_POLAR_RADIUS;
+		//FIXME this is NOT the nearest point on an ellipsoid!
+		final Coordinate nearestPoint = JTSGeometryHelper.onTrackClosestPoint(lineString, point);
+		return distance(point, nearestPoint);
 	}
 
 }
