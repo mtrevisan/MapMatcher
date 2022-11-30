@@ -102,7 +102,7 @@ class AStarMapMatchingTest{
 
 //	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability(){
-		final double observationStandardDeviation = 500.;
+		final double observationStandardDeviation = 5.;
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);

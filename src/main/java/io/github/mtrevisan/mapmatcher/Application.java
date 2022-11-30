@@ -129,7 +129,7 @@ if(path != null)
 	}
 
 //	public static void main(final String[] args){
-//		final double observationStandardDeviation = 500.;
+//		final double observationStandardDeviation = 5.;
 //		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 //		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation,
 //			distanceCalculator);
