@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.distances;
 
 import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
-import org.apache.sis.referencing.CommonCRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -46,10 +46,10 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 */
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		final org.apache.sis.referencing.GeodeticCalculator calculator = org.apache.sis.referencing.GeodeticCalculator.create(CommonCRS.WGS84.geographic());
-		calculator.setStartGeographicPoint(startPoint.getY(), startPoint.getX());
-		calculator.setEndGeographicPoint(endPoint.getY(), endPoint.getX());
-		return calculator.getGeodesicDistance();
+		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(DefaultGeographicCRS.WGS84);
+		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
+		calculator.setDestinationGeographicPoint(endPoint.getX(), endPoint.getY());
+		return calculator.getOrthodromicDistance();
 	}
 
 	/**
