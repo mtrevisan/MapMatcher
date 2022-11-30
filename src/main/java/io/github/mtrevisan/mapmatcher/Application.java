@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher;
 
-import io.github.mtrevisan.mapmatcher.distances.AngularGeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
@@ -44,7 +43,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalc
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
@@ -71,7 +69,7 @@ import java.util.Set;
 public class Application{
 
 	public static void main(final String[] args){
-		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
@@ -131,7 +129,7 @@ if(path != null)
 	}
 
 //	public static void main(final String[] args){
-//		final double observationStandardDeviation = 200.;
+//		final double observationStandardDeviation = 500.;
 //		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 //		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation,
 //			distanceCalculator);
@@ -228,10 +226,10 @@ if(path != null)
 
 	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate observation,
 			final double threshold){
+		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
-		final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 		for(final LineString edge : edges)
-			if(surrounding.intersects(edge))
+			if(geodeticCalculator.distance(observation, edge) <= threshold)
 				observationsEdges.add(edge);
 		return observationsEdges;
 	}
@@ -250,12 +248,12 @@ if(path != null)
 		}
 
 		//step 2. Retain all observation that are within a certain radius from an edge
+		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		for(int i = 0; i < feasibleObservations.length; i ++){
 			final GPSCoordinate observation = feasibleObservations[i];
-			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 			boolean edgesFound = false;
 			for(final LineString edge : edges)
-				if(surrounding.intersects(edge)){
+				if(geodeticCalculator.distance(observation, edge) <= threshold){
 					edgesFound = true;
 					break;
 				}

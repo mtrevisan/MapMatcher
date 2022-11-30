@@ -44,7 +44,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -96,7 +95,7 @@ class ViterbiMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 500.);
+		final Graph graph = extractGraph(observedEdges, 50.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
@@ -107,7 +106,7 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability(){
-		final double observationStandardDeviation = 0.04;
+		final double observationStandardDeviation = 500.;
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
@@ -147,7 +146,7 @@ class ViterbiMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 500.);
+		final Graph graph = extractGraph(observedEdges, 50.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
@@ -158,8 +157,8 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations(){
-		final double observationStandardDeviation = 0.04;
-		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+		final double observationStandardDeviation = 5.;
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
@@ -198,7 +197,7 @@ class ViterbiMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 500.);
+		final Graph graph = extractGraph(observedEdges, 50.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
@@ -245,7 +244,7 @@ class ViterbiMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 500.);
+		final Graph graph = extractGraph(observedEdges, 50.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
@@ -279,10 +278,10 @@ class ViterbiMapMatchingTest{
 
 	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate observation,
 			final double threshold){
+		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
-		final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 		for(final LineString edge : edges)
-			if(surrounding.intersects(edge))
+			if(geodeticCalculator.distance(observation, edge) <= threshold)
 				observationsEdges.add(edge);
 		return observationsEdges;
 	}
@@ -301,12 +300,12 @@ class ViterbiMapMatchingTest{
 		}
 
 		//step 2. Retain all observation that are within a certain radius from an edge
+		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		for(int i = 0; i < feasibleObservations.length; i ++){
 			final GPSCoordinate observation = feasibleObservations[i];
-			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 			boolean edgesFound = false;
 			for(final LineString edge : edges)
-				if(surrounding.intersects(edge)){
+				if(geodeticCalculator.distance(observation, edge) <= threshold){
 					edgesFound = true;
 					break;
 				}
@@ -322,7 +321,7 @@ class ViterbiMapMatchingTest{
 		int e = 0;
 		for(final LineString edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
-			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
+//			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
 
 			e ++;
 		}

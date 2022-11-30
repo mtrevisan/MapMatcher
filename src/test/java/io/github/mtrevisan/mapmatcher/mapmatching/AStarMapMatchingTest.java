@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.mapmatching;
 
-import io.github.mtrevisan.mapmatcher.distances.AngularGeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
@@ -42,7 +41,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalc
 import org.junit.jupiter.api.Assertions;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -56,7 +54,7 @@ class AStarMapMatchingTest{
 
 //	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability(){
-		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
@@ -104,8 +102,8 @@ class AStarMapMatchingTest{
 
 //	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability(){
-		final double observationStandardDeviation = 0.04;
-		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+		final double observationStandardDeviation = 500.;
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
@@ -155,7 +153,7 @@ class AStarMapMatchingTest{
 
 //	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability(){
-		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
@@ -215,11 +213,11 @@ class AStarMapMatchingTest{
 	 */
 	private static Collection<LineString> extractObservedEdges(final LineString[] edges, final Coordinate[] observations,
 			final double threshold){
+		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		final Set<LineString> observationsEdges = new LinkedHashSet<>(edges.length);
 		for(final Coordinate observation : observations){
-			final Polygon surrounding = JTSGeometryHelper.createCircle(observation, threshold);
 			for(final LineString edge : edges)
-				if(surrounding.intersects(edge))
+				if(geodeticCalculator.distance(observation, edge) <= threshold)
 					observationsEdges.add(edge);
 		}
 		return observationsEdges;

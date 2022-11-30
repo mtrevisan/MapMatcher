@@ -24,16 +24,16 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
+import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.linearref.LengthLocationMap;
-import org.locationtech.jts.linearref.LinearLocation;
 import org.locationtech.jts.linearref.LocationIndexedLine;
-import org.locationtech.jts.operation.distance.DistanceOp;
 
 
+//FIXME to be removed
 /**
  * @see <a href="https://github.com/grumlimited/geocalc/blob/master/src/main/java/com/grum/geocalc/EarthCalc.java">EarthCalc</a>
  */
@@ -41,49 +41,43 @@ public class AngularGeodeticCalculator implements DistanceCalculator{
 
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		final Point start = JTSGeometryHelper.createPoint(startPoint);
-		final Point end = JTSGeometryHelper.createPoint(endPoint);
-		return start.distance(end);
+		return GeodeticHelper.distance(startPoint, endPoint);
 	}
 
+	//FIXME
 	@Override
-	public double distance(final LineString lineString, final Coordinate point){
+	public double distance(final Coordinate point, final LineString lineString){
 		final Point start = JTSGeometryHelper.createPoint(point);
-		return start.distance(lineString);
+		final double distance = start.distance(lineString);
+		final double radius = GeodeticHelper.meanRadiusOfCurvature((lineString.getStartPoint().getCoordinate().getY() + lineString.getEndPoint().getCoordinate().getY()) / 2.);
+		final double factor = (Math.PI * radius) / 180.;
+//		final double factor = 10.;
+
+		double minNearestPointDistance = Double.MAX_VALUE;
+		final Coordinate[] coordinates = lineString.getCoordinates();
+		for(int i = 1; i < coordinates.length; i ++){
+			final Coordinate startPoint = coordinates[i - 1];
+			final Coordinate endPoint = coordinates[i];
+			final Coordinate nearestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
+			final double dist = Math.abs(GeodeticHelper.distance(nearestPoint, point));
+			if(dist < minNearestPointDistance)
+				minNearestPointDistance = dist;
+		}
+
+		return distance * factor;
 	}
 
+	//FIXME
 	@Override
 	public double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point){
 		final LineString lineString = JTSGeometryHelper.createLineString(new Coordinate[]{startPoint, endPoint});
-		return alongTrackDistance2(lineString, point);
-	}
-
-	private static double alongTrackDistance2(final LineString line, final Coordinate coordinate){
 		//projection of point onto line
-		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(line);
-		final LinearLocation point = locationIndexedLine.project(coordinate);
-		return new LengthLocationMap(line)
-			.getLength(point);
-	}
-
-	private static double crossTrackDistance(final LineString line, final Coordinate coordinate){
-		final Coordinate nearestPoint = onTrackClosestPoint(line, coordinate);
-		return nearestPoint.distance(coordinate);
-	}
-
-	private static Coordinate onTrackClosestPoint(final LineString line, final Coordinate coordinate){
-		return DistanceOp.nearestPoints(line, JTSGeometryHelper.createPoint(coordinate))[0];
-	}
-
-	private static double distanceClosestPointsOnLineString(final LineString line, final Coordinate coordinate1,
-		final Coordinate coordinate2){
-		//projection of point onto line
-		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(line);
-		final LinearLocation point1 = locationIndexedLine.project(coordinate1);
-		final LinearLocation point2 = locationIndexedLine.project(coordinate2);
-
-		final LengthLocationMap lengthLocationMap = new LengthLocationMap(line);
-		return Math.abs(lengthLocationMap.getLength(point1) - lengthLocationMap.getLength(point2));
+		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(lineString);
+		final double distance = new LengthLocationMap(lineString)
+			.getLength(locationIndexedLine.project(point));
+		final double radius = GeodeticHelper.meanRadiusOfCurvature((startPoint.getY() + endPoint.getY()) / 2.);
+		final double factor = (Math.PI * radius) / 180.;
+		return distance * factor;
 	}
 
 }

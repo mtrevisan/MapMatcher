@@ -52,13 +52,18 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	 * A zero-mean gaussian observation error:
 	 * Pr(o_i | r_j) = 1 / (√(2 ⋅  π) ⋅ σ) ⋅ exp(-0.5 ⋅ (dist(o_i, r_j) / σ)^2), where σ = 20 m (empirically)
 	 * </p>
+	 *
+	 * @see <a href="https://hal-enac.archives-ouvertes.fr/hal-01160130/document">Characterization of GNSS receiver position errors for user integrity monitoring in urban environments</a>
 	 */
 	@Override
 	public double emissionProbability(final Coordinate observation, final Edge segment){
-		final double distance = distanceCalculator.distance(segment.getLineString(), observation);
+		final double distance = distanceCalculator.distance(observation, segment.getLineString());
 		final double tmp = distance / observationStandardDeviation;
-		final double probability = Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
-		return InitialProbabilityCalculator.logPr(probability);
+		//expansion of:
+		//final double probability = Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
+		//return InitialProbabilityCalculator.logPr(probability);
+		//in order to overcome overflow on exponential
+		return 0.5 * tmp * tmp - InitialProbabilityCalculator.logPr(Math.sqrt(2. * Math.PI) * observationStandardDeviation);
 	}
 
 }

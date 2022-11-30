@@ -32,11 +32,11 @@ public interface DistanceCalculator{
 
 	double distance(Coordinate startPoint, Coordinate endPoint);
 
-	double distance(LineString lineString, Coordinate point);
+	double distance(Coordinate point, LineString lineString);
 
 	double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point);
 
-	default double alongTrackDistance(LineString lineString, Coordinate point){
+	default double alongTrackDistance(Coordinate point, LineString lineString){
 		double minNearestPointDistance = Double.MAX_VALUE;
 		final Coordinate[] coordinates = lineString.getCoordinates();
 		for(int i = 1; i < coordinates.length; i ++){

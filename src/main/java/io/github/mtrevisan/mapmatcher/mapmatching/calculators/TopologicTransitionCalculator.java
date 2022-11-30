@@ -28,12 +28,14 @@ import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -79,7 +81,7 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 	 * </p>
 	 */
 	@Override
-	public double transitionProbability(final Edge fromSegment, final Edge toSegment, Graph graph,
+	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
 			final Coordinate previousObservation, final Coordinate currentObservation){
 		double a = 0.;
 		//penalize u-turns: make then unreachable
@@ -88,23 +90,68 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 			final LineString fromSegmentLineString = fromSegment.getLineString();
 			//if the node is the same
 			if(fromSegment.equals(toSegment)){
-				//search for a feasible path between the projection onto fromSegment and the one onto toSegment
-				final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
-					.simplePath();
-				if(!path.isEmpty()){
-					final boolean goingForward = isGoingForward(previousObservation, currentObservation, fromSegmentLineString, toSegment);
-					if(goingForward)
-						a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-				}
+				//merge all the segments in path
+				final boolean goingForward = isGoingForward(previousObservation, currentObservation, fromSegmentLineString);
+				//FIXME
+//				if(goingForward)
+//					a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
+				a = (goingForward? 1.: 0.9) / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 			}
 			else{
-				final boolean goingForward = isGoingForward(previousObservation, currentObservation, fromSegmentLineString, toSegment);
-				if(goingForward)
-					a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
+				final LineString lineString = extractPathAsLineString(fromSegment.getFrom(), toSegment.getTo(), graph);
+				if(lineString != null){
+					final boolean goingForward = isGoingForward(previousObservation, currentObservation, lineString);
+					//FIXME
+//					if(goingForward)
+//						a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
+					a = (goingForward? 1.: 0.9) * TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
+				}
 			}
 		}
 
 		return InitialProbabilityCalculator.logPr(a);
+	}
+
+	private static LineString extractPathAsLineString(final Node from, final Node to, final Graph graph){
+		LineString lineString = null;
+
+		//search for a feasible path between the projection onto fromSegment and the one onto toSegment
+		final List<Node> path = PATH_FINDER.findPath(from, to, graph)
+			.simplePath();
+		if(!path.isEmpty()){
+			final List<LineString> edges = new ArrayList<>(path.size() - 1);
+			int size = 0;
+			for(int i = 1; i < path.size(); i ++){
+				final Node currentNode = path.get(i - 1);
+				final Node nextNode = path.get(i);
+				Edge currentNextEdge = null;
+				for(final Edge edge : currentNode.geOutEdges())
+					if(edge.getTo().equals(nextNode)){
+						currentNextEdge = edge;
+						break;
+					}
+				assert currentNextEdge != null;
+				final LineString currentNextLineString = currentNextEdge.getLineString();
+				size += currentNextLineString.getNumPoints() - (size > 0? 1: 0);
+				edges.add(currentNextLineString);
+			}
+
+			//merge segments
+			if(size > 0){
+				final Coordinate[] mergedCoordinates = new Coordinate[size];
+				size = 0;
+				for(final LineString edgeLineString : edges){
+					final Coordinate[] coordinates = edgeLineString.getCoordinates();
+					final int count = coordinates.length - (size > 0? 1: 0);
+					if(size > 0)
+						assert mergedCoordinates[size - 1].equals(coordinates[0]);
+					System.arraycopy(coordinates, (size > 0? 1: 0), mergedCoordinates, size, count);
+					size += count;
+				}
+				lineString = JTSGeometryHelper.createLineString(mergedCoordinates);
+			}
+		}
+		return lineString;
 	}
 
 	private static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){
@@ -112,16 +159,10 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
 	}
 
-	private boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation,
-			final LineString fromSegmentLineString, final Edge toSegment){
+	private boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation, final LineString lineString){
 		//calculate Along-Track Distance
-		double previousATD = distanceCalculator.alongTrackDistance(fromSegmentLineString, previousObservation);
-		double currentATD = distanceCalculator.alongTrackDistance(fromSegmentLineString, currentObservation);
-		if(previousATD == currentATD){
-			final LineString toSegmentLineString = toSegment.getLineString();
-			previousATD = distanceCalculator.alongTrackDistance(toSegmentLineString, previousObservation);
-			currentATD = distanceCalculator.alongTrackDistance(toSegmentLineString, currentObservation);
-		}
+		final double previousATD = distanceCalculator.alongTrackDistance(previousObservation, lineString);
+		final double currentATD = distanceCalculator.alongTrackDistance(currentObservation, lineString);
 		return (previousATD <= currentATD);
 	}
 

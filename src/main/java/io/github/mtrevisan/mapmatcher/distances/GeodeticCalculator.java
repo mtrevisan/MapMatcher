@@ -51,12 +51,12 @@ public class GeodeticCalculator implements DistanceCalculator{
 	/**
 	 * Calculate cross-track distance.
 	 *
-	 * @param lineString The list of track points.
 	 * @param point      The point
+	 * @param lineString The list of track points.
 	 * @return The distance [m].
 	 */
 	@Override
-	public double distance(final LineString lineString, final Coordinate point){
+	public double distance(final Coordinate point, final LineString lineString){
 		double minNearestPointDistance = Double.MAX_VALUE;
 		final Coordinate[] coordinates = lineString.getCoordinates();
 		for(int i = 1; i < coordinates.length; i ++){

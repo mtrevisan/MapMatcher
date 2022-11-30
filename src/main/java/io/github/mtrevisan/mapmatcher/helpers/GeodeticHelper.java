@@ -121,7 +121,7 @@ public class GeodeticHelper{
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
 	 */
-	private static double meanRadiusOfCurvature(final double latitude){
+	public static double meanRadiusOfCurvature(final double latitude){
 		final double m = meridionalRadiusOfCurvature(latitude);
 		final double n = primeVerticalRadiusOfCurvature(latitude);
 		return 2. * m * n / (m + n);

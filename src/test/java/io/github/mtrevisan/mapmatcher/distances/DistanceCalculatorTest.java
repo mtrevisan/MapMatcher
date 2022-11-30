@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
+import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -34,7 +35,7 @@ class DistanceCalculatorTest{
 	@Test
 	void should_calculate_approximate_distance_in_km_between__startCoordinates_and__endCoordinates_close_to_expectedDistance(){
 		final DistanceCalculator calculator = new GeodeticCalculator();
-		final DistanceCalculator alternateCalculator = new AngularGeodeticCalculator();
+		final DistanceCalculator alternateCalculator = new GeodeticCalculator();
 		final Coordinate[] coordinates = new Coordinate[]{
 			new Coordinate(121.058805, 14.552797),
 			new Coordinate(120.994260, 14.593999),
@@ -54,6 +55,8 @@ class DistanceCalculatorTest{
 			Coordinate endCoordinates = coordinates[(i << 1) + 1];
 			double actualDistance = calculator.distance(startCoordinates, endCoordinates);
 
+System.out.println(GeodeticHelper.meanRadiusOfCurvature((startCoordinates.getY() + endCoordinates.getY()) / 2.));
+System.out.println("\t" + (actualDistance*180./(Math.PI*GeodeticHelper.meanRadiusOfCurvature((startCoordinates.getY() + endCoordinates.getY()) / 2.))));
 System.out.println(actualDistance + " - " + alternateCalculator.distance(startCoordinates, endCoordinates));
 
 			Assertions.assertEquals(expectedDistances[i], actualDistance, 0.05);

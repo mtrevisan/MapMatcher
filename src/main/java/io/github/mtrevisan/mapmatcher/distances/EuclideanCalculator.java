@@ -38,7 +38,7 @@ public class EuclideanCalculator implements DistanceCalculator{
 	}
 
 	@Override
-	public double distance(final LineString lineString, final Coordinate point){
+	public double distance(final Coordinate point, final LineString lineString){
 		double minNearestPointDistance = Double.MAX_VALUE;
 		final Coordinate[] coordinates = lineString.getCoordinates();
 		for(int i = 1; i < coordinates.length; i ++){
