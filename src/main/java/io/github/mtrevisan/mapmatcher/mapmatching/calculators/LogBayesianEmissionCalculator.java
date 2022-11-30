@@ -51,7 +51,7 @@ public class LogBayesianEmissionCalculator implements EmissionProbabilityCalcula
 		//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
 		double cumulativeDistance = 0.;
 		for(final Edge edge : edges){
-			final double distance = distanceCalculator.distance(observation, edge.getLineString());
+			final double distance = distanceCalculator.distance(edge.getLineString(), observation);
 			emissionProbability.put(edge, distance);
 			cumulativeDistance += distance;
 		}

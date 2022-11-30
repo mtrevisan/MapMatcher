@@ -26,8 +26,8 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDurationCalculator;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
 
 public class BidirectionalPathSummary implements PathSummary{
 
-	private static final DistanceCalculator DISTANCE_CALCULATOR = new DistanceCalculator();
-	private static final DurationCalculator DURATION_CALCULATOR = new DurationCalculator();
+	private static final GeodeticDistanceCalculator DISTANCE_CALCULATOR = new GeodeticDistanceCalculator();
+	private static final GeodeticDurationCalculator DURATION_CALCULATOR = new GeodeticDurationCalculator();
 
 
 	private final List<Edge> path;

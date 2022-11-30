@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.weight;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DurationCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDurationCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -38,53 +38,53 @@ class DurationEdgeWeightCalculatorTest{
 	@Test
 	void should_return_edge_duration_in_minutes(){
 		Coordinate[] coordinates = new Coordinate[]{
-			new Coordinate(14.552797, 121.058805),
-			new Coordinate(14.593999, 120.994260),
-			new Coordinate(77.870317, 96.591876),
-			new Coordinate(21.719527, -4.815018),
-			new Coordinate(-17.727830, 23.704799),
-			new Coordinate(58.585396, -130.279576)
+			new Coordinate(121.058805, 14.552797),
+			new Coordinate(120.994260, 14.593999),
+			new Coordinate(96.591876, 77.870317),
+			new Coordinate(-4.815018, 21.719527),
+			new Coordinate(23.704799, -17.727830),
+			new Coordinate(-130.279576, 58.585396)
 		};
-		double[] expectedDurations = new double[]{0.091_9, 86.936_2, 103.114_3};
+		double[] expectedDurations = new double[]{10.0, 5_939.6, 8_999.0};
 		double[] maxSpeeds = new double[]{50., 80., 100.};
 		for(int i = 0; i < expectedDurations.length; i ++){
 			Coordinate fromCoordinates = coordinates[i << 1];
 			Coordinate toCoordinates = coordinates[(i << 1) + 1];
 			double expectedDuration = expectedDurations[i];
 			double maxSpeed = maxSpeeds[i];
-			DurationCalculator edgeWeightCalculator = new DurationCalculator();
+			GeodeticDurationCalculator edgeWeightCalculator = new GeodeticDurationCalculator();
 			final Edge edge = Edge.createDirectEdge(new Node("0", fromCoordinates), new Node("1", toCoordinates),
 				JTSGeometryHelper.createLineString(new Coordinate[]{fromCoordinates, toCoordinates}));
 			edge.setWeight(maxSpeed);
 			double actualDistance = edgeWeightCalculator.calculateWeight(edge);
 
-			Assertions.assertEquals(expectedDuration, actualDistance, 0.000_05);
+			Assertions.assertEquals(expectedDuration, actualDistance, 0.05);
 		}
 	}
 
 	@Test
 	void should_return_duration_in_minutes_between_vertices_with_max_possible_speed(){
 		Coordinate[] coordinates = new Coordinate[]{
-			new Coordinate(14.552797, 121.058805),
-			new Coordinate(14.593999, 120.994260),
-			new Coordinate(77.870317, 96.591876),
-			new Coordinate(21.719527, -4.815018),
-			new Coordinate(-17.727830, 23.704799),
-			new Coordinate(58.585396, -130.279576)
+			new Coordinate(121.058805, 14.552797),
+			new Coordinate(120.994260, 14.593999),
+			new Coordinate(96.591876, 77.870317),
+			new Coordinate(-4.815018, 21.719527),
+			new Coordinate(23.704799, -17.727830),
+			new Coordinate(-130.279576, 58.585396)
 		};
-		double[] expectedDistances = new double[]{0.032_8, 49.677_8, 73.653_1};
+		double[] expectedDistances = new double[]{3.6, 3_394.1, 6_427.9};
 
 		for(int i = 0; i < expectedDistances.length; i ++){
 			Coordinate fromCoordinates = coordinates[i << 1];
 			Coordinate toCoordinates = coordinates[(i << 1) + 1];
 			double expectedDistance = expectedDistances[i];
-			DurationCalculator edgeWeightCalculator = new DurationCalculator();
+			GeodeticDurationCalculator edgeWeightCalculator = new GeodeticDurationCalculator();
 
 			double actualDistance = edgeWeightCalculator.calculateWeight(
 				new Node("0", fromCoordinates),
 				new Node("1", toCoordinates));
 
-			Assertions.assertEquals(expectedDistance, actualDistance, 0.000_05);
+			Assertions.assertEquals(expectedDistance, actualDistance, 0.05);
 		}
 	}
 

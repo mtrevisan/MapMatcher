@@ -28,6 +28,10 @@ import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.linearref.LengthLocationMap;
+import org.locationtech.jts.linearref.LinearLocation;
+import org.locationtech.jts.linearref.LocationIndexedLine;
+import org.locationtech.jts.operation.distance.DistanceOp;
 
 
 /**
@@ -43,9 +47,43 @@ public class AngularGeodeticCalculator implements DistanceCalculator{
 	}
 
 	@Override
-	public double distance(final Coordinate point, final LineString lineString){
+	public double distance(final LineString lineString, final Coordinate point){
 		final Point start = JTSGeometryHelper.createPoint(point);
 		return start.distance(lineString);
+	}
+
+	@Override
+	public double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point){
+		final LineString lineString = JTSGeometryHelper.createLineString(new Coordinate[]{startPoint, endPoint});
+		return alongTrackDistance2(lineString, point);
+	}
+
+	private static double alongTrackDistance2(final LineString line, final Coordinate coordinate){
+		//projection of point onto line
+		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(line);
+		final LinearLocation point = locationIndexedLine.project(coordinate);
+		return new LengthLocationMap(line)
+			.getLength(point);
+	}
+
+	private static double crossTrackDistance(final LineString line, final Coordinate coordinate){
+		final Coordinate nearestPoint = onTrackClosestPoint(line, coordinate);
+		return nearestPoint.distance(coordinate);
+	}
+
+	private static Coordinate onTrackClosestPoint(final LineString line, final Coordinate coordinate){
+		return DistanceOp.nearestPoints(line, JTSGeometryHelper.createPoint(coordinate))[0];
+	}
+
+	private static double distanceClosestPointsOnLineString(final LineString line, final Coordinate coordinate1,
+		final Coordinate coordinate2){
+		//projection of point onto line
+		final LocationIndexedLine locationIndexedLine = new LocationIndexedLine(line);
+		final LinearLocation point1 = locationIndexedLine.project(coordinate1);
+		final LinearLocation point2 = locationIndexedLine.project(coordinate2);
+
+		final LengthLocationMap lengthLocationMap = new LengthLocationMap(line);
+		return Math.abs(lengthLocationMap.getLength(point1) - lengthLocationMap.getLength(point2));
 	}
 
 }

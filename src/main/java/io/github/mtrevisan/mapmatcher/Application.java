@@ -73,7 +73,7 @@ public class Application{
 	public static void main(final String[] args){
 		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
@@ -127,7 +127,7 @@ public class Application{
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 if(path != null)
-	System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
+	System.out.println(Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 //	public static void main(final String[] args){

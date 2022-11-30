@@ -24,10 +24,10 @@
  */
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
+import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
@@ -43,6 +43,12 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 
 	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
 
+	private final DistanceCalculator distanceCalculator;
+
+
+	public TopologicTransitionCalculator(final DistanceCalculator distanceCalculator){
+		this.distanceCalculator = distanceCalculator;
+	}
 
 	/**
 	 * Calculate transition probability
@@ -106,17 +112,15 @@ public class TopologicTransitionCalculator implements TransitionProbabilityCalcu
 			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
 	}
 
-	private static boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation,
+	private boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation,
 			final LineString fromSegmentLineString, final Edge toSegment){
 		//calculate Along-Track Distance
-		//FIXME this is NOT the true ATD on an ellipsoid!
-		double previousATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, previousObservation);
-		double currentATD = JTSGeometryHelper.alongTrackDistance(fromSegmentLineString, currentObservation);
+		double previousATD = distanceCalculator.alongTrackDistance(fromSegmentLineString, previousObservation);
+		double currentATD = distanceCalculator.alongTrackDistance(fromSegmentLineString, currentObservation);
 		if(previousATD == currentATD){
 			final LineString toSegmentLineString = toSegment.getLineString();
-			//FIXME this is NOT the true ATD on an ellipsoid!
-			previousATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, previousObservation);
-			currentATD = JTSGeometryHelper.alongTrackDistance(toSegmentLineString, currentObservation);
+			previousATD = distanceCalculator.alongTrackDistance(toSegmentLineString, previousObservation);
+			currentATD = distanceCalculator.alongTrackDistance(toSegmentLineString, currentObservation);
 		}
 		return (previousATD <= currentATD);
 	}

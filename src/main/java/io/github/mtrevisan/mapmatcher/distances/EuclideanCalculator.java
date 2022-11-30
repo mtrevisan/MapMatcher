@@ -25,23 +25,38 @@
 package io.github.mtrevisan.mapmatcher.distances;
 
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 
 
 public class EuclideanCalculator implements DistanceCalculator{
 
-	private static final GeometryFactory FACTORY = new GeometryFactory();
-
-
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		return startPoint.distance(endPoint);
+		final double dx = startPoint.getX() - endPoint.getX();
+		final double dy = startPoint.getY() - endPoint.getY();
+		return Math.sqrt(dx * dx + dy * dy);
 	}
 
 	@Override
-	public double distance(final Coordinate point, final LineString lineString){
-		return FACTORY.createPoint(point).distance(lineString);
+	public double distance(final LineString lineString, final Coordinate point){
+		double minNearestPointDistance = Double.MAX_VALUE;
+		final Coordinate[] coordinates = lineString.getCoordinates();
+		for(int i = 1; i < coordinates.length; i ++){
+			final Coordinate startPoint = coordinates[i - 1];
+			final Coordinate endPoint = coordinates[i];
+			final double distance = Math.abs(distance(startPoint, endPoint));
+			if(distance < minNearestPointDistance)
+				minNearestPointDistance = distance;
+		}
+		return minNearestPointDistance;
+	}
+
+	@Override
+	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+		final double dx21 = endPoint.getX() - startPoint.getX();
+		final double dy21 = endPoint.getY() - startPoint.getY();
+		return Math.abs(dx21 * (startPoint.getY() - point.getY()) - (startPoint.getX() - point.getX()) * dy21)
+			/ Math.sqrt(dx21 * dx21 + dy21 * dy21);
 	}
 
 }

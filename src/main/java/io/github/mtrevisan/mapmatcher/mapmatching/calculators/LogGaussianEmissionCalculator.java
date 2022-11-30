@@ -55,7 +55,7 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	 */
 	@Override
 	public double emissionProbability(final Coordinate observation, final Edge segment){
-		final double distance = distanceCalculator.distance(observation, segment.getLineString());
+		final double distance = distanceCalculator.distance(segment.getLineString(), observation);
 		final double tmp = distance / observationStandardDeviation;
 		final double probability = Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
 		return InitialProbabilityCalculator.logPr(probability);

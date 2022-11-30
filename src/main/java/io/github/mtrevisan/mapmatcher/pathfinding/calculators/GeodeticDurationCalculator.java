@@ -28,7 +28,7 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 
 
-public class DurationCalculator extends DistanceCalculator{
+public class GeodeticDurationCalculator extends GeodeticDistanceCalculator{
 
 	//[km/h]
 	private static final double MAX_ALLOWED_WEIGHT = 140.;
@@ -38,14 +38,14 @@ public class DurationCalculator extends DistanceCalculator{
 	public double calculateWeight(final Edge edge){
 		final var distance = super.calculateWeight(edge.getFrom(), edge.getTo());
 		//[s]
-		return distance * 60. / edge.getWeight();
+		return distance * 60. / (edge.getWeight() * 1_000.);
 	}
 
 	@Override
 	public double calculateWeight(final Node from, final Node to){
 		final var distance = super.calculateWeight(from, to);
 		//[s]
-		return distance * 60. / MAX_ALLOWED_WEIGHT;
+		return distance * 60. / (MAX_ALLOWED_WEIGHT * 1_000.);
 	}
 
 }

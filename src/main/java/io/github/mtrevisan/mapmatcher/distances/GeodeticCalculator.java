@@ -24,8 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
-import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
+import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -46,24 +45,34 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 */
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(DefaultGeographicCRS.WGS84);
-		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
-		calculator.setDestinationGeographicPoint(endPoint.getX(), endPoint.getY());
-		return calculator.getOrthodromicDistance();
+		return GeodeticHelper.distance(startPoint, endPoint);
 	}
 
 	/**
 	 * Calculate cross-track distance.
 	 *
-	 * @param point	The point
-	 * @param lineString	The list of track points.
-	 * @return	The distance [m].
+	 * @param lineString The list of track points.
+	 * @param point      The point
+	 * @return The distance [m].
 	 */
 	@Override
-	public double distance(final Coordinate point, final LineString lineString){
-		//FIXME this is NOT the nearest point on an ellipsoid!
-		final Coordinate nearestPoint = JTSGeometryHelper.onTrackClosestPoint(lineString, point);
-		return distance(point, nearestPoint);
+	public double distance(final LineString lineString, final Coordinate point){
+		double minNearestPointDistance = Double.MAX_VALUE;
+		final Coordinate[] coordinates = lineString.getCoordinates();
+		for(int i = 1; i < coordinates.length; i ++){
+			final Coordinate startPoint = coordinates[i - 1];
+			final Coordinate endPoint = coordinates[i];
+			final Coordinate nearestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
+			final double distance = Math.abs(GeodeticHelper.distance(nearestPoint, point));
+			if(distance < minNearestPointDistance)
+				minNearestPointDistance = distance;
+		}
+		return minNearestPointDistance;
+	}
+
+	@Override
+	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+		return GeodeticHelper.distance(point, GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point));
 	}
 
 }

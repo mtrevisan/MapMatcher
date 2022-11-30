@@ -108,8 +108,8 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_distance(){
-		final Node first = new Node("0", new Coordinate(14.552797, 121.058805));
-		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
+		final Node first = new Node("0", new Coordinate(121.058805, 14.552797));
+		final Node second = new Node("1", new Coordinate(120.994260, 14.593999));
 		ArrayList<Edge> path = new ArrayList<>(List.of(
 			Edge.createDirectEdge(first, second,
 				JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
@@ -118,13 +118,13 @@ class BidirectionalPathSummaryTest{
 
 		double result = pathSummary.totalDistance();
 
-		Assertions.assertEquals(0.076_6, result, 0.000_05);
+		Assertions.assertEquals(8316.3, result, 05);
 	}
 
 	@Test
 	void should_return_path_duration(){
-		final Node first = new Node("0", new Coordinate(14.552797, 121.058805));
-		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
+		final Node first = new Node("0", new Coordinate(121.058805, 14.552797));
+		final Node second = new Node("1", new Coordinate(120.994260, 14.593999));
 		final Edge edge = Edge.createDirectEdge(first, second,
 			JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
 		edge.setWeight(50.);
@@ -133,7 +133,7 @@ class BidirectionalPathSummaryTest{
 
 		double result = pathSummary.totalDuration();
 
-		Assertions.assertEquals(0.091_9, result, 0.000_05);
+		Assertions.assertEquals(10.0, result, 0.05);
 	}
 
 	@Test
