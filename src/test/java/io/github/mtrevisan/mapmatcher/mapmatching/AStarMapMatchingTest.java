@@ -94,7 +94,7 @@ class AStarMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 500.);
+		final Graph graph = extractGraph(observedEdges, 1_000.);
 
 		final Edge[] path = strategy.findPath(graph, observations);
 
@@ -144,7 +144,7 @@ class AStarMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 500.);
+		final Graph graph = extractGraph(observedEdges, 1_000.);
 
 		final Edge[] path = strategy.findPath(graph, observations);
 
@@ -190,7 +190,7 @@ class AStarMapMatchingTest{
 
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 500.);
+		final Graph graph = extractGraph(observedEdges, 1_000.);
 
 		final Edge[] path = strategy.findPath(graph, observations);
 

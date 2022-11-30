@@ -72,7 +72,7 @@ class ShortestPathPathfindingTestGraphs{
 		final Node nodeK = new Node("10", new Coordinate(6., 2.));
 		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
-		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
+		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5, new EuclideanCalculator());
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
@@ -125,7 +125,7 @@ class ShortestPathPathfindingTestGraphs{
 		final Node nodeK = new Node("10", new Coordinate(6., 2.));
 		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
-		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
+		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5, new EuclideanCalculator());
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
@@ -173,7 +173,7 @@ class ShortestPathPathfindingTestGraphs{
 		final Node nodeK = new Node("10", new Coordinate(6., 2.));
 		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
-		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
+		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5, new EuclideanCalculator());
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
@@ -227,7 +227,7 @@ class ShortestPathPathfindingTestGraphs{
 		final Node nodeK = new Node("10", new Coordinate(6., 2.));
 		final Node nodeM = new Node("11", new Coordinate(6., 3.));
 
-		final NearLineMergeGraph gb = new NearLineMergeGraph(1., new EuclideanCalculator());
+		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5, new EuclideanCalculator());
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
 		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));

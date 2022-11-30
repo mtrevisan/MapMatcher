@@ -112,7 +112,7 @@ class SingleDirectionalPathSummaryTest{
 
 		final double result = pathSummary.totalDistance();
 
-		Assertions.assertEquals(8316.3, result, 0.05);
+		Assertions.assertEquals(8_316.3, result, 0.05);
 	}
 
 	@Test

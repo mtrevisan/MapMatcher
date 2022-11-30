@@ -25,6 +25,7 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
+import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateArrays;
 import org.locationtech.jts.geom.LineString;
@@ -147,7 +148,7 @@ public class NearLineMergeGraph implements Graph{
 	private Collection<Node> getApproximateNode(final Coordinate coordinate){
 		final Collection<Node> closest = getNodesNear(coordinate);
 		if(closest.isEmpty()){
-			final Node node = new Node("", coordinate);
+			final Node node = new Node(StringUtils.EMPTY, coordinate);
 			nodeMap.put(coordinate, node);
 			closest.add(node);
 		}
@@ -157,7 +158,7 @@ public class NearLineMergeGraph implements Graph{
 	public Collection<Node> getNodesNear(final Coordinate coordinate){
 		final Set<Node> closest = new HashSet<>();
 		for(final Map.Entry<Coordinate, Node> entry : nodeMap.entrySet())
-			if(distanceCalculator.distance(entry.getKey(), coordinate) < threshold)
+			if(distanceCalculator.distance(entry.getKey(), coordinate) <= threshold)
 				closest.add(entry.getValue());
 		return closest;
 	}

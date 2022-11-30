@@ -121,7 +121,7 @@ public class Application{
 		final LineString[] edges = new LineString[]{edge0, edge1, edge2, edge3, edge4, edge5};
 
 		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractGraph(observedEdges, 500.);
+		final Graph graph = extractGraph(observedEdges, 1_000.);
 
 		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
@@ -163,7 +163,7 @@ if(path != null)
 //		final LineString[] edges = readEdges();
 //		//all italy
 //		final Collection<LineString> observedEdges = extractObservedEdges(edges, observations, 1_000_000.);
-//		final Graph graph = extractGraph(observedEdges, 200.);
+//		final Graph graph = extractGraph(observedEdges, 1_000.);
 //
 //		final Edge[] path = strategy.findPath(graph, observations);
 //

@@ -29,11 +29,12 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 
 
-class VincentyDistanceCalculatorTest{
+class DistanceCalculatorTest{
 
 	@Test
 	void should_calculate_approximate_distance_in_km_between__startCoordinates_and__endCoordinates_close_to_expectedDistance(){
 		final DistanceCalculator calculator = new GeodeticCalculator();
+		final DistanceCalculator alternateCalculator = new AngularGeodeticCalculator();
 		final Coordinate[] coordinates = new Coordinate[]{
 			new Coordinate(121.058805, 14.552797),
 			new Coordinate(120.994260, 14.593999),
@@ -52,6 +53,8 @@ class VincentyDistanceCalculatorTest{
 			Coordinate startCoordinates = coordinates[i << 1];
 			Coordinate endCoordinates = coordinates[(i << 1) + 1];
 			double actualDistance = calculator.distance(startCoordinates, endCoordinates);
+
+System.out.println(actualDistance + " - " + alternateCalculator.distance(startCoordinates, endCoordinates));
 
 			Assertions.assertEquals(expectedDistances[i], actualDistance, 0.05);
 		}
