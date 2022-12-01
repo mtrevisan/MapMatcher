@@ -56,13 +56,17 @@ class GeodeticHelperTest{
 	}
 
 	@Test
-	void should_find_closest_point_regardless_of_great_circle2(){
+	void should_find_closest_point_regardless_of_great_circle_chile_death_lake_island(){
 		Coordinate start = new Coordinate(29., 42.);
 		Coordinate end = new Coordinate(-70., -35.);
 		Coordinate point = new Coordinate(-22., 64.);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint_should_be_this(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint_should_be_this(end, start, point);
+		Coordinate closestPointOnTrackStartEnd2 = GeodeticHelper.onTrackClosestPoint(start, end, point);
+		Coordinate closestPointOnTrackEndStart2 = GeodeticHelper.onTrackClosestPoint(end, start, point);
+		Coordinate closestPointOnTrackStartEnd3 = GeodeticHelper.bla(start, end, point);
+		Coordinate closestPointOnTrackEndStart3 = GeodeticHelper.bla(end, start, point);
 
 		Assertions.assertEquals(18.349_063_306, closestPointOnTrackStartEnd.getX(), 0.000_000_000_5);
 		Assertions.assertEquals(37.978_117_667, closestPointOnTrackStartEnd.getY(), 0.000_000_000_5);
@@ -70,8 +74,11 @@ class GeodeticHelperTest{
 		Assertions.assertEquals(37.978_117_667, closestPointOnTrackEndStart.getY(), 0.000_000_000_5);
 	}
 
+	//http://geo.javawa.nl/coordcalc/index_en.html
+	//https://github.com/geographiclib/geographiclib-java/tree/main/src/main/java/net/sf/geographiclib
+
 	@Test
-	void should_find_closest_point_regardless_of_great_circle3(){
+	void should_find_closest_point_regardless_of_great_circle_usa_death_lake_island(){
 		Coordinate start = new Coordinate(29., 42.);
 		Coordinate end = new Coordinate(-77., 39.);
 		Coordinate point = new Coordinate(-22., 64.);
