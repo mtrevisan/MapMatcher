@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.helpers;
 
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.referencing.datum.DefaultEllipsoid;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.awt.geom.Point2D;
@@ -43,9 +42,11 @@ public class GeodeticHelper{
 	private static final double EARTH_FLATTENING = 1. / CRS_WGS84.getDatum().getEllipsoid().getInverseFlattening();
 	//e^2 = (2 - f) * f
 	private static final double EARTH_ECCENTRICITY_2 = (2. - EARTH_FLATTENING) * EARTH_FLATTENING;
+	//[m]
+	private static final double EARTH_EQUATORIAL_RADIUS = CRS_WGS84.getDatum().getEllipsoid().getSemiMajorAxis();
 
 	//[m]
-	private static final double ON_TRACK_POINT_PRECISION = 1.;
+	private static final double ON_TRACK_POINT_PRECISION = 0.1;
 
 
 	private GeodeticHelper(){}
@@ -61,19 +62,23 @@ public class GeodeticHelper{
 		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(CRS_WGS84);
 		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
 		calculator.setDestinationGeographicPoint(endPoint.getX(), endPoint.getY());
-		return calculator.getAzimuth();
+		final double azimuth = calculator.getAzimuth();
+		return (azimuth < 0.? azimuth + 360.: azimuth);
 	}
 
 	public static Coordinate destination(final Coordinate startPoint, final double initialBearing, final double distance){
 		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(CRS_WGS84);
 		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
-		calculator.setDirection(initialBearing, distance);
+		calculator.setDirection((initialBearing >= 180.? initialBearing - 360.: initialBearing), distance);
 		final Point2D destination = calculator.getDestinationGeographicPoint();
 		return new Coordinate(destination.getX(), destination.getY());
 	}
 
 	/**
 	 * Returns the closest point to a given point on a great circle.
+	 * <p>
+	 * NOTE: not so precise, but it's enough.
+	 * </p>
 	 *
 	 * @param	startPoint	Coordinate of starting point of the great circle.
 	 * @param	endPoint	Coordinate of ending point of the great circle.
@@ -85,38 +90,71 @@ public class GeodeticHelper{
 	 */
 	public static Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
 		//approximate Earth radius [m]
-		final double radius = meanRadiusOfCurvature((startPoint.getY() + endPoint.getY()) / 2.);
+//		final double radius = EARTH_EQUATORIAL_RADIUS;
+		final double radius = primeVerticalRadiusOfCurvature(startPoint.getY());
 
-		Coordinate start = startPoint;
+		final double maxATD = distance(startPoint, endPoint);
+		Coordinate onTrackPoint = startPoint;
 		while(true){
 			//S_AP [m]
-			final double distanceStartToPoint = distance(start, point);
+			final double distanceStartToPoint = distance(onTrackPoint, point);
 			//alpha_AP [°]
-			final double initialBearingStartToPoint = initialBearing(start, point);
+			final double initialBearingStartToPoint = initialBearing(onTrackPoint, point);
 			//alpha_AB [°]
-			final double initialBearingStartToEnd = initialBearing(start, endPoint);
+			final double initialBearingStartToEnd = initialBearing(onTrackPoint, endPoint);
 			//[rad]
-			final double angleAP = Math.toRadians(initialBearingStartToEnd - initialBearingStartToPoint);
+			final double angleAP = Math.toRadians(Math.abs(initialBearingStartToEnd - initialBearingStartToPoint));
 			//calculate Cross-Track Distance [m], S_PX
-			final double xtd = radius * StrictMath.asin(StrictMath.sin(distanceStartToPoint / radius) * StrictMath.sin(angleAP));
+			final double sinAngleAP = StrictMath.sin(angleAP);
+			if(sinAngleAP == 1.)
+				break;
+
+			final double xtd = radius * StrictMath.asin(StrictMath.sin(distanceStartToPoint / radius) * sinAngleAP);
 			//calculate Along-Track Distance [m], S_AX
 			final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
 			final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
 			final double c = StrictMath.tan((distanceStartToPoint - xtd) / (2. * radius));
-			final double atd = 2. * radius * StrictMath.atan(a / b * c);
-			if(atd < ON_TRACK_POINT_PRECISION)
+			final double atd = 2. * radius * StrictMath.atan((a / b) * c);
+			if(atd < ON_TRACK_POINT_PRECISION || distance(startPoint, onTrackPoint) > maxATD)
 				break;
 
 			//compute a point along the great circle from start to end point that lies at distance ATD
-			start = destination(start, initialBearingStartToEnd, atd);
+			onTrackPoint = destination(onTrackPoint, initialBearingStartToEnd, atd);
 		}
-		return start;
+		return onTrackPoint;
+	}
+
+	public static Coordinate onTrackClosestPoint2(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+		//key dot product
+		final Coordinate diffES = new Coordinate(endPoint.getX() - startPoint.getX(), endPoint.getY() - startPoint.getY());
+		final Coordinate diffPS = new Coordinate(point.getX() - startPoint.getX(), point.getY() - startPoint.getY());
+		final double dot = diffES.getX() * diffPS.getX() + diffES.getY() * diffPS.getY();
+		//segment length squared
+		final double segmentLength2 = diffES.getX() * diffES.getX() + diffES.getY() * diffES.getY();
+
+		//closest point on segment to point
+		Coordinate nearestPoint;
+		//point is "behind" start of segment, use `startPoint`
+		if(dot <= 0.)
+			nearestPoint = startPoint;
+		//point is "past" end of segment, use `endPoint`
+		else if(dot >= segmentLength2)
+			nearestPoint = endPoint;
+		//point is inside segment, find the closest point
+		else{
+			final double dotToNearestPoint = dot / segmentLength2;
+			nearestPoint = new Coordinate(
+				startPoint.getX() + diffES.getX() * dotToNearestPoint,
+				startPoint.getY() + diffES.getY() * dotToNearestPoint
+			);
+		}
+		return nearestPoint;
 	}
 
 	/**
 	 * Earth mean radius of curvature by latitude.
 	 *
-	 * @param latitude	The latitude [deg].
+	 * @param latitude	The latitude [°].
 	 * @return	The geocentric mean radius [m].
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
@@ -130,27 +168,27 @@ public class GeodeticHelper{
 	/**
 	 * Earth meridional radius of curvature by latitude.
 	 *
-	 * @param latitude	The latitude [deg].
+	 * @param latitude	The latitude [°].
 	 * @return	The meridional radius [m].
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
 	 */
 	private static double meridionalRadiusOfCurvature(final double latitude){
-		final double tmp = primeVerticalRadiusOfCurvature(latitude) / DefaultEllipsoid.WGS84.getSemiMajorAxis();
-		return tmp * tmp * tmp * (1. - EARTH_ECCENTRICITY_2) * DefaultEllipsoid.WGS84.getSemiMajorAxis();
+		final double tmp = primeVerticalRadiusOfCurvature(latitude) / EARTH_EQUATORIAL_RADIUS;
+		return tmp * tmp * tmp * (1. - EARTH_ECCENTRICITY_2) * EARTH_EQUATORIAL_RADIUS;
 	}
 
 	/**
 	 * Earth prime vertical radius of curvature by latitude.
 	 *
-	 * @param latitude	The latitude [deg].
+	 * @param latitude	The latitude [°].
 	 * @return	The prime vertical radius [m].
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
 	 */
 	private static double primeVerticalRadiusOfCurvature(final double latitude){
 		final double sinLat = StrictMath.sin(Math.toRadians(latitude));
-		return DefaultEllipsoid.WGS84.getSemiMajorAxis() / Math.sqrt(1. - EARTH_ECCENTRICITY_2 * sinLat * sinLat);
+		return EARTH_EQUATORIAL_RADIUS / Math.sqrt(1. - EARTH_ECCENTRICITY_2 * sinLat * sinLat);
 	}
 
 }

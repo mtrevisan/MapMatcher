@@ -118,7 +118,7 @@ class BidirectionalPathSummaryTest{
 
 		double result = pathSummary.totalDistance();
 
-		Assertions.assertEquals(8_316.3, result, 05);
+		Assertions.assertEquals(8_316.3, result, 0.05);
 	}
 
 	@Test

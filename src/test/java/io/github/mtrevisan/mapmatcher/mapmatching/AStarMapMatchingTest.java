@@ -52,6 +52,7 @@ import java.util.Set;
 
 class AStarMapMatchingTest{
 
+	//FIXME
 //	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability(){
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
@@ -100,6 +101,7 @@ class AStarMapMatchingTest{
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
 
+	//FIXME
 //	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability(){
 		final double observationStandardDeviation = 5.;
@@ -151,6 +153,7 @@ class AStarMapMatchingTest{
 	}
 
 
+	//FIXME
 //	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability(){
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
