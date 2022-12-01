@@ -88,7 +88,7 @@ public class GeodeticHelper{
 	 * @see <a href="https://edwilliams.org/avform147.htm#XTE">Aviation Formulary V1.47</a>
 	 * @see <a href="https://www.researchgate.net/publication/321358300_Intersection_and_point-to-line_solutions_for_geodesics_on_the_ellipsoid">Intersection and point-to-line solutions for geodesics on the ellipsoid</a>
 	 */
-	public static Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+	public static Coordinate onTrackClosestPoint_should_be_this(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
 		//approximate Earth radius [m]
 //		final double radius = EARTH_EQUATORIAL_RADIUS;
 		final double radius = primeVerticalRadiusOfCurvature(startPoint.getY());
@@ -124,10 +124,28 @@ public class GeodeticHelper{
 		return onTrackPoint;
 	}
 
-	public static Coordinate onTrackClosestPoint2(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+	/**
+	 * Returns the closest point to a given point on a great circle.
+	 * <p>
+	 * NOTE: not so precise, but it's enough.
+	 * </p>
+	 *
+	 * @param	startPoint	Coordinate of starting point of the great circle.
+	 * @param	endPoint	Coordinate of ending point of the great circle.
+	 * @param	point	Coordinate of the point.
+	 * @return	The coordinate of the point onto the great circle that is closest to the given point.
+	 */
+	public static Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
 		//key dot product
-		final Coordinate diffES = new Coordinate(endPoint.getX() - startPoint.getX(), endPoint.getY() - startPoint.getY());
-		final Coordinate diffPS = new Coordinate(point.getX() - startPoint.getX(), point.getY() - startPoint.getY());
+		final double ax = startPoint.getX();
+		//calculate reduced latitude
+		final double ay = calculateReducedLatitude(startPoint.getY());
+		final double bx = endPoint.getX();
+		final double by = calculateReducedLatitude(endPoint.getY());
+		final double px = point.getX();
+		final double py = calculateReducedLatitude(point.getY());
+		final Coordinate diffES = new Coordinate(bx - ax, by - ay);
+		final Coordinate diffPS = new Coordinate(px - ax, py - ay);
 		final double dot = diffES.getX() * diffPS.getX() + diffES.getY() * diffPS.getY();
 		//segment length squared
 		final double segmentLength2 = diffES.getX() * diffES.getX() + diffES.getY() * diffES.getY();
@@ -144,11 +162,21 @@ public class GeodeticHelper{
 		else{
 			final double dotToNearestPoint = dot / segmentLength2;
 			nearestPoint = new Coordinate(
-				startPoint.getX() + diffES.getX() * dotToNearestPoint,
-				startPoint.getY() + diffES.getY() * dotToNearestPoint
+				ax + diffES.getX() * dotToNearestPoint,
+				ay + diffES.getY() * dotToNearestPoint
 			);
 		}
+		//convert back from reduced latitude
+		nearestPoint.setY(calculateTrueLatitude(nearestPoint.getY()));
 		return nearestPoint;
+	}
+
+	private static double calculateReducedLatitude(final double phi){
+		return Math.toDegrees(StrictMath.atan((1. - EARTH_FLATTENING) * StrictMath.tan(Math.toRadians(phi))));
+	}
+
+	private static double calculateTrueLatitude(final double reducedPhi){
+		return Math.toDegrees(StrictMath.atan(StrictMath.tan(Math.toRadians(reducedPhi)) / (1. - EARTH_FLATTENING)));
 	}
 
 	/**

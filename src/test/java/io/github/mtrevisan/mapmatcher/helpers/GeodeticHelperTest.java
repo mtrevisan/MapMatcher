@@ -102,8 +102,6 @@ class GeodeticHelperTest{
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
-		Coordinate closestPointOnTrackStartEnd2 = GeodeticHelper.onTrackClosestPoint2(start, end, point);
-		Coordinate closestPointOnTrackEndStart2 = GeodeticHelper.onTrackClosestPoint2(end, start, point);
 
 		Assertions.assertEquals(12.238_140_517, closestPointOnTrackStartEnd.getX(), 0.000_000_000_5);
 		Assertions.assertEquals(45.658_974_159, closestPointOnTrackStartEnd.getY(), 0.000_000_000_5);
