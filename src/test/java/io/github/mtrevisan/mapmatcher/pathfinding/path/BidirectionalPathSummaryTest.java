@@ -52,7 +52,7 @@ class BidirectionalPathSummaryTest{
 			Edge.createDirectEdge(first, second,
 				FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
 		));
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
+		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
 		List<Node> result = pathSummary.simplePath();
 
@@ -61,7 +61,7 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_empty_list_when_path_is_empty(){
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(new ArrayList<>(), new HashSet<>(), new HashSet<>());
+		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(new ArrayList<>(), new HashSet<>(), new HashSet<>());
 
 		List<Node> result = pathSummary.simplePath();
 
@@ -76,7 +76,7 @@ class BidirectionalPathSummaryTest{
 			Edge.createDirectEdge(first, second,
 				FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
 		));
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
+		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
 		int result = pathSummary.numberOfVertices();
 
@@ -86,7 +86,7 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_0_when_path_is_empty(){
 		List<Edge> path = new ArrayList<>();
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
+		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
 		int result = pathSummary.numberOfVertices();
 
@@ -99,7 +99,7 @@ class BidirectionalPathSummaryTest{
 			new Node("0", new Coordinate(1., 1.)),
 			new Node("1", new Coordinate(2., 2.))
 		));
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(new ArrayList<>(), visitedVertices, visitedVertices);
+		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(new ArrayList<>(), visitedVertices, visitedVertices);
 
 		int result = pathSummary.totalVisitedVertices();
 
@@ -114,7 +114,7 @@ class BidirectionalPathSummaryTest{
 			Edge.createDirectEdge(first, second,
 				JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
 		));
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
+		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
 		double result = pathSummary.totalDistance();
 
@@ -129,7 +129,7 @@ class BidirectionalPathSummaryTest{
 			JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
 		edge.setWeight(50.);
 		ArrayList<Edge> path = new ArrayList<>(List.of(edge));
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
+		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
 		double result = pathSummary.totalDuration();
 
@@ -139,7 +139,7 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_whether_the_path_is_empty(){
 		List<Edge> path = new ArrayList<>();
-		BidirectionalPathSummary pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
+		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
 		Assertions.assertTrue(pathSummary.simplePath().isEmpty());
 		Assertions.assertFalse(pathSummary.isFound());
@@ -151,7 +151,7 @@ class BidirectionalPathSummaryTest{
 			Edge.createDirectEdge(node1, node2,
 				FACTORY.createLineString(new Coordinate[]{node1.getCoordinate(), node2.getCoordinate()}))
 		));
-		pathSummary = new BidirectionalPathSummary(path, new HashSet<>(), new HashSet<>());
+		pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
 		Assertions.assertEquals(Arrays.asList(node1, node2), pathSummary.simplePath());
 		Assertions.assertTrue(pathSummary.isFound());

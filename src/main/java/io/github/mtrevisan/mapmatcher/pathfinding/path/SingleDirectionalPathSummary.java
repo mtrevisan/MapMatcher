@@ -44,7 +44,15 @@ public class SingleDirectionalPathSummary implements PathSummary{
 	private final Set<Node> searchedVertices;
 
 
-	public SingleDirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVertices){
+	public static SingleDirectionalPathSummary ofNode(final Node node){
+		return new SingleDirectionalPathSummary(Collections.singletonList(Edge.createSelfEdge(node)), Collections.singleton(node));
+	}
+
+	public static SingleDirectionalPathSummary ofPath(final List<Edge> path, final Set<Node> searchedVertices){
+		return new SingleDirectionalPathSummary(path, searchedVertices);
+	}
+
+	private SingleDirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVertices){
 		this.path = path;
 		this.searchedVertices = searchedVertices;
 	}

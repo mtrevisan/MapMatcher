@@ -56,8 +56,15 @@ public class Node{
 		this.id = id;
 	}
 
-	public Collection<Edge> geOutEdges(){
+	public Collection<Edge> getOutEdges(){
 		return outEdges;
+	}
+
+	public Edge findOutEdges(final Node nodeTo){
+		for(final Edge edge : getOutEdges())
+			if(edge.getTo().equals(nodeTo))
+				return edge;
+		return null;
 	}
 
 	public void addOutEdge(final Edge edge){

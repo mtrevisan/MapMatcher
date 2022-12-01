@@ -42,7 +42,7 @@ public class PathSummaryCreator{
 
 		Collections.reverse(fromEndToStart);
 
-		return new SingleDirectionalPathSummary(fromEndToStart, predecessorTree.keySet());
+		return SingleDirectionalPathSummary.ofPath(fromEndToStart, predecessorTree.keySet());
 	}
 
 	public PathSummary createBidirectionalPath(final Node start, final Node middle, final Node end,
@@ -53,10 +53,10 @@ public class PathSummaryCreator{
 		final var fromEndToMid = reconstructPathFromPredecessorTree(middle, end, predecessorTreeEnd);
 
 		if((start != middle && fromMidToStart.isEmpty()) || (end != middle && fromEndToMid.isEmpty()))
-			return new BidirectionalPathSummary(Collections.emptyList(), predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
+			return BidirectionalPathSummary.ofPath(Collections.emptyList(), predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
 
 		fromMidToStart.addAll(fromEndToMid.stream().map(Edge::reversed).toList());
-		return new BidirectionalPathSummary(fromMidToStart, predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
+		return BidirectionalPathSummary.ofPath(fromMidToStart, predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
 	}
 
 	private List<Edge> reconstructPathFromPredecessorTree(final Node from, final Node to, final Map<Node, Edge> predecessorTree){

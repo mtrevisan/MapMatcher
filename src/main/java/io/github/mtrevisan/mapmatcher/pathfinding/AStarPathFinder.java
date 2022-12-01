@@ -33,7 +33,6 @@ import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummaryCreator;
 import io.github.mtrevisan.mapmatcher.pathfinding.path.SingleDirectionalPathSummary;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -55,9 +54,8 @@ public class AStarPathFinder implements PathFindingStrategy{
 	@Override
 	public PathSummary findPath(final Node start, final Node end, final Graph graph){
 		if(start.equals(end))
-			//early exit
-			return new SingleDirectionalPathSummary(Collections.singletonList(Edge.createSelfEdge(start)),
-				Collections.singleton(start));
+			//early exit (return the node itself)
+			return SingleDirectionalPathSummary.ofNode(start);
 
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
 		final var predecessorTree = new HashMap<Node, Edge>();
@@ -81,7 +79,7 @@ public class AStarPathFinder implements PathFindingStrategy{
 			if(fromNode.equals(end))
 				break;
 
-			for(final var edge : fromNode.geOutEdges()){
+			for(final var edge : fromNode.getOutEdges()){
 				final var toNode = edge.getTo();
 				if(seenNodes.contains(toNode))
 					continue;

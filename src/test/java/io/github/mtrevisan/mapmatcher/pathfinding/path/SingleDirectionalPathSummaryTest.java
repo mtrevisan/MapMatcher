@@ -50,7 +50,7 @@ class SingleDirectionalPathSummaryTest{
 		final Node second = new Node("1", new Coordinate(2., 2.));
 		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second,
 			FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
-		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final List<Node> result = pathSummary.simplePath();
 
@@ -60,7 +60,7 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_empty_list_when_path_is_empty(){
 		final List<Edge> path = new ArrayList<>();
-		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final List<Node> result = pathSummary.simplePath();
 
@@ -73,7 +73,7 @@ class SingleDirectionalPathSummaryTest{
 		final Node second = new Node("1", new Coordinate(2., 2.));
 		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second,
 			FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
-		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final int result = pathSummary.numberOfVertices();
 
@@ -83,7 +83,7 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_0_when_path_is_empty(){
 		final List<Edge> path = new ArrayList<>();
-		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final int result = pathSummary.numberOfVertices();
 
@@ -95,7 +95,7 @@ class SingleDirectionalPathSummaryTest{
 		final Node first = new Node("0", new Coordinate(1., 1.));
 		final Node second = new Node("1", new Coordinate(2., 2.));
 		final Set<Node> visitedVertices = new HashSet<>(Arrays.asList(first, second));
-		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(new ArrayList<>(), visitedVertices);
+		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(new ArrayList<>(), visitedVertices);
 
 		final int result = pathSummary.totalVisitedVertices();
 
@@ -108,7 +108,7 @@ class SingleDirectionalPathSummaryTest{
 		final Node second = new Node("1", new Coordinate(120.994260, 14.593999));
 		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second,
 			JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
-		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final double result = pathSummary.totalDistance();
 
@@ -123,7 +123,7 @@ class SingleDirectionalPathSummaryTest{
 			JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
 		edge.setWeight(50.);
 		final List<Edge> path = new ArrayList<>(List.of(edge));
-		final SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final double result = pathSummary.totalDuration();
 
@@ -133,7 +133,7 @@ class SingleDirectionalPathSummaryTest{
 	@Test
 	void should_return_whether_the_path_is_empty(){
 		List<Edge> path = new ArrayList<>();
-		SingleDirectionalPathSummary pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		Assertions.assertFalse(pathSummary.isFound());
 
@@ -142,7 +142,7 @@ class SingleDirectionalPathSummaryTest{
 		final Node second = new Node("1", new Coordinate(14.593999, 120.994260));
 		path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second,
 			JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))));
-		pathSummary = new SingleDirectionalPathSummary(path, new HashSet<>());
+		pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		Assertions.assertTrue(pathSummary.isFound());
 	}

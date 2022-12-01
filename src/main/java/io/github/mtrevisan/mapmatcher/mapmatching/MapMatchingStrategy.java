@@ -26,11 +26,48 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import org.locationtech.jts.geom.Coordinate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public interface MapMatchingStrategy{
 
+	PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
+
+
 	Edge[] findPath(Graph graph, Coordinate[] observations);
+
+	static Edge[] connectPath(final Edge[] path, final Graph graph){
+		final List<Edge> connectedPath = new ArrayList<>(path.length);
+		final int size = path.length;
+		if(size > 0){
+			connectedPath.add(path[0]);
+			for(int i = 1; i < size; i ++){
+				if(path[i - 1].geOutEdges().contains(path[i]))
+					connectedPath.add(path[i]);
+				else{
+					//add path from `path[i - 1]` to `path[i]`
+					final List<Node> nodePath = PATH_FINDER.findPath(path[i - 1].getTo(), path[i].getFrom(), graph)
+						.simplePath();
+					assert !nodePath.isEmpty();
+					for(int j = 1; j < nodePath.size(); j ++){
+						final Node fromNode = nodePath.get(j - 1);
+						final Node toNode = nodePath.get(j);
+						final Edge edge = fromNode.findOutEdges(toNode);
+						assert edge != null;
+						connectedPath.add(edge);
+					}
+					connectedPath.add(path[i]);
+				}
+			}
+		}
+		return connectedPath.toArray(Edge[]::new);
+	}
 
 }

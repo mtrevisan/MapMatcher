@@ -34,7 +34,7 @@ public class GPSPositionFilter{
 
 	/*
 	 * Create a GPS filter that only tracks one dimension of position.
-	 * the expected noise. 1 is the original, and the higher it is, the more a path will be "smoothed".
+	 * Noise that the higher `observationNoise` is, the more a path will be "smoothed".
 	 */
 	public GPSPositionFilter(final double processNoise, final double observationNoise){
 		//The state model has four dimensions: x, y, dx/dt, dy/dt.

@@ -46,7 +46,18 @@ public class BidirectionalPathSummary implements PathSummary{
 	private final Set<Node> searchedVerticesFromEnd;
 
 
-	public BidirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVerticesFromStart, final Set<Node> searchedVerticesFromEnd){
+	public static BidirectionalPathSummary ofNode(final Node node){
+		final Set<Node> searchedVertices = Collections.singleton(node);
+		return new BidirectionalPathSummary(Collections.singletonList(Edge.createSelfEdge(node)), searchedVertices, searchedVertices);
+	}
+
+	public static BidirectionalPathSummary ofPath(final List<Edge> path, final Set<Node> searchedVerticesFromStart,
+			final Set<Node> searchedVerticesFromEnd){
+		return new BidirectionalPathSummary(path, searchedVerticesFromStart, searchedVerticesFromEnd);
+	}
+
+	private BidirectionalPathSummary(final List<Edge> path, final Set<Node> searchedVerticesFromStart,
+			final Set<Node> searchedVerticesFromEnd){
 		this.path = path;
 		this.searchedVerticesFromStart = searchedVerticesFromStart;
 		this.searchedVerticesFromEnd = searchedVerticesFromEnd;

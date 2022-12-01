@@ -84,20 +84,15 @@ public class TopologicalTransitionCalculator implements TransitionProbabilityCal
 	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
 			final Coordinate previousObservation, final Coordinate currentObservation){
 		double a = 0.;
-		//penalize u-turns: make then unreachable
-		final boolean segmentsReversed = isSegmentsReversed(fromSegment, toSegment);
-		if(!segmentsReversed){
-			//if the node is the same
-			if(fromSegment.equals(toSegment))
-				a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-			else{
-				final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
-					.simplePath();
-				if(!path.isEmpty())
-					a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-			}
+		//if the node is the same
+		if(fromSegment.equals(toSegment))
+			a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
+		else{
+			final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
+				.simplePath();
+			if(!path.isEmpty())
+				a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 		}
-
 		return InitialProbabilityCalculator.logPr(a);
 	}
 
@@ -113,12 +108,7 @@ public class TopologicalTransitionCalculator implements TransitionProbabilityCal
 			for(int i = 1; i < path.size(); i ++){
 				final Node currentNode = path.get(i - 1);
 				final Node nextNode = path.get(i);
-				Edge currentNextEdge = null;
-				for(final Edge edge : currentNode.geOutEdges())
-					if(edge.getTo().equals(nextNode)){
-						currentNextEdge = edge;
-						break;
-					}
+				final Edge currentNextEdge = currentNode.findOutEdges(nextNode);
 				assert currentNextEdge != null;
 				final LineString currentNextLineString = currentNextEdge.getLineString();
 				size += currentNextLineString.getNumPoints() - (size > 0? 1: 0);

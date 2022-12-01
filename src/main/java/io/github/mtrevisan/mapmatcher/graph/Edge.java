@@ -86,7 +86,7 @@ public class Edge{
 	}
 
 	public Collection<Edge> geOutEdges(){
-		return to.geOutEdges();
+		return to.getOutEdges();
 	}
 
 	public LineString getLineString(){

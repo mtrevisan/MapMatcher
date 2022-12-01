@@ -27,7 +27,6 @@ package io.github.mtrevisan.mapmatcher.graph;
 import io.github.mtrevisan.mapmatcher.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -58,7 +57,7 @@ class GraphTest{
 
 		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(from.getCoordinate()));
 		Assertions.assertEquals(1, fromNodes.size());
-		final Collection<Edge> edges = fromNodes.get(0).geOutEdges();
+		final Collection<Edge> edges = fromNodes.get(0).getOutEdges();
 		Assertions.assertEquals(addedEdges, edges);
 	}
 
@@ -75,7 +74,7 @@ class GraphTest{
 
 		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(node.getCoordinate()));
 		Assertions.assertEquals(1, fromNodes.size());
-		final Set<Edge> result = new HashSet<>(fromNodes.get(0).geOutEdges());
+		final Set<Edge> result = new HashSet<>(fromNodes.get(0).getOutEdges());
 
 		final Set<Edge> expected = new HashSet<>(Arrays.asList(
 			Edge.createDirectEdge(node, firstNeighbor, lineString12),
