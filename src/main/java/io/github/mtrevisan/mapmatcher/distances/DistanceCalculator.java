@@ -24,21 +24,21 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 
 
 public interface DistanceCalculator{
 
 	double distance(Coordinate startPoint, Coordinate endPoint);
 
-	double distance(Coordinate point, LineString lineString);
+	double distance(Coordinate point, Polyline polyline);
 
 	double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point);
 
-	default double alongTrackDistance(Coordinate point, LineString lineString){
+	default double alongTrackDistance(final Coordinate point, final Polyline polyline){
 		double minNearestPointDistance = Double.MAX_VALUE;
-		final Coordinate[] coordinates = lineString.getCoordinates();
+		final Coordinate[] coordinates = polyline.getCoordinates();
 		for(int i = 1; i < coordinates.length; i ++){
 			final Coordinate startPoint = coordinates[i - 1];
 			final Coordinate endPoint = coordinates[i];

@@ -24,9 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 
 
 class DistanceCalculatorTest{
@@ -35,14 +35,7 @@ class DistanceCalculatorTest{
 	void should_calculate_approximate_distance_in_km_between__startCoordinates_and__endCoordinates_close_to_expectedDistance(){
 		final DistanceCalculator calculator = new GeodeticCalculator();
 		final DistanceCalculator alternateCalculator = new GeodeticCalculator();
-		final Coordinate[] coordinates = new Coordinate[]{
-			new Coordinate(121.058805, 14.552797),
-			new Coordinate(120.994260, 14.593999),
-			new Coordinate(96.591876, 77.870317),
-			new Coordinate(-4.815018, 21.719527),
-			new Coordinate(23.704799, -17.727830),
-			new Coordinate(-130.279576, 58.585396)
-		};
+		final Coordinate[] coordinates = new Coordinate[]{Coordinate.of(121.058805, 14.552797), Coordinate.of(120.994260, 14.593999), Coordinate.of(96.591876, 77.870317), Coordinate.of(-4.815018, 21.719527), Coordinate.of(23.704799, -17.727830), Coordinate.of(-130.279576, 58.585396)};
 		final double[] expectedDistances = new double[]{
 			8_316.3,
 			7_919_506.9,

@@ -28,34 +28,32 @@ import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
 
 
-class JTSGeometryHelperTest{
+class PolylineTest{
 
 	@Test
 	void should_simplify_lineString(){
-		Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
-		Coordinate node22 = new Coordinate(12.242949896905884, 45.69828882177029);
-		Coordinate node23 = new Coordinate(12.200627355552967, 45.732876303059044);
+		Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
+		Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
+		Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
 		DistanceCalculator distanceCalculator = new GeodeticCalculator();
 
-		LineString lineString = JTSGeometryHelper.createSimplifiedLineString(new Coordinate[]{node12_31_41, node22, node23}, distanceCalculator, 2_000.);
+		Polyline polyline = Polyline.ofSimplified(distanceCalculator, 2_000., node12_31_41, node22, node23);
 
-		Assertions.assertEquals(2, lineString.getNumPoints());
+		Assertions.assertEquals(2, polyline.size());
 	}
 
 	@Test
 	void should_not_simplify_lineString(){
-		Coordinate node12_31_41 = new Coordinate(12.238140517207398, 45.65897415921759);
-		Coordinate node22 = new Coordinate(12.242949896905884, 45.69828882177029);
-		Coordinate node23 = new Coordinate(12.200627355552967, 45.732876303059044);
+		Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
+		Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
+		Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
 		DistanceCalculator distanceCalculator = new GeodeticCalculator();
 
-		LineString lineString = JTSGeometryHelper.createSimplifiedLineString(new Coordinate[]{node12_31_41, node22, node23}, distanceCalculator, 10.);
+		Polyline polyline = Polyline.ofSimplified(distanceCalculator, 10., node12_31_41, node22, node23);
 
-		Assertions.assertEquals(3, lineString.getNumPoints());
+		Assertions.assertEquals(3, polyline.size());
 	}
 
 }

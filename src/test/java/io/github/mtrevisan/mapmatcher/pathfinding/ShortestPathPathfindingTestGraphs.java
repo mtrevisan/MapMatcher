@@ -28,10 +28,10 @@ import io.github.mtrevisan.mapmatcher.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,9 +39,6 @@ import java.util.List;
 
 
 class ShortestPathPathfindingTestGraphs{
-
-	private static final GeometryFactory FACTORY = new GeometryFactory();
-
 
 	static TestGraphSummary euclideanDistanceTestGraphConnected(){
         /*
@@ -59,36 +56,36 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Node nodeA = new Node("0", new Coordinate(0., 0.));
-		final Node nodeB = new Node("1", new Coordinate(1., 1.));
-		final Node nodeC = new Node("2", new Coordinate(3., 1.));
-		final Node nodeD = new Node("3", new Coordinate(2., 0.));
-		final Node nodeE = new Node("4", new Coordinate(2., -1.));
-		final Node nodeF = new Node("5", new Coordinate(6., -1.));
-		final Node nodeG = new Node("6", new Coordinate(3., 1.));
-		final Node nodeH = new Node("7", new Coordinate(4., 1.));
-		final Node nodeI = new Node("8", new Coordinate(4., 3.));
-		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
-		final Node nodeK = new Node("10", new Coordinate(6., 2.));
-		final Node nodeM = new Node("11", new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", Coordinate.of(0., 0.));
+		final Node nodeB = new Node("1", Coordinate.of(1., 1.));
+		final Node nodeC = new Node("2", Coordinate.of(3., 1.));
+		final Node nodeD = new Node("3", Coordinate.of(2., 0.));
+		final Node nodeE = new Node("4", Coordinate.of(2., -1.));
+		final Node nodeF = new Node("5", Coordinate.of(6., -1.));
+		final Node nodeG = new Node("6", Coordinate.of(3., 1.));
+		final Node nodeH = new Node("7", Coordinate.of(4., 1.));
+		final Node nodeI = new Node("8", Coordinate.of(4., 3.));
+		final Node nodeJ = new Node("9", Coordinate.of(4., 2.));
+		final Node nodeK = new Node("10", Coordinate.of(6., 2.));
+		final Node nodeM = new Node("11", Coordinate.of(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5, new EuclideanCalculator());
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeG.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeI.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeG.getCoordinate(), nodeH.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeH.getCoordinate(), nodeI.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeI.getCoordinate(), nodeM.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeD.getCoordinate(), nodeJ.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeD.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeE.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeE.getCoordinate(), nodeF.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeF.getCoordinate(), nodeK.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeK.getCoordinate(), nodeM.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeK.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeI.getCoordinate()}));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeD.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeC.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeB.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeB.getCoordinate(), nodeG.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeB.getCoordinate(), nodeI.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeG.getCoordinate(), nodeH.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeH.getCoordinate(), nodeI.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeI.getCoordinate(), nodeM.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeD.getCoordinate(), nodeJ.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeD.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeE.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeE.getCoordinate(), nodeF.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeF.getCoordinate(), nodeK.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeK.getCoordinate(), nodeM.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeJ.getCoordinate(), nodeK.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeJ.getCoordinate(), nodeI.getCoordinate()));
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
@@ -112,32 +109,32 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Node nodeA = new Node("0", new Coordinate(0., 0.));
-		final Node nodeB = new Node("1", new Coordinate(1., 1.));
-		final Node nodeC = new Node("2", new Coordinate(3., 1.));
-		final Node nodeD = new Node("3", new Coordinate(2., 0.));
-		final Node nodeE = new Node("4", new Coordinate(2., -1.));
-		final Node nodeF = new Node("5", new Coordinate(6., -1.));
-		final Node nodeG = new Node("6", new Coordinate(3., 1.));
-		final Node nodeH = new Node("7", new Coordinate(4., 1.));
-		final Node nodeI = new Node("8", new Coordinate(4., 3.));
-		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
-		final Node nodeK = new Node("10", new Coordinate(6., 2.));
-		final Node nodeM = new Node("11", new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", Coordinate.of(0., 0.));
+		final Node nodeB = new Node("1", Coordinate.of(1., 1.));
+		final Node nodeC = new Node("2", Coordinate.of(3., 1.));
+		final Node nodeD = new Node("3", Coordinate.of(2., 0.));
+		final Node nodeE = new Node("4", Coordinate.of(2., -1.));
+		final Node nodeF = new Node("5", Coordinate.of(6., -1.));
+		final Node nodeG = new Node("6", Coordinate.of(3., 1.));
+		final Node nodeH = new Node("7", Coordinate.of(4., 1.));
+		final Node nodeI = new Node("8", Coordinate.of(4., 3.));
+		final Node nodeJ = new Node("9", Coordinate.of(4., 2.));
+		final Node nodeK = new Node("10", Coordinate.of(6., 2.));
+		final Node nodeM = new Node("11", Coordinate.of(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5, new EuclideanCalculator());
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeG.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeG.getCoordinate(), nodeH.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeI.getCoordinate(), nodeM.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeD.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeE.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeF.getCoordinate(), nodeK.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeK.getCoordinate(), nodeM.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeK.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeI.getCoordinate()}));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeD.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeC.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeB.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeB.getCoordinate(), nodeG.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeG.getCoordinate(), nodeH.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeI.getCoordinate(), nodeM.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeD.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeE.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeF.getCoordinate(), nodeK.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeK.getCoordinate(), nodeM.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeJ.getCoordinate(), nodeK.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeJ.getCoordinate(), nodeI.getCoordinate()));
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
@@ -160,37 +157,37 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Node nodeA = new Node("0", new Coordinate(0., 0.));
-		final Node nodeB = new Node("1", new Coordinate(1., 1.));
-		final Node nodeC = new Node("2", new Coordinate(3., 1.));
-		final Node nodeD = new Node("3", new Coordinate(2., 0.));
-		final Node nodeE = new Node("4", new Coordinate(2., -1.));
-		final Node nodeF = new Node("5", new Coordinate(6., -1.));
-		final Node nodeG = new Node("6", new Coordinate(3., 1.));
-		final Node nodeH = new Node("7", new Coordinate(4., 1.));
-		final Node nodeI = new Node("8", new Coordinate(4., 3.));
-		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
-		final Node nodeK = new Node("10", new Coordinate(6., 2.));
-		final Node nodeM = new Node("11", new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", Coordinate.of(0., 0.));
+		final Node nodeB = new Node("1", Coordinate.of(1., 1.));
+		final Node nodeC = new Node("2", Coordinate.of(3., 1.));
+		final Node nodeD = new Node("3", Coordinate.of(2., 0.));
+		final Node nodeE = new Node("4", Coordinate.of(2., -1.));
+		final Node nodeF = new Node("5", Coordinate.of(6., -1.));
+		final Node nodeG = new Node("6", Coordinate.of(3., 1.));
+		final Node nodeH = new Node("7", Coordinate.of(4., 1.));
+		final Node nodeI = new Node("8", Coordinate.of(4., 3.));
+		final Node nodeJ = new Node("9", Coordinate.of(4., 2.));
+		final Node nodeK = new Node("10", Coordinate.of(6., 2.));
+		final Node nodeM = new Node("11", Coordinate.of(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5, new EuclideanCalculator());
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeG.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeI.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeG.getCoordinate(), nodeH.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeH.getCoordinate(), nodeI.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeI.getCoordinate(), nodeM.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeD.getCoordinate(), nodeJ.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeD.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeE.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeF.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeE.getCoordinate(), nodeF.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeF.getCoordinate(), nodeK.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeK.getCoordinate(), nodeM.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeK.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeI.getCoordinate()}));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeD.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeC.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeB.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeB.getCoordinate(), nodeG.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeB.getCoordinate(), nodeI.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeG.getCoordinate(), nodeH.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeH.getCoordinate(), nodeI.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeI.getCoordinate(), nodeM.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeD.getCoordinate(), nodeJ.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeD.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeE.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeF.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeE.getCoordinate(), nodeF.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeF.getCoordinate(), nodeK.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeK.getCoordinate(), nodeM.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeJ.getCoordinate(), nodeK.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeJ.getCoordinate(), nodeI.getCoordinate()));
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);
@@ -214,32 +211,32 @@ class ShortestPathPathfindingTestGraphs{
           * start - A
           * end - M
         */
-		final Node nodeA = new Node("0", new Coordinate(0., 0.));
-		final Node nodeB = new Node("1", new Coordinate(1., 1.));
-		final Node nodeC = new Node("2", new Coordinate(3., 1.));
-		final Node nodeD = new Node("3", new Coordinate(2., 0.));
-		final Node nodeE = new Node("4", new Coordinate(2., -1.));
-		final Node nodeF = new Node("5", new Coordinate(6., -1.));
-		final Node nodeG = new Node("6", new Coordinate(3., 1.));
-		final Node nodeH = new Node("7", new Coordinate(4., 1.));
-		final Node nodeI = new Node("8", new Coordinate(4., 3.));
-		final Node nodeJ = new Node("9", new Coordinate(4., 2.));
-		final Node nodeK = new Node("10", new Coordinate(6., 2.));
-		final Node nodeM = new Node("11", new Coordinate(6., 3.));
+		final Node nodeA = new Node("0", Coordinate.of(0., 0.));
+		final Node nodeB = new Node("1", Coordinate.of(1., 1.));
+		final Node nodeC = new Node("2", Coordinate.of(3., 1.));
+		final Node nodeD = new Node("3", Coordinate.of(2., 0.));
+		final Node nodeE = new Node("4", Coordinate.of(2., -1.));
+		final Node nodeF = new Node("5", Coordinate.of(6., -1.));
+		final Node nodeG = new Node("6", Coordinate.of(3., 1.));
+		final Node nodeH = new Node("7", Coordinate.of(4., 1.));
+		final Node nodeI = new Node("8", Coordinate.of(4., 3.));
+		final Node nodeJ = new Node("9", Coordinate.of(4., 2.));
+		final Node nodeK = new Node("10", Coordinate.of(6., 2.));
+		final Node nodeM = new Node("11", Coordinate.of(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5, new EuclideanCalculator());
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeD.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeC.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeA.getCoordinate(), nodeB.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeB.getCoordinate(), nodeG.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeG.getCoordinate(), nodeH.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeI.getCoordinate(), nodeM.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeD.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeC.getCoordinate(), nodeE.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeF.getCoordinate(), nodeK.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeK.getCoordinate(), nodeM.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeK.getCoordinate()}));
-		gb.addApproximateDirectEdge(FACTORY.createLineString(new Coordinate[]{nodeJ.getCoordinate(), nodeI.getCoordinate()}));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeD.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeC.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeA.getCoordinate(), nodeB.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeB.getCoordinate(), nodeG.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeG.getCoordinate(), nodeH.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeI.getCoordinate(), nodeM.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeD.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeC.getCoordinate(), nodeE.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeF.getCoordinate(), nodeK.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeK.getCoordinate(), nodeM.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeJ.getCoordinate(), nodeK.getCoordinate()));
+		gb.addApproximateDirectEdge(Polyline.of(nodeJ.getCoordinate(), nodeI.getCoordinate()));
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getCoordinate())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getCoordinate())).get(0);

@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import org.locationtech.jts.geom.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
 
 
 public interface TransitionProbabilityCalculator{

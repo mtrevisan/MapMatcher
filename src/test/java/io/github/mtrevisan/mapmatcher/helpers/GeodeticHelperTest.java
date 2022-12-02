@@ -26,7 +26,6 @@ package io.github.mtrevisan.mapmatcher.helpers;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 
 
 /**
@@ -36,9 +35,9 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_utrecht_vento(){
-		Coordinate start = new Coordinate(5., 52.);
-		Coordinate end = new Coordinate(6., 51.4);
-		Coordinate point = new Coordinate(5.5, 52);
+		Coordinate start = Coordinate.of(5., 52.);
+		Coordinate end = Coordinate.of(6., 51.4);
+		Coordinate point = Coordinate.of(5.5, 52);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -54,9 +53,9 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_chile_death_lake_island(){
-		Coordinate start = new Coordinate(29., 42.);
-		Coordinate end = new Coordinate(-70., -35.);
-		Coordinate point = new Coordinate(-22., 64.);
+		Coordinate start = Coordinate.of(29., 42.);
+		Coordinate end = Coordinate.of(-70., -35.);
+		Coordinate point = Coordinate.of(-22., 64.);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -69,9 +68,9 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_chile_death_lake_siberia(){
-		Coordinate start = new Coordinate(29., 42.);
-		Coordinate end = new Coordinate(-70., -35.);
-		Coordinate point = new Coordinate(43.9, 66.2);
+		Coordinate start = Coordinate.of(29., 42.);
+		Coordinate end = Coordinate.of(-70., -35.);
+		Coordinate point = Coordinate.of(43.9, 66.2);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -86,9 +85,9 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_chile_death_lake_alexander_island(){
-		Coordinate start = new Coordinate(29., 42.);
-		Coordinate end = new Coordinate(-70., -35.);
-		Coordinate point = new Coordinate(-78.6, -72.8);
+		Coordinate start = Coordinate.of(29., 42.);
+		Coordinate end = Coordinate.of(-70., -35.);
+		Coordinate point = Coordinate.of(-78.6, -72.8);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -103,9 +102,9 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_usa_death_lake_island(){
-		Coordinate start = new Coordinate(29., 42.);
-		Coordinate end = new Coordinate(-77., 39.);
-		Coordinate point = new Coordinate(-22., 64.);
+		Coordinate start = Coordinate.of(29., 42.);
+		Coordinate end = Coordinate.of(-77., 39.);
+		Coordinate point = Coordinate.of(-22., 64.);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -118,9 +117,9 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_fontane_san_zeno(){
-		Coordinate start = new Coordinate(12.238140517207398, 45.65897415921759);
-		Coordinate end = new Coordinate(12.242949896905884, 45.69828882177029);
-		Coordinate point = new Coordinate(12.242949896905884, 45.69828882177029);
+		Coordinate start = Coordinate.of(12.238140517207398, 45.65897415921759);
+		Coordinate end = Coordinate.of(12.242949896905884, 45.69828882177029);
+		Coordinate point = Coordinate.of(12.242949896905884, 45.69828882177029);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -133,9 +132,9 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_san_zeno_biancade(){
-		Coordinate start = new Coordinate(12.343946870589775, 45.65931029901404);
-		Coordinate end = new Coordinate(12.238140517207398, 45.65897415921759);
-		Coordinate point = new Coordinate(12.142791962642718, 45.64824627395467);
+		Coordinate start = Coordinate.of(12.343946870589775, 45.65931029901404);
+		Coordinate end = Coordinate.of(12.238140517207398, 45.65897415921759);
+		Coordinate point = Coordinate.of(12.142791962642718, 45.64824627395467);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);

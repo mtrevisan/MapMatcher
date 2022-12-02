@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,62 +22,54 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.graph;
+package io.github.mtrevisan.mapmatcher.helpers;
 
-import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
-
-import java.util.Collection;
-import java.util.HashSet;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Objects;
-import java.util.Set;
 
 
-public class Node{
+public class Coordinate implements Comparable<Coordinate>, Serializable{
 
-	private String id;
-	private Coordinate coordinate;
+	@Serial
+	private static final long serialVersionUID = 3422386613349753773L;
 
-	private final Set<Edge> outEdges = new HashSet<>(0);
+	private final double x;
+	private final double y;
 
 
-	public Node(final String id, final Coordinate coordinate){
-		this.id = id;
-		this.coordinate = coordinate;
+	/**
+	 * Constructs a <code>Coordinate</code> at (x, y).
+	 *
+	 * @param x	The x-ordinate.
+	 * @param y	The y-ordinate.
+	 */
+	public static Coordinate of(final double x, final double y){
+		return new Coordinate(x, y);
 	}
 
-	public String getID(){
-		return id;
+	public static Coordinate of(final Coordinate coord){
+		return new Coordinate(coord);
 	}
 
-	public void setID(final String id){
-		if(id == null || id.length() == 0)
-			throw new IllegalArgumentException("`id` cannot be null or empty");
-
-		this.id = id;
+	protected Coordinate(final double x, final double y){
+		this.x = x;
+		this.y = y;
 	}
 
-	public Collection<Edge> getOutEdges(){
-		return outEdges;
+	private Coordinate(final Coordinate coord){
+		this.x = coord.x;
+		this.y = coord.y;
 	}
 
-	public Edge findOutEdges(final Node nodeTo){
-		for(final Edge edge : getOutEdges())
-			if(edge.getTo().equals(nodeTo))
-				return edge;
-		return null;
+	public double getX(){
+		return x;
 	}
 
-	public void addOutEdge(final Edge edge){
-		outEdges.add(edge);
+	public double getY(){
+		return y;
 	}
 
-	public Coordinate getCoordinate(){
-		return coordinate;
-	}
-
-	public void setCoordinate(final Coordinate coordinate){
-		this.coordinate = coordinate;
-	}
 
 	@Override
 	public boolean equals(final Object obj){
@@ -86,18 +78,28 @@ public class Node{
 		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Node other = (Node)obj;
-		return Objects.equals(coordinate, other.coordinate);
+		final Coordinate other = (Coordinate)obj;
+		return (Double.doubleToLongBits(x) == Double.doubleToLongBits(other.x)
+			&& Double.doubleToLongBits(y) == Double.doubleToLongBits(other.y));
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(coordinate);
+		return Objects.hash(x, y);
 	}
 
 	@Override
 	public String toString(){
-		return "Node{id = " + id + ", coordinates = " + coordinate + "}";
+		return "(" + x + ", " + y + ")";
+	}
+
+	@Override
+	public int compareTo(final Coordinate other){
+		if(x < other.x)
+			return -1;
+		if(x > other.x)
+			return 1;
+		return Double.compare(y, other.y);
 	}
 
 }

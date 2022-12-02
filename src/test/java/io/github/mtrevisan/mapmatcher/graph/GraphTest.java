@@ -26,12 +26,10 @@ package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
-import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,17 +41,14 @@ import java.util.Set;
 
 class GraphTest{
 
-	private static final GeometryFactory FACTORY = new GeometryFactory();
-
-
 	@Test
 	void should_connect_two_vertices_in_graph(){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(500., new GeodeticCalculator());
-		final Node from = new Node("0", new Coordinate(22.22, 33.33));
-		final Node to = new Node("1", new Coordinate(33.22, 44.33));
+		final Node from = new Node("0", Coordinate.of(22.22, 33.33));
+		final Node to = new Node("1", Coordinate.of(33.22, 44.33));
 
-		final LineString lineString = JTSGeometryHelper.createLineString(new Coordinate[]{from.getCoordinate(), to.getCoordinate()});
-		final Set<Edge> addedEdges = (Set<Edge>)graph.addApproximateDirectEdge(lineString);
+		final Polyline polyline = Polyline.of(from.getCoordinate(), to.getCoordinate());
+		final Set<Edge> addedEdges = (Set<Edge>)graph.addApproximateDirectEdge(polyline);
 
 		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(from.getCoordinate()));
 		Assertions.assertEquals(1, fromNodes.size());
@@ -63,36 +58,36 @@ class GraphTest{
 
 	@Test
 	void should_return_the_edges_of_an_node(){
-		final Node node = new Node("0", new Coordinate(1., 1.));
-		final Node firstNeighbor = new Node("1", new Coordinate(1., 2.));
-		final Node secondNeighbor = new Node("2", new Coordinate(1., 3.));
+		final Node node = new Node("0", Coordinate.of(1., 1.));
+		final Node firstNeighbor = new Node("1", Coordinate.of(1., 2.));
+		final Node secondNeighbor = new Node("2", Coordinate.of(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(0.5, new EuclideanCalculator());
-		final LineString lineString12 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
-		graph.addApproximateDirectEdge(lineString12);
-		final LineString lineString13 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), secondNeighbor.getCoordinate()});
-		graph.addApproximateDirectEdge(lineString13);
+		final Polyline polyline12 = Polyline.of(node.getCoordinate(), firstNeighbor.getCoordinate());
+		graph.addApproximateDirectEdge(polyline12);
+		final Polyline polyline13 = Polyline.of(node.getCoordinate(), secondNeighbor.getCoordinate());
+		graph.addApproximateDirectEdge(polyline13);
 
 		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(node.getCoordinate()));
 		Assertions.assertEquals(1, fromNodes.size());
 		final Set<Edge> result = new HashSet<>(fromNodes.get(0).getOutEdges());
 
 		final Set<Edge> expected = new HashSet<>(Arrays.asList(
-			Edge.createDirectEdge(node, firstNeighbor, lineString12),
-			Edge.createDirectEdge(node, secondNeighbor, lineString13)
+			Edge.createDirectEdge(node, firstNeighbor, polyline12),
+			Edge.createDirectEdge(node, secondNeighbor, polyline13)
 		));
 		Assertions.assertEquals(expected, result);
 	}
 
 	@Test
 	void should_return_graph_vertices(){
-		final Node node = new Node("0", new Coordinate(1., 1.));
-		final Node firstNeighbor = new Node("1", new Coordinate(1., 2.));
-		final Node secondNeighbor = new Node("2", new Coordinate(1., 3.));
+		final Node node = new Node("0", Coordinate.of(1., 1.));
+		final Node firstNeighbor = new Node("1", Coordinate.of(1., 2.));
+		final Node secondNeighbor = new Node("2", Coordinate.of(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(0.5, new EuclideanCalculator());
-		final LineString lineString02 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
-		graph.addApproximateDirectEdge("01", lineString02);
-		final LineString lineString03 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), secondNeighbor.getCoordinate()});
-		graph.addApproximateDirectEdge("03", lineString03);
+		final Polyline polyline02 = Polyline.of(node.getCoordinate(), firstNeighbor.getCoordinate());
+		graph.addApproximateDirectEdge("01", polyline02);
+		final Polyline polyline03 = Polyline.of(node.getCoordinate(), secondNeighbor.getCoordinate());
+		graph.addApproximateDirectEdge("03", polyline03);
 
 		final Set<Node> result = new HashSet<>(graph.nodes());
 
@@ -102,20 +97,20 @@ class GraphTest{
 
 	@Test
 	void should_return_graph_edges(){
-		final Node node = new Node("0", new Coordinate(1., 1.));
-		final Node firstNeighbor = new Node("1", new Coordinate(1., 2.));
-		final Node secondNeighbor = new Node("2", new Coordinate(1., 3.));
+		final Node node = new Node("0", Coordinate.of(1., 1.));
+		final Node firstNeighbor = new Node("1", Coordinate.of(1., 2.));
+		final Node secondNeighbor = new Node("2", Coordinate.of(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(1., new EuclideanCalculator());
-		final LineString lineString02 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), firstNeighbor.getCoordinate()});
-		graph.addApproximateDirectEdge("01", lineString02);
-		final LineString lineString03 = FACTORY.createLineString(new Coordinate[]{node.getCoordinate(), secondNeighbor.getCoordinate()});
-		graph.addApproximateDirectEdge("02", lineString03);
+		final Polyline polyline02 = Polyline.of(node.getCoordinate(), firstNeighbor.getCoordinate());
+		graph.addApproximateDirectEdge("01", polyline02);
+		final Polyline polyline03 = Polyline.of(node.getCoordinate(), secondNeighbor.getCoordinate());
+		graph.addApproximateDirectEdge("02", polyline03);
 
 		final Collection<Edge> result = new HashSet<>(graph.edges());
 
 		final Set<Edge> expected = new HashSet<>(List.of(
-			Edge.createDirectEdge(new Node("0", new Coordinate(1., 1.25)), new Node("1", new Coordinate(1., 1.25)), lineString02),
-			Edge.createDirectEdge(new Node("0", new Coordinate(1., 1.25)), new Node("2", new Coordinate(1., 3.)), lineString03)
+			Edge.createDirectEdge(new Node("0", Coordinate.of(1., 1.25)), new Node("1", Coordinate.of(1., 1.25)), polyline02),
+			Edge.createDirectEdge(new Node("0", Coordinate.of(1., 1.25)), new Node("2", Coordinate.of(1., 3.)), polyline03)
 		));
 		Assertions.assertEquals(expected, result);
 	}

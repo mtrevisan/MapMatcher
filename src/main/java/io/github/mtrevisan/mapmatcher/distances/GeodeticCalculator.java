@@ -24,9 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
 import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 
 
 /**
@@ -56,7 +56,7 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 * @return The distance [m].
 	 */
 	@Override
-	public double distance(final Coordinate point, final LineString lineString){
+	public double distance(final Coordinate point, final Polyline lineString){
 		double minNearestPointDistance = Double.MAX_VALUE;
 		final Coordinate[] coordinates = lineString.getCoordinates();
 		for(int i = 1; i < coordinates.length; i ++){

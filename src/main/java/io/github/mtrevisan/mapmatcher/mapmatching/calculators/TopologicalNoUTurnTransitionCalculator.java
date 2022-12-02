@@ -28,12 +28,11 @@ import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,22 +124,22 @@ public class TopologicalNoUTurnTransitionCalculator implements TransitionProbabi
 		return connectedPath;
 	}
 
-	private static LineString extractPathAsLineString(final Node from, final Node to, final Graph graph){
-		LineString lineString = null;
+	private static Polyline extractPathAsPolyline(final Node from, final Node to, final Graph graph){
+		Polyline polyline = null;
 
 		//search for a feasible path between the projection onto fromSegment and the one onto toSegment
 		final List<Node> path = PATH_FINDER.findPath(from, to, graph)
 			.simplePath();
 		if(!path.isEmpty()){
-			final List<LineString> edges = new ArrayList<>(path.size() - 1);
+			final List<Polyline> edges = new ArrayList<>(path.size() - 1);
 			int size = 0;
 			for(int i = 1; i < path.size(); i ++){
 				final Node currentNode = path.get(i - 1);
 				final Node nextNode = path.get(i);
 				final Edge currentNextEdge = currentNode.findOutEdges(nextNode);
 				assert currentNextEdge != null;
-				final LineString currentNextLineString = currentNextEdge.getLineString();
-				size += currentNextLineString.getNumPoints() - (size > 0? 1: 0);
+				final Polyline currentNextLineString = currentNextEdge.getPolyline();
+				size += currentNextLineString.size() - (size > 0? 1: 0);
 				edges.add(currentNextLineString);
 			}
 
@@ -148,17 +147,17 @@ public class TopologicalNoUTurnTransitionCalculator implements TransitionProbabi
 			if(size > 0){
 				final Coordinate[] mergedCoordinates = new Coordinate[size];
 				size = 0;
-				for(final LineString edgeLineString : edges){
-					final Coordinate[] coordinates = edgeLineString.getCoordinates();
+				for(final Polyline edgePolyline : edges){
+					final Coordinate[] coordinates = edgePolyline.getCoordinates();
 					final int count = coordinates.length - (size > 0? 1: 0);
 					assert size == 0 || mergedCoordinates[size - 1].equals(coordinates[0]);
 					System.arraycopy(coordinates, (size > 0? 1: 0), mergedCoordinates, size, count);
 					size += count;
 				}
-				lineString = JTSGeometryHelper.createLineString(mergedCoordinates);
+				polyline = Polyline.of(mergedCoordinates);
 			}
 		}
-		return lineString;
+		return polyline;
 	}
 
 	private static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){
@@ -166,10 +165,10 @@ public class TopologicalNoUTurnTransitionCalculator implements TransitionProbabi
 			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
 	}
 
-	private boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation, final LineString lineString){
+	private boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation, final Polyline polyline){
 		//calculate Along-Track Distance
-		final double previousATD = distanceCalculator.alongTrackDistance(previousObservation, lineString);
-		final double currentATD = distanceCalculator.alongTrackDistance(currentObservation, lineString);
+		final double previousATD = distanceCalculator.alongTrackDistance(previousObservation, polyline);
+		final double currentATD = distanceCalculator.alongTrackDistance(currentObservation, polyline);
 		return (previousATD <= currentATD);
 	}
 

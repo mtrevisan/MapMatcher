@@ -26,25 +26,18 @@ package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDurationCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 
 
 class DurationEdgeWeightCalculatorTest{
 
 	@Test
 	void should_return_edge_duration_in_minutes(){
-		Coordinate[] coordinates = new Coordinate[]{
-			new Coordinate(121.058805, 14.552797),
-			new Coordinate(120.994260, 14.593999),
-			new Coordinate(96.591876, 77.870317),
-			new Coordinate(-4.815018, 21.719527),
-			new Coordinate(23.704799, -17.727830),
-			new Coordinate(-130.279576, 58.585396)
-		};
+		Coordinate[] coordinates = new Coordinate[]{Coordinate.of(121.058805, 14.552797), Coordinate.of(120.994260, 14.593999), Coordinate.of(96.591876, 77.870317), Coordinate.of(-4.815018, 21.719527), Coordinate.of(23.704799, -17.727830), Coordinate.of(-130.279576, 58.585396)};
 		double[] expectedDurations = new double[]{10.0, 5_939.6, 8_999.0};
 		double[] maxSpeeds = new double[]{50., 80., 100.};
 		for(int i = 0; i < expectedDurations.length; i ++){
@@ -54,7 +47,7 @@ class DurationEdgeWeightCalculatorTest{
 			double maxSpeed = maxSpeeds[i];
 			GeodeticDurationCalculator edgeWeightCalculator = new GeodeticDurationCalculator();
 			final Edge edge = Edge.createDirectEdge(new Node("0", fromCoordinates), new Node("1", toCoordinates),
-				JTSGeometryHelper.createLineString(new Coordinate[]{fromCoordinates, toCoordinates}));
+				Polyline.of(fromCoordinates, toCoordinates));
 			edge.setWeight(maxSpeed);
 			double actualDistance = edgeWeightCalculator.calculateWeight(edge);
 
@@ -64,14 +57,7 @@ class DurationEdgeWeightCalculatorTest{
 
 	@Test
 	void should_return_duration_in_minutes_between_vertices_with_max_possible_speed(){
-		Coordinate[] coordinates = new Coordinate[]{
-			new Coordinate(121.058805, 14.552797),
-			new Coordinate(120.994260, 14.593999),
-			new Coordinate(96.591876, 77.870317),
-			new Coordinate(-4.815018, 21.719527),
-			new Coordinate(23.704799, -17.727830),
-			new Coordinate(-130.279576, 58.585396)
-		};
+		Coordinate[] coordinates = new Coordinate[]{Coordinate.of(121.058805, 14.552797), Coordinate.of(120.994260, 14.593999), Coordinate.of(96.591876, 77.870317), Coordinate.of(-4.815018, 21.719527), Coordinate.of(23.704799, -17.727830), Coordinate.of(-130.279576, 58.585396)};
 		double[] expectedDistances = new double[]{3.6, 3_394.1, 6_427.9};
 
 		for(int i = 0; i < expectedDistances.length; i ++){

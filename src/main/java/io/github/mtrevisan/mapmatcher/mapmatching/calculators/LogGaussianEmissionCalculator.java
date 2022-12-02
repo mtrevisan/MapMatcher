@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import org.locationtech.jts.geom.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
 
 import java.util.Collection;
 
@@ -57,7 +57,7 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	 */
 	@Override
 	public double emissionProbability(final Coordinate observation, final Edge segment){
-		final double distance = distanceCalculator.distance(observation, segment.getLineString());
+		final double distance = distanceCalculator.distance(observation, segment.getPolyline());
 		final double tmp = distance / observationStandardDeviation;
 		//expansion of:
 		//final double probability = Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);

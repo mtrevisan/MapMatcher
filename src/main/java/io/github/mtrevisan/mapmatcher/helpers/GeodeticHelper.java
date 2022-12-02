@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.helpers;
 
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.locationtech.jts.geom.Coordinate;
 
 import java.awt.geom.Point2D;
 
@@ -89,7 +88,7 @@ public class GeodeticHelper{
 		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
 		calculator.setDirection((initialBearing > 180.? initialBearing - 360.: initialBearing), distance);
 		final Point2D destination = calculator.getDestinationGeographicPoint();
-		return new Coordinate(destination.getX(), destination.getY());
+		return Coordinate.of(destination.getX(), destination.getY());
 	}
 
 	/**
@@ -109,32 +108,33 @@ public class GeodeticHelper{
 	public static Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
 		Coordinate onTrackPoint = startPoint;
 		while(true){
-			//S_AP [m]
+			//[m]
 			final double phiA = Math.toRadians(onTrackPoint.getY());
 			final double lambdaA = Math.toRadians(onTrackPoint.getX());
 			double phiP = Math.toRadians(point.getY());
 			double lambdaP = Math.toRadians(point.getX());
 			final double distanceStartToPoint = StrictMath.acos(StrictMath.sin(phiA) * StrictMath.sin(phiP)
 				+ StrictMath.cos(phiA) * StrictMath.cos(phiP) * StrictMath.cos(lambdaA - lambdaP));
-			final double aa = StrictMath.sin((phiA - phiP) / 2.);
-			final double bb = StrictMath.sin((lambdaA - lambdaP) / 2.);
-			final double distanceStartToPoint2 = 2. * StrictMath.asin(Math.sqrt(aa * aa
-				+ StrictMath.cos(phiA) * StrictMath.cos(phiP) * bb * bb));
+			//for very short distances this formula is less susceptible to rounding error (what is "very short"?)
+//			final double aa = StrictMath.sin((phiA - phiP) / 2.);
+//			final double bb = StrictMath.sin((lambdaA - lambdaP) / 2.);
+//			final double distanceStartToPoint = 2. * StrictMath.asin(Math.sqrt(aa * aa
+//				+ StrictMath.cos(phiA) * StrictMath.cos(phiP) * bb * bb));
 
-			//alpha_AP [°]
+			//[°]
 			final double initialBearingStartToPoint = initialBearing(onTrackPoint, point);
-			//alpha_AB [°]
+			//[°]
 			final double initialBearingStartToEnd = initialBearing(onTrackPoint, endPoint);
 			//[rad]
 			final double angleAP = Math.toRadians(initialBearingStartToEnd - initialBearingStartToPoint);
-			//calculate Cross-Track Distance [m], S_PX
+			//calculate Cross-Track Distance [m]
 			final double sinAngleAP = StrictMath.sin(angleAP);
 			if(sinAngleAP == 1.)
 				break;
 
 			//[rad]
 			final double xtd = StrictMath.asin(StrictMath.sin(distanceStartToPoint) * sinAngleAP);
-			//calculate Along-Track Distance [rad], S_AX
+			//calculate Along-Track Distance [rad]
 			final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
 			final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
 			final double c = StrictMath.tan((distanceStartToPoint - xtd) / 2.);

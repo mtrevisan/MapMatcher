@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.helpers;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
-import org.locationtech.jts.geom.Coordinate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,7 +114,7 @@ public class RamerDouglasPeuckerSimplifier{
 		final List<Coordinate> coordinates = new ArrayList<>(points.length);
 		for(int i = 0; i < points.length; i ++)
 			if(usedPoints[i])
-				coordinates.add(new Coordinate(points[i]));
+				coordinates.add(Coordinate.of(points[i]));
 		return coordinates.toArray(Coordinate[]::new);
 	}
 

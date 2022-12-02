@@ -24,8 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 
 
 public class EuclideanCalculator implements DistanceCalculator{
@@ -38,9 +38,9 @@ public class EuclideanCalculator implements DistanceCalculator{
 	}
 
 	@Override
-	public double distance(final Coordinate point, final LineString lineString){
+	public double distance(final Coordinate point, final Polyline polyline){
 		double minNearestPointDistance = Double.MAX_VALUE;
-		final Coordinate[] coordinates = lineString.getCoordinates();
+		final Coordinate[] coordinates = polyline.getCoordinates();
 		for(int i = 1; i < coordinates.length; i ++){
 			final Coordinate startPoint = coordinates[i - 1];
 			final Coordinate endPoint = coordinates[i];

@@ -25,10 +25,9 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 import org.apache.commons.lang3.StringUtils;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateArrays;
-import org.locationtech.jts.geom.LineString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,29 +56,29 @@ public class NearLineMergeGraph implements Graph{
 		this.distanceCalculator = distanceCalculator;
 	}
 
-	public Collection<Edge> addApproximateDirectEdge(final LineString lineString){
-		return addApproximateDirectEdge(null, lineString);
+	public Collection<Edge> addApproximateDirectEdge(final Polyline polyline){
+		return addApproximateDirectEdge(null, polyline);
 	}
 
-	public Collection<Edge> addApproximateDirectEdge(final String id, final LineString lineString){
+	public Collection<Edge> addApproximateDirectEdge(final String id, final Polyline polyline){
 		final Collection<Edge> addedEdges = new HashSet<>(0);
-		if(lineString.isEmpty())
+		if(polyline.isEmpty())
 			return addedEdges;
 
-		final Coordinate[] coordinates = CoordinateArrays.removeRepeatedPoints(lineString.getCoordinates());
+		final Coordinate[] coordinates = polyline.getCoordinates();
 		//don't add lines with all coordinates equal
 		if(coordinates.length <= 1)
 			return addedEdges;
 
 		final Collection<Node> startNodes = connectNodes(coordinates[0],
-			lineString.getStartPoint().getCoordinate());
+			polyline.getStartCoordinate());
 		final Collection<Node> endNodes = connectNodes(coordinates[coordinates.length - 1],
-			lineString.getEndPoint().getCoordinate());
+			polyline.getEndCoordinate());
 		final Set<Node> intersectionNodes = new HashSet<>(startNodes);
 		intersectionNodes.retainAll(endNodes);
 		for(final Node fromNode : startNodes)
 			for(final Node toNode : endNodes){
-				final Edge edge = Edge.createDirectEdge(fromNode, toNode, lineString);
+				final Edge edge = Edge.createDirectEdge(fromNode, toNode, polyline);
 				if(id != null){
 					edge.setID(id);
 
@@ -100,7 +99,7 @@ public class NearLineMergeGraph implements Graph{
 		for(final Node intersectionNode1 : intersectionNodes)
 			for(final Node intersectionNode2 : intersectionNodes)
 				if(!intersectionNode1.equals(intersectionNode2)){
-					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2, lineString);
+					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2, polyline);
 					if(id != null){
 						edge.setID(id);
 
@@ -142,7 +141,7 @@ public class NearLineMergeGraph implements Graph{
 			latitude = (newCoordinate.getY() + coordinate.getY()) / 2.;
 			longitude = (newCoordinate.getX() + coordinate.getX()) / 2.;
 		}
-		return new Coordinate(longitude, latitude);
+		return Coordinate.of(longitude, latitude);
 	}
 
 	private Collection<Node> getApproximateNode(final Coordinate coordinate){

@@ -50,8 +50,6 @@
 		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin -->
 		<maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
 
-		<!-- https://mvnrepository.com/artifact/org.locationtech.jts/jts-core -->
-		<locationtech.jts-core.version>1.19.0</locationtech.jts-core.version>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<apache.math3.version>3.6.1</apache.math3.version>
 
@@ -146,13 +144,6 @@
 
 
 	<dependencies>
-		<!-- JTS -->
-		<dependency>
-			<groupId>org.locationtech.jts</groupId>
-			<artifactId>jts-core</artifactId>
-			<version>${locationtech.jts-core.version}</version>
-		</dependency>
-
 		<!-- Apache -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>

@@ -24,9 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -37,33 +35,33 @@ public class Edge{
 	private String id;
 	protected final Node from;
 	protected final Node to;
-	protected final LineString geometry;
+	protected final Polyline polyline;
 
 	private double weight;
 
 
-	public static Edge createDirectEdge(final Node from, final Node to, final LineString geometry){
-		return new Edge(from, to, geometry);
+	public static Edge createDirectEdge(final Node from, final Node to, final Polyline polyline){
+		return new Edge(from, to, polyline);
 	}
 
 	public static Edge createSelfEdge(final Node node){
-		final LineString lineString = JTSGeometryHelper.createLineString(new Coordinate[]{node.getCoordinate(), node.getCoordinate()});
-		return new Edge(node, node, lineString);
+		final Polyline polyline = Polyline.of(node.getCoordinate(), node.getCoordinate());
+		return new Edge(node, node, polyline);
 	}
 
-	private Edge(final Node from, final Node to, final LineString geometry){
+	private Edge(final Node from, final Node to, final Polyline polyline){
 		if(from == null)
 			throw new IllegalArgumentException("`from` node cannot be null");
 		if(to == null)
 			throw new IllegalArgumentException("`to` node cannot be null");
-		if(geometry == null)
+		if(polyline == null)
 			throw new IllegalArgumentException("`geometry` cannot be null");
 
 		id = "E-" + Objects.requireNonNullElse(from.getID(), "<null>")
 			+ "-" + Objects.requireNonNullElse(to.getID(), "<null>");
 		this.from = from;
 		this.to = to;
-		this.geometry = geometry;
+		this.polyline = polyline;
 	}
 
 	public String getID(){
@@ -89,8 +87,8 @@ public class Edge{
 		return to.getOutEdges();
 	}
 
-	public LineString getLineString(){
-		return geometry;
+	public Polyline getPolyline(){
+		return polyline;
 	}
 
 	public double getWeight(){
@@ -102,7 +100,7 @@ public class Edge{
 	}
 
 	public Edge reversed(){
-		return createDirectEdge(to, from, geometry.reverse());
+		return createDirectEdge(to, from, polyline.reverse());
 	}
 
 	@Override

@@ -24,8 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
-import org.locationtech.jts.geom.Coordinate;
-
 import java.time.ZonedDateTime;
 
 
@@ -34,7 +32,11 @@ public class GPSCoordinate extends Coordinate{
 	private final ZonedDateTime timestamp;
 
 
-	public GPSCoordinate(final double longitude, final double latitude, final ZonedDateTime timestamp){
+	public static GPSCoordinate of(final double longitude, final double latitude, final ZonedDateTime timestamp){
+		return new GPSCoordinate(longitude, latitude, timestamp);
+	}
+
+	private GPSCoordinate(final double longitude, final double latitude, final ZonedDateTime timestamp){
 		super(longitude, latitude);
 
 		this.timestamp = timestamp;

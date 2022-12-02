@@ -26,11 +26,10 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.JTSGeometryHelper;
+import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Polyline;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,16 +40,12 @@ import java.util.Set;
 
 class BidirectionalPathSummaryTest{
 
-	private static final GeometryFactory FACTORY = new GeometryFactory();
-
-
 	@Test
 	void should_return_path_consisting_of_vertices(){
-		Node first = new Node("0", new Coordinate(1., 2.));
-		Node second = new Node("1", new Coordinate(2., 2.));
+		Node first = new Node("0", Coordinate.of(1., 2.));
+		Node second = new Node("1", Coordinate.of(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second,
-				FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
+			Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()))
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -70,11 +65,10 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
-		final Node first = new Node("0", new Coordinate(1., 2.));
-		final Node second = new Node("1", new Coordinate(2., 2.));
+		final Node first = new Node("0", Coordinate.of(1., 2.));
+		final Node second = new Node("1", Coordinate.of(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second,
-				FACTORY.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
+			Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()))
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -96,8 +90,8 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_visited_vertices(){
 		Set<Node> visitedVertices = new HashSet<>(Arrays.asList(
-			new Node("0", new Coordinate(1., 1.)),
-			new Node("1", new Coordinate(2., 2.))
+			new Node("0", Coordinate.of(1., 1.)),
+			new Node("1", Coordinate.of(2., 2.))
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(new ArrayList<>(), visitedVertices, visitedVertices);
 
@@ -108,11 +102,10 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_distance(){
-		final Node first = new Node("0", new Coordinate(121.058805, 14.552797));
-		final Node second = new Node("1", new Coordinate(120.994260, 14.593999));
+		final Node first = new Node("0", Coordinate.of(121.058805, 14.552797));
+		final Node second = new Node("1", Coordinate.of(120.994260, 14.593999));
 		ArrayList<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second,
-				JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}))
+			Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()))
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -123,10 +116,9 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_duration(){
-		final Node first = new Node("0", new Coordinate(121.058805, 14.552797));
-		final Node second = new Node("1", new Coordinate(120.994260, 14.593999));
-		final Edge edge = Edge.createDirectEdge(first, second,
-			JTSGeometryHelper.createLineString(new Coordinate[]{first.getCoordinate(), second.getCoordinate()}));
+		final Node first = new Node("0", Coordinate.of(121.058805, 14.552797));
+		final Node second = new Node("1", Coordinate.of(120.994260, 14.593999));
+		final Edge edge = Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()));
 		edge.setWeight(50.);
 		ArrayList<Edge> path = new ArrayList<>(List.of(edge));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
@@ -145,11 +137,10 @@ class BidirectionalPathSummaryTest{
 		Assertions.assertFalse(pathSummary.isFound());
 
 
-		Node node1 = new Node("0", new Coordinate(14.552797, 121.058805));
-		Node node2 = new Node("1", new Coordinate(14.593999, 120.994260));
+		Node node1 = new Node("0", Coordinate.of(14.552797, 121.058805));
+		Node node2 = new Node("1", Coordinate.of(14.593999, 120.994260));
 		path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(node1, node2,
-				FACTORY.createLineString(new Coordinate[]{node1.getCoordinate(), node2.getCoordinate()}))
+			Edge.createDirectEdge(node1, node2, Polyline.of(node1.getCoordinate(), node2.getCoordinate()))
 		));
 		pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
