@@ -96,15 +96,13 @@ public class GeodeticHelper{
 	 * @see <a href="https://edwilliams.org/avform147.htm#XTE">Aviation Formulary V1.47</a>
 	 * @see <a href="https://www.researchgate.net/publication/321358300_Intersection_and_point-to-line_solutions_for_geodesics_on_the_ellipsoid">Intersection and point-to-line solutions for geodesics on the ellipsoid</a>
 	 */
-	public static Coordinate onTrackClosestPoint_should_be_this(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+	public static Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
 		//approximate Earth radius [m]
 		final double radius = EARTH_EQUATORIAL_RADIUS;
-//		final double radius = primeVerticalRadiusOfCurvature(startPoint.getY());
 
 		Coordinate onTrackPoint = startPoint;
 		while(true){
 			//S_AP [m]
-//			final double distanceStartToPoint = distance(onTrackPoint, point);
 			final double phiA = Math.toRadians(onTrackPoint.getY());
 			final double lambdaA = Math.toRadians(onTrackPoint.getX());
 			double phiP = Math.toRadians(point.getY());
@@ -121,22 +119,20 @@ public class GeodeticHelper{
 			//alpha_AB [°]
 			final double initialBearingStartToEnd = initialBearing(onTrackPoint, endPoint);
 			//[rad]
-			final double angleAP = Math.toRadians(Math.abs(initialBearingStartToEnd - initialBearingStartToPoint));
+			final double angleAP = Math.toRadians(initialBearingStartToEnd - initialBearingStartToPoint);
 			//calculate Cross-Track Distance [m], S_PX
 			final double sinAngleAP = StrictMath.sin(angleAP);
 			if(sinAngleAP == 1.)
 				break;
 
 			//[rad]
-//			final double xtd = radius * StrictMath.asin(StrictMath.sin(distanceStartToPoint / radius) * sinAngleAP);
 			final double xtd = StrictMath.asin(StrictMath.sin(distanceStartToPoint) * sinAngleAP);
 			//calculate Along-Track Distance [rad], S_AX
 			final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
 			final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
-//			final double c = StrictMath.tan((distanceStartToPoint - xtd) / (2. * radius));
 			final double c = StrictMath.tan((distanceStartToPoint - xtd) / 2.);
 			final double atd = 2. * radius * StrictMath.atan((a / b) * c);
-			if(atd < ON_TRACK_POINT_PRECISION)
+			if(Math.abs(atd) < ON_TRACK_POINT_PRECISION)
 				break;
 
 			//compute a point along the great circle from start to end point that lies at distance ATD
@@ -146,8 +142,9 @@ public class GeodeticHelper{
 		final double angleAB = initialBearing(startPoint, endPoint);
 		final double angleAX = initialBearing(startPoint, onTrackPoint);
 		final double angleBX = initialBearing(endPoint, onTrackPoint);
+		final double angleBA = initialBearing(endPoint, startPoint);
 		final double angleA = Math.abs(angleAX - angleAB);
-		final double angleB = Math.abs(angleBX - angleAB);
+		final double angleB = Math.abs(angleBX - angleBA);
 		if(angleA > 90.)
 			return startPoint;
 		else if(angleB > 90.)
@@ -156,53 +153,6 @@ public class GeodeticHelper{
 	}
 
 
-	/**
-	 * Returns the closest point to a given point on a great circle.
-	 * <p>
-	 * NOTE: not so precise, but it's enough.
-	 * </p>
-	 *
-	 * @param	startPoint	Coordinate of starting point of the great circle.
-	 * @param	endPoint	Coordinate of ending point of the great circle.
-	 * @param	point	Coordinate of the point.
-	 * @return	The coordinate of the point onto the great circle that is closest to the given point.
-	 */
-	public static Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		//key dot product
-		final double ax = startPoint.getX();
-		//calculate reduced latitude
-		final double ay = calculateReducedLatitude(startPoint.getY());
-		final double bx = endPoint.getX();
-		final double by = calculateReducedLatitude(endPoint.getY());
-		final double px = point.getX();
-		final double py = calculateReducedLatitude(point.getY());
-		final Coordinate diffES = new Coordinate(bx - ax, by - ay);
-		final Coordinate diffPS = new Coordinate(px - ax, py - ay);
-		final double dot = diffES.getX() * diffPS.getX() + diffES.getY() * diffPS.getY();
-		//segment length squared
-		final double segmentLength2 = diffES.getX() * diffES.getX() + diffES.getY() * diffES.getY();
-
-		//closest point on segment to point
-		Coordinate nearestPoint;
-		//point is "behind" start of segment, use `startPoint`
-		if(dot <= 0.)
-			nearestPoint = startPoint;
-		//point is "past" end of segment, use `endPoint`
-		else if(dot >= segmentLength2)
-			nearestPoint = endPoint;
-		//point is inside segment, find the closest point
-		else{
-			final double dotToNearestPoint = dot / segmentLength2;
-			nearestPoint = new Coordinate(
-				ax + diffES.getX() * dotToNearestPoint,
-				ay + diffES.getY() * dotToNearestPoint
-			);
-		}
-		//convert back from reduced latitude
-		nearestPoint.setY(calculateTrueLatitude(nearestPoint.getY()));
-		return nearestPoint;
-	}
-
 	private static double calculateReducedLatitude(final double phi){
 		return Math.toDegrees(StrictMath.atan((1. - EARTH_FLATTENING) * StrictMath.tan(Math.toRadians(phi))));
 	}
@@ -210,43 +160,6 @@ public class GeodeticHelper{
 	private static double calculateTrueLatitude(final double reducedPhi){
 		return Math.toDegrees(StrictMath.atan(StrictMath.tan(Math.toRadians(reducedPhi)) / (1. - EARTH_FLATTENING)));
 	}
-
-
-	public static Coordinate bla(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		//startPoint NOT a pole
-		//[rad]
-		double crsAB = Math.toRadians(initialBearing(startPoint, endPoint));
-		//[rad]
-		double crsAP = Math.toRadians(initialBearing(startPoint, point));
-		double phiA = Math.toRadians(startPoint.getY());
-		double lambdaA = Math.toRadians(startPoint.getX());
-		double phiP = Math.toRadians(point.getY());
-		double lambdaP = Math.toRadians(point.getX());
-		double distAP = StrictMath.acos(StrictMath.sin(phiA) * StrictMath.sin(phiP)
-			+ StrictMath.cos(phiA) * StrictMath.cos(phiP) * StrictMath.cos(lambdaA - lambdaP));
-		double a = StrictMath.sin((phiA - phiP) / 2.);
-		double b = StrictMath.sin((lambdaA - lambdaP) / 2.);
-		double distAP2 = 2. * StrictMath.asin(Math.sqrt(a * a + StrictMath.cos(phiA) * StrictMath.cos(phiP) * b * b));
-		//positive means right of course
-		//NOTE: if startPoint is a pole, replace `crsAP - crsAB` with lonP-lonB or lonB-lonP
-		//[rad]
-		double xtd = StrictMath.asin(StrictMath.sin(distAP) * StrictMath.sin(crsAP - crsAB));
-		//[rad]
-		double atd = StrictMath.acos(StrictMath.cos(distAP) / StrictMath.cos(xtd));
-		a = StrictMath.sin(distAP);
-		b = StrictMath.sin(xtd);
-		//for very short distances, atd2 is less susceptible to rounding error
-		double atd2 = StrictMath.asin(Math.sqrt(a * a - b * b) / StrictMath.cos(xtd));
-
-		//get destination
-		double lat = StrictMath.asin(StrictMath.sin(phiA) * StrictMath.cos(atd)
-			+ StrictMath.cos(phiA) * StrictMath.sin(atd) * StrictMath.cos(crsAB));
-		double deltaLongitude = StrictMath.atan2(StrictMath.sin(crsAB) * StrictMath.sin(atd) * StrictMath.cos(phiA),
-			StrictMath.cos(atd) - StrictMath.sin(phiA) * StrictMath.sin(lat));
-		double lon = StrictMath.IEEEremainder(lambdaA - deltaLongitude + Math.PI, 2. * Math.PI);
-		return new Coordinate(Math.toDegrees(lon), Math.toDegrees(lat));
-	}
-
 
 	/**
 	 * Earth mean radius of curvature by latitude.
