@@ -38,10 +38,6 @@ public class GeodeticHelper{
 
 	private static final DefaultGeographicCRS CRS_WGS84 = DefaultGeographicCRS.WGS84;
 
-	//flattening of the ellipsoid, in WGS84 reference (f = 1 - EARTH_POLAR_RADIUS/EARTH_EQUATORIAL_RADIUS)
-	private static final double EARTH_FLATTENING = 1. / CRS_WGS84.getDatum().getEllipsoid().getInverseFlattening();
-	//e^2 = (2 - f) * f
-	private static final double EARTH_ECCENTRICITY_2 = (2. - EARTH_FLATTENING) * EARTH_FLATTENING;
 	//[m]
 	private static final double EARTH_EQUATORIAL_RADIUS = CRS_WGS84.getDatum().getEllipsoid().getSemiMajorAxis();
 
@@ -51,13 +47,27 @@ public class GeodeticHelper{
 
 	private GeodeticHelper(){}
 
-	public static double distance(final Coordinate startPoint, final Coordinate endPoint){
+	/**
+	 * Returns the orthodromic distance (using WGS84 reference system).
+	 *
+	 * @param startPoint	Starting point.
+	 * @param endPoint	Ending point.
+	 * @return	The orthodromic distance [m].
+	 */
+	public static double orthodromicDistance(final Coordinate startPoint, final Coordinate endPoint){
 		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(CRS_WGS84);
 		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
 		calculator.setDestinationGeographicPoint(endPoint.getX(), endPoint.getY());
 		return calculator.getOrthodromicDistance();
 	}
 
+	/**
+	 * Returns the initial bearing (using WGS84 reference system) from North and clockwise.
+	 *
+	 * @param startPoint	Starting point.
+	 * @param endPoint	Ending point.
+	 * @return	The initial bearing [°].
+	 */
 	public static double initialBearing(final Coordinate startPoint, final Coordinate endPoint){
 		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(CRS_WGS84);
 		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
@@ -97,9 +107,6 @@ public class GeodeticHelper{
 	 * @see <a href="https://www.researchgate.net/publication/321358300_Intersection_and_point-to-line_solutions_for_geodesics_on_the_ellipsoid">Intersection and point-to-line solutions for geodesics on the ellipsoid</a>
 	 */
 	public static Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		//approximate Earth radius [m]
-		final double radius = EARTH_EQUATORIAL_RADIUS;
-
 		Coordinate onTrackPoint = startPoint;
 		while(true){
 			//S_AP [m]
@@ -131,7 +138,7 @@ public class GeodeticHelper{
 			final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
 			final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
 			final double c = StrictMath.tan((distanceStartToPoint - xtd) / 2.);
-			final double atd = 2. * radius * StrictMath.atan((a / b) * c);
+			final double atd = 2. * EARTH_EQUATORIAL_RADIUS * StrictMath.atan((a / b) * c);
 			if(Math.abs(atd) < ON_TRACK_POINT_PRECISION)
 				break;
 
@@ -150,55 +157,6 @@ public class GeodeticHelper{
 		else if(angleB > 90.)
 			return endPoint;
 		return onTrackPoint;
-	}
-
-
-	private static double calculateReducedLatitude(final double phi){
-		return Math.toDegrees(StrictMath.atan((1. - EARTH_FLATTENING) * StrictMath.tan(Math.toRadians(phi))));
-	}
-
-	private static double calculateTrueLatitude(final double reducedPhi){
-		return Math.toDegrees(StrictMath.atan(StrictMath.tan(Math.toRadians(reducedPhi)) / (1. - EARTH_FLATTENING)));
-	}
-
-	/**
-	 * Earth mean radius of curvature by latitude.
-	 *
-	 * @param latitude	The latitude [°].
-	 * @return	The geocentric mean radius [m].
-	 *
-	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
-	 */
-	public static double meanRadiusOfCurvature(final double latitude){
-		final double m = meridionalRadiusOfCurvature(latitude);
-		final double n = primeVerticalRadiusOfCurvature(latitude);
-		return 2. * m * n / (m + n);
-	}
-
-	/**
-	 * Earth meridional radius of curvature by latitude.
-	 *
-	 * @param latitude	The latitude [°].
-	 * @return	The meridional radius [m].
-	 *
-	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
-	 */
-	private static double meridionalRadiusOfCurvature(final double latitude){
-		final double tmp = primeVerticalRadiusOfCurvature(latitude) / EARTH_EQUATORIAL_RADIUS;
-		return tmp * tmp * tmp * (1. - EARTH_ECCENTRICITY_2) * EARTH_EQUATORIAL_RADIUS;
-	}
-
-	/**
-	 * Earth prime vertical radius of curvature by latitude.
-	 *
-	 * @param latitude	The latitude [°].
-	 * @return	The prime vertical radius [m].
-	 *
-	 * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Radii_of_curvature">Earth radius</a>
-	 */
-	private static double primeVerticalRadiusOfCurvature(final double latitude){
-		final double sinLat = StrictMath.sin(Math.toRadians(latitude));
-		return EARTH_EQUATORIAL_RADIUS / Math.sqrt(1. - EARTH_ECCENTRICITY_2 * sinLat * sinLat);
 	}
 
 }

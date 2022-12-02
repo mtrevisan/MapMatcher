@@ -45,7 +45,7 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 */
 	@Override
 	public double distance(final Coordinate startPoint, final Coordinate endPoint){
-		return GeodeticHelper.distance(startPoint, endPoint);
+		return GeodeticHelper.orthodromicDistance(startPoint, endPoint);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class GeodeticCalculator implements DistanceCalculator{
 			final Coordinate startPoint = coordinates[i - 1];
 			final Coordinate endPoint = coordinates[i];
 			final Coordinate nearestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
-			final double distance = Math.abs(GeodeticHelper.distance(nearestPoint, point));
+			final double distance = Math.abs(GeodeticHelper.orthodromicDistance(nearestPoint, point));
 			if(distance < minNearestPointDistance)
 				minNearestPointDistance = distance;
 		}
@@ -72,7 +72,7 @@ public class GeodeticCalculator implements DistanceCalculator{
 
 	@Override
 	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		return GeodeticHelper.distance(point, GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point));
+		return GeodeticHelper.orthodromicDistance(point, GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point));
 	}
 
 }

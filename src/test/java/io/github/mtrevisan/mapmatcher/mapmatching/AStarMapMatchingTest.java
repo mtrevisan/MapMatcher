@@ -39,7 +39,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicalTransit
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalculator;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 

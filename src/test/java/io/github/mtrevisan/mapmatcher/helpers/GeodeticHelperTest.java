@@ -35,7 +35,7 @@ import org.locationtech.jts.geom.Coordinate;
 class GeodeticHelperTest{
 
 	@Test
-	void should_find_closest_point_regardless_of_great_circle1(){
+	void should_find_closest_point_regardless_of_great_circle_utrecht_vento(){
 		Coordinate start = new Coordinate(5., 52.);
 		Coordinate end = new Coordinate(6., 51.4);
 		Coordinate point = new Coordinate(5.5, 52);
@@ -117,7 +117,7 @@ class GeodeticHelperTest{
 	}
 
 	@Test
-	void should_find_closest_point_regardless_of_great_circle2(){
+	void should_find_closest_point_regardless_of_great_circle_fontane_san_zeno(){
 		Coordinate start = new Coordinate(12.238140517207398, 45.65897415921759);
 		Coordinate end = new Coordinate(12.242949896905884, 45.69828882177029);
 		Coordinate point = new Coordinate(12.242949896905884, 45.69828882177029);
@@ -132,7 +132,7 @@ class GeodeticHelperTest{
 	}
 
 	@Test
-	void should_find_closest_point_regardless_of_great_circle3(){
+	void should_find_closest_point_regardless_of_great_circle_san_zeno_biancade(){
 		Coordinate start = new Coordinate(12.343946870589775, 45.65931029901404);
 		Coordinate end = new Coordinate(12.238140517207398, 45.65897415921759);
 		Coordinate point = new Coordinate(12.142791962642718, 45.64824627395467);
