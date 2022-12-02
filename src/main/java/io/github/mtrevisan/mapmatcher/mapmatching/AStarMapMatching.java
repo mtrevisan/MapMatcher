@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 
+//TODO make it works...
 /**
  * @see <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A* search algorithm</a>
  */
