@@ -85,7 +85,7 @@ public class Edge{
 		return to;
 	}
 
-	public Collection<Edge> geOutEdges(){
+	public Collection<Edge> getOutEdges(){
 		return to.getOutEdges();
 	}
 

@@ -63,7 +63,7 @@
 				"coordinates": [
 					[
 						12.238140517207398,
-						45.65931029901404
+						45.65897415921759
 					],
 					[
 						12.25545428412434,
@@ -105,28 +105,6 @@
 					]
 				],
 				"type": "LineString"
-			}
-		},
-		{
-			"type": "Feature",
-			"properties": {},
-			"geometry": {
-				"coordinates": [
-					12.11,
-					45.66
-				],
-				"type": "Point"
-			}
-		},
-		{
-			"type": "Feature",
-			"properties": {},
-			"geometry": {
-				"coordinates": [
-					12.41,
-					45.66
-				],
-				"type": "Point"
 			}
 		},
 		{

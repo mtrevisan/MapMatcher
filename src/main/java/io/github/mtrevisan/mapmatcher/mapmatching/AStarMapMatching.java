@@ -104,7 +104,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 				final Edge fromEdge = lifoExtract(frontier);
 				//TODO termination condition: i == m - 1 && currentEdge is best (?)
 
-				for(final Edge toEdge : fromEdge.geOutEdges()){
+				for(final Edge toEdge : fromEdge.getOutEdges()){
 					final double probability = fScores.get(fromEdge)[previousObservationIndex]
 						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation);
 					if(probability < fScores.get(toEdge)[previousObservationIndex]){

@@ -44,12 +44,12 @@ public interface MapMatchingStrategy{
 	Edge[] findPath(Graph graph, Coordinate[] observations);
 
 	static Edge[] connectPath(final Edge[] path, final Graph graph){
-		final List<Edge> connectedPath = new ArrayList<>(path.length);
 		final int size = path.length;
+		final List<Edge> connectedPath = new ArrayList<>(size);
 		if(size > 0){
 			connectedPath.add(path[0]);
 			for(int i = 1; i < size; i ++){
-				if(path[i - 1].geOutEdges().contains(path[i]))
+				if(path[i - 1].getOutEdges().contains(path[i]))
 					connectedPath.add(path[i]);
 				else{
 					//add path from `path[i - 1]` to `path[i]`
