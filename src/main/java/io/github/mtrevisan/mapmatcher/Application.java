@@ -37,6 +37,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogBayesianEmissionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicalNoUTurnTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicalTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalculator;
@@ -71,7 +72,7 @@ public class Application{
 	public static void main(final String[] args){
 		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator(distanceCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator(distanceCalculator);
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
@@ -85,12 +86,14 @@ public class Application{
 		final Coordinate node52 = new Coordinate(12.297776825477285, 45.7345547621876);
 		final Coordinate node62 = new Coordinate(12.322785599913317, 45.610885391198394);
 
-		final LineString edge0 = JTSGeometryHelper.createLineString(new Coordinate[]{node11, node12_31_41});
-		final LineString edge1 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node22, node23});
-		final LineString edge2 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node32_51_61});
-		final LineString edge3 = JTSGeometryHelper.createLineString(new Coordinate[]{node12_31_41, node42});
-		final LineString edge4 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node52});
-		final LineString edge5 = JTSGeometryHelper.createLineString(new Coordinate[]{node32_51_61, node62});
+		//[m]
+		final double distanceTolerance = 10.;
+		final LineString edge0 = JTSGeometryHelper.createSimplifiedLineString(new Coordinate[]{node11, node12_31_41}, distanceCalculator, distanceTolerance);
+		final LineString edge1 = JTSGeometryHelper.createSimplifiedLineString(new Coordinate[]{node12_31_41, node22, node23}, distanceCalculator, distanceTolerance);
+		final LineString edge2 = JTSGeometryHelper.createSimplifiedLineString(new Coordinate[]{node12_31_41, node32_51_61}, distanceCalculator, distanceTolerance);
+		final LineString edge3 = JTSGeometryHelper.createSimplifiedLineString(new Coordinate[]{node12_31_41, node42}, distanceCalculator, distanceTolerance);
+		final LineString edge4 = JTSGeometryHelper.createSimplifiedLineString(new Coordinate[]{node32_51_61, node52}, distanceCalculator, distanceTolerance);
+		final LineString edge5 = JTSGeometryHelper.createSimplifiedLineString(new Coordinate[]{node32_51_61, node62}, distanceCalculator, distanceTolerance);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations1 = new GPSCoordinate[]{

@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
+import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
@@ -31,7 +32,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.WKTReader;
-import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
 
@@ -60,11 +60,11 @@ public class JTSGeometryHelper{
 		return FACTORY.createLineString(coordinates);
 	}
 
-	public static LineString createSimplifiedLineString(final Coordinate[] coordinates, final double distanceTolerance){
-		final LineString lineString = createLineString(coordinates);
-		final DouglasPeuckerSimplifier simplifier = new DouglasPeuckerSimplifier(lineString);
+	public static LineString createSimplifiedLineString(final Coordinate[] coordinates, final DistanceCalculator distanceCalculator,
+			final double distanceTolerance){
+		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(coordinates, distanceCalculator);
 		simplifier.setDistanceTolerance(distanceTolerance);
-		return (LineString)simplifier.getResultGeometry();
+		return createLineString(simplifier.simplify());
 	}
 
 	public static Polygon createCircle(final Coordinate origin, final double radius){
