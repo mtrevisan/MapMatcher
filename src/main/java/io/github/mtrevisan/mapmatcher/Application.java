@@ -190,6 +190,7 @@ if(path != null)
 			final double threshold){
 		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		final Set<Polyline> observationsEdges = new LinkedHashSet<>(edges.length);
+		//FIXME speed up with R+ tree
 		for(final Polyline edge : edges)
 			if(geodeticCalculator.distance(observation, edge) <= threshold)
 				observationsEdges.add(edge);
@@ -214,6 +215,7 @@ if(path != null)
 		for(int i = 0; i < feasibleObservations.length; i ++){
 			final GPSCoordinate observation = feasibleObservations[i];
 			boolean edgesFound = false;
+			//FIXME speed up with R+ tree
 			for(final Polyline edge : edges)
 				if(geodeticCalculator.distance(observation, edge) <= threshold){
 					edgesFound = true;

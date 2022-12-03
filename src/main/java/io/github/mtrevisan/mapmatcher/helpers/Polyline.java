@@ -77,6 +77,25 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		return coordinates.length;
 	}
 
+	public Envelope getBoundingBox(){
+		double minLatitude = Double.POSITIVE_INFINITY;
+		double maxLatitude = Double.NEGATIVE_INFINITY;
+		double minLongitude = Double.POSITIVE_INFINITY;
+		double maxLongitude = Double.NEGATIVE_INFINITY;
+		for(final Coordinate point : coordinates){
+			if(point.getX() < minLongitude)
+				minLongitude = point.getX();
+			else if(point.getX() > maxLongitude)
+				maxLongitude = point.getX();
+
+			if(point.getY() < minLatitude)
+				minLatitude = point.getY();
+			else if(point.getY() > maxLatitude)
+				maxLatitude = point.getY();
+		}
+		return Envelope.of(minLongitude, maxLongitude, minLatitude, maxLatitude);
+	}
+
 	public Polyline reverse(){
 		final Coordinate[] reversedCoordinates = Arrays.copyOf(coordinates, coordinates.length);
 		reverse(reversedCoordinates);
