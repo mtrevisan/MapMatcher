@@ -53,8 +53,8 @@
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<apache.math3.version>3.6.1</apache.math3.version>
 
-		<!-- https://mvnrepository.com/artifact/org.geotools/gt-shapefile -->
-		<geotools.shapefile.version>29-SNAPSHOT</geotools.shapefile.version>
+		<!-- https://mvnrepository.com/artifact/net.sf.geographiclib/GeographicLib-Java -->
+		<geographiclib.version>2.0</geographiclib.version>
 
 		<!-- Logging -->
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
@@ -151,11 +151,11 @@
 			<version>${apache.math3.version}</version>
 		</dependency>
 
-		<!-- GeoTools -->
+		<!-- GeographicLib -->
 		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-shapefile</artifactId>
-			<version>${geotools.shapefile.version}</version>
+			<groupId>net.sf.geographiclib</groupId>
+			<artifactId>GeographicLib-Java</artifactId>
+			<version>${geographiclib.version}</version>
 		</dependency>
 
 		<!-- Logger -->

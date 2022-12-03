@@ -24,9 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-
-import java.awt.geom.Point2D;
+import net.sf.geographiclib.Geodesic;
+import net.sf.geographiclib.GeodesicData;
+import net.sf.geographiclib.GeodesicMask;
 
 
 /**
@@ -35,10 +35,10 @@ import java.awt.geom.Point2D;
  */
 public class GeodeticHelper{
 
-	private static final DefaultGeographicCRS CRS_WGS84 = DefaultGeographicCRS.WGS84;
+	private static final Geodesic REFERENCE_ELLIPSOID = Geodesic.WGS84;
 
 	//[m]
-	private static final double EARTH_EQUATORIAL_RADIUS = CRS_WGS84.getDatum().getEllipsoid().getSemiMajorAxis();
+	private static final double EARTH_EQUATORIAL_RADIUS = REFERENCE_ELLIPSOID.EquatorialRadius();
 
 	//[m]
 	private static final double ON_TRACK_POINT_PRECISION = 0.1;
@@ -54,10 +54,9 @@ public class GeodeticHelper{
 	 * @return	The orthodromic distance [m].
 	 */
 	public static double orthodromicDistance(final Coordinate startPoint, final Coordinate endPoint){
-		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(CRS_WGS84);
-		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
-		calculator.setDestinationGeographicPoint(endPoint.getX(), endPoint.getY());
-		return calculator.getOrthodromicDistance();
+		final GeodesicData result = REFERENCE_ELLIPSOID.Inverse(startPoint.getY(), startPoint.getX(),
+			endPoint.getY(), endPoint.getX(), GeodesicMask.DISTANCE);
+		return result.s12;
 	}
 
 	/**
@@ -68,11 +67,9 @@ public class GeodeticHelper{
 	 * @return	The initial bearing [°].
 	 */
 	public static double initialBearing(final Coordinate startPoint, final Coordinate endPoint){
-		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(CRS_WGS84);
-		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
-		calculator.setDestinationGeographicPoint(endPoint.getX(), endPoint.getY());
-		final double azimuth = calculator.getAzimuth();
-		return (azimuth < 0.? azimuth + 360.: azimuth);
+		final GeodesicData result = REFERENCE_ELLIPSOID.Inverse(startPoint.getY(), startPoint.getX(),
+			endPoint.getY(), endPoint.getX(), GeodesicMask.AZIMUTH);
+		return (result.azi1 < 0.? result.azi1 + 360.: result.azi1);
 	}
 
 	/**
@@ -84,11 +81,10 @@ public class GeodeticHelper{
 	 * @return	The destination.
 	 */
 	public static Coordinate destination(final Coordinate startPoint, final double initialBearing, final double distance){
-		final org.geotools.referencing.GeodeticCalculator calculator = new org.geotools.referencing.GeodeticCalculator(CRS_WGS84);
-		calculator.setStartingGeographicPoint(startPoint.getX(), startPoint.getY());
-		calculator.setDirection((initialBearing > 180.? initialBearing - 360.: initialBearing), distance);
-		final Point2D destination = calculator.getDestinationGeographicPoint();
-		return Coordinate.of(destination.getX(), destination.getY());
+		final double initialAzimuth = (initialBearing > 180.? initialBearing - 360.: initialBearing);
+		final GeodesicData result = REFERENCE_ELLIPSOID.Direct(startPoint.getY(), startPoint.getX(), initialAzimuth, distance,
+			GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+		return Coordinate.of(result.lon2, result.lat2);
 	}
 
 	/**

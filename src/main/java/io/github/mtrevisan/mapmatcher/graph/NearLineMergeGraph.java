@@ -27,7 +27,6 @@ package io.github.mtrevisan.mapmatcher.graph;
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
 import io.github.mtrevisan.mapmatcher.helpers.Polyline;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +41,8 @@ import java.util.TreeMap;
 public class NearLineMergeGraph implements Graph{
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(NearLineMergeGraph.class);
+
+	private static final String EMPTY = "";
 
 
 	private final Set<Edge> edges = new HashSet<>(0);
@@ -147,7 +148,7 @@ public class NearLineMergeGraph implements Graph{
 	private Collection<Node> getApproximateNode(final Coordinate coordinate){
 		final Collection<Node> closest = getNodesNear(coordinate);
 		if(closest.isEmpty()){
-			final Node node = new Node(StringUtils.EMPTY, coordinate);
+			final Node node = new Node(EMPTY, coordinate);
 			nodeMap.put(coordinate, node);
 			closest.add(node);
 		}

@@ -25,8 +25,6 @@
 package io.github.mtrevisan.mapmatcher.helpers;
 
 import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -38,6 +36,8 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 
 	@Serial
 	private static final long serialVersionUID = -2848807287557631823L;
+
+	private static final String SPACE = " ";
 
 	private final Coordinate[] coordinates;
 
@@ -79,10 +79,28 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 
 	public Polyline reverse(){
 		final Coordinate[] reversedCoordinates = Arrays.copyOf(coordinates, coordinates.length);
-		ArrayUtils.reverse(reversedCoordinates);
+		reverse(reversedCoordinates);
 		return of(reversedCoordinates);
 	}
 
+	/**
+	 * Reverses the order of the given array.
+	 *
+	 * @param array	The array to reverse in place.
+	 */
+	private static void reverse(final Coordinate[] array){
+		int i = 0;
+		int j = array.length - 1;
+		Coordinate tmp;
+		while(j > i){
+			tmp = array[j];
+			array[j] = array[i];
+			array[i] = tmp;
+
+			j --;
+			i ++;
+		}
+	}
 
 	@Override
 	public boolean equals(final Object obj){
@@ -104,7 +122,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 	public String toString(){
 		final StringJoiner sj = new StringJoiner(", ", "LINESTRING (", ")");
 		for(final Coordinate coordinate : coordinates)
-			sj.add(coordinate.getX() + StringUtils.SPACE + coordinate.getY());
+			sj.add(coordinate.getX() + SPACE + coordinate.getY());
 		return sj.toString();
 	}
 
