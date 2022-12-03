@@ -25,7 +25,9 @@
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Envelope;
 import io.github.mtrevisan.mapmatcher.helpers.Polyline;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -39,19 +41,122 @@ import java.util.List;
 //https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java
 class HPRTreeTest{
 
-	@Test
+//	@Test
 	void test(){
-//		HPRTree<Polyline> tree = new HPRTree<>(10, 2, 2);
-//
-//		List<String> lines = readFile("src/test/resources/it.highways.txt");
-//		for(final String line : lines){
-//			Polyline polyline = parseLineString(line);
-//			double[] geoBoundingBox = polyline.getBoundingBox();
-//			double[] coordinates = new double[]{geoBoundingBox[0], geoBoundingBox[1]};
-//			double[] dimensions = new double[]{geoBoundingBox[2] - geoBoundingBox[0], geoBoundingBox[3] - geoBoundingBox[1]};
-//			tree.insert(coordinates, dimensions, polyline);
-//		}
+		HPRtree<Polyline> tree = new HPRtree<>(5);
+
+		List<String> lines = readFile("src/test/resources/it.highways.txt");
+		for(final String line : lines){
+			Polyline polyline = parseLineString(line);
+			Envelope geoBoundingBox = polyline.getBoundingBox();
+			tree.insert(geoBoundingBox, polyline);
+		}
+		tree.build();
 		//TODO
+		System.out.println();
+	}
+
+	@Test
+	void empty_tree_using_list_query(){
+		HPRtree<Object> tree = new HPRtree<>();
+
+		List<Object> list = tree.query(Envelope.of(0., 0., 1., 1.));
+
+		Assertions.assertTrue(list.isEmpty());
+	}
+
+	@Test
+	void empty_tree_using_item_visitor_query(){
+		HPRtree<Object> tree = new HPRtree<>(0);
+
+		ItemVisitor<Object> shouldNeverReachHere = item -> Assertions.fail("Should never reach here");
+		tree.query(Envelope.of(0., 0., 1., 1.), shouldNeverReachHere);
+	}
+
+	@Test
+	void disallowed_inserts(){
+		HPRtree<Object> t = new HPRtree<>(3);
+		t.insert(Envelope.of(0., 0., 0., 0.), new Object());
+		t.insert(Envelope.of(0., 0., 0., 0.), new Object());
+		t.query(Envelope.ofEmpty());
+		try{
+			t.insert(Envelope.of(0., 0., 0., 0.), new Object());
+			Assertions.fail();
+		}
+		catch(IllegalStateException e){
+			Assertions.assertTrue(true);
+		}
+	}
+
+	@Test
+	void query(){
+		List<Polyline> geometries = new ArrayList<>();
+		geometries.add(Polyline.of(Coordinate.of(0., 0.), Coordinate.of(10., 10.)));
+		geometries.add(Polyline.of(Coordinate.of(20., 20.), Coordinate.of(30., 30.)));
+		geometries.add(Polyline.of(Coordinate.of(20., 20.), Coordinate.of(30., 30.)));
+		HPRtree<Object> t = new HPRtree<>(3);
+		for(Polyline g : geometries)
+			t.insert(g.getBoundingBox(), new Object());
+
+		t.query(Envelope.of(5., 6., 5., 6.));
+
+		Assertions.assertEquals(1, t.query(Envelope.of(5., 6., 5., 6.)).size());
+		Assertions.assertEquals(0, t.query(Envelope.of(20., 30., 0., 10.)).size());
+		Assertions.assertEquals(2, t.query(Envelope.of(25., 26., 25., 26.)).size());
+		Assertions.assertEquals(3, t.query(Envelope.of(0., 100., 0., 100.)).size());
+	}
+
+	@Test
+	void query3(){
+		HPRtree<Integer> t = new HPRtree<>();
+		for(int i = 0; i < 3; i ++)
+			t.insert(Envelope.of(i, i + 1, i, i + 1), i);
+
+		t.query(Envelope.of(0., 1., 0., 1.));
+
+		Assertions.assertEquals(3, t.query(Envelope.of(1., 2., 1., 2.)).size());
+		Assertions.assertEquals(0, t.query(Envelope.of(9., 10., 9., 10.)).size());
+	}
+
+	@Test
+	void query10(){
+		HPRtree<Integer> t = new HPRtree<>();
+		for(int i = 0; i < 10; i ++)
+			t.insert(Envelope.of(i, i + 1, i, i + 1), i);
+
+		t.query(Envelope.of(0, 1, 0, 1));
+
+		Assertions.assertEquals(3, t.query(Envelope.of(5, 6, 5, 6)).size());
+		Assertions.assertEquals(2, t.query(Envelope.of(9, 10, 9, 10)).size());
+		Assertions.assertEquals(0, t.query(Envelope.of(25, 26, 25, 26)).size());
+		Assertions.assertEquals(10, t.query(Envelope.of(0, 10, 0, 10)).size());
+	}
+
+	@Test
+	void query100(){
+		queryGrid(100, new HPRtree<>());
+	}
+
+	@Test
+	void query100_cap8(){
+		queryGrid(100, new HPRtree<>(8));
+	}
+
+	@Test
+	void query100_cap2(){
+		queryGrid(100, new HPRtree<>(2));
+	}
+
+	private void queryGrid(int size, HPRtree<Integer> t){
+		for(int i = 0; i < size; i ++)
+			t.insert(Envelope.of(i, i + 1, i, i + 1), i);
+
+		t.query(Envelope.of(0, 1, 0, 1));
+
+		Assertions.assertEquals(3, t.query(Envelope.of(5, 6, 5, 6)).size());
+		Assertions.assertEquals(3, t.query(Envelope.of(9, 10, 9, 10)).size());
+		Assertions.assertEquals(3, t.query(Envelope.of(25, 26, 25, 26)).size());
+		Assertions.assertEquals(11, t.query(Envelope.of(0, 10, 0, 10)).size());
 	}
 
 
