@@ -30,31 +30,31 @@ import io.github.mtrevisan.mapmatcher.helpers.Envelope;
 class HilbertEncoder{
 
 	private final int level;
-	private final double minx;
-	private final double miny;
+	private final double minX;
+	private final double minY;
 	private final double strideX;
 	private final double strideY;
 
 
-	public HilbertEncoder(final int level, final Envelope extent){
+	HilbertEncoder(final int level, final Envelope extent){
 		this.level = level;
-		int hSide = (int)Math.pow(2, level) - 1;
+		final int hSide = (int)Math.pow(2, level) - 1;
 
-		minx = extent.getMinX();
-		double extentX = extent.getWidth();
+		minX = extent.getMinX();
+		final double extentX = extent.getWidth();
 		strideX = extentX / hSide;
 
-		miny = extent.getMinX();
-		double extentY = extent.getHeight();
+		minY = extent.getMinX();
+		final double extentY = extent.getHeight();
 		strideY = extentY / hSide;
 	}
 
-	public int encode(final Envelope env){
-		double midx = env.getWidth() / 2 + env.getMinX();
-		int x = (int)((midx - minx) / strideX);
+	int encode(final Envelope env){
+		final double middleX = env.getWidth() / 2 + env.getMinX();
+		final int x = (int)((middleX - minX) / strideX);
 
-		double midy = env.getHeight() / 2 + env.getMinY();
-		int y = (int)((midy - miny) / strideY);
+		final double middleY = env.getHeight() / 2 + env.getMinY();
+		final int y = (int)((middleY - minY) / strideY);
 
 		return HilbertCode.encode(level, x, y);
 	}

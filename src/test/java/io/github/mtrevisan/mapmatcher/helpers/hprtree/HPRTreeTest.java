@@ -46,14 +46,12 @@ class HPRTreeTest{
 
 	@Test
 	void test(){
-		HPRtree<Polyline> tree = new HPRtree<>(5);
-
-		List<Polyline> polylines = readFile("src/test/resources/it.highways.wkt");
-		for(final Polyline polyline : polylines){
+		HPRtree<Polyline> tree = new HPRtree<>();
+		List<Polyline> polylines = readWKTFile("src/test/resources/it.highways.wkt");
+		for(Polyline polyline : polylines){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
 		}
-		tree.build();
 
 		List<Polyline> roads = tree.query(Envelope.of(Coordinate.of(9.01670, 45.60973), Coordinate.of(9.40355, 45.33115)));
 
@@ -156,7 +154,7 @@ class HPRTreeTest{
 	}
 
 
-	private static List<Polyline> readFile(final String filename){
+	private static List<Polyline> readWKTFile(final String filename){
 		final List<Polyline> lines = new ArrayList<>();
 		final File f = new File(filename);
 		try(final BufferedReader br = new BufferedReader(new FileReader(f))){

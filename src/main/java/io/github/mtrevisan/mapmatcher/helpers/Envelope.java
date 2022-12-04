@@ -201,10 +201,11 @@ public class Envelope implements Comparable<Envelope>{
 	 * Has no effect if the point is already on or within the envelope.
 	 * </p>
 	 *
-	 * @param p	The Coordinate to expand to include.
+	 * @param pp	The Coordinate(s) to expand to include.
 	 */
-	public void expandToInclude(final Coordinate p){
-		expandToInclude(p.getX(), p.getY());
+	public void expandToInclude(final Coordinate... pp){
+		for(final Coordinate p : pp)
+			expandToInclude(p.getX(), p.getY());
 	}
 
 	/**

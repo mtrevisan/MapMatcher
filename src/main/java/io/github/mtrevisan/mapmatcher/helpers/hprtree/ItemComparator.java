@@ -24,34 +24,23 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Comparator;
 
 
-class ArrayListVisitor<T> implements ItemVisitor<T>{
+class ItemComparator<T> implements Comparator<Item<T>>{
 
-	private final List<T> items = new ArrayList<>();
+	private final HilbertEncoder encoder;
 
 
-	ArrayListVisitor(){}
-
-	/**
-	 * Visits an item.
-	 *
-	 * @param item	The item to visit.
-	 */
-	@Override
-	public void visitItem(final T item){
-		items.add(item);
+	ItemComparator(final HilbertEncoder encoder){
+		this.encoder = encoder;
 	}
 
-	/**
-	 * Gets the array of visited items.
-	 *
-	 * @return	The list of items.
-	 */
-	List<T> getItems(){
-		return items;
+	@Override
+	public int compare(final Item item1, final Item item2){
+		final int hCode1 = encoder.encode(item1.getEnvelope());
+		final int hCode2 = encoder.encode(item2.getEnvelope());
+		return Integer.compare(hCode1, hCode2);
 	}
 
 }

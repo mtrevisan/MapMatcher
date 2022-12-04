@@ -30,8 +30,11 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.Envelope;
 import io.github.mtrevisan.mapmatcher.helpers.GPSCoordinate;
+import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.helpers.Polyline;
+import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.helpers.kalman.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
@@ -89,18 +92,41 @@ public class Application{
 		final Polyline edge3 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node12_31_41, node42);
 		final Polyline edge4 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node32_51_61, node52);
 		final Polyline edge5 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node32_51_61, node62);
+		final Polyline[] polylines = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final HPRtree<Polyline> tree = new HPRtree<>();
+		for(final Polyline polyline : polylines){
+			final Envelope geoBoundingBox = polyline.getBoundingBox();
+			tree.insert(geoBoundingBox, polyline);
+		}
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations1 = new GPSCoordinate[]{GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp), GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))};
-		final GPSCoordinate[] observations2 = new GPSCoordinate[]{GPSCoordinate.of(12.172704737567187, 45.59108565830172, timestamp), GPSCoordinate.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))), GPSCoordinate.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))};
+		final GPSCoordinate[] observations1 = new GPSCoordinate[]{
+			GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp),
+			GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		};
+		final GPSCoordinate[] observations2 = new GPSCoordinate[]{
+			GPSCoordinate.of(12.172704737567187, 45.59108565830172, timestamp),
+			GPSCoordinate.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSCoordinate.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		};
 		final GPSCoordinate[] observations = observations1;
 
-		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
+		final Collection<Polyline> observedEdges = extractObservedEdges(tree, observations, 100_000.);
 		final Graph graph = extractBidirectionalGraph(observedEdges, 1_000.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Coordinate[] filteredObservations = extractObservations(tree, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 if(path != null)
@@ -148,7 +174,7 @@ if(path != null)
 //			System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 //	}
 
-	private static List<String> readFile(final String filename){
+	private static List<String> readWKTFile(final String filename){
 		final List<String> lines = new ArrayList<>();
 		final File f = new File(filename);
 		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
@@ -173,31 +199,32 @@ if(path != null)
 	 * This lead to <code>ε_m = 20 + 5.7 = 26 m</code>, a savvy choice is <em>50 m</em>.
 	 * </p>
 	 *
-	 * @param edges	The set of road links.
+	 * @param tree	The set of road links.
 	 * @param observations	The observations.
 	 * @param threshold	The threshold.
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
-	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Coordinate[] observations,
+	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Coordinate[] observations,
 			final double threshold){
-		final Set<Polyline> observationsEdges = new LinkedHashSet<>(edges.length);
+		final Set<Polyline> observationsEdges = new LinkedHashSet<>(0);
 		for(final Coordinate observation : observations)
-			observationsEdges.addAll(extractObservedEdges(edges, observation, threshold));
+			observationsEdges.addAll(extractObservedEdges(tree, observation, threshold));
 		return observationsEdges;
 	}
 
-	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Coordinate observation,
+	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Coordinate observation,
 			final double threshold){
-		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
-		final Set<Polyline> observationsEdges = new LinkedHashSet<>(edges.length);
-		//FIXME speed up with R+ tree
-		for(final Polyline edge : edges)
-			if(geodeticCalculator.distance(observation, edge) <= threshold)
-				observationsEdges.add(edge);
-		return observationsEdges;
+		final Coordinate north = GeodeticHelper.destination(observation, 0., threshold);
+		final Coordinate east = GeodeticHelper.destination(observation, 90., threshold);
+		final Coordinate sud = GeodeticHelper.destination(observation, 180., threshold);
+		final Coordinate west = GeodeticHelper.destination(observation, 270., threshold);
+		final Envelope envelope = Envelope.ofEmpty();
+		envelope.expandToInclude(north, east, sud, west);
+		return tree.query(envelope);
 	}
 
-	private static Coordinate[] extractObservations(final Polyline[] edges, final GPSCoordinate[] observations, final double threshold){
+	private static Coordinate[] extractObservations(final HPRtree<Polyline> tree, final GPSCoordinate[] observations,
+			final double threshold){
 		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
 
 		//step 1. Use Kalman filter to smooth the coordinates
@@ -211,17 +238,16 @@ if(path != null)
 		}
 
 		//step 2. Retain all observation that are within a certain radius from an edge
-		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		for(int i = 0; i < feasibleObservations.length; i ++){
 			final GPSCoordinate observation = feasibleObservations[i];
-			boolean edgesFound = false;
-			//FIXME speed up with R+ tree
-			for(final Polyline edge : edges)
-				if(geodeticCalculator.distance(observation, edge) <= threshold){
-					edgesFound = true;
-					break;
-				}
-			if(!edgesFound)
+			final Coordinate north = GeodeticHelper.destination(observation, 0., threshold);
+			final Coordinate east = GeodeticHelper.destination(observation, 90., threshold);
+			final Coordinate sud = GeodeticHelper.destination(observation, 180., threshold);
+			final Coordinate west = GeodeticHelper.destination(observation, 270., threshold);
+			final Envelope envelope = Envelope.ofEmpty();
+			envelope.expandToInclude(north, east, sud, west);
+			final List<Polyline> edges = tree.query(envelope);
+			if(edges.isEmpty())
 				feasibleObservations[i] = null;
 		}
 

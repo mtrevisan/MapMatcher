@@ -50,7 +50,7 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	 * Calculate emission probability
 	 * <p>
 	 * A zero-mean gaussian observation error:
-	 * Pr(o_i | r_j) = 1 / (√(2 ⋅  π) ⋅ σ) ⋅ exp(-0.5 ⋅ (dist(o_i, r_j) / σ)^2), where σ = 20 m (empirically)
+	 * Pr(o_i | r_j) = 1 / (√(2 ⋅ π) ⋅ σ) ⋅ exp(-0.5 ⋅ (dist(o_i, r_j) / σ)^2), where σ = 20 m (empirically)
 	 * </p>
 	 *
 	 * @see <a href="https://hal-enac.archives-ouvertes.fr/hal-01160130/document">Characterization of GNSS receiver position errors for user integrity monitoring in urban environments</a>

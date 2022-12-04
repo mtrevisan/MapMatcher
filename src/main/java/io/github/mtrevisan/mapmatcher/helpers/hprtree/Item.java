@@ -27,27 +27,28 @@ package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 import io.github.mtrevisan.mapmatcher.helpers.Envelope;
 
 
-public class Item<T>{
+class Item<T>{
 
-	private final Envelope env;
+	private final Envelope envelope;
 	private final T item;
 
 
-	public Item(Envelope env, T item){
-		this.env = env;
+	Item(Envelope envelope, T item){
+		this.envelope = envelope;
 		this.item = item;
 	}
 
-	public Envelope getEnvelope(){
-		return env;
+	Envelope getEnvelope(){
+		return envelope;
 	}
 
-	public T getItem(){
+	T getItem(){
 		return item;
 	}
 
+	@Override
 	public String toString(){
-		return "Item: " + env.toString();
+		return "Item: " + envelope.toString();
 	}
 
 }

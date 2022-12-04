@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 import io.github.mtrevisan.mapmatcher.helpers.Envelope;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -60,7 +60,7 @@ public class HPRtree<T>{
 	private static final int HILBERT_LEVEL = 12;
 	private static final int DEFAULT_NODE_CAPACITY = 16;
 
-	private final List<Item<T>> items = new ArrayList<>();
+	private final List<Item<T>> items = new ArrayList<>(0);
 	private final int nodeCapacity;
 	private final Envelope totalExtent = Envelope.ofEmpty();
 	private int[] layerStartIndex;
@@ -93,128 +93,19 @@ public class HPRtree<T>{
 		return items.size();
 	}
 
-	public void insert(final Envelope itemEnv, final T item){
+	public void insert(final Envelope itemEnvelope, final T item){
 		if(isBuilt)
 			throw new IllegalStateException("Cannot insert items after tree is built.");
 
-		items.add(new Item<T>(itemEnv, item));
-		totalExtent.expandToInclude(itemEnv);
+		items.add(new Item<T>(itemEnvelope, item));
+		totalExtent.expandToInclude(itemEnvelope);
 	}
 
-	public List<T> query(final Envelope searchEnv){
-		build();
-
-		if(!totalExtent.intersects(searchEnv))
-			return new ArrayList<>();
-
-		final ArrayListVisitor<T> visitor = new ArrayListVisitor<>();
-		query(searchEnv, visitor);
-		return visitor.getItems();
-	}
-
-	private void query(final Envelope searchEnv, final ItemVisitor<T> visitor){
-		build();
-		if(!totalExtent.intersects(searchEnv))
-			return;
-
-		if(layerStartIndex == null)
-			queryItems(0, searchEnv, visitor);
-		else
-			queryTopLayer(searchEnv, visitor);
-	}
-
-	private void queryTopLayer(final Envelope searchEnv, final ItemVisitor<T> visitor){
-		final int layerIndex = layerStartIndex.length - 2;
-		final int layerSize = layerSize(layerIndex);
-		//query each node in layer
-		for(int i = 0; i < layerSize; i += ENV_SIZE)
-			queryNode(layerIndex, i, searchEnv, visitor);
-	}
-
-	private void queryNode(final int layerIndex, final int nodeOffset, final Envelope searchEnv, final ItemVisitor<T> visitor){
-		final int layerStart = layerStartIndex[layerIndex];
-		final int nodeIndex = layerStart + nodeOffset;
-		if(!intersects(nodeIndex, searchEnv))
-			return;
-
-		if(layerIndex == 0){
-			final int childNodesOffset = nodeOffset / ENV_SIZE * nodeCapacity;
-			queryItems(childNodesOffset, searchEnv, visitor);
-		}
-		else{
-			final int childNodesOffset = nodeOffset * nodeCapacity;
-			queryNodeChildren(layerIndex - 1, childNodesOffset, searchEnv, visitor);
-		}
-	}
-
-	private boolean intersects(final int nodeIndex, final Envelope env){
-		final boolean isBeyond = (
-			env.getMaxX() < nodeBounds[nodeIndex]
-			|| env.getMaxY() < nodeBounds[nodeIndex + 1]
-			|| env.getMinX() > nodeBounds[nodeIndex + 2]
-			|| env.getMinY() > nodeBounds[nodeIndex + 3]);
-		return !isBeyond;
-	}
-
-	private void queryNodeChildren(final int layerIndex, final int blockOffset, final Envelope searchEnv, final ItemVisitor<T> visitor){
-		final int layerStart = layerStartIndex[layerIndex];
-		final int layerEnd = layerStartIndex[layerIndex + 1];
-		for(int i = 0; i < nodeCapacity; i ++){
-			final int nodeOffset = blockOffset + ENV_SIZE * i;
-			//don't query past layer end
-			if(layerStart + nodeOffset >= layerEnd)
-				break;
-
-			queryNode(layerIndex, nodeOffset, searchEnv, visitor);
-		}
-	}
-
-	private void queryItems(final int blockStart, final Envelope searchEnv, final ItemVisitor<T> visitor){
-		for(int i = 0; i < nodeCapacity; i ++){
-			final int itemIndex = blockStart + i;
-			//don't query past end of items
-			if(itemIndex >= items.size())
-				break;
-
-			//visit the item if its envelope intersects search env
-			final Item<T> item = items.get(itemIndex);
-			if(intersects(item.getEnvelope(), searchEnv)){
-				//if(item.getEnvelope().intersects(searchEnv))
-				visitor.visitItem(item.getItem());
-			}
-		}
-	}
-
-	/**
-	 * Tests whether two envelopes intersect.
-	 * Avoids the null check in {@link Envelope#intersects(Envelope)}.
-	 *
-	 * @param env1 an envelope
-	 * @param env2 an envelope
-	 * @return true if the envelopes intersect
-	 */
-	private static boolean intersects(final Envelope env1, final Envelope env2){
-		return !(env2.getMinX() > env1.getMaxX()
-			|| env2.getMaxX() < env1.getMinX()
-			|| env2.getMinY() > env1.getMaxY()
-			|| env2.getMaxY() < env1.getMinY());
-	}
-
-	private int layerSize(final int layerIndex){
-		final int layerStart = layerStartIndex[layerIndex];
-		final int layerEnd = layerStartIndex[layerIndex + 1];
-		return layerEnd - layerStart;
-	}
-
-	public boolean remove(final Envelope itemEnv, final Object item){
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	/**
 	 * Builds the index, if not already built.
 	 */
-	public void build(){
+	private void build(){
 		//skip if already built
 		if(isBuilt)
 			return;
@@ -237,68 +128,13 @@ public class HPRtree<T>{
 			computeLayerNodes(i);
 	}
 
-	private static double[] createBoundsArray(final int size){
-		final double[] a = new double[4 * size];
-		for(int i = 0; i < size; i ++){
-			final int index = 4 * i;
-			a[index] = Double.MAX_VALUE;
-			a[index + 1] = Double.MAX_VALUE;
-			a[index + 2] = - Double.MAX_VALUE;
-			a[index + 3] = - Double.MAX_VALUE;
-		}
-		return a;
-	}
-
-	private void computeLayerNodes(final int layerIndex){
-		final int layerStart = layerStartIndex[layerIndex];
-		final int childLayerStart = layerStartIndex[layerIndex - 1];
-		final int layerSize = layerSize(layerIndex);
-		final int childLayerEnd = layerStart;
-		for(int i = 0; i < layerSize; i += ENV_SIZE){
-			final int childStart = childLayerStart + nodeCapacity * i;
-			computeNodeBounds(layerStart + i, childStart, childLayerEnd);
-		}
-	}
-
-	private void computeNodeBounds(final int nodeIndex, final int blockStart, final int nodeMaxIndex){
-		for(int i = 0; i <= nodeCapacity; i ++){
-			final int index = blockStart + 4 * i;
-			if(index >= nodeMaxIndex)
-				break;
-
-			updateNodeBounds(nodeIndex, nodeBounds[index], nodeBounds[index + 1], nodeBounds[index + 2], nodeBounds[index + 3]);
-		}
-	}
-
-	private void computeLeafNodes(final int layerSize){
-		for(int i = 0; i < layerSize; i += ENV_SIZE)
-			computeLeafNodeBounds(i, nodeCapacity * i / 4);
-	}
-
-	private void computeLeafNodeBounds(final int nodeIndex, final int blockStart){
-		for(int i = 0; i <= nodeCapacity; i ++){
-			final int itemIndex = blockStart + i;
-			if(itemIndex >= items.size())
-				break;
-
-			final Envelope env = items.get(itemIndex).getEnvelope();
-			updateNodeBounds(nodeIndex, env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
-		}
-	}
-
-	private void updateNodeBounds(final int nodeIndex, final double minX, final double minY, final double maxX, final double maxY){
-		if(minX < nodeBounds[nodeIndex])
-			nodeBounds[nodeIndex] = minX;
-		if(minY < nodeBounds[nodeIndex + 1])
-			nodeBounds[nodeIndex + 1] = minY;
-		if(maxX > nodeBounds[nodeIndex + 2])
-			nodeBounds[nodeIndex + 2] = maxX;
-		if(maxY > nodeBounds[nodeIndex + 3])
-			nodeBounds[nodeIndex + 3] = maxY;
+	private void sortItems(){
+		final ItemComparator<T> comp = new ItemComparator<>(new HilbertEncoder(HILBERT_LEVEL, totalExtent));
+		items.sort(comp);
 	}
 
 	private static int[] computeLayerIndices(final int itemSize, final int nodeCapacity){
-		final List<Integer> layerIndexList = new ArrayList<>();
+		final List<Integer> layerIndexList = new ArrayList<>(0);
 		int layerSize = itemSize;
 		int index = 0;
 		do{
@@ -329,6 +165,182 @@ public class HPRtree<T>{
 		return array;
 	}
 
+	private static double[] createBoundsArray(final int size){
+		final double[] a = new double[4 * size];
+		for(int i = 0; i < size; i ++){
+			final int index = 4 * i;
+			a[index] = Double.MAX_VALUE;
+			a[index + 1] = Double.MAX_VALUE;
+			a[index + 2] = - Double.MAX_VALUE;
+			a[index + 3] = - Double.MAX_VALUE;
+		}
+		return a;
+	}
+
+	private void computeLeafNodes(final int layerSize){
+		for(int i = 0; i < layerSize; i += ENV_SIZE)
+			computeLeafNodeBounds(i, nodeCapacity * i / 4);
+	}
+
+	private void computeLeafNodeBounds(final int nodeIndex, final int blockStart){
+		for(int i = 0; i <= nodeCapacity; i ++){
+			final int itemIndex = blockStart + i;
+			if(itemIndex >= items.size())
+				break;
+
+			final Envelope env = items.get(itemIndex).getEnvelope();
+			updateNodeBounds(nodeIndex, env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
+		}
+	}
+
+	private void computeLayerNodes(final int layerIndex){
+		final int layerStart = layerStartIndex[layerIndex];
+		final int childLayerStart = layerStartIndex[layerIndex - 1];
+		final int layerSize = layerSize(layerIndex);
+		final int childLayerEnd = layerStart;
+		for(int i = 0; i < layerSize; i += ENV_SIZE){
+			final int childStart = childLayerStart + nodeCapacity * i;
+			computeNodeBounds(layerStart + i, childStart, childLayerEnd);
+		}
+	}
+
+	private void computeNodeBounds(final int nodeIndex, final int blockStart, final int nodeMaxIndex){
+		for(int i = 0; i <= nodeCapacity; i ++){
+			final int index = blockStart + 4 * i;
+			if(index >= nodeMaxIndex)
+				break;
+
+			updateNodeBounds(nodeIndex, nodeBounds[index], nodeBounds[index + 1], nodeBounds[index + 2], nodeBounds[index + 3]);
+		}
+	}
+
+	private void updateNodeBounds(final int nodeIndex, final double minX, final double minY, final double maxX, final double maxY){
+		if(minX < nodeBounds[nodeIndex])
+			nodeBounds[nodeIndex] = minX;
+		if(minY < nodeBounds[nodeIndex + 1])
+			nodeBounds[nodeIndex + 1] = minY;
+		if(maxX > nodeBounds[nodeIndex + 2])
+			nodeBounds[nodeIndex + 2] = maxX;
+		if(maxY > nodeBounds[nodeIndex + 3])
+			nodeBounds[nodeIndex + 3] = maxY;
+	}
+
+
+	public List<T> query(final Envelope searchEnvelope){
+		build();
+
+		if(!totalExtent.intersects(searchEnvelope))
+			return Collections.emptyList();
+
+		final ArrayListVisitor<T> visitor = new ArrayListVisitor<>();
+		query(searchEnvelope, visitor);
+		return visitor.getItems();
+	}
+
+	private void query(final Envelope searchEnvelope, final ItemVisitor<T> visitor){
+		if(layerStartIndex == null)
+			queryItems(0, searchEnvelope, visitor);
+		else
+			queryTopLayer(searchEnvelope, visitor);
+	}
+
+	private void queryItems(final int blockStart, final Envelope searchEnvelope, final ItemVisitor<T> visitor){
+		for(int i = 0; i < nodeCapacity; i ++){
+			final int itemIndex = blockStart + i;
+			//don't query past end of items
+			if(itemIndex >= items.size())
+				break;
+
+			//visit the item if its envelope intersects search env
+			final Item<T> item = items.get(itemIndex);
+			if(intersects(item.getEnvelope(), searchEnvelope)){
+				//if(item.getEnvelope().intersects(searchEnv))
+				visitor.visitItem(item.getItem());
+			}
+		}
+	}
+
+	/**
+	 * Tests whether two envelopes intersect.
+	 * Avoids the null check in {@link Envelope#intersects(Envelope)}.
+	 *
+	 * @param envelope1 an envelope
+	 * @param envelope2 an envelope
+	 * @return true if the envelopes intersect
+	 */
+	private static boolean intersects(final Envelope envelope1, final Envelope envelope2){
+		return !(envelope2.getMinX() > envelope1.getMaxX()
+			|| envelope2.getMaxX() < envelope1.getMinX()
+			|| envelope2.getMinY() > envelope1.getMaxY()
+			|| envelope2.getMaxY() < envelope1.getMinY());
+	}
+
+	private void queryTopLayer(final Envelope searchEnvelope, final ItemVisitor<T> visitor){
+		final int layerIndex = layerStartIndex.length - 2;
+		final int layerSize = layerSize(layerIndex);
+		//query each node in layer
+		for(int i = 0; i < layerSize; i += ENV_SIZE)
+			queryNode(layerIndex, i, searchEnvelope, visitor);
+	}
+
+	private int layerSize(final int layerIndex){
+		final int layerStart = layerStartIndex[layerIndex];
+		final int layerEnd = layerStartIndex[layerIndex + 1];
+		return layerEnd - layerStart;
+	}
+
+	private void queryNode(final int layerIndex, final int nodeOffset, final Envelope searchEnvelope, final ItemVisitor<T> visitor){
+		final int layerStart = layerStartIndex[layerIndex];
+		final int nodeIndex = layerStart + nodeOffset;
+		if(!intersects(nodeIndex, searchEnvelope))
+			return;
+
+		if(layerIndex == 0){
+			final int childNodesOffset = nodeOffset / ENV_SIZE * nodeCapacity;
+			queryItems(childNodesOffset, searchEnvelope, visitor);
+		}
+		else{
+			final int childNodesOffset = nodeOffset * nodeCapacity;
+			queryNodeChildren(layerIndex - 1, childNodesOffset, searchEnvelope, visitor);
+		}
+	}
+
+	private boolean intersects(final int nodeIndex, final Envelope env){
+		final boolean isBeyond = (
+			env.getMaxX() < nodeBounds[nodeIndex]
+			|| env.getMaxY() < nodeBounds[nodeIndex + 1]
+			|| env.getMinX() > nodeBounds[nodeIndex + 2]
+			|| env.getMinY() > nodeBounds[nodeIndex + 3]);
+		return !isBeyond;
+	}
+
+	private void queryNodeChildren(final int layerIndex, final int blockOffset, final Envelope searchEnvelope, final ItemVisitor<T> visitor){
+		final int layerStart = layerStartIndex[layerIndex];
+		final int layerEnd = layerStartIndex[layerIndex + 1];
+		for(int i = 0; i < nodeCapacity; i ++){
+			final int nodeOffset = blockOffset + ENV_SIZE * i;
+			//don't query past layer end
+			if(layerStart + nodeOffset >= layerEnd)
+				break;
+
+			queryNode(layerIndex, nodeOffset, searchEnvelope, visitor);
+		}
+	}
+
+
+	public boolean remove(final Envelope itemEnvelope, final T item){
+		//TODO https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf
+		//TODO find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
+		//TODO delete the item (remove the item from node `L`)
+		//TODO if `L` underflows
+		//	borrow some entries from `s` cooperating siblings
+		//TODO if all the siblings are ready to underflow, merge `s+1` to `s` nodes; then adjust the resulting nodes
+		//TODO adjust MBR and LHV in parent levels: form a set `S` that contains `L` and its cooperating siblings (if underflow has
+		// occurred); then invoke `AdjustTree(s)`
+		return false;
+	}
+
+
 	/**
 	 * Gets the extents of the internal index nodes,
 	 *
@@ -343,28 +355,6 @@ public class HPRtree<T>{
 			bounds[i] = Envelope.of(nodeBounds[boundIndex], nodeBounds[boundIndex + 2], nodeBounds[boundIndex + 1], nodeBounds[boundIndex + 3]);
 		}
 		return bounds;
-	}
-
-	private void sortItems(){
-		final ItemComparator comp = new ItemComparator(new HilbertEncoder(HILBERT_LEVEL, totalExtent));
-		items.sort(comp);
-	}
-
-
-	class ItemComparator implements Comparator<Item<T>>{
-
-		private final HilbertEncoder encoder;
-
-		ItemComparator(final HilbertEncoder encoder){
-			this.encoder = encoder;
-		}
-
-		@Override
-		public int compare(final Item item1, final Item item2){
-			final int hCode1 = encoder.encode(item1.getEnvelope());
-			final int hCode2 = encoder.encode(item2.getEnvelope());
-			return Integer.compare(hCode1, hCode2);
-		}
 	}
 
 }

@@ -51,7 +51,7 @@ public class GeodeticCalculator implements DistanceCalculator{
 	/**
 	 * Calculate cross-track distance.
 	 *
-	 * @param point      The point
+	 * @param point	The point.
 	 * @param lineString The list of track points.
 	 * @return The distance [m].
 	 */
