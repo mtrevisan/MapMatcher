@@ -11,7 +11,7 @@
 
 ## Forewords
 This is, as the name suggests, yet another map matcher (see [this page](https://en.wikipedia.org/wiki/Map_matching)) between a series of observations (mainly noisy GPS points) and the most probable path on a given graph.<br/>
-It uses [Hidden Markov Model](https://en.wikipedia.org/wiki/Hidden_Markov_model), [Viterbi algorithm](https://en.wikipedia.org/wiki/Viterbi_algorithm), [A* search algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm), [Ramer–Douglas–Peuker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm) for point simplification, [Kalman filter](https://en.wikipedia.org/wiki/Kalman_filter) for smoothing the observations, various geodetics algorithms, and a graph merger builder that connects also near edges.
+It uses [Hidden Markov Model](https://en.wikipedia.org/wiki/Hidden_Markov_model), [Viterbi algorithm](https://en.wikipedia.org/wiki/Viterbi_algorithm), [A* search algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm), [Ramer–Douglas–Peuker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm) for point simplification, [Kalman filter](https://en.wikipedia.org/wiki/Kalman_filter) for smoothing the observations, [HPR tree](https://en.wikipedia.org/wiki/Hilbert_R-tree) to get the list of roads, various geodetics algorithms, and a graph merger builder that connects also near edges.
 
 <br />
 
