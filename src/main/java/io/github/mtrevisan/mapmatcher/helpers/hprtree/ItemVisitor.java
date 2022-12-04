@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
 
-public interface ItemVisitor<T>{
+interface ItemVisitor<T>{
 
 	/**
 	 * Visits an item in the index.

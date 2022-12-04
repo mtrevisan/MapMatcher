@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ArrayListVisitor<T> implements ItemVisitor<T>{
+class ArrayListVisitor<T> implements ItemVisitor<T>{
 
 	private final List<T> items = new ArrayList<>();
 
@@ -36,8 +36,7 @@ public class ArrayListVisitor<T> implements ItemVisitor<T>{
 	/**
 	 * Creates a new instance.
 	 */
-	public ArrayListVisitor(){
-	}
+	ArrayListVisitor(){}
 
 	/**
 	 * Visits an item.
@@ -53,7 +52,7 @@ public class ArrayListVisitor<T> implements ItemVisitor<T>{
 	 *
 	 * @return the array of items
 	 */
-	public List<T> getItems(){
+	List<T> getItems(){
 		return items;
 	}
 

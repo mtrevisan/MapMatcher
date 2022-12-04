@@ -75,7 +75,6 @@ public class HPRtree<T>{
 	private int[] layerStartIndex;
 	private double[] nodeBounds;
 	private boolean isBuilt;
-	//public int nodeIntersectsCount;
 
 
 	/**
@@ -122,7 +121,7 @@ public class HPRtree<T>{
 		return visitor.getItems();
 	}
 
-	public void query(final Envelope searchEnv, final ItemVisitor<T> visitor){
+	private void query(final Envelope searchEnv, final ItemVisitor<T> visitor){
 		build();
 		if(!totalExtent.intersects(searchEnv))
 			return;
@@ -158,9 +157,11 @@ public class HPRtree<T>{
 	}
 
 	private boolean intersects(final int nodeIndex, final Envelope env){
-		//nodeIntersectsCount ++;
-		final boolean isBeyond = (env.getMaxX() < nodeBounds[nodeIndex] || env.getMaxY() < nodeBounds[nodeIndex + 1]
-			|| env.getMinX() > nodeBounds[nodeIndex + 2] || env.getMinY() > nodeBounds[nodeIndex + 3]);
+		final boolean isBeyond = (
+			env.getMaxX() < nodeBounds[nodeIndex]
+			|| env.getMaxY() < nodeBounds[nodeIndex + 1]
+			|| env.getMinX() > nodeBounds[nodeIndex + 2]
+			|| env.getMinY() > nodeBounds[nodeIndex + 3]);
 		return !isBeyond;
 	}
 
@@ -186,9 +187,8 @@ public class HPRtree<T>{
 
 			//visit the item if its envelope intersects search env
 			final Item<T> item = items.get(itemIndex);
-			//nodeIntersectsCount ++;
 			if(intersects(item.getEnvelope(), searchEnv)){
-				//if(item.getEnvelope().intersects(searchEnv)){
+				//if(item.getEnvelope().intersects(searchEnv))
 				visitor.visitItem(item.getItem());
 			}
 		}
@@ -203,7 +203,9 @@ public class HPRtree<T>{
 	 * @return true if the envelopes intersect
 	 */
 	private static boolean intersects(final Envelope env1, final Envelope env2){
-		return !(env2.getMinX() > env1.getMaxX() || env2.getMaxX() < env1.getMinX() || env2.getMinY() > env1.getMaxY()
+		return !(env2.getMinX() > env1.getMaxX()
+			|| env2.getMaxX() < env1.getMinX()
+			|| env2.getMinY() > env1.getMaxY()
 			|| env2.getMaxY() < env1.getMinY());
 	}
 
@@ -232,7 +234,6 @@ public class HPRtree<T>{
 			return;
 
 		sortItems();
-		//dumpItems(items);
 
 		layerStartIndex = computeLayerIndices(items.size(), nodeCapacity);
 		//allocate storage
@@ -243,8 +244,6 @@ public class HPRtree<T>{
 		computeLeafNodes(layerStartIndex[1]);
 		for(int i = 1; i < layerStartIndex.length - 1; i ++)
 			computeLayerNodes(i);
-
-		//dumpNodes();
 	}
 
 	private static double[] createBoundsArray(final int size){
@@ -318,24 +317,23 @@ public class HPRtree<T>{
 		int index = 0;
 		do{
 			layerIndexList.add(index);
-			layerSize = numNodesToCover(layerSize, nodeCapacity);
+			layerSize = numberOfNodesToCover(layerSize, nodeCapacity);
 			index += ENV_SIZE * layerSize;
 		}while(layerSize > 1);
 		return toIntArray(layerIndexList);
 	}
 
 	/**
-	 * Computes the number of blocks (nodes) required to
-	 * cover a given number of children.
+	 * Computes the number of blocks (nodes) required to cover a given number of children.
 	 *
-	 * @param nChild
-	 * @param nodeCapacity
-	 * @return the number of nodes needed to cover the children
+	 * @param numberOfChildren	The number of children.
+	 * @param nodeCapacity	The node capacity.
+	 * @return	The number of nodes needed to cover the children.
 	 */
-	private static int numNodesToCover(final int nChild, final int nodeCapacity){
-		final int mult = nChild / nodeCapacity;
-		final int total = mult * nodeCapacity;
-		return (total == nChild? mult: mult + 1);
+	private static int numberOfNodesToCover(final int numberOfChildren, final int nodeCapacity){
+		final int multiplier = numberOfChildren / nodeCapacity;
+		final int total = multiplier * nodeCapacity;
+		return (total == numberOfChildren? multiplier: multiplier + 1);
 	}
 
 	private static int[] toIntArray(final List<Integer> list){

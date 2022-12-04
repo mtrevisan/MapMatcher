@@ -24,6 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
+import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
 import io.github.mtrevisan.mapmatcher.helpers.Envelope;
 import io.github.mtrevisan.mapmatcher.helpers.Polyline;
@@ -41,19 +43,21 @@ import java.util.List;
 //https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java
 class HPRTreeTest{
 
-//	@Test
+	@Test
 	void test(){
 		HPRtree<Polyline> tree = new HPRtree<>(5);
 
-		List<String> lines = readFile("src/test/resources/it.highways.txt");
+		List<String> lines = readFile("src/test/resources/it.highways.wkt");
 		for(final String line : lines){
 			Polyline polyline = parseLineString(line);
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
 		}
 		tree.build();
-		//TODO
-		System.out.println();
+
+		List<Polyline> roads = tree.query(Envelope.of(Coordinate.of(9.01670, 45.60973), Coordinate.of(9.40355, 45.33115)));
+
+		Assertions.assertEquals(10, roads.size());
 	}
 
 	@Test
@@ -63,14 +67,6 @@ class HPRTreeTest{
 		List<Object> list = tree.query(Envelope.of(0., 0., 1., 1.));
 
 		Assertions.assertTrue(list.isEmpty());
-	}
-
-	@Test
-	void empty_tree_using_item_visitor_query(){
-		HPRtree<Object> tree = new HPRtree<>(0);
-
-		ItemVisitor<Object> shouldNeverReachHere = item -> Assertions.fail("Should never reach here");
-		tree.query(Envelope.of(0., 0., 1., 1.), shouldNeverReachHere);
 	}
 
 	@Test
@@ -186,7 +182,8 @@ class HPRTreeTest{
 			String[] longitudeLatitude = coordinatePair.split(" ");
 			coordinates.add(Coordinate.of(Double.parseDouble(longitudeLatitude[0]), Double.parseDouble(longitudeLatitude[1])));
 		}
-		return Polyline.of(coordinates.toArray(Coordinate[]::new));
+		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
+		return Polyline.ofSimplified(distanceCalculator, 5., coordinates.toArray(Coordinate[]::new));
 	}
 
 }
