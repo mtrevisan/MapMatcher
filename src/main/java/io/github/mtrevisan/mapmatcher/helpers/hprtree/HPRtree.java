@@ -32,36 +32,27 @@ import java.util.List;
 
 
 /**
- * A Hilbert-Packed R-tree.  This is a static R-tree
- * which is packed by using the Hilbert ordering
- * of the tree items.
+ * A Hilbert-Packed R-tree.
  * <p>
- * The tree is constructed by sorting the items
- * by the Hilbert code of the midpoint of their envelope.
- * Then, a set of internal layers is created recursively
- * as follows:
+ * This is a static R-tree which is packed by using the Hilbert ordering of the tree items.
+ * </p>
+ * <p>
+ * The tree is constructed by sorting the items by the Hilbert code of the midpoint of their envelope.<br/>
+ * Then, a set of internal layers is created recursively as follows:
  * <ul>
- * <li>The items/nodes of the previous are partitioned into blocks
- * of size <code>nodeCapacity</code>
- * <li>For each block a layer node is created with range
- * equal to the envelope of the items/nodess in the block
+ * 	<li>The items/nodes of the previous are partitioned into blocks of size <code>nodeCapacity</code>
+ * 	<li>For each block a layer node is created with range equal to the envelope of the items/nodes in the block
  * </ul>
- * The internal layers are stored using an array to
- * store the node bounds.
- * The link between a node and its children is
- * stored implicitly in the indexes of the array.
- * For efficiency, the offsets to the layers
- * within the node array are pre-computed and stored.
+ * The internal layers are stored using an array to store the node bounds.<br/>
+ * The link between a node and its children is stored implicitly in the indexes of the array.<br/>
+ * For efficiency, the offsets to the layers within the node array are pre-computed and stored.
+ * </p>
  * <p>
- * NOTE: Based on performance testing,
- * the HPRtree is somewhat faster than the STRtree.
- * It should also be more memory-efficent,
- * due to fewer object allocations.
- * However, it is not clear whether this
- * will produce a significant improvement
- * for use in JTS operations.
+ * NOTE: Based on performance testing, the HPRtree is somewhat faster than the STRtree.<br/>
+ * It should also be more memory-efficient, due to fewer object allocations.<br/>
+ * </p>
  *
- * @author Martin Davis
+ * @see <a href="https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java">HPRtree.java</a>
  */
 public class HPRtree<T>{
 
@@ -266,7 +257,6 @@ public class HPRtree<T>{
 		for(int i = 0; i < layerSize; i += ENV_SIZE){
 			final int childStart = childLayerStart + nodeCapacity * i;
 			computeNodeBounds(layerStart + i, childStart, childLayerEnd);
-			//System.out.println("Layer: " + layerIndex + " node: " + i + " - " + getNodeEnvelope(layerStart + i));
 		}
 	}
 
@@ -305,10 +295,6 @@ public class HPRtree<T>{
 			nodeBounds[nodeIndex + 2] = maxX;
 		if(maxY > nodeBounds[nodeIndex + 3])
 			nodeBounds[nodeIndex + 3] = maxY;
-	}
-
-	private Envelope getNodeEnvelope(final int i){
-		return Envelope.of(nodeBounds[i], nodeBounds[i + 1], nodeBounds[i + 2], nodeBounds[i + 3]);
 	}
 
 	private static int[] computeLayerIndices(final int itemSize, final int nodeCapacity){

@@ -82,7 +82,14 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		double maxLatitude = Double.NEGATIVE_INFINITY;
 		double minLongitude = Double.POSITIVE_INFINITY;
 		double maxLongitude = Double.NEGATIVE_INFINITY;
-		for(final Coordinate point : coordinates){
+		if(coordinates.length > 0){
+			minLatitude = coordinates[0].getY();
+			maxLatitude = coordinates[0].getY();
+			minLongitude = coordinates[0].getX();
+			maxLongitude = coordinates[0].getX();
+		}
+		for(int i = 1; i < coordinates.length; i ++){
+			final Coordinate point = coordinates[i];
 			if(point.getX() < minLongitude)
 				minLongitude = point.getX();
 			else if(point.getX() > maxLongitude)

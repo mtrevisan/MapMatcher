@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
-import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
 import io.github.mtrevisan.mapmatcher.helpers.Envelope;
@@ -40,16 +39,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-//https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java
 class HPRTreeTest{
+
+	private static final GeodeticCalculator DISTANCE_CALCULATOR = new GeodeticCalculator();
+
 
 	@Test
 	void test(){
 		HPRtree<Polyline> tree = new HPRtree<>(5);
 
-		List<String> lines = readFile("src/test/resources/it.highways.wkt");
-		for(final String line : lines){
-			Polyline polyline = parseLineString(line);
+		List<Polyline> polylines = readFile("src/test/resources/it.highways.wkt");
+		for(final Polyline polyline : polylines){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
 		}
@@ -57,7 +57,7 @@ class HPRTreeTest{
 
 		List<Polyline> roads = tree.query(Envelope.of(Coordinate.of(9.01670, 45.60973), Coordinate.of(9.40355, 45.33115)));
 
-		Assertions.assertEquals(10, roads.size());
+		Assertions.assertEquals(931, roads.size());
 	}
 
 	@Test
@@ -156,14 +156,14 @@ class HPRTreeTest{
 	}
 
 
-	private static List<String> readFile(final String filename){
-		final List<String> lines = new ArrayList<>();
+	private static List<Polyline> readFile(final String filename){
+		final List<Polyline> lines = new ArrayList<>();
 		final File f = new File(filename);
 		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
 			String readLine;
 			while((readLine = br.readLine()) != null)
 				if(!readLine.isEmpty())
-					lines.add(readLine);
+					lines.add(parseLineString(readLine));
 		}
 		catch(IOException e){
 			e.printStackTrace();
@@ -176,14 +176,22 @@ class HPRTreeTest{
 			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
 
 		List<Coordinate> coordinates = new ArrayList<>(0);
-		String coordinatesLine = line.substring(line.indexOf('(') + 1, line.lastIndexOf(')'));
-		String[] coordinatePairs = coordinatesLine.split(", ");
-		for(String coordinatePair : coordinatePairs){
-			String[] longitudeLatitude = coordinatePair.split(" ");
-			coordinates.add(Coordinate.of(Double.parseDouble(longitudeLatitude[0]), Double.parseDouble(longitudeLatitude[1])));
+		int startIndex = line.indexOf('(') + 1;
+		while(true){
+			int lonIndex = line.indexOf(" ", startIndex + 1);
+			if(lonIndex < 0)
+				break;
+
+			int endIndex = line.indexOf(", ", lonIndex + 1);
+			if(endIndex < 0)
+				endIndex = line.indexOf(')', lonIndex + 1);
+			coordinates.add(Coordinate.of(
+				Double.parseDouble(line.substring(startIndex, lonIndex)),
+				Double.parseDouble(line.substring(lonIndex + 1, endIndex))
+			));
+			startIndex = endIndex + 2;
 		}
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
-		return Polyline.ofSimplified(distanceCalculator, 5., coordinates.toArray(Coordinate[]::new));
+		return Polyline.ofSimplified(DISTANCE_CALCULATOR, 5., coordinates.toArray(Coordinate[]::new));
 	}
 
 }

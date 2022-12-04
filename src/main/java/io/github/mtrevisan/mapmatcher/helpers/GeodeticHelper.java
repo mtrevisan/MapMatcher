@@ -109,13 +109,14 @@ public class GeodeticHelper{
 			final double lambdaA = Math.toRadians(onTrackPoint.getX());
 			double phiP = Math.toRadians(point.getY());
 			double lambdaP = Math.toRadians(point.getX());
-			final double distanceStartToPoint = StrictMath.acos(StrictMath.sin(phiA) * StrictMath.sin(phiP)
+			double distanceStartToPoint = StrictMath.acos(StrictMath.sin(phiA) * StrictMath.sin(phiP)
 				+ StrictMath.cos(phiA) * StrictMath.cos(phiP) * StrictMath.cos(lambdaA - lambdaP));
-			//for very short distances this formula is less susceptible to rounding error (what is "very short"?)
-//			final double aa = StrictMath.sin((phiA - phiP) / 2.);
-//			final double bb = StrictMath.sin((lambdaA - lambdaP) / 2.);
-//			final double distanceStartToPoint = 2. * StrictMath.asin(Math.sqrt(aa * aa
-//				+ StrictMath.cos(phiA) * StrictMath.cos(phiP) * bb * bb));
+			if(Double.isNaN(distanceStartToPoint)){
+				//for very short distances this formula is less susceptible to rounding error (what is "very short"?)
+				final double aa = StrictMath.sin((phiA - phiP) / 2.);
+				final double bb = StrictMath.sin((lambdaA - lambdaP) / 2.);
+				distanceStartToPoint = 2. * StrictMath.asin(Math.sqrt(aa * aa + StrictMath.cos(phiA) * StrictMath.cos(phiP) * bb * bb));
+			}
 
 			//[°]
 			final double initialBearingStartToPoint = initialBearing(onTrackPoint, point);
