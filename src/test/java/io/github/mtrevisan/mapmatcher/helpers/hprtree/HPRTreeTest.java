@@ -25,9 +25,9 @@
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
 import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
-import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
-import io.github.mtrevisan.mapmatcher.helpers.Envelope;
-import io.github.mtrevisan.mapmatcher.helpers.Polyline;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.Polyline;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

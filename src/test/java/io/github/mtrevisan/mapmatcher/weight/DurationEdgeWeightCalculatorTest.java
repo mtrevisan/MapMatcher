@@ -26,8 +26,8 @@ package io.github.mtrevisan.mapmatcher.weight;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
-import io.github.mtrevisan.mapmatcher.helpers.Polyline;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDurationCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

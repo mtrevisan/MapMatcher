@@ -24,9 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.distances;
 
-import io.github.mtrevisan.mapmatcher.helpers.Coordinate;
-import io.github.mtrevisan.mapmatcher.helpers.GeodeticHelper;
-import io.github.mtrevisan.mapmatcher.helpers.Polyline;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.Polyline;
 
 
 /**
@@ -72,7 +72,8 @@ public class GeodeticCalculator implements DistanceCalculator{
 
 	@Override
 	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		return GeodeticHelper.orthodromicDistance(point, GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point));
+		final Coordinate onTrackClosestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
+		return GeodeticHelper.orthodromicDistance(startPoint, onTrackClosestPoint);
 	}
 
 }

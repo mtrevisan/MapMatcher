@@ -24,8 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.kalman;
 
-import io.github.mtrevisan.mapmatcher.helpers.GPSCoordinate;
-import io.github.mtrevisan.mapmatcher.helpers.Polyline;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.GPSCoordinate;
+import io.github.mtrevisan.mapmatcher.helpers.spatial.Polyline;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
