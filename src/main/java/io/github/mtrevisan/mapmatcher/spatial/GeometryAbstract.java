@@ -24,31 +24,21 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 
-import java.time.ZonedDateTime;
-
-
-public class GPSCoordinate extends Coordinate{
-
-	private static final GeometryFactory FACTORY = new GeometryFactory(new GeodeticCalculator());
+import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 
-	private final ZonedDateTime timestamp;
+public abstract class GeometryAbstract{
+
+	protected final GeometryFactory factory;
 
 
-	public static GPSCoordinate of(final double longitude, final double latitude, final ZonedDateTime timestamp){
-		return new GPSCoordinate(longitude, latitude, timestamp);
+	public GeometryAbstract(final GeometryFactory factory){
+		this.factory = factory;
 	}
 
-	private GPSCoordinate(final double longitude, final double latitude, final ZonedDateTime timestamp){
-		super(FACTORY, longitude, latitude);
-
-		this.timestamp = timestamp;
-	}
-
-	public ZonedDateTime getTimestamp(){
-		return timestamp;
+	public GeometryFactory getFactory(){
+		return factory;
 	}
 
 }

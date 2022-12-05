@@ -24,8 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,13 +44,13 @@ import java.util.Stack;
  */
 public class RamerDouglasPeuckerSimplifier{
 
-	private final DistanceCalculator distanceCalculator;
+	private final GeometryFactory factory;
 
 	private double distanceTolerance;
 
 
-	public RamerDouglasPeuckerSimplifier(final DistanceCalculator distanceCalculator){
-		this.distanceCalculator = distanceCalculator;
+	public RamerDouglasPeuckerSimplifier(final GeometryFactory factory){
+		this.factory = factory;
 	}
 
 	/**
@@ -91,7 +89,7 @@ public class RamerDouglasPeuckerSimplifier{
 				for(int k = maxIndex + 1; k < endIndex; k ++)
 					if(usedPoints[k]){
 						final Coordinate nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
-						final double distance = distanceCalculator.distance(points[k], nearestPoint);
+						final double distance = nearestPoint.distance(points[k]);
 						if(distance > maxDistance){
 							maxIndex = k;
 							maxDistance = distance;
@@ -112,7 +110,7 @@ public class RamerDouglasPeuckerSimplifier{
 		final List<Coordinate> coordinates = new ArrayList<>(points.length);
 		for(int i = 0; i < points.length; i ++)
 			if(usedPoints[i])
-				coordinates.add(Coordinate.of(points[i]));
+				coordinates.add(factory.createPoint(points[i]));
 		return coordinates.toArray(Coordinate[]::new);
 	}
 

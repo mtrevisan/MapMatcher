@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.StringJoiner;
 
 
-public class Polyline implements Comparable<Polyline>, Serializable{
+public class Polyline extends GeometryAbstract implements Comparable<Polyline>, Serializable{
 
 	@Serial
 	private static final long serialVersionUID = -2848807287557631823L;
@@ -40,11 +40,13 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 	private final Coordinate[] coordinates;
 
 
-	public static Polyline of(final Coordinate... coordinates){
-		return new Polyline(coordinates);
+	public static Polyline of(final GeometryFactory factory, final Coordinate... coordinates){
+		return new Polyline(factory, coordinates);
 	}
 
-	private Polyline(final Coordinate... coordinates){
+	private Polyline(final GeometryFactory factory, final Coordinate... coordinates){
+		super(factory);
+
 		if(coordinates != null)
 			this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
 		else
@@ -104,7 +106,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 	public Polyline reverse(){
 		final Coordinate[] reversedCoordinates = Arrays.copyOf(coordinates, coordinates.length);
 		reverse(reversedCoordinates);
-		return of(reversedCoordinates);
+		return of(factory, reversedCoordinates);
 	}
 
 	/**

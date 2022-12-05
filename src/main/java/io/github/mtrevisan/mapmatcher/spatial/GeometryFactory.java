@@ -24,31 +24,43 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
-
-import java.time.ZonedDateTime;
+import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 
-public class GPSCoordinate extends Coordinate{
+//TODO
+//https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/geom/GeometryFactory.java
+public class GeometryFactory{
 
-	private static final GeometryFactory FACTORY = new GeometryFactory(new GeodeticCalculator());
+	final DistanceCalculator distanceCalculator;
 
 
-	private final ZonedDateTime timestamp;
-
-
-	public static GPSCoordinate of(final double longitude, final double latitude, final ZonedDateTime timestamp){
-		return new GPSCoordinate(longitude, latitude, timestamp);
+	public GeometryFactory(final DistanceCalculator distanceCalculator){
+		this.distanceCalculator = distanceCalculator;
 	}
 
-	private GPSCoordinate(final double longitude, final double latitude, final ZonedDateTime timestamp){
-		super(FACTORY, longitude, latitude);
-
-		this.timestamp = timestamp;
+	/**
+	 * Constructs a <code>Coordinate</code> at (x, y).
+	 *
+	 * @param x	The x-ordinate.
+	 * @param y	The y-ordinate.
+	 */
+	public Coordinate createPoint(final double x, final double y){
+		//TODO
+//		return Coordinate.of(distanceCalculator, x, y);
+		return null;
 	}
 
-	public ZonedDateTime getTimestamp(){
-		return timestamp;
+	public Coordinate createPoint(final Coordinate coordinate){
+		//TODO
+//		return Coordinate.of(distanceCalculator, coordinate);
+		return null;
+	}
+
+
+	public Polyline createPolyline(final Coordinate... coordinates){
+		//TODO
+//		return Polyline.of(distanceCalculator, coordinates);
+		return null;
 	}
 
 }

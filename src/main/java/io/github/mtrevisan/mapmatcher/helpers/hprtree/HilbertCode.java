@@ -203,7 +203,7 @@ class HilbertCode{
 	 * @param index	The index of the point on the curve.
 	 * @return	The point on the Hilbert curve.
 	 */
-	static Coordinate decode(final int level, int index){
+	static long[] decode(final int level, int index){
 		checkLevel(level);
 		final int levelClamp = levelClamp(level);
 
@@ -223,7 +223,7 @@ class HilbertCode{
 		final long x = (a ^ i1) >> (16 - levelClamp);
 		final long y = (a ^ i0 ^ i1) >> (16 - levelClamp);
 
-		return Coordinate.of(x, y);
+		return new long[]{x, y};
 	}
 
 	private static long prefixScan(long x){

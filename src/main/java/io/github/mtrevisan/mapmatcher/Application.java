@@ -41,6 +41,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSCoordinate;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
@@ -77,25 +78,26 @@ public class Application{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		//[m]
 		final double distanceTolerance = 10.;
 		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(distanceCalculator);
 		simplifier.setDistanceTolerance(distanceTolerance);
-		final Polyline edge0 = Polyline.of(simplifier.simplify(node11, node12_31_41));
-		final Polyline edge1 = Polyline.of(simplifier.simplify(node12_31_41, node22, node23));
-		final Polyline edge2 = Polyline.of(simplifier.simplify(node12_31_41, node32_51_61));
-		final Polyline edge3 = Polyline.of(simplifier.simplify(node12_31_41, node42));
-		final Polyline edge4 = Polyline.of(simplifier.simplify(node32_51_61, node52));
-		final Polyline edge5 = Polyline.of(simplifier.simplify(node32_51_61, node62));
+		final Polyline edge0 = factory.createPolyline(simplifier.simplify(node11, node12_31_41));
+		final Polyline edge1 = factory.createPolyline(simplifier.simplify(node12_31_41, node22, node23));
+		final Polyline edge2 = factory.createPolyline(simplifier.simplify(node12_31_41, node32_51_61));
+		final Polyline edge3 = factory.createPolyline(simplifier.simplify(node12_31_41, node42));
+		final Polyline edge4 = factory.createPolyline(simplifier.simplify(node32_51_61, node52));
+		final Polyline edge5 = factory.createPolyline(simplifier.simplify(node32_51_61, node62));
 		final Polyline[] polylines = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final HPRtree<Polyline> tree = new HPRtree<>();
 		for(final Polyline polyline : polylines){

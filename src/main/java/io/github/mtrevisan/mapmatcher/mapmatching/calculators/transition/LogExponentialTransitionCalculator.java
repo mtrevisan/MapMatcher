@@ -74,7 +74,7 @@ public class LogExponentialTransitionCalculator implements TransitionProbability
 
 		final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
 			.simplePath();
-		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(path);
+		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(path, fromSegment.getPolyline().getFactory());
 		final double pathDistance = distanceCalculator.alongTrackDistance(currentObservation, pathAsPolyline)
 			- distanceCalculator.alongTrackDistance(previousObservation, pathAsPolyline);
 

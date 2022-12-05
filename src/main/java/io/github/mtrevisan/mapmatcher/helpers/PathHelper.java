@@ -27,6 +27,7 @@ package io.github.mtrevisan.mapmatcher.helpers;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
@@ -49,7 +50,7 @@ public class PathHelper{
 		return (reverseCount > 0 && reverseCount < pathEdges.size());
 	}
 
-	public static Polyline extractPathAsPolyline(final List<Node> path){
+	public static Polyline extractPathAsPolyline(final List<Node> path, final GeometryFactory factory){
 		Polyline polyline = null;
 
 		//search for a feasible path between the projection onto fromSegment and the one onto toSegment
@@ -72,10 +73,10 @@ public class PathHelper{
 					System.arraycopy(coordinates, (size > 0? 1: 0), mergedCoordinates, size, count);
 					size += count;
 				}
-				polyline = Polyline.of(mergedCoordinates);
+				polyline = factory.createPolyline(mergedCoordinates);
 			}
 		}
-		return (polyline != null? polyline: Polyline.of());
+		return (polyline != null? polyline: factory.createPolyline());
 	}
 
 	public static List<Edge> extractPathAsEdges(final List<Node> path){

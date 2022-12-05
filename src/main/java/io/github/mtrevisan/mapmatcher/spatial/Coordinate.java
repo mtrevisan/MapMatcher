@@ -29,7 +29,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 
-public class Coordinate implements Comparable<Coordinate>, Serializable{
+public class Coordinate extends GeometryAbstract implements Comparable<Coordinate>, Serializable{
 
 	@Serial
 	private static final long serialVersionUID = 3422386613349753773L;
@@ -44,22 +44,19 @@ public class Coordinate implements Comparable<Coordinate>, Serializable{
 	 * @param x	The x-ordinate.
 	 * @param y	The y-ordinate.
 	 */
-	public static Coordinate of(final double x, final double y){
-		return new Coordinate(x, y);
+	public static Coordinate of(final GeometryFactory factory, final double x, final double y){
+		return new Coordinate(factory, x, y);
 	}
 
-	public static Coordinate of(final Coordinate coordinate){
-		return new Coordinate(coordinate);
+	public static Coordinate of(final GeometryFactory factory, final Coordinate coordinate){
+		return new Coordinate(factory, coordinate.x, coordinate.y);
 	}
 
-	protected Coordinate(final double x, final double y){
+	protected Coordinate(final GeometryFactory factory, final double x, final double y){
+		super(factory);
+
 		this.x = x;
 		this.y = y;
-	}
-
-	private Coordinate(final Coordinate coordinate){
-		this.x = coordinate.x;
-		this.y = coordinate.y;
 	}
 
 	public double getX(){
@@ -68,6 +65,11 @@ public class Coordinate implements Comparable<Coordinate>, Serializable{
 
 	public double getY(){
 		return y;
+	}
+
+
+	public double distance(final Coordinate point){
+		return factory.distanceCalculator.distance(this, point);
 	}
 
 

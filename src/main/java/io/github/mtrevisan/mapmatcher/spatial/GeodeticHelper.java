@@ -84,7 +84,7 @@ public class GeodeticHelper{
 		final double initialAzimuth = (initialBearing > 180.? initialBearing - 360.: initialBearing);
 		final GeodesicData result = REFERENCE_ELLIPSOID.Direct(startPoint.getY(), startPoint.getX(), initialAzimuth, distance,
 			GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
-		return Coordinate.of(result.lon2, result.lat2);
+		return startPoint.factory.createPoint(result.lon2, result.lat2);
 	}
 
 	/**
