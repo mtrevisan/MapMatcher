@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
@@ -30,10 +30,19 @@ import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import java.util.Collection;
 
 
-public interface EmissionProbabilityCalculator{
+public class UniformInitialCalculator implements InitialProbabilityCalculator{
 
-	void updateEmissionProbability(Coordinate observation, Collection<Edge> edges);
+	private double initialProbability;
 
-	double emissionProbability(Coordinate observation, Edge segment);
+
+	@Override
+	public void calculateInitialProbability(final Coordinate observation, final Collection<Edge> segments){
+		initialProbability = InitialProbabilityCalculator.logPr(1. / segments.size());
+	}
+
+	@Override
+	public double initialProbability(final Edge segment){
+		return initialProbability;
+	}
 
 }

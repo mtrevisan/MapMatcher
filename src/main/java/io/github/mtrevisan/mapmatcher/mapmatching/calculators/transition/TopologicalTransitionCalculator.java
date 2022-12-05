@@ -22,19 +22,17 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -44,12 +42,6 @@ public class TopologicalTransitionCalculator implements TransitionProbabilityCal
 
 	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
 
-	private final DistanceCalculator distanceCalculator;
-
-
-	public TopologicalTransitionCalculator(final DistanceCalculator distanceCalculator){
-		this.distanceCalculator = distanceCalculator;
-	}
 
 	/**
 	 * Calculate transition probability
@@ -63,20 +55,6 @@ public class TopologicalTransitionCalculator implements TransitionProbabilityCal
 	 *    <dt>the same (i = j)</dt>
 	 *    	<dd><code>r_ij = 0</code>, thus <code>a_ij = 1</code>, and <code>-ln(a_ij) = 0</code></dd>
 	 * </dl>
-	 * </p>
-	 *
-	 * Otherwise
-	 *
-	 * <p>
-	 * Pr(r_i-1 -> r_i) = dist(o_i-1, o_i) / pathDistance(x_i-1, x_i), where x_K is the projection of the observation o_k onto the segment r
-	 * </p>
-	 *
-	 * Otherwise
-	 *
-	 * <p>
-	 * Exponential function of the difference between the route length and the great circle distance between o_t and o_t+1
-	 * Pr(r_i | r_i-1) = β ⋅ exp(-β ⋅ |dist(o_i-1, o_i) - pathDistance(x_i-1, x_i)|) (β "can be" 3), where x_k is the projection of the
-	 * observation o_k onto the segment r
 	 * </p>
 	 */
 	@Override
@@ -93,54 +71,6 @@ public class TopologicalTransitionCalculator implements TransitionProbabilityCal
 				a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
 		}
 		return InitialProbabilityCalculator.logPr(a);
-	}
-
-	private static Polyline extractPathAsPolyline(final Node from, final Node to, final Graph graph){
-		Polyline polyline = null;
-
-		//search for a feasible path between the projection onto fromSegment and the one onto toSegment
-		final List<Node> path = PATH_FINDER.findPath(from, to, graph)
-			.simplePath();
-		if(!path.isEmpty()){
-			final List<Polyline> edges = new ArrayList<>(path.size() - 1);
-			int size = 0;
-			for(int i = 1; i < path.size(); i ++){
-				final Node currentNode = path.get(i - 1);
-				final Node nextNode = path.get(i);
-				final Edge currentNextEdge = currentNode.findOutEdges(nextNode);
-				assert currentNextEdge != null;
-				final Polyline currentNextPolyline = currentNextEdge.getPolyline();
-				size += currentNextPolyline.size() - (size > 0? 1: 0);
-				edges.add(currentNextPolyline);
-			}
-
-			//merge segments
-			if(size > 0){
-				final Coordinate[] mergedCoordinates = new Coordinate[size];
-				size = 0;
-				for(final Polyline edgePolyline : edges){
-					final Coordinate[] coordinates = edgePolyline.getCoordinates();
-					final int count = coordinates.length - (size > 0? 1: 0);
-					assert size == 0 || mergedCoordinates[size - 1].equals(coordinates[0]);
-					System.arraycopy(coordinates, (size > 0? 1: 0), mergedCoordinates, size, count);
-					size += count;
-				}
-				polyline = Polyline.of(mergedCoordinates);
-			}
-		}
-		return polyline;
-	}
-
-	private static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){
-		return (fromSegment.getFrom().getCoordinate().equals(toSegment.getTo().getCoordinate())
-			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
-	}
-
-	private boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation, final Polyline polyline){
-		//calculate Along-Track Distance
-		final double previousATD = distanceCalculator.alongTrackDistance(previousObservation, polyline);
-		final double currentATD = distanceCalculator.alongTrackDistance(currentObservation, polyline);
-		return (previousATD <= currentATD);
 	}
 
 }

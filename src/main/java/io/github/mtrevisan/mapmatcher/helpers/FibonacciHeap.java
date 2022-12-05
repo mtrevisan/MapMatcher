@@ -75,8 +75,8 @@ public class FibonacciHeap<T>{
 	@SuppressWarnings("SuspiciousNameCombination")
 	private void consolidate(){
 		/**
-		 * The magic number 45 comes from log base Φ of {@link Integer.MAX_VALUE}, which is the most elements we will ever hold, and
-		 * log base Φ represents the largest degree of any root list node.
+		 * The magic number 45 comes from logarithm base Φ of {@link Integer.MAX_VALUE}, which is the most elements we will ever hold, and
+		 * logarithm base Φ represents the largest degree of any root list node.
 		 */
 		@SuppressWarnings("unchecked")
 		final Node<T>[] nodes = (Node<T>[])Array.newInstance(Node.class, 45);

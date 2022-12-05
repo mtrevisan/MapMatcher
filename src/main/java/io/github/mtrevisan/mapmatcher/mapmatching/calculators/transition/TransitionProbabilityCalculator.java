@@ -22,27 +22,16 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
+import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 
-import java.util.Collection;
 
+public interface TransitionProbabilityCalculator{
 
-public class UniformInitialCalculator implements InitialProbabilityCalculator{
-
-	private double initialProbability;
-
-
-	@Override
-	public void calculateInitialProbability(final Coordinate observation, final Collection<Edge> segments){
-		initialProbability = InitialProbabilityCalculator.logPr(1. / segments.size());
-	}
-
-	@Override
-	public double initialProbability(final Edge segment){
-		return initialProbability;
-	}
+	double transitionProbability(Edge fromSegment, Edge toSegment, Graph graph,
+		Coordinate previousObservation, Coordinate currentObservation);
 
 }

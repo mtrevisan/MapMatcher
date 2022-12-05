@@ -22,16 +22,18 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 
+import java.util.Collection;
 
-public interface TransitionProbabilityCalculator{
 
-	double transitionProbability(Edge fromSegment, Edge toSegment, Graph graph,
-		Coordinate previousObservation, Coordinate currentObservation);
+public interface EmissionProbabilityCalculator{
+
+	void updateEmissionProbability(Coordinate observation, Collection<Edge> edges);
+
+	double emissionProbability(Coordinate observation, Edge segment);
 
 }

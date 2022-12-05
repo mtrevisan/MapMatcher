@@ -26,9 +26,9 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.InitialProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 
 import java.util.Collection;
