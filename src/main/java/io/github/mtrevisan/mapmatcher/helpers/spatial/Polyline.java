@@ -136,7 +136,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		return of(convexHull.toArray(Coordinate[]::new));
 	}
 
-	private void polarSort(final Coordinate[] points){
+	static void polarSort(final Coordinate[] points){
 		//find the lowest point in the set; if two or more points have the same minimum Y coordinate choose the one with the minimum X
 		//(this focal point is put in array location points[0])
 		final int pivotIndex = getLowestPoint(points);
@@ -157,7 +157,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 	 * @param points	The list of points to return the lowest point from.
 	 * @return	The index of the point with the lowest Y (or X) coordinate.
 	 */
-	private int getLowestPoint(final Coordinate[] points){
+	static int getLowestPoint(final Coordinate[] points){
 		int lowestIndex = 0;
 		for(int i = 1; i < points.length; i ++){
 			final Coordinate tmp = points[i];
@@ -176,7 +176,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Graham_scan">Graham scan</a>
 	 */
-	private Stack<Coordinate> grahamScan(final Coordinate[] coordinates){
+	private static Stack<Coordinate> grahamScan(final Coordinate[] coordinates){
 		final Stack<Coordinate> hull = new Stack<>();
 		hull.push(coordinates[0]);
 		hull.push(coordinates[1]);
@@ -202,6 +202,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 
 		return hull;
 	}
+
 
 	public boolean isClosed(){
 		return (coordinates != null && coordinates[0].equals(coordinates[coordinates.length - 1]));
@@ -231,6 +232,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 			i ++;
 		}
 	}
+
 
 	@Override
 	public boolean equals(final Object obj){
@@ -293,7 +295,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 
 		@Override
 		public int compare(final Coordinate p1, final Coordinate p2){
-			return polarCompare(reference, p1, p2);
+			return -polarCompare(reference, p1, p2);
 		}
 
 		/**
@@ -312,41 +314,34 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		 * @param r	The reference point.
 		 * @param p	A point.
 		 * @param q	Another point.
-		 * @return	<code>-1</code>, <code>0</code> or <code>1</code> depending on whether `p` is less than, equal to or greater than `q`
-		 * 	with respect to `r`.
+		 * @return	<code>-1</code>, <code>0</code>, or <code>1</code> depending on whether `p` is less than, equal to, or greater than `q`
+		 * 	with respect to `r` respectively.
 		 */
 		static int polarCompare(final Coordinate r, final Coordinate p, final Coordinate q){
-			final int orientation = orientation(r, p, q);
+			int orientation = orientation(r, p, q);
 			if(orientation != COLLINEAR)
 				return orientation;
 
 			//the points are collinear, so compare based on distance from the reference
-			if(p.getY() > q.getY())
-				return COUNTER_CLOCKWISE;
-			if(p.getY() < q.getY())
-				return CLOCKWISE;
+			orientation = Double.compare(Math.abs(q.getY() - r.getY()), Math.abs(p.getY() - r.getY()));
+			if(orientation != COLLINEAR)
+				return orientation;
 
 			//the points lie in a horizontal line, which should also contain the reference (since they are collinear)
-			return Double.compare(p.getX(), q.getX());
+			return Double.compare(Math.abs(q.getX() - r.getX()), Math.abs(p.getX() - r.getX()));
 		}
 
 		static int orientation(final Coordinate r, final Coordinate p, final Coordinate q){
 			//fast filter for orientation index (avoids use of slow extended-precision arithmetic in many cases)
-			final double rx = r.getX();
-			final double ry = r.getY();
-			final double px = p.getX();
-			final double py = p.getY();
-			final double qx = q.getX();
-			final double qy = q.getY();
 			final int index = orientationIndexFilter(r, p, q);
 			if(index <= 1)
 				return index;
 
 			//normalize coordinates
-			final double dx1 = qx - px;
-			final double dy1 = qy - py;
-			final double dx2 = rx - qx;
-			final double dy2 = ry - qy;
+			final double dx1 = q.getX() - p.getX();
+			final double dy1 = q.getY() - p.getY();
+			final double dx2 = r.getX() - q.getX();
+			final double dy2 = r.getY() - q.getY();
 
 			//sign of determinant
 			return (int)Math.signum(dx1 * dy2 - dy1 * dx2);
@@ -362,7 +357,7 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		 * thus providing better average performance.
 		 * </p>
 		 * <p>
-		 * Uses an approach due to Jonathan Shewchuk, which is in the public domain.
+		 * Uses an approach due to Jonathan Shewchuk.
 		 * </p>
 		 *
 		 * @param r	C coordinate.

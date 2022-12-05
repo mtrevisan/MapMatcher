@@ -24,8 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.spatial;
 
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.GeodeticHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
