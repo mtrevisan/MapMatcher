@@ -45,7 +45,7 @@ public interface DistanceCalculator{
 			final Coordinate startPoint = coordinates[i - 1];
 			final Coordinate endPoint = coordinates[i];
 			final Coordinate closestPoint = onTrackClosestPoint(startPoint, endPoint, point);
-			final double distance = distance(closestPoint, startPoint, endPoint);
+			final double distance = distance(point, closestPoint);
 			if(distance < minClosestPointDistance){
 				minClosestPointDistance = distance;
 				minClosestPoint = closestPoint;

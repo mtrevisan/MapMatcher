@@ -69,7 +69,7 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 			final Coordinate currentObservationClosest = distanceCalculator.onTrackClosestPoint(observation, segment.getPolyline());
 			final double angleRoad = distanceCalculator.initialBearing(previousObservationClosest, currentObservationClosest);
 			final double angleGPS = distanceCalculator.initialBearing(previousObservation, observation);
-			tau = Math.exp(Math.abs(angleRoad - angleGPS)) / Math.exp(2. / Math.PI);
+			tau = Math.exp(Math.toRadians(Math.abs(angleRoad - angleGPS)) - 2. / Math.PI);
 		}
 
 		//expansion of:
