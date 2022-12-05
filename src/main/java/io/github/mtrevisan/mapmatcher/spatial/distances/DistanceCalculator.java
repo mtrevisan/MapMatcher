@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2022 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,28 +22,31 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.spatial;
+package io.github.mtrevisan.mapmatcher.spatial.distances;
 
-import java.time.ZonedDateTime;
-
-
-public class GPSCoordinate extends Coordinate{
-
-	private final ZonedDateTime timestamp;
+import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-	public static GPSCoordinate of(final double longitude, final double latitude, final ZonedDateTime timestamp){
-		return new GPSCoordinate(longitude, latitude, timestamp);
-	}
+public interface DistanceCalculator{
 
-	private GPSCoordinate(final double longitude, final double latitude, final ZonedDateTime timestamp){
-		super(longitude, latitude);
+	double distance(Coordinate startPoint, Coordinate endPoint);
 
-		this.timestamp = timestamp;
-	}
+	double distance(Coordinate point, Polyline polyline);
 
-	public ZonedDateTime getTimestamp(){
-		return timestamp;
+	double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point);
+
+	default double alongTrackDistance(final Coordinate point, final Polyline polyline){
+		double minNearestPointDistance = Double.MAX_VALUE;
+		final Coordinate[] coordinates = polyline.getCoordinates();
+		for(int i = 1; i < coordinates.length; i ++){
+			final Coordinate startPoint = coordinates[i - 1];
+			final Coordinate endPoint = coordinates[i];
+			final double distance = Math.abs(alongTrackDistance(startPoint, endPoint, point));
+			if(distance < minNearestPointDistance)
+				minNearestPointDistance = distance;
+		}
+		return minNearestPointDistance;
 	}
 
 }

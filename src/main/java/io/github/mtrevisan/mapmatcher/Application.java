@@ -24,18 +24,11 @@
  */
 package io.github.mtrevisan.mapmatcher;
 
-import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
-import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.helpers.kalman.GPSPositionSpeedFilter;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Envelope;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.GPSCoordinate;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.GeodeticHelper;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.EmissionProbabilityCalculator;
@@ -44,6 +37,14 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.LogBayesianEmissio
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TopologicalNoUTurnTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.UniformInitialCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.spatial.GPSCoordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.RamerDouglasPeuckerSimplifier;
+import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -86,12 +87,14 @@ public class Application{
 
 		//[m]
 		final double distanceTolerance = 10.;
-		final Polyline edge0 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node11, node12_31_41);
-		final Polyline edge1 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node12_31_41, node42);
-		final Polyline edge4 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node32_51_61, node52);
-		final Polyline edge5 = Polyline.ofSimplified(distanceCalculator, distanceTolerance, node32_51_61, node62);
+		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(distanceCalculator);
+		simplifier.setDistanceTolerance(distanceTolerance);
+		final Polyline edge0 = Polyline.of(simplifier.simplify(node11, node12_31_41));
+		final Polyline edge1 = Polyline.of(simplifier.simplify(node12_31_41, node22, node23));
+		final Polyline edge2 = Polyline.of(simplifier.simplify(node12_31_41, node32_51_61));
+		final Polyline edge3 = Polyline.of(simplifier.simplify(node12_31_41, node42));
+		final Polyline edge4 = Polyline.of(simplifier.simplify(node32_51_61, node52));
+		final Polyline edge5 = Polyline.of(simplifier.simplify(node32_51_61, node62));
 		final Polyline[] polylines = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final HPRtree<Polyline> tree = new HPRtree<>();
 		for(final Polyline polyline : polylines){

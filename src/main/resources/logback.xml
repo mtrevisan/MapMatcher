@@ -33,11 +33,11 @@
 	</appender>
 
 	<appender name="fileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>boxon.log</file>
+		<file>mapMatcher.log</file>
 		<append>true</append>
 		<immediateFlush>false</immediateFlush>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>boxon.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+			<fileNamePattern>mapMatcher.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder>

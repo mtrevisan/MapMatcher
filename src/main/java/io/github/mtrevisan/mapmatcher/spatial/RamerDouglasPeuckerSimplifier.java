@@ -22,9 +22,9 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.spatial;
+package io.github.mtrevisan.mapmatcher.spatial;
 
-import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,14 +46,12 @@ import java.util.Stack;
  */
 public class RamerDouglasPeuckerSimplifier{
 
-	private final Coordinate[] points;
 	private final DistanceCalculator distanceCalculator;
 
 	private double distanceTolerance;
 
 
-	public RamerDouglasPeuckerSimplifier(final Coordinate[] points, final DistanceCalculator distanceCalculator){
-		this.points = points;
+	public RamerDouglasPeuckerSimplifier(final DistanceCalculator distanceCalculator){
 		this.distanceCalculator = distanceCalculator;
 	}
 
@@ -72,7 +70,7 @@ public class RamerDouglasPeuckerSimplifier{
 		this.distanceTolerance = distanceTolerance;
 	}
 
-	public Coordinate[] simplify(){
+	public Coordinate[] simplify(final Coordinate... points){
 		final boolean[] usedPoints = new boolean[points.length];
 		Arrays.fill(usedPoints, true);
 

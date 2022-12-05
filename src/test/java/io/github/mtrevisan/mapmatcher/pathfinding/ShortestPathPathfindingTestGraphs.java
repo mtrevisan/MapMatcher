@@ -24,14 +24,14 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
-import io.github.mtrevisan.mapmatcher.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
 
 import java.util.ArrayList;
 import java.util.Arrays;

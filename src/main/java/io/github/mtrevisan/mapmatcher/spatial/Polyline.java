@@ -22,9 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.spatial;
-
-import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
+package io.github.mtrevisan.mapmatcher.spatial;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -44,13 +42,6 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 
 	public static Polyline of(final Coordinate... coordinates){
 		return new Polyline(coordinates);
-	}
-
-	public static Polyline ofSimplified(final DistanceCalculator distanceCalculator, final double distanceTolerance,
-			final Coordinate... coordinates){
-		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(coordinates, distanceCalculator);
-		simplifier.setDistanceTolerance(distanceTolerance);
-		return of(simplifier.simplify());
 	}
 
 	private Polyline(final Coordinate... coordinates){
@@ -104,19 +95,6 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 				maxLatitude = point.getY();
 		}
 		return Envelope.of(minLongitude, maxLongitude, minLatitude, maxLatitude);
-	}
-
-	/**
-	 * Returns a (closed) {@link Polyline} that represents the convex hull of this polyline.
-	 * <p>
-	 * The returned geometry contains the minimal number of points needed to represent the convex hull.<br/>
-	 * In particular, no more than two consecutive points will be collinear.
-	 * </p>
-	 *
-	 * @return	The convex hull.
-	 */
-	public Polyline getConvexHull(){
-		return GrahamScan.getConvexHull(this);
 	}
 
 	public boolean isClosed(){

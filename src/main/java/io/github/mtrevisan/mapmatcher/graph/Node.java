@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 
 import java.util.Collection;
 import java.util.HashSet;

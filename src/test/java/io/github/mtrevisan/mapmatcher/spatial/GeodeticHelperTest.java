@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.spatial;
+package io.github.mtrevisan.mapmatcher.spatial;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

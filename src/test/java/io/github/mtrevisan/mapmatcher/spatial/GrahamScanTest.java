@@ -22,10 +22,10 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.spatial;
+package io.github.mtrevisan.mapmatcher.spatial;
 
-import io.github.mtrevisan.mapmatcher.distances.DistanceCalculator;
-import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -410,7 +410,9 @@ class GrahamScanTest{
 		Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
 		DistanceCalculator distanceCalculator = new GeodeticCalculator();
 
-		Polyline polyline = Polyline.ofSimplified(distanceCalculator, 2_000., node12_31_41, node22, node23);
+		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(distanceCalculator);
+		simplifier.setDistanceTolerance(2_000.);
+		Polyline polyline = Polyline.of(simplifier.simplify(node12_31_41, node22, node23));
 
 		Assertions.assertEquals(2, polyline.size());
 	}
@@ -422,7 +424,9 @@ class GrahamScanTest{
 		Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
 		DistanceCalculator distanceCalculator = new GeodeticCalculator();
 
-		Polyline polyline = Polyline.ofSimplified(distanceCalculator, 10., node12_31_41, node22, node23);
+		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(distanceCalculator);
+		simplifier.setDistanceTolerance(10.);
+		Polyline polyline = Polyline.of(simplifier.simplify(node12_31_41, node22, node23));
 
 		Assertions.assertEquals(3, polyline.size());
 	}

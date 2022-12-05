@@ -22,11 +22,11 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.distances;
+package io.github.mtrevisan.mapmatcher.spatial.distances;
 
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.GeodeticHelper;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
 /**

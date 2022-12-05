@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.pathfinding.calculators;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 
 
 public class GeodeticDistanceCalculator implements EdgeWeightCalculator{

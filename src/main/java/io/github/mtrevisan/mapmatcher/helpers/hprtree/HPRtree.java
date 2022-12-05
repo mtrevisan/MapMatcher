@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,7 +97,7 @@ public class HPRtree<T>{
 		if(isBuilt)
 			throw new IllegalStateException("Cannot insert items after tree is built.");
 
-		items.add(new Item<T>(itemEnvelope, item));
+		items.add(new Item<>(itemEnvelope, item));
 		totalExtent.expandToInclude(itemEnvelope);
 	}
 

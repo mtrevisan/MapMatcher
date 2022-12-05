@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 
 
 /**
@@ -209,8 +209,8 @@ class HilbertCode{
 
 		index = index << (32 - 2 * levelClamp);
 
-		final long i0 = deinterleave(index);
-		final long i1 = deinterleave(index >> 1);
+		final long i0 = deInterleave(index);
+		final long i1 = deInterleave(index >> 1);
 
 		final long t0 = (i0 | i1) ^ 0xFFFF;
 		final long t1 = i0 & i1;
@@ -234,7 +234,7 @@ class HilbertCode{
 		return x;
 	}
 
-	private static long deinterleave(int x){
+	private static long deInterleave(int x){
 		x = x & 0x55555555;
 		x = (x | (x >> 1)) & 0x33333333;
 		x = (x | (x >> 2)) & 0x0F0F0F0F;

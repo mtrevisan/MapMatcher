@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.spatial;
+package io.github.mtrevisan.mapmatcher.spatial;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -48,8 +48,8 @@ public class Coordinate implements Comparable<Coordinate>, Serializable{
 		return new Coordinate(x, y);
 	}
 
-	public static Coordinate of(final Coordinate coord){
-		return new Coordinate(coord);
+	public static Coordinate of(final Coordinate coordinate){
+		return new Coordinate(coordinate);
 	}
 
 	protected Coordinate(final double x, final double y){
@@ -57,9 +57,9 @@ public class Coordinate implements Comparable<Coordinate>, Serializable{
 		this.y = y;
 	}
 
-	private Coordinate(final Coordinate coord){
-		this.x = coord.x;
-		this.y = coord.y;
+	private Coordinate(final Coordinate coordinate){
+		this.x = coordinate.x;
+		this.y = coordinate.y;
 	}
 
 	public double getX(){

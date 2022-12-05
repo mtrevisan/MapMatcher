@@ -24,10 +24,11 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
-import io.github.mtrevisan.mapmatcher.distances.GeodeticCalculator;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Envelope;
-import io.github.mtrevisan.mapmatcher.helpers.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.RamerDouglasPeuckerSimplifier;
+import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -189,7 +190,10 @@ class HPRTreeTest{
 			));
 			startIndex = endIndex + 2;
 		}
-		return Polyline.ofSimplified(DISTANCE_CALCULATOR, 5., coordinates.toArray(Coordinate[]::new));
+
+		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(DISTANCE_CALCULATOR);
+		simplifier.setDistanceTolerance(5.);
+		return Polyline.of(simplifier.simplify(coordinates.toArray(Coordinate[]::new)));
 	}
 
 }
