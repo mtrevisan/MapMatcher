@@ -83,7 +83,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		for(final Edge edge : graphEdges){
 			final double probability = initialProbabilityCalculator.initialProbability(edge)
-				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge);
+				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, (i > 0? observations[i - 1]: null));
 			fScores.computeIfAbsent(edge, k -> new double[m])[i] = probability;
 			path.computeIfAbsent(edge, k -> new Edge[n])[i] = edge;
 
@@ -112,7 +112,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 						fScores.get(toEdge)[i] = probability;
 
 						final double newProbability = probability
-							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge);
+							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, (i > 0? observations[i - 1]: null));
 						//NOTE: it is important that the same node doesn't appear in the priority queue more than once (each entry corresponding
 						// to a different path to the node, and each with a different cost).
 						// A standard approach here is to check if a node about to be added already appears in the priority queue. If it does,
