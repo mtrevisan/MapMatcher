@@ -89,7 +89,8 @@ public class LogBayesianEmissionCalculator implements EmissionProbabilityCalcula
 	 * </p>
 	 */
 	@Override
-	public double emissionProbability(final Coordinate observation, final Edge segment){
+	public double emissionProbability(final Coordinate observation, final Edge segment,
+			final Coordinate previousObservation){
 		return emissionProbability.get(segment);
 	}
 

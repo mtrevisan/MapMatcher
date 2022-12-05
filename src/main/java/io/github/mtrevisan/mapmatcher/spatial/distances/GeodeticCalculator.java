@@ -70,9 +70,20 @@ public class GeodeticCalculator implements DistanceCalculator{
 		return minNearestPointDistance;
 	}
 
+
+	@Override
+	public double initialBearing(final Coordinate startPoint, final Coordinate endPoint){
+		return GeodeticHelper.initialBearing(startPoint, endPoint);
+	}
+
+	@Override
+	public Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+		return GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
+	}
+
 	@Override
 	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		final Coordinate onTrackClosestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
+		final Coordinate onTrackClosestPoint = onTrackClosestPoint(startPoint, endPoint, point);
 		return GeodeticHelper.orthodromicDistance(startPoint, onTrackClosestPoint);
 	}
 

@@ -57,14 +57,26 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	 * @see <a href="https://hal-enac.archives-ouvertes.fr/hal-01160130/document">Characterization of GNSS receiver position errors for user integrity monitoring in urban environments</a>
 	 */
 	@Override
-	public double emissionProbability(final Coordinate observation, final Edge segment){
+	public double emissionProbability(final Coordinate observation, final Edge segment,
+			final Coordinate previousObservation){
 		final double distance = distanceCalculator.distance(observation, segment.getPolyline());
 		final double tmp = distance / observationStandardDeviation;
+
+		//weight given on vehicle heading, which is related to the road direction angle and the trajectory direction angle
+		double tau = 1.;
+		if(previousObservation != null){
+			final Coordinate previousObservationClosest = distanceCalculator.onTrackClosestPoint(previousObservation, segment.getPolyline());
+			final Coordinate currentObservationClosest = distanceCalculator.onTrackClosestPoint(observation, segment.getPolyline());
+			final double angleRoad = distanceCalculator.initialBearing(previousObservationClosest, currentObservationClosest);
+			final double angleGPS = distanceCalculator.initialBearing(previousObservation, observation);
+			tau = Math.exp(Math.abs(angleRoad - angleGPS)) / Math.exp(2. / Math.PI);
+		}
+
 		//expansion of:
-		//final double probability = Math.exp(-0.5 * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
+		//final double probability = Math.exp(-0.5 * tau * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
 		//return InitialProbabilityCalculator.logPr(probability);
 		//in order to overcome overflow on exponential
-		return 0.5 * tmp * tmp - InitialProbabilityCalculator.logPr(Math.sqrt(2. * Math.PI) * observationStandardDeviation);
+		return 0.5 * tau * tmp * tmp - InitialProbabilityCalculator.logPr(Math.sqrt(2. * Math.PI) * observationStandardDeviation);
 	}
 
 }

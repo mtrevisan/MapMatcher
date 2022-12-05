@@ -51,6 +51,21 @@ public class EuclideanCalculator implements DistanceCalculator{
 		return minNearestPointDistance;
 	}
 
+
+	@Override
+	public double initialBearing(final Coordinate startPoint, final Coordinate endPoint){
+		final double dx = endPoint.getX() - startPoint.getX();
+		final double dy = endPoint.getY() - startPoint.getY();
+		final double angle = Math.toDegrees(StrictMath.atan2(dx, dy));
+		return (angle < 0.? angle + 360.: angle);
+	}
+
+	@Override
+	public Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+		//TODO
+		return null;
+	}
+
 	@Override
 	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
 		final double dx21 = endPoint.getX() - startPoint.getX();

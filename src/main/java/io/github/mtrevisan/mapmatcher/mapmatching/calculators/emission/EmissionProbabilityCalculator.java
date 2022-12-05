@@ -34,6 +34,6 @@ public interface EmissionProbabilityCalculator{
 
 	void updateEmissionProbability(Coordinate observation, Collection<Edge> edges);
 
-	double emissionProbability(Coordinate observation, Edge segment);
+	double emissionProbability(Coordinate observation, Edge segment, Coordinate previousObservation);
 
 }

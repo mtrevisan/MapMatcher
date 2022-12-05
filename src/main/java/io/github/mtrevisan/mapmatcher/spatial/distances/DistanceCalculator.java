@@ -34,19 +34,46 @@ public interface DistanceCalculator{
 
 	double distance(Coordinate point, Polyline polyline);
 
-	double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point);
+
+	double initialBearing(Coordinate startPoint, Coordinate endPoint);
+
+	default Coordinate onTrackClosestPoint(final Coordinate point, final Polyline polyline){
+		double minClosestPointDistance = Double.MAX_VALUE;
+		Coordinate minClosestPoint = null;
+		final Coordinate[] coordinates = polyline.getCoordinates();
+		for(int i = 1; i < coordinates.length; i ++){
+			final Coordinate startPoint = coordinates[i - 1];
+			final Coordinate endPoint = coordinates[i];
+			final Coordinate closestPoint = onTrackClosestPoint(startPoint, endPoint, point);
+			final double distance = distance(closestPoint, startPoint, endPoint);
+			if(distance < minClosestPointDistance){
+				minClosestPointDistance = distance;
+				minClosestPoint = closestPoint;
+			}
+		}
+		return minClosestPoint;
+	}
+
+	Coordinate onTrackClosestPoint(Coordinate startPoint, Coordinate endPoint, Coordinate point);
 
 	default double alongTrackDistance(final Coordinate point, final Polyline polyline){
+		double nearestPointDistance = 0.;
+		double cumulativeDistance = 0.;
 		double minNearestPointDistance = Double.MAX_VALUE;
 		final Coordinate[] coordinates = polyline.getCoordinates();
 		for(int i = 1; i < coordinates.length; i ++){
 			final Coordinate startPoint = coordinates[i - 1];
 			final Coordinate endPoint = coordinates[i];
 			final double distance = Math.abs(alongTrackDistance(startPoint, endPoint, point));
-			if(distance < minNearestPointDistance)
-				minNearestPointDistance = distance;
+			cumulativeDistance += distance;
+			if(distance < minNearestPointDistance){
+				nearestPointDistance += cumulativeDistance;
+				cumulativeDistance = 0.;
+			}
 		}
-		return minNearestPointDistance;
+		return nearestPointDistance;
 	}
+
+	double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point);
 
 }

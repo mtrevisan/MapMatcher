@@ -75,7 +75,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		for(final Edge edge : graphEdges){
 			fScores.computeIfAbsent(edge, k -> new double[m])[i] = initialProbabilityCalculator.initialProbability(edge)
-				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge);
+				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, (i > 0? observations[i - 1]: null));
 			path.computeIfAbsent(edge, k -> new Edge[n])[i] = edge;
 		}
 
@@ -101,7 +101,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 						//record minimum probability
 						minProbability = probability;
 						fScores.get(toEdge)[i] = probability
-							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge);
+							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, (i > 0? observations[i - 1]: null));
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,
