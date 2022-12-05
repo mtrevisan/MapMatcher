@@ -118,29 +118,25 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 	 * @return	The convex hull.
 	 */
 	public Polyline getConvexHull(){
-		final Coordinate[] points = Arrays.stream(coordinates)
-			.distinct()
-			.toArray(Coordinate[]::new);
+		if(coordinates.length <= 2)
+			return of(coordinates);
+
+		final Coordinate[] points = Arrays.copyOf(coordinates, coordinates.length);
+		polarSort(points);
 
 		// use heuristic to reduce points, if large
 		//https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/algorithm/ConvexHull.java#L203
 //		if(points.length > 50)
 //			points = reduce(points);
 
-		if(points.length <= 2)
-			return of(points);
-
-		//sort points for Graham scan
-		final Coordinate[] sortedCoordinates = preSort(points);
-
 		//use Graham scan to find convex hull
-		final Stack<Coordinate> convexHull = grahamScan(sortedCoordinates);
+		final Stack<Coordinate> convexHull = grahamScan(points);
 
 		//convert stack to an array
 		return of(convexHull.toArray(Coordinate[]::new));
 	}
 
-	private Coordinate[] preSort(final Coordinate[] points){
+	private void polarSort(final Coordinate[] points){
 		//find the lowest point in the set; if two or more points have the same minimum Y coordinate choose the one with the minimum X
 		//(this focal point is put in array location points[0])
 		final int pivotIndex = getLowestPoint(points);
@@ -148,10 +144,8 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		points[pivotIndex] = points[0];
 		points[0] = pivot;
 
-		//sort the points radially around the focal point
-		Arrays.sort(points, 1, points.length, new RadialComparator(pivot));
-
-		return points;
+		//sort points by polar angle with pivot (if several points have the same polar angle then only keep the farthest)
+		Arrays.sort(points, 1, points.length, new PolarAngleComparator(pivot));
 	}
 
 	/**
@@ -168,9 +162,8 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		for(int i = 1; i < points.length; i ++){
 			final Coordinate tmp = points[i];
 			final Coordinate lowest = points[lowestIndex];
-			if(tmp.getY() < lowest.getY() || tmp.getY() == lowest.getY() && tmp.getX() < lowest.getX()){
+			if(tmp.getY() < lowest.getY() || tmp.getY() == lowest.getY() && tmp.getX() < lowest.getX())
 				lowestIndex = i;
-			}
 		}
 		return lowestIndex;
 	}
@@ -187,28 +180,25 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		final Stack<Coordinate> hull = new Stack<>();
 		hull.push(coordinates[0]);
 		hull.push(coordinates[1]);
-		//find a point not collinear with the previous two
-		int i = 2;
-		for( ; i < coordinates.length; i ++)
-			if(RadialComparator.orientation(coordinates[0], coordinates[1], coordinates[i]) != 0){
-				hull.push(coordinates[i]);
-				break;
-			}
-		for( ; i < coordinates.length; i ++){
+		for(int i = 2; hull.size() > 1 && i < coordinates.length; i ++){
 			final Coordinate head = coordinates[i];
-			Coordinate middle = hull.pop();
+			final Coordinate middle = hull.pop();
 			final Coordinate tail = hull.peek();
 
-			//loop while stack is not empty and the three points are clockwise or collinear w.r.t. head
-			while(RadialComparator.orientation(tail, middle, head) <= 0)
-				hull.pop();
-
-			hull.push(middle);
-			hull.push(head);
+			final int turnType = PolarAngleComparator.orientation(head, tail, middle);
+			switch(turnType){
+				case PolarAngleComparator.COUNTER_CLOCKWISE -> {
+					hull.push(middle);
+					hull.push(head);
+				}
+				case PolarAngleComparator.CLOCKWISE -> i --;
+				case PolarAngleComparator.COLLINEAR -> hull.push(head);
+			}
 		}
 
 		//close the hull
-		hull.push(coordinates[0]);
+		if(hull.size() > 2)
+			hull.push(coordinates[0]);
 
 		return hull;
 	}
@@ -272,108 +262,83 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 	}
 
 
-	private static class RadialComparator implements Comparator<Coordinate>{
+	static class PolarAngleComparator implements Comparator<Coordinate>{
 
 		/** A value that indicates an orientation of clockwise, or a right turn. */
-		private static final int ORIENTATION_CLOCKWISE = -1;
+		static final int CLOCKWISE = -1;
 		/** A value that indicates an orientation of counterclockwise, or a left turn. */
-		private static final int ORIENTATION_COUNTER_CLOCKWISE = 1;
+		static final int COUNTER_CLOCKWISE = 1;
 		/** A value that indicates an orientation of collinear, or no turn (straight). */
-		private static final int ORIENTATION_COLLINEAR = 0;
+		static final int COLLINEAR = 0;
 		/** An enum denoting a directional-turn between 3 points (vectors) */
 
 		/** A value which is safely greater than the relative round-off error in double-precision numbers. */
 		private static final double DOUBLE_SAFE_EPSILON = 1.e-15;
 
 
-		private final Coordinate origin;
+		private final Coordinate reference;
 
 
 		/**
-		 * Creates a new comparator using a given origin.
+		 * Creates a new comparator using a given reference.
 		 * <p>
-		 * The origin must be lower in Y and then X to all compared points.
+		 * The reference must be lower in Y and then X to all compared points.
 		 * </p>
 		 *
-		 * @param origin	The origin of the radial comparison.
+		 * @param reference	The reference of the polar comparison.
 		 */
-		RadialComparator(final Coordinate origin){
-			this.origin = origin;
+		PolarAngleComparator(final Coordinate reference){
+			this.reference = reference;
 		}
 
 		@Override
 		public int compare(final Coordinate p1, final Coordinate p2){
-			return polarCompare(origin, p1, p2);
+			return polarCompare(reference, p1, p2);
 		}
 
 		/**
-		 * Given two points `p` and `q` compare them with respect to their radial ordering about point `reference`.
+		 * Given two points `p` and `q` compare them with respect to their polar ordering about point `r`.
 		 * <p>
-		 * First checks radial ordering using a CCW orientation.<br/>
-		 * If the points are collinear, the comparison is based on their distance to the origin.
+		 * First checks polar ordering using a CCW orientation (in the "right–handed" coordinate system, if the result is <code>0</code>,
+		 * the points are collinear; if it is positive, the three points constitute a positive angle of rotation around <code>r</code> from
+		 * <code>p</code> to <code>q</code>, otherwise a negative angle).<br/>
 		 * </p>
+		 * <p>
+		 * If the points are collinear, the comparison is based on their distance to the reference.<br/>
+		 * <code>p < q</code> (that is <code>r–p–q</code> is CCW) <code>iff ang(r–p) < ang(r–q)</code>, or
+		 * <code>ang(r–p) == ang(r–q) && dist(r, p) < dist(r, q)</code>.
 		 * </p>
-		 * p < q iff
-		 * <ul>
-		 * 	<li>ang(o-p) < ang(o-q) (e.g. o-p-q is CCW)
-		 * 	<li>or ang(o-p) == ang(o-q) && dist(o,p) < dist(o,q)
-		 * </ul>
 		 *
+		 * @param r	The reference point.
 		 * @param p	A point.
 		 * @param q	Another point.
-		 * @param reference	The origin.
-		 * @return	<code>-1</code>, <code>0</code> or <code>1</code> depending on whether `p` is less than, equal to or greater than `q`.
+		 * @return	<code>-1</code>, <code>0</code> or <code>1</code> depending on whether `p` is less than, equal to or greater than `q`
+		 * 	with respect to `r`.
 		 */
-		private static int polarCompare(final Coordinate reference, final Coordinate p, final Coordinate q){
-			final int orientation = orientation(p, q, reference);
-			if(orientation == ORIENTATION_COUNTER_CLOCKWISE)
-				return ORIENTATION_COUNTER_CLOCKWISE;
-			if(orientation == ORIENTATION_CLOCKWISE)
-				return ORIENTATION_CLOCKWISE;
+		static int polarCompare(final Coordinate r, final Coordinate p, final Coordinate q){
+			final int orientation = orientation(r, p, q);
+			if(orientation != COLLINEAR)
+				return orientation;
 
-			//the points are collinear, so compare based on distance from the origin
-			//the points `p` and `q` are greater than or equals to the origin, so they lie in the closed half-plane above the origin
-			//if they are not in a horizontal line, the Y ordinate can be tested to determine distance
-			//this is more robust than computing the distance explicitly
+			//the points are collinear, so compare based on distance from the reference
 			if(p.getY() > q.getY())
-				return ORIENTATION_COUNTER_CLOCKWISE;
+				return COUNTER_CLOCKWISE;
 			if(p.getY() < q.getY())
-				return ORIENTATION_CLOCKWISE;
+				return CLOCKWISE;
 
-			//the points lie in a horizontal line, which should also contain the origin (since they are collinear)
-			//also, they must be above the origin.
-			//use the X ordinate to determine distance
+			//the points lie in a horizontal line, which should also contain the reference (since they are collinear)
 			return Double.compare(p.getX(), q.getX());
 		}
 
-		/**
-		 * Returns whether if <code>a → b → c</code> is a clockwise/counterclockwise turn, or they are collinear.
-		 *
-		 * @param a	First point.
-		 * @param b	Second point.
-		 * @param c	Third point.
-		 * @return {-1, 0, +1} if <code>a → b → c</code> is a {clockwise, collinear; counterclockwise} turn.
-		 */
-		private static int ccw(final Coordinate a, final Coordinate b, final Coordinate c){
-			final double area2 = (b.getX() - a.getX()) * (c.getY() - a.getY()) - (b.getY() - a.getY()) * (c.getX() - a.getX());
-			if(area2 < 0)
-				return -1;
-			else if(area2 > 0)
-				return 1;
-			else
-				return 0;
-		}
-
-		static int orientation(final Coordinate p, final Coordinate q, final Coordinate reference){
-			//fast filter for orientation index
-			//avoids use of slow extended-precision arithmetic in many cases
+		static int orientation(final Coordinate r, final Coordinate p, final Coordinate q){
+			//fast filter for orientation index (avoids use of slow extended-precision arithmetic in many cases)
+			final double rx = r.getX();
+			final double ry = r.getY();
 			final double px = p.getX();
 			final double py = p.getY();
 			final double qx = q.getX();
 			final double qy = q.getY();
-			final double rx = reference.getX();
-			final double ry = reference.getY();
-			final int index = orientationIndexFilter(px, py, qx, qy, rx, ry);
+			final int index = orientationIndexFilter(r, p, q);
 			if(index <= 1)
 				return index;
 
@@ -400,35 +365,28 @@ public class Polyline implements Comparable<Polyline>, Serializable{
 		 * Uses an approach due to Jonathan Shewchuk, which is in the public domain.
 		 * </p>
 		 *
-		 * @param pax	A coordinate.
-		 * @param pay	A coordinate.
-		 * @param pbx	B coordinate.
-		 * @param pby	B coordinate.
-		 * @param pcx	C coordinate.
-		 * @param pcy	C coordinate.
-		 * @return	The orientation index if it can be computed safely (<code>i > 1</code> if the orientation index cannot be computed
+		 * @param r	C coordinate.
+		 * @param p	A coordinate.
+		 * @param q	B coordinate.
+		 * @return The orientation index if it can be computed safely (<code>i > 1</code> if the orientation index cannot be computed
 		 * 	safely)
 		 */
-		private static int orientationIndexFilter(final double pax, final double pay, final double pbx, final double pby,
-				final double pcx, final double pcy){
-			final double detLeft = (pax - pcx) * (pby - pcy);
-			final double detRight = (pay - pcy) * (pbx - pcx);
+		private static int orientationIndexFilter(final Coordinate r, final Coordinate p, final Coordinate q){
+			final double detLeft = (p.getX() - r.getX()) * (q.getY() - r.getY());
+			final double detRight = (p.getY() - r.getY()) * (q.getX() - r.getX());
 			final double det = detLeft - detRight;
 
-			double detSum;
-			if(detLeft > 0.){
-				if(detRight <= 0.)
-					return (int)Math.signum(det);
-				else
-					detSum = detLeft + detRight;
-			}
-			else if(detLeft < 0.){
+			if(detLeft == 0.)
+				return (int)Math.signum(det);
+
+			double detSum = detLeft + detRight;
+			if(detLeft < 0.){
 				if(detRight >= 0.)
 					return (int)Math.signum(det);
 				else
-					detSum = -detLeft - detRight;
+					detSum = -detSum;
 			}
-			else
+			else if(detRight <= 0.)
 				return (int)Math.signum(det);
 
 			final double errorBound = DOUBLE_SAFE_EPSILON * detSum;
