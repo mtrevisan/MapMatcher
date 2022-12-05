@@ -41,7 +41,9 @@ public class TopologicalNoUTurnTransitionCalculator implements TransitionProbabi
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
-	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
+	private static final double TRANSITION_PROBABILITY_SAME_EDGE = 0.6;
+	private static final double TRANSITION_PROBABILITY_DIRECTLY_CONNECTED_EDGES = 0.4;
+	private static final double TRANSITION_PROBABILITY_ONE_LINK_SEPARATED_EDGES = 0.2;
 
 
 	/**
@@ -49,12 +51,14 @@ public class TopologicalNoUTurnTransitionCalculator implements TransitionProbabi
 	 * <p>
 	 * If two segments are (r_ij is the so-called topological relationship, and a_ij = e^-r_ij):
 	 * <dl>
-	 *    <dt>unconnected</dt>
-	 *    	<dd><code>r_ij = ∞</code>, thus <code>a_ij = 0</code>, and <code>-ln(a_ij) = ∞</code></dd>
-	 *    <dt>connected</dt>
-	 *    	<dd><code>r_ij = 1</code>, thus <code>a_ij = 0.36787944117</code>, and <code>-ln(a_ij) = 1</code></dd>
+	 *    <dt>unconnected or connected by more than 1 link</dt>
+	 *    	<dd><code>r_ij = ∞</code>, thus <code>a_ij = 0</code></dd>
+	 *    <dt>directly connected</dt>
+	 *    	<dd><code>r_ij = 1</code>, thus <code>a_ij = 0.4</code></dd>
+	 *    <dt>connected by at most 1 link</dt>
+	 *    	<dd><code>r_ij = 1</code>, thus <code>a_ij = 0.4</code></dd>
 	 *    <dt>the same (i = j)</dt>
-	 *    	<dd><code>r_ij = 0</code>, thus <code>a_ij = 1</code>, and <code>-ln(a_ij) = 0</code></dd>
+	 *    	<dd><code>r_ij = 0</code>, thus <code>a_ij = 0.6</code></dd>
 	 * </dl>
 	 * </p>
 	 */
@@ -67,14 +71,18 @@ public class TopologicalNoUTurnTransitionCalculator implements TransitionProbabi
 		if(!segmentsReversed){
 			//if the node is the same
 			if(fromSegment.equals(toSegment))
-				a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
+				a = TRANSITION_PROBABILITY_SAME_EDGE;
 			else{
 				final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
 					.simplePath();
 				final boolean mixedDirections = PathHelper.hasMixedDirections(path, fromSegment, toSegment);
 				//disallow u-turn
 				if(!mixedDirections && !path.isEmpty())
-					a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
+					a = switch(path.size()){
+						case 1 -> TRANSITION_PROBABILITY_DIRECTLY_CONNECTED_EDGES;
+						case 2 -> TRANSITION_PROBABILITY_ONE_LINK_SEPARATED_EDGES;
+						default -> 0.;
+					};
 			}
 		}
 		return InitialProbabilityCalculator.logPr(a);
