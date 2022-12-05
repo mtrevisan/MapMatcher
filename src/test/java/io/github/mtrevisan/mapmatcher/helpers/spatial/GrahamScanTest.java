@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 //https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/algorithm/ConvexHull.java
 //https://github.com/locationtech/jts/blob/master/modules/core/src/test/java/org/locationtech/jts/algorithm/ConvexHullTest.java
 //https://github.com/bkiers/GrahamScan/blob/master/src/main/cg/GrahamScan.java#L188
-class PolylineTest{
+class GrahamScanTest{
 
 	@Test
 	public void lowest_coordinate1(){
@@ -59,7 +59,7 @@ class PolylineTest{
 		Coordinate h = Coordinate.of(5, 3);
 		Coordinate i = Coordinate.of(6, 4);
 
-		int lowestIndex = Polyline.getLowestPoint(new Coordinate[]{a, b, c, d, e, f, g, h, i});
+		int lowestIndex = GrahamScan.getLowestPoint(new Coordinate[]{a, b, c, d, e, f, g, h, i});
 
 		Assertions.assertEquals(5, lowestIndex);
 	}
@@ -90,7 +90,7 @@ class PolylineTest{
 		Coordinate j = Coordinate.of(-1, -1);
 		Coordinate k = Coordinate.of(6, -1);
 
-		int lowestIndex = Polyline.getLowestPoint(new Coordinate[]{a, b, c, d, e, f, g, h, i, j, k});
+		int lowestIndex = GrahamScan.getLowestPoint(new Coordinate[]{a, b, c, d, e, f, g, h, i, j, k});
 
 		Assertions.assertEquals(9, lowestIndex);
 	}
@@ -119,7 +119,7 @@ class PolylineTest{
 		Coordinate g = Coordinate.of(0, 2);
 
 		Coordinate[] coordinates = {a, b, c, d, e, f, g};
-		Polyline.polarSort(coordinates);
+		GrahamScan.polarSort(coordinates);
 
 		Assertions.assertEquals(7, coordinates.length);
 		Assertions.assertEquals(c, coordinates[0]);
@@ -158,49 +158,49 @@ class PolylineTest{
 		Coordinate g = Coordinate.of(-1, 0);
 		Coordinate h = Coordinate.of(-2, 1);
 
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COLLINEAR, Polyline.PolarAngleComparator.orientation(a, b, c));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COLLINEAR, Polyline.PolarAngleComparator.orientation(a, c, b));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COLLINEAR, Polyline.PolarAngleComparator.orientation(b, a, c));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COLLINEAR, Polyline.PolarAngleComparator.orientation(c, b, a));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COLLINEAR, Polyline.PolarAngleComparator.orientation(e, d, c));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COLLINEAR, Polyline.PolarAngleComparator.orientation(h, f, g));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COLLINEAR, GrahamScan.PolarAngleComparator.orientation(a, b, c));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COLLINEAR, GrahamScan.PolarAngleComparator.orientation(a, c, b));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COLLINEAR, GrahamScan.PolarAngleComparator.orientation(b, a, c));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COLLINEAR, GrahamScan.PolarAngleComparator.orientation(c, b, a));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COLLINEAR, GrahamScan.PolarAngleComparator.orientation(e, d, c));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COLLINEAR, GrahamScan.PolarAngleComparator.orientation(h, f, g));
 
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, b, c));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, c, b));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(b, a, c));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(c, b, a));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(e, d, c));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(h, f, g));
-
-
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.orientation(a, b, e));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.orientation(a, b, f));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.orientation(a, c, e));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.orientation(a, c, f));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.orientation(c, b, g));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.orientation(d, b, f));
-
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, b, e));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, b, f));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, c, e));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, c, f));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(c, b, g));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(d, b, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, b, c));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, c, b));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(b, a, c));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(c, b, a));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(e, d, c));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(h, f, g));
 
 
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.orientation(a, b, d));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.orientation(a, e, d));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.orientation(e, c, f));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.orientation(b, d, a));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.orientation(a, g, f));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.orientation(f, b, a));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, b, e));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, b, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, c, e));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, c, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(c, b, g));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(d, b, f));
 
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, b, d));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, e, d));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(e, c, f));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(b, d, a));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(a, g, f));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.polarCompare(f, b, a));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, b, e));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, b, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, c, e));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, c, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(c, b, g));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(d, b, f));
+
+
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, b, d));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, e, d));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(e, c, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(b, d, a));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, g, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(f, b, a));
+
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, b, d));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, e, d));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(e, c, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(b, d, a));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(a, g, f));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.polarCompare(f, b, a));
 	}
 
 	@Test
@@ -209,8 +209,8 @@ class PolylineTest{
 		Coordinate b = Coordinate.of(168.9018919682399, -5.713787599646864);
 		Coordinate c = Coordinate.of(186.80814046338352, 46.28973405831556);
 
-		Assertions.assertEquals(Polyline.PolarAngleComparator.CLOCKWISE, Polyline.PolarAngleComparator.orientation(a, b, c));
-		Assertions.assertEquals(Polyline.PolarAngleComparator.COUNTER_CLOCKWISE, Polyline.PolarAngleComparator.orientation(b, a, c));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, b, c));
+		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(b, a, c));
 	}
 
 	@Test
@@ -234,7 +234,7 @@ class PolylineTest{
 
 		Polyline polyline = Polyline.of(c);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(c);
 		Assertions.assertEquals(expected, convexHull);
@@ -242,7 +242,7 @@ class PolylineTest{
 
 		polyline = Polyline.of(c, e);
 
-		convexHull = polyline.getConvexHull();
+		convexHull = GrahamScan.getConvexHull(polyline);
 
 		expected = Polyline.of(c, e);
 		Assertions.assertEquals(expected, convexHull);
@@ -250,7 +250,7 @@ class PolylineTest{
 
 		polyline = Polyline.of(c, e, f);
 
-		convexHull = polyline.getConvexHull();
+		convexHull = GrahamScan.getConvexHull(polyline);
 
 		expected = Polyline.of(c, f);
 		Assertions.assertEquals(expected, convexHull);
@@ -258,7 +258,7 @@ class PolylineTest{
 
 		polyline = Polyline.of(c, b, e, e, e, f, c);
 
-		convexHull = polyline.getConvexHull();
+		convexHull = GrahamScan.getConvexHull(polyline);
 
 		expected = Polyline.of(c, b);
 		Assertions.assertEquals(expected, convexHull);
@@ -266,7 +266,7 @@ class PolylineTest{
 
 		polyline = Polyline.of(a, b, d);
 
-		convexHull = polyline.getConvexHull();
+		convexHull = GrahamScan.getConvexHull(polyline);
 
 		expected = Polyline.of(a, b, d, a);
 		Assertions.assertEquals(expected, convexHull);
@@ -296,7 +296,7 @@ class PolylineTest{
 
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g, h, i);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(f, i, d, a, f);
 		Assertions.assertEquals(expected, convexHull);
@@ -332,7 +332,7 @@ class PolylineTest{
 
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g, h, i, j, k, m);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(k, m, d, j, k);
 		Assertions.assertEquals(expected, convexHull);
@@ -372,7 +372,7 @@ class PolylineTest{
 
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g, h, i, j, k, m);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(k, m, j, k);
 		Assertions.assertEquals(expected, convexHull);
@@ -396,7 +396,7 @@ class PolylineTest{
 
 		Polyline polyline = Polyline.of(a, b, c);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(c, a);
 		Assertions.assertEquals(expected, convexHull);
@@ -435,7 +435,7 @@ class PolylineTest{
 		Coordinate c = Coordinate.of(240, 220);
 		Polyline polyline = Polyline.of(a, b, c);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, b);
 		Assertions.assertEquals(expected, convexHull);
@@ -452,7 +452,7 @@ class PolylineTest{
 		Coordinate g = Coordinate.of(650, 240);
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, g);
 		Assertions.assertEquals(expected, convexHull);
@@ -465,7 +465,7 @@ class PolylineTest{
 		Coordinate c = Coordinate.of(10, 0);
 		Polyline polyline = Polyline.of(a, b, c);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, c);
 		Assertions.assertEquals(expected, convexHull);
@@ -478,7 +478,7 @@ class PolylineTest{
 		Coordinate c = Coordinate.of(10, 0);
 		Polyline polyline = Polyline.of(a, b, c);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, c);
 		Assertions.assertEquals(expected, convexHull);
@@ -491,7 +491,7 @@ class PolylineTest{
 		Coordinate c = Coordinate.of(10, 0);
 		Polyline polyline = Polyline.of(a, b, c);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, c);
 		Assertions.assertEquals(expected, convexHull);
@@ -504,7 +504,7 @@ class PolylineTest{
 		Coordinate c = Coordinate.of(10, 0);
 		Polyline polyline = Polyline.of(a, b, c);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, c, b, a);
 		Assertions.assertEquals(expected, convexHull);
@@ -520,7 +520,7 @@ class PolylineTest{
 		Coordinate f = Coordinate.of(10, 0);
 		Polyline polyline = Polyline.of(a, b, c, d, e, f);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, f);
 		Assertions.assertEquals(expected, convexHull);
@@ -545,7 +545,7 @@ class PolylineTest{
 		Coordinate h = Coordinate.of(0., 0.1);
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g, h);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, c, g, e, a);
 		Assertions.assertEquals(expected, convexHull);
@@ -575,7 +575,7 @@ class PolylineTest{
 		Coordinate q = Coordinate.of(-0.0019059940589774278, -5.14030956166791e-05);
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(h, a, q, h);
 		Assertions.assertEquals(expected, convexHull);
@@ -605,7 +605,7 @@ class PolylineTest{
 		Coordinate h = Coordinate.of(-1.38777878e-17, 0.1);
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g, h);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, c, g, e, a);
 		Assertions.assertEquals(expected, convexHull);
@@ -630,7 +630,7 @@ class PolylineTest{
 		Coordinate h = Coordinate.of(-1.38777878e-7, 0.1);
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g, h);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(a, c, g, e, a);
 		Assertions.assertEquals(expected, convexHull);
@@ -667,7 +667,7 @@ class PolylineTest{
 		Coordinate u = Coordinate.of(170, 130);
 		Polyline polyline = Polyline.of(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u);
 
-		Polyline convexHull = polyline.getConvexHull();
+		Polyline convexHull = GrahamScan.getConvexHull(polyline);
 
 		Polyline expected = Polyline.of(e, p, b, g, f, a, k, c, e);
 		Assertions.assertEquals(expected, convexHull);
