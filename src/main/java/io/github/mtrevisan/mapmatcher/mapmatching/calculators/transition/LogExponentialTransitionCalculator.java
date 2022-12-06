@@ -43,8 +43,12 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
-	/** > 0.5 */
-	private static final double PROBABILITY_SAME_EDGE = 0.75;
+	/**
+	 * 0.5 < p_same < 0.8
+	 *
+	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
+	 */
+	private static final double PROBABILITY_SAME_EDGE = 0.6;
 
 
 	private final double inverseRateParameter;

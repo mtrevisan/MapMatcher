@@ -33,6 +33,14 @@ import java.util.Collection;
 
 public class LogGaussianEmissionCalculator implements EmissionProbabilityCalculator{
 
+	/**
+	 * 0.5 < tau0 < 1
+	 *
+	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
+	 */
+	private static final double TAU0 = 0.6;
+
+
 	private final double observationStandardDeviation;
 
 
@@ -67,7 +75,7 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 			final Point currentObservationClosest = segment.getPolyline().onTrackClosestPoint(observation);
 			final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
 			final double angleGPS = previousObservation.initialBearing(observation);
-			tau = Math.exp(Math.toRadians(Math.abs(angleRoad - angleGPS)) - 2. / Math.PI);
+			tau = TAU0 + Math.exp(Math.toRadians(Math.abs(angleRoad - angleGPS)) - 2. / Math.PI);
 		}
 
 		//expansion of:
