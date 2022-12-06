@@ -28,16 +28,18 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
+import java.util.Collections;
 import java.util.List;
 
 
-public class LogExponentialTransitionCalculator implements TransitionProbabilityCalculator{
+public class LogExponentialTransitionCalculator extends TransitionProbabilityCalculator{
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
@@ -67,13 +69,20 @@ public class LogExponentialTransitionCalculator implements TransitionProbability
 	@Override
 	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
 			final Point previousObservation, final Point currentObservation){
+		final List<Node> path = (fromSegment.equals(toSegment)
+			? Collections.emptyList()
+			: PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph).simplePath());
+		final double factor = calculatePluginFactor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
+		if(factor == 0.)
+			return InitialProbabilityCalculator.logPr(0.);
+
+
 		final double observationsDistance = previousObservation.distance(currentObservation);
 
-		final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
-			.simplePath();
 		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(path);
-		final double pathDistance = pathAsPolyline.alongTrackDistance(currentObservation)
-			- pathAsPolyline.alongTrackDistance(previousObservation);
+		final double pathDistance = (pathAsPolyline != null
+			? pathAsPolyline.alongTrackDistance(currentObservation) - pathAsPolyline.alongTrackDistance(previousObservation)
+			: observationsDistance);
 
 		//expansion of:
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));

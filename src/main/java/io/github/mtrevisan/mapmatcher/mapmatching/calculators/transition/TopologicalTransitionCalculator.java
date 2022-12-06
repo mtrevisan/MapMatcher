@@ -33,14 +33,16 @@ import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
+import java.util.Collections;
 import java.util.List;
 
 
-public class TopologicalTransitionCalculator implements TransitionProbabilityCalculator{
+public class TopologicalTransitionCalculator extends TransitionProbabilityCalculator{
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
 	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
+	private static final double TRANSITION_PROBABILITY_SAME_EDGE = Math.exp(-0.5);
 
 
 	/**
@@ -49,27 +51,31 @@ public class TopologicalTransitionCalculator implements TransitionProbabilityCal
 	 * If two segments are (r_ij is the so-called topological relationship, and a_ij = e^-r_ij):
 	 * <dl>
 	 *    <dt>unconnected</dt>
-	 *    	<dd><code>r_ij = ∞</code>, thus <code>a_ij = 0</code>, and <code>-ln(a_ij) = ∞</code></dd>
+	 *    	<dd><code>r_ij = ∞</code>, thus <code>a_ij = 0</code></dd>
 	 *    <dt>connected</dt>
-	 *    	<dd><code>r_ij = 1</code>, thus <code>a_ij = 0.36787944117</code>, and <code>-ln(a_ij) = 1</code></dd>
+	 *    	<dd><code>r_ij = 1</code>, thus <code>a_ij = e⁻¹ = 0.36787944117</code></dd>
 	 *    <dt>the same (i = j)</dt>
-	 *    	<dd><code>r_ij = 0</code>, thus <code>a_ij = 1</code>, and <code>-ln(a_ij) = 0</code></dd>
+	 *    	<dd><code>r_ij = 0</code>, thus <code>a_ij = e⁻⁰⋅⁵ = 0.60653065971</code></dd>
 	 * </dl>
 	 * </p>
 	 */
 	@Override
 	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
 			final Point previousObservation, final Point currentObservation){
+		final List<Node> path = (fromSegment.equals(toSegment)
+			? Collections.emptyList()
+			: PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph).simplePath());
+		final double factor = calculatePluginFactor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
+		if(factor == 0.)
+			return InitialProbabilityCalculator.logPr(0.);
+
+
 		double a = 0.;
 		//if the node is the same
 		if(fromSegment.equals(toSegment))
-			a = 1. / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-		else{
-			final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
-				.simplePath();
-			if(!path.isEmpty())
-				a = TRANSITION_PROBABILITY_CONNECTED_EDGES / (1. + TRANSITION_PROBABILITY_CONNECTED_EDGES);
-		}
+			a = TRANSITION_PROBABILITY_SAME_EDGE;
+		else if(!path.isEmpty())
+			a = TRANSITION_PROBABILITY_CONNECTED_EDGES;
 		return InitialProbabilityCalculator.logPr(a);
 	}
 

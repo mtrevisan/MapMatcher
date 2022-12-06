@@ -33,7 +33,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogBayesi
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogGaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalNoUTurnTransitionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.NoUTurnPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
@@ -253,7 +253,8 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability_bidirectional_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
+			.withPlugin(new NoUTurnPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
@@ -303,7 +304,8 @@ class ViterbiMapMatchingTest{
 	void should_match_E0_E1_with_gaussian_emission_probability_bidirectional_graph(){
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
+			.withPlugin(new NoUTurnPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
@@ -353,7 +355,8 @@ class ViterbiMapMatchingTest{
 	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph(){
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
+			.withPlugin(new NoUTurnPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 

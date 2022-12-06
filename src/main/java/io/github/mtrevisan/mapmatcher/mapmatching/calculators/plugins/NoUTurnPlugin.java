@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,40 +22,30 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.ProbabilityPlugin;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
-public abstract class TransitionProbabilityCalculator{
+public class NoUTurnPlugin implements ProbabilityPlugin{
 
-	private final Set<ProbabilityPlugin> plugins = new HashSet<>(0);
-
-
-	public final TransitionProbabilityCalculator withPlugin(final ProbabilityPlugin plugin){
-		plugins.add(plugin);
-
-		return this;
-	}
-
-	protected final double calculatePluginFactor(final Edge fromSegment, final Edge toSegment, final Graph graph,
+	@Override
+	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
 			final Point previousObservation, final Point currentObservation, final List<Node> path){
-		double factor = 1.;
-		for(final ProbabilityPlugin plugin : plugins)
-			factor *= plugin.factor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
-		return factor;
+		//penalize u-turns: make then unreachable
+		boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
+
+		if(path != null && !fromSegment.equals(toSegment))
+			//disallow U-turn along multiple edges
+			segmentsReversed = PathHelper.hasMixedDirections(path, fromSegment, toSegment);
+
+		return (segmentsReversed? 0.: 1.);
 	}
-
-
-	public abstract double transitionProbability(Edge fromSegment, Edge toSegment, Graph graph, Point previousObservation,
-		Point currentObservation);
 
 }
