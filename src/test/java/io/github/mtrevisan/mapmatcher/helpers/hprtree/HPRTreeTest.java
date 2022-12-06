@@ -67,6 +67,12 @@ class HPRTreeTest{
 					polylines.add(parsePolyline(readLine));
 		}
 
+		//https://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm
+		//https://www.npmjs.com/package/sweepline-intersections?activeTab=readme
+		//https://github.com/topics/bentley-ottmann
+		//https://github.com/valenpe7/bentley-ottmann/tree/master/bentley-ottmann/src/bentley_ottmann
+		//https://github.com/stanislav-antonov/bentley-ottmann/tree/master/src/bentleyottmann
+		//http://geomalgorithms.com/a09-_intersect-3.html
 		try(final BufferedWriter writer = new BufferedWriter(new FileWriter("src/test/resources/it.highways.simplified.5.wkt"))){
 			for(int i = 0; i < polylines.size(); i ++){
 				//TODO find a way to retain vertices of polylines that connects with another polyline
