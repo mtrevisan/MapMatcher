@@ -31,6 +31,9 @@ import java.util.Stack;
 
 public class GrahamScan{
 
+	private GrahamScan(){}
+
+
 	/**
 	 * Returns a (closed) {@link Polyline} that represents the convex hull of this polyline.
 	 * <p>

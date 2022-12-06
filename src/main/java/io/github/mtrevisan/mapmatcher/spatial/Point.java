@@ -29,7 +29,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 
-public class Point extends GeometryAbstract implements Comparable<Point>, Serializable{
+public class Point extends Geometry implements Comparable<Point>, Serializable{
 
 	@Serial
 	private static final long serialVersionUID = 3422386613349753773L;

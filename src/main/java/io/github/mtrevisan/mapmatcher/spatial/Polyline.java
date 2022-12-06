@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.StringJoiner;
 
 
-public class Polyline extends GeometryAbstract implements Comparable<Polyline>, Serializable{
+public class Polyline extends Geometry implements Comparable<Polyline>, Serializable{
 
 	@Serial
 	private static final long serialVersionUID = -2848807287557631823L;

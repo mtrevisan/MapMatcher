@@ -25,12 +25,12 @@
 package io.github.mtrevisan.mapmatcher.spatial;
 
 
-public abstract class GeometryAbstract{
+public abstract class Geometry{
 
 	protected final GeometryFactory factory;
 
 
-	public GeometryAbstract(final GeometryFactory factory){
+	public Geometry(final GeometryFactory factory){
 		this.factory = factory;
 	}
 
