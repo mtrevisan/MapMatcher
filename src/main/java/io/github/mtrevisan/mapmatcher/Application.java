@@ -36,6 +36,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogBayesi
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.NoUTurnPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.LogExponentialTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
@@ -73,7 +74,7 @@ public class Application{
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
 			.withPlugin(new NoUTurnPlugin());
-//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(0.0011)
+//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
 //			.withPlugin(new NoUTurnPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);

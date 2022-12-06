@@ -41,8 +41,8 @@ public class TopologicalTransitionCalculator extends TransitionProbabilityCalcul
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
-	private static final double TRANSITION_PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
-	private static final double TRANSITION_PROBABILITY_SAME_EDGE = Math.exp(-0.5);
+	private static final double PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
+	private static final double PROBABILITY_SAME_EDGE = Math.exp(-0.5);
 
 
 	/**
@@ -73,9 +73,9 @@ public class TopologicalTransitionCalculator extends TransitionProbabilityCalcul
 		double a = 0.;
 		//if the node is the same
 		if(fromSegment.equals(toSegment))
-			a = TRANSITION_PROBABILITY_SAME_EDGE;
+			a = PROBABILITY_SAME_EDGE;
 		else if(!path.isEmpty())
-			a = TRANSITION_PROBABILITY_CONNECTED_EDGES;
+			a = PROBABILITY_CONNECTED_EDGES;
 		return InitialProbabilityCalculator.logPr(a);
 	}
 

@@ -43,11 +43,15 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
-	private final double rateParameter;
+	/** > 0.5 */
+	private static final double PROBABILITY_SAME_EDGE = 0.75;
 
 
-	public LogExponentialTransitionCalculator(final double rateParameter){
-		this.rateParameter = rateParameter;
+	private final double inverseRateParameter;
+
+
+	public LogExponentialTransitionCalculator(final double inverseRateParameter){
+		this.inverseRateParameter = inverseRateParameter;
 	}
 
 	/**
@@ -65,6 +69,8 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 	 * <code>Pr(r_i-1 -> r_i) = dist(o_i-1, o_i) / pathDistance(x_i-1, x_i)</code>, where <code>x_k</code> is the projection of the
 	 * observation <code>o_k</code> onto the segment <code>r</code>.
 	 * </p>
+	 *
+	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	@Override
 	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
@@ -86,9 +92,10 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 
 		//expansion of:
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
-		//return InitialProbabilityCalculator.logPr(a);
+		//return InitialProbabilityCalculator.logPr(path.isEmpty()? (1. - PROBABILITY_SAME_EDGE) * a: PROBABILITY_SAME_EDGE * a);
 		//in order to overcome overflow on exponential
-		return -Math.log(rateParameter) - rateParameter * Math.abs(observationsDistance - pathDistance);
+		return Math.log((path.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE) * inverseRateParameter)
+			- Math.abs(observationsDistance - pathDistance) / inverseRateParameter;
 	}
 
 }
