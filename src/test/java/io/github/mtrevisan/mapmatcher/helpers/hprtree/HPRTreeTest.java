@@ -39,7 +39,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 class HPRTreeTest{
@@ -47,8 +49,9 @@ class HPRTreeTest{
 	@Test
 	void test(){
 		HPRtree<Polyline> tree = new HPRtree<>();
-		List<Polyline> polylines = readWKTFile("src/test/resources/it.highways.wkt");
-		for(Polyline polyline : polylines){
+		Set<Point> tollBooths = new HashSet<>(readWKTPointFile("src/test/resources/it.tollBooths.wkt"));
+		List<Polyline> highways = readWKTPolylineFile("src/test/resources/it.highways.wkt", tollBooths);
+		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
 		}
@@ -159,14 +162,14 @@ class HPRTreeTest{
 	}
 
 
-	private static List<Polyline> readWKTFile(final String filename){
+	private static List<Polyline> readWKTPolylineFile(final String filename, final Set<Point> tollBooths){
 		final List<Polyline> lines = new ArrayList<>();
 		final File f = new File(filename);
 		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
 			String readLine;
 			while((readLine = br.readLine()) != null)
 				if(!readLine.isEmpty())
-					lines.add(parseLineString(readLine));
+					lines.add(parsePolyline(readLine, tollBooths));
 		}
 		catch(IOException e){
 			e.printStackTrace();
@@ -174,31 +177,65 @@ class HPRTreeTest{
 		return lines;
 	}
 
-	private static Polyline parseLineString(final String line){
-		if(!line.startsWith("LINESTRING (") && !line.endsWith(")"))
+	private static Polyline parsePolyline(final String line, final Set<Point> tollBooths){
+		if(!(line.startsWith("LINESTRING (") || line.startsWith("LINESTRING(")) && !line.endsWith(")"))
 			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
 
 		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
 		List<Point> points = new ArrayList<>(0);
 		int startIndex = line.indexOf('(') + 1;
 		while(true){
-			int lonIndex = line.indexOf(" ", startIndex + 1);
-			if(lonIndex < 0)
+			int separatorIndex = line.indexOf(" ", startIndex + 1);
+			if(separatorIndex < 0)
 				break;
 
-			int endIndex = line.indexOf(", ", lonIndex + 1);
+			int endIndex = line.indexOf(", ", separatorIndex + 1);
 			if(endIndex < 0)
-				endIndex = line.indexOf(')', lonIndex + 1);
+				endIndex = line.indexOf(')', separatorIndex + 1);
 			points.add(factory.createPoint(
-				Double.parseDouble(line.substring(startIndex, lonIndex)),
-				Double.parseDouble(line.substring(lonIndex + 1, endIndex))
+				Double.parseDouble(line.substring(startIndex, separatorIndex)),
+				Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
 			));
 			startIndex = endIndex + 2;
 		}
 
 		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(5.);
-		return factory.createPolyline(simplifier.simplify(points.toArray(Point[]::new)));
+		boolean[] keepPoints = new boolean[points.size()];
+		//TODO find the points on the polyline that corresponds to toll booths
+//		Point[] reducedPoints = simplifier.simplify(keepPoints, points.toArray(Point[]::new));
+		Point[] reducedPoints = simplifier.simplify(points.toArray(Point[]::new));
+
+		return factory.createPolyline(reducedPoints);
+	}
+
+	private static List<Point> readWKTPointFile(final String filename){
+		final List<Point> lines = new ArrayList<>();
+		final File f = new File(filename);
+		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
+			String readLine;
+			while((readLine = br.readLine()) != null)
+				if(!readLine.isEmpty())
+					lines.add(parsePoint(readLine));
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		return lines;
+	}
+
+	private static Point parsePoint(final String line){
+		if(!(line.startsWith("POINT (") || line.startsWith("POINT(")) && !line.endsWith(")"))
+			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
+
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		int startIndex = line.indexOf('(') + 1;
+		int separatorIndex = line.indexOf(" ", startIndex + 1);
+		int endIndex = line.indexOf(')', separatorIndex + 1);
+		return factory.createPoint(
+			Double.parseDouble(line.substring(startIndex, separatorIndex)),
+			Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
+		);
 	}
 
 }

@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.spatial;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
@@ -62,50 +61,62 @@ public class RamerDouglasPeuckerSimplifier{
 		this.distanceTolerance = distanceTolerance;
 	}
 
+
 	public Point[] simplify(final Point... points){
 		final boolean[] usedPoints = new boolean[points.length];
-		Arrays.fill(usedPoints, true);
+
+		return simplify(usedPoints, points);
+	}
+
+	public Point[] simplify(final boolean[] preservePoints, final Point... points){
+		if(preservePoints.length != points.length)
+			throw new IllegalArgumentException("The number of points to preserve and the points does not match ("
+				+ preservePoints.length + " ≠ " + points.length + ")");
+
+		if(preservePoints.length < 3)
+			return points;
 
 		int startIndex = 0;
 		int endIndex = points.length - 1;
-		if(endIndex > startIndex + 1){
-			final Stack<KeyValuePair> stack = new Stack<>();
-			stack.push(new KeyValuePair(startIndex, endIndex));
+		preservePoints[startIndex] = true;
+		preservePoints[endIndex] = true;
 
-			while(!stack.isEmpty()){
-				final KeyValuePair element = stack.pop();
-				startIndex = element.startIndex;
-				endIndex = element.endIndex;
+		final Stack<KeyValuePair> stack = new Stack<>();
+		stack.push(new KeyValuePair(startIndex, endIndex));
 
-				//find the point with the maximum distance from line between the start and end
-				double maxDistance = distanceTolerance;
-				int maxIndex = startIndex;
-				for(int k = maxIndex + 1; k < endIndex; k ++)
-					if(usedPoints[k]){
-						final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
-						final double distance = nearestPoint.distance(points[k]);
-						if(distance > maxDistance){
-							maxIndex = k;
-							maxDistance = distance;
-						}
+		while(!stack.isEmpty()){
+			final KeyValuePair element = stack.pop();
+			startIndex = element.startIndex;
+			endIndex = element.endIndex;
+
+			//find the point with the maximum distance from line between the start and end
+			double maxDistance = distanceTolerance;
+			int maxIndex = startIndex;
+			for(int k = maxIndex + 1; k < endIndex; k ++)
+				if(!preservePoints[k]){
+					final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
+					final double distance = nearestPoint.distance(points[k]);
+					if(distance > maxDistance){
+						maxIndex = k;
+						maxDistance = distance;
 					}
-
-				//if max distance is greater than tolerance then split and simplify, otherwise return the segment
-				if(maxDistance > distanceTolerance){
-					stack.push(new KeyValuePair(startIndex, maxIndex));
-					stack.push(new KeyValuePair(maxIndex, endIndex));
 				}
-				else
-					for(int k = startIndex + 1; k < endIndex; k ++)
-						usedPoints[k] = false;
+
+			//if max distance is greater than tolerance then split and simplify, otherwise return the segment
+			if(maxDistance > distanceTolerance){
+				stack.push(new KeyValuePair(startIndex, maxIndex));
+				stack.push(new KeyValuePair(maxIndex, endIndex));
+			}
+			else{
+				preservePoints[startIndex] = true;
+				preservePoints[endIndex] = true;
 			}
 		}
 
 		final List<Point> simplifiedPoints = new ArrayList<>(points.length);
-		final GeometryFactory factory = (points.length > 0? points[0].getFactory(): null);
 		for(int i = 0; i < points.length; i ++)
-			if(usedPoints[i])
-				simplifiedPoints.add(factory.createPoint(points[i]));
+			if(preservePoints[i])
+				simplifiedPoints.add(points[i]);
 		return simplifiedPoints.toArray(Point[]::new);
 	}
 
