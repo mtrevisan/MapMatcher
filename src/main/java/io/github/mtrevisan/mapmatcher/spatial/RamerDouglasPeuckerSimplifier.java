@@ -63,21 +63,13 @@ public class RamerDouglasPeuckerSimplifier{
 
 
 	public Point[] simplify(final Point... points){
-		final boolean[] usedPoints = new boolean[points.length];
-
-		return simplify(usedPoints, points);
-	}
-
-	public Point[] simplify(final boolean[] preservePoints, final Point... points){
-		if(preservePoints.length != points.length)
-			throw new IllegalArgumentException("The number of points to preserve and the points does not match ("
-				+ preservePoints.length + " ≠ " + points.length + ")");
-
-		if(preservePoints.length < 3)
+		if(points.length < 3)
 			return points;
 
 		int startIndex = 0;
 		int endIndex = points.length - 1;
+
+		final boolean[] preservePoints = new boolean[points.length];
 		preservePoints[startIndex] = true;
 		preservePoints[endIndex] = true;
 

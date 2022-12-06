@@ -35,8 +35,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,11 +48,39 @@ import java.util.Set;
 
 class HPRTreeTest{
 
+	private static final GeometryFactory FACTORY = new GeometryFactory(new GeodeticCalculator());
+	private static final RamerDouglasPeuckerSimplifier SIMPLIFIER = new RamerDouglasPeuckerSimplifier();
+	static{
+		SIMPLIFIER.setDistanceTolerance(5.);
+	}
+
+
+
+	//simplify polylines
+	public static void main(String[] args) throws IOException{
+		final File f = new File("src/test/resources/it.highways.wkt");
+		final List<Polyline> polylines = new ArrayList<>();
+		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
+			String readLine;
+			while((readLine = br.readLine()) != null)
+				if(!readLine.isEmpty())
+					polylines.add(parsePolyline(readLine));
+		}
+
+		try(final BufferedWriter writer = new BufferedWriter(new FileWriter("src/test/resources/it.highways.simplified.5.wkt"))){
+			for(int i = 0; i < polylines.size(); i ++){
+				//TODO find a way to keep vertices of polylines that connects with nodes of another polyline
+				Point[] reducedPoints = SIMPLIFIER.simplify(polylines.get(i).getPoints());
+				writer.write(FACTORY.createPolyline(reducedPoints).toString() + "\r\n");
+			}
+		}
+	}
+
+
 	/*
 	https://overpass-turbo.eu/
 [out:json][timeout:125];
 area["name:en"="Italy"]->.it;
-// gather results
 (
   node["highway"="motorway"](area.it);
   way["highway"="motorway"](area.it);
@@ -59,16 +89,15 @@ area["name:en"="Italy"]->.it;
   way["highway"="motorway_link"](area.it);
   relation["highway"="motorway_link"](area.it);
 );
-// print results
 out body;
 >;
 out skel qt;
 	*/
 	@Test
-	void test(){
+	void test() throws IOException{
 		HPRtree<Polyline> tree = new HPRtree<>();
 		Set<Point> tollBooths = new HashSet<>(readWKTPointFile("src/test/resources/it.tollBooths.wkt"));
-		List<Polyline> highways = readWKTPolylineFile("src/test/resources/it.highways.wkt", tollBooths);
+		List<Polyline> highways = readWKTPolylineFile("src/test/resources/it.highways.simplified.5.wkt");
 		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
@@ -80,7 +109,7 @@ out skel qt;
 			factory.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(931, roads.size());
+		Assertions.assertEquals(2167, roads.size());
 	}
 
 	@Test
@@ -180,26 +209,24 @@ out skel qt;
 	}
 
 
-	private static List<Polyline> readWKTPolylineFile(final String filename, final Set<Point> tollBooths){
+	private static List<Polyline> readWKTPolylineFile(final String filename) throws IOException{
 		final List<Polyline> lines = new ArrayList<>();
 		final File f = new File(filename);
 		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
 			String readLine;
 			while((readLine = br.readLine()) != null)
-				if(!readLine.isEmpty())
-					lines.add(parsePolyline(readLine, tollBooths));
-		}
-		catch(IOException e){
-			e.printStackTrace();
+				if(!readLine.isEmpty()){
+					final Polyline simplifiedPolyline = parsePolyline(readLine);
+					lines.add(simplifiedPolyline);
+				}
 		}
 		return lines;
 	}
 
-	private static Polyline parsePolyline(final String line, final Set<Point> tollBooths){
+	private static Polyline parsePolyline(final String line){
 		if(!(line.startsWith("LINESTRING (") || line.startsWith("LINESTRING(")) && !line.endsWith(")"))
 			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
 
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
 		List<Point> points = new ArrayList<>(0);
 		int startIndex = line.indexOf('(') + 1;
 		while(true){
@@ -210,21 +237,14 @@ out skel qt;
 			int endIndex = line.indexOf(", ", separatorIndex + 1);
 			if(endIndex < 0)
 				endIndex = line.indexOf(')', separatorIndex + 1);
-			points.add(factory.createPoint(
+			points.add(FACTORY.createPoint(
 				Double.parseDouble(line.substring(startIndex, separatorIndex)),
 				Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
 			));
 			startIndex = endIndex + 2;
 		}
 
-		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
-		simplifier.setDistanceTolerance(5.);
-		boolean[] keepPoints = new boolean[points.size()];
-		//TODO find the points on the polyline that corresponds to toll booths
-//		Point[] reducedPoints = simplifier.simplify(keepPoints, points.toArray(Point[]::new));
-		Point[] reducedPoints = simplifier.simplify(points.toArray(Point[]::new));
-
-		return factory.createPolyline(reducedPoints);
+		return FACTORY.createPolyline(points.toArray(Point[]::new));
 	}
 
 	private static List<Point> readWKTPointFile(final String filename){

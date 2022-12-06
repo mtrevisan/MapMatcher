@@ -67,7 +67,7 @@ public class GeometryFactory{
 	/**
 	 * Creates a polyline using the given points.
 	 *
-	 * @param points	An array without <code>null</code> elements, or an empty array.
+	 * @param points	An array without <code>null</code> elements.
 	 */
 	public Polyline createPolyline(final Point... points){
 		if(points == null)
