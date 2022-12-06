@@ -26,8 +26,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
 
@@ -35,17 +34,15 @@ import java.util.Collection;
 public class LogGaussianEmissionCalculator implements EmissionProbabilityCalculator{
 
 	private final double observationStandardDeviation;
-	private final DistanceCalculator distanceCalculator;
 
 
-	public LogGaussianEmissionCalculator(final double observationStandardDeviation, final DistanceCalculator distanceCalculator){
+	public LogGaussianEmissionCalculator(final double observationStandardDeviation){
 		this.observationStandardDeviation = observationStandardDeviation;
-		this.distanceCalculator = distanceCalculator;
 	}
 
 
 	@Override
-	public void updateEmissionProbability(final Coordinate observation, final Collection<Edge> edges){}
+	public void updateEmissionProbability(final Point observation, final Collection<Edge> edges){}
 
 	/**
 	 * Calculate emission probability
@@ -57,18 +54,18 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	 * @see <a href="https://hal-enac.archives-ouvertes.fr/hal-01160130/document">Characterization of GNSS receiver position errors for user integrity monitoring in urban environments</a>
 	 */
 	@Override
-	public double emissionProbability(final Coordinate observation, final Edge segment,
-			final Coordinate previousObservation){
-		final double distance = distanceCalculator.distance(observation, segment.getPolyline());
+	public double emissionProbability(final Point observation, final Edge segment,
+			final Point previousObservation){
+		final double distance = observation.distance(segment.getPolyline());
 		final double tmp = distance / observationStandardDeviation;
 
 		//weight given on vehicle heading, which is related to the road direction angle and the trajectory direction angle
 		double tau = 1.;
 		if(previousObservation != null){
-			final Coordinate previousObservationClosest = distanceCalculator.onTrackClosestPoint(previousObservation, segment.getPolyline());
-			final Coordinate currentObservationClosest = distanceCalculator.onTrackClosestPoint(observation, segment.getPolyline());
-			final double angleRoad = distanceCalculator.initialBearing(previousObservationClosest, currentObservationClosest);
-			final double angleGPS = distanceCalculator.initialBearing(previousObservation, observation);
+			final Point previousObservationClosest = segment.getPolyline().onTrackClosestPoint(previousObservation);
+			final Point currentObservationClosest = segment.getPolyline().onTrackClosestPoint(observation);
+			final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
+			final double angleGPS = previousObservation.initialBearing(observation);
 			tau = Math.exp(Math.toRadians(Math.abs(angleRoad - angleGPS)) - 2. / Math.PI);
 		}
 

@@ -31,7 +31,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.List;
 
@@ -59,7 +59,7 @@ public class TopologicalTransitionCalculator implements TransitionProbabilityCal
 	 */
 	@Override
 	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Coordinate previousObservation, final Coordinate currentObservation){
+			final Point previousObservation, final Point currentObservation){
 		double a = 0.;
 		//if the node is the same
 		if(fromSegment.equals(toSegment))

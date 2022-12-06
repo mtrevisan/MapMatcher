@@ -24,6 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.Collection;
@@ -45,7 +47,9 @@ public class Edge{
 	}
 
 	public static Edge createSelfEdge(final Node node){
-		final Polyline polyline = Polyline.of(node.getCoordinate(), node.getCoordinate());
+		final Point point = node.getPoint();
+		final GeometryFactory factory = point.getFactory();
+		final Polyline polyline = factory.createPolyline(point, point);
 		return new Edge(node, node, polyline);
 	}
 

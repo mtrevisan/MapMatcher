@@ -24,8 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.distances;
 
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
@@ -44,7 +44,7 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 * @see <a href="https://en.wikipedia.org/wiki/Vincenty%27s_formulae">Vincenty's formulae</a>
 	 */
 	@Override
-	public double distance(final Coordinate startPoint, final Coordinate endPoint){
+	public double distance(final Point startPoint, final Point endPoint){
 		return GeodeticHelper.orthodromicDistance(startPoint, endPoint);
 	}
 
@@ -56,13 +56,13 @@ public class GeodeticCalculator implements DistanceCalculator{
 	 * @return The distance [m].
 	 */
 	@Override
-	public double distance(final Coordinate point, final Polyline lineString){
+	public double distance(final Point point, final Polyline lineString){
 		double minNearestPointDistance = Double.MAX_VALUE;
-		final Coordinate[] coordinates = lineString.getCoordinates();
-		for(int i = 1; i < coordinates.length; i ++){
-			final Coordinate startPoint = coordinates[i - 1];
-			final Coordinate endPoint = coordinates[i];
-			final Coordinate nearestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
+		final Point[] points = lineString.getPoints();
+		for(int i = 1; i < points.length; i ++){
+			final Point startPoint = points[i - 1];
+			final Point endPoint = points[i];
+			final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
 			final double distance = Math.abs(GeodeticHelper.orthodromicDistance(nearestPoint, point));
 			if(distance < minNearestPointDistance)
 				minNearestPointDistance = distance;
@@ -70,20 +70,20 @@ public class GeodeticCalculator implements DistanceCalculator{
 		return minNearestPointDistance;
 	}
 
-
 	@Override
-	public double initialBearing(final Coordinate startPoint, final Coordinate endPoint){
+	public double initialBearing(final Point startPoint, final Point endPoint){
 		return GeodeticHelper.initialBearing(startPoint, endPoint);
 	}
 
+
 	@Override
-	public Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+	public Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){
 		return GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
 	}
 
 	@Override
-	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		final Coordinate onTrackClosestPoint = onTrackClosestPoint(startPoint, endPoint, point);
+	public double alongTrackDistance(final Point startPoint, final Point endPoint, final Point point){
+		final Point onTrackClosestPoint = onTrackClosestPoint(startPoint, endPoint, point);
 		return GeodeticHelper.orthodromicDistance(startPoint, onTrackClosestPoint);
 	}
 

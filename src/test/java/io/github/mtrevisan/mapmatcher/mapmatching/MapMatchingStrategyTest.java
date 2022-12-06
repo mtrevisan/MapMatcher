@@ -27,7 +27,8 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
@@ -41,21 +42,22 @@ class MapMatchingStrategyTest{
 
 	@Test
 	void should_connect_path(){
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Graph graph = extractDirectGraph(Arrays.asList(edges), 50.);
@@ -80,7 +82,7 @@ class MapMatchingStrategyTest{
 
 
 	private static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
 		int e = 0;
 		for(final Polyline edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);

@@ -26,9 +26,9 @@ package io.github.mtrevisan.mapmatcher.helpers;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,26 +56,27 @@ public class PathHelper{
 		if(!path.isEmpty()){
 			final List<Edge> pathAsEdges = extractPathAsEdges(path);
 
-			//calculate number of coordinates
+			//calculate number of points
 			int size = 0;
 			for(final Edge edge : pathAsEdges)
 				size += edge.getPolyline().size() - (size > 0? 1: 0);
 
 			//merge segments
 			if(size > 0){
-				final Coordinate[] mergedCoordinates = new Coordinate[size];
+				final Point[] mergedPoints = new Point[size];
 				size = 0;
 				for(final Edge edge : pathAsEdges){
-					final Coordinate[] coordinates = edge.getPolyline().getCoordinates();
-					final int count = coordinates.length - (size > 0? 1: 0);
-					assert size == 0 || mergedCoordinates[size - 1].equals(coordinates[0]);
-					System.arraycopy(coordinates, (size > 0? 1: 0), mergedCoordinates, size, count);
+					final Point[] points = edge.getPolyline().getPoints();
+					final int count = points.length - (size > 0? 1: 0);
+					assert size == 0 || mergedPoints[size - 1].equals(points[0]);
+					System.arraycopy(points, (size > 0? 1: 0), mergedPoints, size, count);
 					size += count;
 				}
-				polyline = Polyline.of(mergedCoordinates);
+				final GeometryFactory factory = path.get(0).getPoint().getFactory();
+				polyline = factory.createPolyline(mergedPoints);
 			}
 		}
-		return (polyline != null? polyline: Polyline.of());
+		return polyline;
 	}
 
 	public static List<Edge> extractPathAsEdges(final List<Node> path){
@@ -91,15 +92,14 @@ public class PathHelper{
 	}
 
 	public static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){
-		return (fromSegment.getFrom().getCoordinate().equals(toSegment.getTo().getCoordinate())
-			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
+		return (fromSegment.getFrom().getPoint().equals(toSegment.getTo().getPoint())
+			&& fromSegment.getTo().getPoint().equals(toSegment.getFrom().getPoint()));
 	}
 
-	public static boolean isGoingForward(final DistanceCalculator distanceCalculator, final Coordinate previousObservation,
-			final Coordinate currentObservation, final Polyline polyline){
+	public static boolean isGoingForward(final Point previousObservation, final Point currentObservation, final Polyline polyline){
 		//calculate Along-Track Distance
-		final double previousATD = distanceCalculator.alongTrackDistance(previousObservation, polyline);
-		final double currentATD = distanceCalculator.alongTrackDistance(currentObservation, polyline);
+		final double previousATD = polyline.alongTrackDistance(previousObservation);
+		final double currentATD = polyline.alongTrackDistance(currentObservation);
 		return (previousATD <= currentATD);
 	}
 

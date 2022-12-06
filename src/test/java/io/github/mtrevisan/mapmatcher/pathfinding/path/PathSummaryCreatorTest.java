@@ -26,8 +26,8 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -41,14 +41,15 @@ class PathSummaryCreatorTest{
 
 	@Test
 	void should_return_path_between_start_and_end_node_present_in_predecessor_tree(){
-		Node start = new Node("0", Coordinate.of(1., 1.));
-		Node middle = new Node("1", Coordinate.of(1., 2.));
-		Node end = new Node("2", Coordinate.of(1., 3.));
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		Node start = new Node("0", factory.createPoint(1., 1.));
+		Node middle = new Node("1", factory.createPoint(1., 2.));
+		Node end = new Node("2", factory.createPoint(1., 3.));
 		Map<Node, Edge> predecessorTree = new LinkedHashMap<>(2);
 		predecessorTree.put(middle, Edge.createDirectEdge(start, middle,
-			Polyline.of(start.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(start.getPoint(), middle.getPoint())));
 		predecessorTree.put(end, Edge.createDirectEdge(middle, end,
-			Polyline.of(middle.getCoordinate(), end.getCoordinate())));
+			factory.createPolyline(middle.getPoint(), end.getPoint())));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
@@ -58,15 +59,16 @@ class PathSummaryCreatorTest{
 
 	@Test
 	void should_return_an_empty_path_when_start_node_and_end_node_are_not_connected_in_predecessor_tree(){
-		Node start = new Node("0", Coordinate.of(1., 1.));
-		Node randomNode = new Node("1", Coordinate.of(1., 1.));
-		Node middle = new Node("2", Coordinate.of(1., 1.));
-		Node end = new Node("3", Coordinate.of(1., 1.));
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		Node start = new Node("0", factory.createPoint(1., 1.));
+		Node randomNode = new Node("1", factory.createPoint(1., 1.));
+		Node middle = new Node("2", factory.createPoint(1., 1.));
+		Node end = new Node("3", factory.createPoint(1., 1.));
 		Map<Node, Edge> predecessorTree = new LinkedHashMap<>(2);
 		predecessorTree.put(middle, Edge.createDirectEdge(randomNode, middle,
-			Polyline.of(randomNode.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(randomNode.getPoint(), middle.getPoint())));
 		predecessorTree.put(end, Edge.createDirectEdge(middle, end,
-			Polyline.of(middle.getCoordinate(), end.getCoordinate())));
+			factory.createPolyline(middle.getPoint(), end.getPoint())));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
@@ -77,16 +79,17 @@ class PathSummaryCreatorTest{
 
 	@Test
 	void should_return_an_empty_path_when_start_node_and_mid_node_are_not_connected_in_predecessor_tree(){
-		Node start = new Node("0", Coordinate.of(1., 1.));
-		Node randomNode = new Node("1", Coordinate.of(1., 2.));
-		Node middle = new Node("2", Coordinate.of(1., 3.));
-		Node end = new Node("3", Coordinate.of(1., 4.));
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		Node start = new Node("0", factory.createPoint(1., 1.));
+		Node randomNode = new Node("1", factory.createPoint(1., 2.));
+		Node middle = new Node("2", factory.createPoint(1., 3.));
+		Node end = new Node("3", factory.createPoint(1., 4.));
 		Map<Node, Edge> predecessorTreeStart = new LinkedHashMap<>(1);
 		predecessorTreeStart.put(middle, Edge.createDirectEdge(randomNode, middle,
-			Polyline.of(randomNode.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(randomNode.getPoint(), middle.getPoint())));
 		Map<Node, Edge> predecessorTreeEnd = new LinkedHashMap<>(1);
 		predecessorTreeEnd.put(middle, Edge.createDirectEdge(end, middle,
-			Polyline.of(end.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(end.getPoint(), middle.getPoint())));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createBidirectionalPath(start, middle, end, predecessorTreeStart, predecessorTreeEnd);
@@ -97,16 +100,17 @@ class PathSummaryCreatorTest{
 
 	@Test
 	void should_return_an_empty_path_when_mid_node_and_end_node_are_not_connected_in_predecessor_tree(){
-		Node start = new Node("0", Coordinate.of(1., 1.));
-		Node randomNode = new Node("1", Coordinate.of(1., 2.));
-		Node middle = new Node("2", Coordinate.of(1., 3.));
-		Node end = new Node("3", Coordinate.of(1., 4.));
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		Node start = new Node("0", factory.createPoint(1., 1.));
+		Node randomNode = new Node("1", factory.createPoint(1., 2.));
+		Node middle = new Node("2", factory.createPoint(1., 3.));
+		Node end = new Node("3", factory.createPoint(1., 4.));
 		Map<Node, Edge> predecessorTreeStart = new LinkedHashMap<>(1);
 		predecessorTreeStart.put(middle, Edge.createDirectEdge(start, middle,
-			Polyline.of(start.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(start.getPoint(), middle.getPoint())));
 		Map<Node, Edge> predecessorTreeEnd = new LinkedHashMap<>(1);
 		predecessorTreeEnd.put(middle, Edge.createDirectEdge(randomNode, middle,
-			Polyline.of(randomNode.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(randomNode.getPoint(), middle.getPoint())));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createBidirectionalPath(start, middle, end, predecessorTreeStart, predecessorTreeEnd);

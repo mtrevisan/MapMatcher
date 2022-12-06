@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -35,14 +35,14 @@ import java.util.Set;
 public class Node{
 
 	private String id;
-	private Coordinate coordinate;
+	private Point point;
 
 	private final Set<Edge> outEdges = new HashSet<>(0);
 
 
-	public Node(final String id, final Coordinate coordinate){
+	public Node(final String id, final Point point){
 		this.id = id;
-		this.coordinate = coordinate;
+		this.point = point;
 	}
 
 	public String getID(){
@@ -71,12 +71,12 @@ public class Node{
 		outEdges.add(edge);
 	}
 
-	public Coordinate getCoordinate(){
-		return coordinate;
+	public Point getPoint(){
+		return point;
 	}
 
-	public void setCoordinate(final Coordinate coordinate){
-		this.coordinate = coordinate;
+	public void setPoint(final Point point){
+		this.point = point;
 	}
 
 	@Override
@@ -87,17 +87,17 @@ public class Node{
 			return false;
 
 		final Node other = (Node)obj;
-		return Objects.equals(coordinate, other.coordinate);
+		return Objects.equals(point, other.point);
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(coordinate);
+		return Objects.hash(point);
 	}
 
 	@Override
 	public String toString(){
-		return "Node{id = " + id + ", coordinates = " + coordinate + "}";
+		return "Node{id = " + id + ", point = " + point + "}";
 	}
 
 }

@@ -32,9 +32,8 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 import java.util.List;
 
@@ -44,12 +43,10 @@ public class LogExponentialNoUTurnTransitionCalculator implements TransitionProb
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
 	private final double rateParameter;
-	private final DistanceCalculator distanceCalculator;
 
 
-	public LogExponentialNoUTurnTransitionCalculator(final double rateParameter, final DistanceCalculator distanceCalculator){
+	public LogExponentialNoUTurnTransitionCalculator(final double rateParameter){
 		this.rateParameter = rateParameter;
-		this.distanceCalculator = distanceCalculator;
 	}
 
 	/**
@@ -70,19 +67,19 @@ public class LogExponentialNoUTurnTransitionCalculator implements TransitionProb
 	 */
 	@Override
 	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Coordinate previousObservation, final Coordinate currentObservation){
+			final Point previousObservation, final Point currentObservation){
 		//penalize u-turns: make then unreachable
 		final boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
 		if(segmentsReversed)
 			return InitialProbabilityCalculator.logPr(0.);
 
-		final double observationsDistance = distanceCalculator.distance(previousObservation, currentObservation);
+		final double observationsDistance = previousObservation.distance(currentObservation);
 
 		final List<Node> path = PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph)
 			.simplePath();
 		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(path);
-		final double pathDistance = distanceCalculator.alongTrackDistance(currentObservation, pathAsPolyline)
-			- distanceCalculator.alongTrackDistance(previousObservation, pathAsPolyline);
+		final double pathDistance = pathAsPolyline.alongTrackDistance(currentObservation)
+			- pathAsPolyline.alongTrackDistance(previousObservation);
 
 		//expansion of:
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));

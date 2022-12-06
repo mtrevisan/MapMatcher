@@ -41,25 +41,25 @@ public class GrahamScan{
 	 * @return	The convex hull.
 	 */
 	public static Polyline getConvexHull(final Polyline polyline){
-		final Coordinate[] coordinates = polyline.getCoordinates();
-		if(coordinates.length <= 2)
-			return Polyline.of(coordinates);
+		final Point[] points = polyline.getPoints();
+		if(points.length <= 2)
+			return polyline.factory.createPolyline(points);
 
-		final Coordinate[] points = Arrays.copyOf(coordinates, coordinates.length);
-		polarSort(points);
+		final Point[] sortedPoints = Arrays.copyOf(points, points.length);
+		polarSort(sortedPoints);
 
 		//use Graham scan to find convex hull
-		final Stack<Coordinate> convexHull = grahamScan(points);
+		final Stack<Point> convexHull = grahamScan(sortedPoints);
 
 		//convert stack to an array
-		return Polyline.of(convexHull.toArray(Coordinate[]::new));
+		return polyline.factory.createPolyline(convexHull.toArray(Point[]::new));
 	}
 
-	static void polarSort(final Coordinate[] points){
+	static void polarSort(final Point[] points){
 		//find the lowest point in the set; if two or more points have the same minimum Y coordinate choose the one with the minimum X
 		//(this focal point is put in array location points[0])
 		final int pivotIndex = getLowestPoint(points);
-		final Coordinate pivot = points[pivotIndex];
+		final Point pivot = points[pivotIndex];
 		points[pivotIndex] = points[0];
 		points[0] = pivot;
 
@@ -76,11 +76,11 @@ public class GrahamScan{
 	 * @param points	The list of points to return the lowest point from.
 	 * @return	The index of the point with the lowest Y (or X) coordinate.
 	 */
-	static int getLowestPoint(final Coordinate[] points){
+	static int getLowestPoint(final Point[] points){
 		int lowestIndex = 0;
 		for(int i = 1; i < points.length; i ++){
-			final Coordinate tmp = points[i];
-			final Coordinate lowest = points[lowestIndex];
+			final Point tmp = points[i];
+			final Point lowest = points[lowestIndex];
 			if(tmp.getY() < lowest.getY() || tmp.getY() == lowest.getY() && tmp.getX() < lowest.getX())
 				lowestIndex = i;
 		}
@@ -90,19 +90,19 @@ public class GrahamScan{
 	/**
 	 * Uses the Graham Scan algorithm to compute the convex hull vertices.
 	 *
-	 * @param coordinates	A list of points, with at least 3 entries.
+	 * @param points	A list of points, with at least 3 entries.
 	 * @return	A stack containing the ordered points of the convex hull ring.
 	 *
 	 * @see <a href="https://en.wikipedia.org/wiki/Graham_scan">Graham scan</a>
 	 */
-	private static Stack<Coordinate> grahamScan(final Coordinate[] coordinates){
-		final Stack<Coordinate> hull = new Stack<>();
-		hull.push(coordinates[0]);
-		hull.push(coordinates[1]);
-		for(int i = 2; hull.size() > 1 && i < coordinates.length; i ++){
-			final Coordinate head = coordinates[i];
-			final Coordinate middle = hull.pop();
-			final Coordinate tail = hull.peek();
+	private static Stack<Point> grahamScan(final Point[] points){
+		final Stack<Point> hull = new Stack<>();
+		hull.push(points[0]);
+		hull.push(points[1]);
+		for(int i = 2; hull.size() > 1 && i < points.length; i ++){
+			final Point head = points[i];
+			final Point middle = hull.pop();
+			final Point tail = hull.peek();
 
 			final int turnType = PolarAngleComparator.orientation(head, tail, middle);
 			switch(turnType){
@@ -117,13 +117,13 @@ public class GrahamScan{
 
 		//close the hull
 		if(hull.size() > 2)
-			hull.push(coordinates[0]);
+			hull.push(points[0]);
 
 		return hull;
 	}
 
 
-	static class PolarAngleComparator implements Comparator<Coordinate>{
+	static class PolarAngleComparator implements Comparator<Point>{
 
 		/** A value that indicates an orientation of clockwise, or a right turn. */
 		static final int CLOCKWISE = -1;
@@ -137,7 +137,7 @@ public class GrahamScan{
 		private static final double DOUBLE_SAFE_EPSILON = 1.e-15;
 
 
-		private final Coordinate reference;
+		private final Point reference;
 
 
 		/**
@@ -148,12 +148,12 @@ public class GrahamScan{
 		 *
 		 * @param reference	The reference of the polar comparison.
 		 */
-		PolarAngleComparator(final Coordinate reference){
+		PolarAngleComparator(final Point reference){
 			this.reference = reference;
 		}
 
 		@Override
-		public int compare(final Coordinate p1, final Coordinate p2){
+		public int compare(final Point p1, final Point p2){
 			return -polarCompare(reference, p1, p2);
 		}
 
@@ -176,7 +176,7 @@ public class GrahamScan{
 		 * @return	<code>-1</code>, <code>0</code>, or <code>1</code> depending on whether `p` is less than, equal to, or greater than `q`
 		 * 	with respect to `r` respectively.
 		 */
-		static int polarCompare(final Coordinate r, final Coordinate p, final Coordinate q){
+		static int polarCompare(final Point r, final Point p, final Point q){
 			int orientation = orientation(r, p, q);
 			if(orientation != COLLINEAR)
 				return orientation;
@@ -190,7 +190,7 @@ public class GrahamScan{
 			return Double.compare(Math.abs(q.getX() - r.getX()), Math.abs(p.getX() - r.getX()));
 		}
 
-		static int orientation(final Coordinate r, final Coordinate p, final Coordinate q){
+		static int orientation(final Point r, final Point p, final Point q){
 			//fast filter for orientation index (avoids use of slow extended-precision arithmetic in many cases)
 			final int index = orientationIndexFilter(r, p, q);
 			if(index <= 1)
@@ -207,7 +207,7 @@ public class GrahamScan{
 		}
 
 		/**
-		 * A filter for computing the orientation index of three coordinates.
+		 * A filter for computing the orientation index of three points.
 		 * <p>
 		 * If the orientation can be computed safely using standard DP arithmetic, this routine returns the orientation index.<br/>
 		 * Otherwise, a value i > 1 is returned.<br/>
@@ -219,13 +219,13 @@ public class GrahamScan{
 		 * Uses an approach due to Jonathan Shewchuk.
 		 * </p>
 		 *
-		 * @param r	C coordinate.
-		 * @param p	A coordinate.
-		 * @param q	B coordinate.
+		 * @param r	The reference point.
+		 * @param p	The first point.
+		 * @param q	The second point.
 		 * @return The orientation index if it can be computed safely (<code>i > 1</code> if the orientation index cannot be computed
 		 * 	safely)
 		 */
-		private static int orientationIndexFilter(final Coordinate r, final Coordinate p, final Coordinate q){
+		private static int orientationIndexFilter(final Point r, final Point p, final Point q){
 			final double detLeft = (p.getX() - r.getX()) * (q.getY() - r.getY());
 			final double detRight = (p.getY() - r.getY()) * (q.getX() - r.getX());
 			final double det = detLeft - detRight;

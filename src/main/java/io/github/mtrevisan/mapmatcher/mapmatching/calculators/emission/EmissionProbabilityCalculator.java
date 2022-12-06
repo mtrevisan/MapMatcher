@@ -25,15 +25,15 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
 
 
 public interface EmissionProbabilityCalculator{
 
-	void updateEmissionProbability(Coordinate observation, Collection<Edge> edges);
+	void updateEmissionProbability(Point observation, Collection<Edge> edges);
 
-	double emissionProbability(Coordinate observation, Edge segment, Coordinate previousObservation);
+	double emissionProbability(Point observation, Edge segment, Point previousObservation);
 
 }

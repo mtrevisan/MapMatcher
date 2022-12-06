@@ -30,7 +30,7 @@ import io.github.mtrevisan.mapmatcher.helpers.FibonacciHeap;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +59,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	}
 
 	@Override
-	public Edge[] findPath(final Graph graph, final Coordinate[] observations){
+	public Edge[] findPath(final Graph graph, final Point[] observations){
 		final Collection<Edge> graphEdges = graph.edges();
 
 		final int n = graphEdges.size();
@@ -78,7 +78,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			//no observations: cannot calculate path
 			return null;
 
-		Coordinate currentObservation = observations[i];
+		Point currentObservation = observations[i];
 		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		for(final Edge edge : graphEdges){
@@ -93,7 +93,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 		int previousObservationIndex = i;
 		while(true){
-			final Coordinate previousObservation = observations[previousObservationIndex];
+			final Point previousObservation = observations[previousObservationIndex];
 			i = extractNextObservation(observations, previousObservationIndex + 1);
 			if(i < 0)
 				break;
@@ -154,7 +154,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
 	}
 
-	private static int extractNextObservation(final Coordinate[] observations, int index){
+	private static int extractNextObservation(final Point[] observations, int index){
 		final int m = observations.length;
 		while(index < m && observations[index] == null)
 			index ++;

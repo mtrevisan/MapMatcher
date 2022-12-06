@@ -26,12 +26,12 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 
 public interface TransitionProbabilityCalculator{
 
 	double transitionProbability(Edge fromSegment, Edge toSegment, Graph graph,
-		Coordinate previousObservation, Coordinate currentObservation);
+		Point previousObservation, Point currentObservation);
 
 }

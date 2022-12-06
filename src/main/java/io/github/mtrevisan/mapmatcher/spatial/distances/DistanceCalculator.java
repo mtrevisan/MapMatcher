@@ -24,56 +24,21 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.distances;
 
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
 public interface DistanceCalculator{
 
-	double distance(Coordinate startPoint, Coordinate endPoint);
+	double distance(Point startPoint, Point endPoint);
 
-	double distance(Coordinate point, Polyline polyline);
+	double distance(Point point, Polyline polyline);
+
+	double initialBearing(Point startPoint, Point endPoint);
 
 
-	double initialBearing(Coordinate startPoint, Coordinate endPoint);
+	Point onTrackClosestPoint(Point startPoint, Point endPoint, Point point);
 
-	default Coordinate onTrackClosestPoint(final Coordinate point, final Polyline polyline){
-		double minClosestPointDistance = Double.MAX_VALUE;
-		Coordinate minClosestPoint = null;
-		final Coordinate[] coordinates = polyline.getCoordinates();
-		for(int i = 1; i < coordinates.length; i ++){
-			final Coordinate startPoint = coordinates[i - 1];
-			final Coordinate endPoint = coordinates[i];
-			final Coordinate closestPoint = onTrackClosestPoint(startPoint, endPoint, point);
-			final double distance = distance(point, closestPoint);
-			if(distance < minClosestPointDistance){
-				minClosestPointDistance = distance;
-				minClosestPoint = closestPoint;
-			}
-		}
-		return minClosestPoint;
-	}
-
-	Coordinate onTrackClosestPoint(Coordinate startPoint, Coordinate endPoint, Coordinate point);
-
-	default double alongTrackDistance(final Coordinate point, final Polyline polyline){
-		double nearestPointDistance = 0.;
-		double cumulativeDistance = 0.;
-		double minNearestPointDistance = Double.MAX_VALUE;
-		final Coordinate[] coordinates = polyline.getCoordinates();
-		for(int i = 1; i < coordinates.length; i ++){
-			final Coordinate startPoint = coordinates[i - 1];
-			final Coordinate endPoint = coordinates[i];
-			final double distance = Math.abs(alongTrackDistance(startPoint, endPoint, point));
-			cumulativeDistance += distance;
-			if(distance < minNearestPointDistance){
-				nearestPointDistance += cumulativeDistance;
-				cumulativeDistance = 0.;
-			}
-		}
-		return nearestPointDistance;
-	}
-
-	double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point);
+	double alongTrackDistance(Point startPoint, Point endPoint, Point point);
 
 }

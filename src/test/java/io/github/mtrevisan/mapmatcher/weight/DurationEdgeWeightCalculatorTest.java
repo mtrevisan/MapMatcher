@@ -27,8 +27,9 @@ package io.github.mtrevisan.mapmatcher.weight;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDurationCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -37,17 +38,25 @@ class DurationEdgeWeightCalculatorTest{
 
 	@Test
 	void should_return_edge_duration_in_minutes(){
-		Coordinate[] coordinates = new Coordinate[]{Coordinate.of(121.058805, 14.552797), Coordinate.of(120.994260, 14.593999), Coordinate.of(96.591876, 77.870317), Coordinate.of(-4.815018, 21.719527), Coordinate.of(23.704799, -17.727830), Coordinate.of(-130.279576, 58.585396)};
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Point[] points = new Point[]{
+			factory.createPoint(121.058805, 14.552797),
+			factory.createPoint(120.994260, 14.593999),
+			factory.createPoint(96.591876, 77.870317),
+			factory.createPoint(-4.815018, 21.719527),
+			factory.createPoint(23.704799, -17.727830),
+			factory.createPoint(-130.279576, 58.585396)
+		};
 		double[] expectedDurations = new double[]{10.0, 5_939.6, 8_999.0};
 		double[] maxSpeeds = new double[]{50., 80., 100.};
 		for(int i = 0; i < expectedDurations.length; i ++){
-			Coordinate fromCoordinates = coordinates[i << 1];
-			Coordinate toCoordinates = coordinates[(i << 1) + 1];
+			Point fromPoints = points[i << 1];
+			Point toPoints = points[(i << 1) + 1];
 			double expectedDuration = expectedDurations[i];
 			double maxSpeed = maxSpeeds[i];
 			GeodeticDurationCalculator edgeWeightCalculator = new GeodeticDurationCalculator();
-			final Edge edge = Edge.createDirectEdge(new Node("0", fromCoordinates), new Node("1", toCoordinates),
-				Polyline.of(fromCoordinates, toCoordinates));
+			final Edge edge = Edge.createDirectEdge(new Node("0", fromPoints), new Node("1", toPoints),
+				factory.createPolyline(fromPoints, toPoints));
 			edge.setWeight(maxSpeed);
 			double actualDistance = edgeWeightCalculator.calculateWeight(edge);
 
@@ -57,18 +66,26 @@ class DurationEdgeWeightCalculatorTest{
 
 	@Test
 	void should_return_duration_in_minutes_between_vertices_with_max_possible_speed(){
-		Coordinate[] coordinates = new Coordinate[]{Coordinate.of(121.058805, 14.552797), Coordinate.of(120.994260, 14.593999), Coordinate.of(96.591876, 77.870317), Coordinate.of(-4.815018, 21.719527), Coordinate.of(23.704799, -17.727830), Coordinate.of(-130.279576, 58.585396)};
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Point[] points = new Point[]{
+			factory.createPoint(121.058805, 14.552797),
+			factory.createPoint(120.994260, 14.593999),
+			factory.createPoint(96.591876, 77.870317),
+			factory.createPoint(-4.815018, 21.719527),
+			factory.createPoint(23.704799, -17.727830),
+			factory.createPoint(-130.279576, 58.585396)
+		};
 		double[] expectedDistances = new double[]{3.6, 3_394.1, 6_427.9};
 
 		for(int i = 0; i < expectedDistances.length; i ++){
-			Coordinate fromCoordinates = coordinates[i << 1];
-			Coordinate toCoordinates = coordinates[(i << 1) + 1];
+			Point fromPoints = points[i << 1];
+			Point toPoints = points[(i << 1) + 1];
 			double expectedDistance = expectedDistances[i];
 			GeodeticDurationCalculator edgeWeightCalculator = new GeodeticDurationCalculator();
 
 			double actualDistance = edgeWeightCalculator.calculateWeight(
-				new Node("0", fromCoordinates),
-				new Node("1", toCoordinates));
+				new Node("0", fromPoints),
+				new Node("1", toPoints));
 
 			Assertions.assertEquals(expectedDistance, actualDistance, 0.05);
 		}

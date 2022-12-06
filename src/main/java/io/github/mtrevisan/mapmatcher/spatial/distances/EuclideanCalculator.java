@@ -24,26 +24,27 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.distances;
 
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
 public class EuclideanCalculator implements DistanceCalculator{
 
 	@Override
-	public double distance(final Coordinate startPoint, final Coordinate endPoint){
+	public double distance(final Point startPoint, final Point endPoint){
 		final double dx = startPoint.getX() - endPoint.getX();
 		final double dy = startPoint.getY() - endPoint.getY();
 		return Math.sqrt(dx * dx + dy * dy);
 	}
 
 	@Override
-	public double distance(final Coordinate point, final Polyline polyline){
+	public double distance(final Point point, final Polyline polyline){
 		double minNearestPointDistance = Double.MAX_VALUE;
-		final Coordinate[] coordinates = polyline.getCoordinates();
-		for(int i = 1; i < coordinates.length; i ++){
-			final Coordinate startPoint = coordinates[i - 1];
-			final Coordinate endPoint = coordinates[i];
+		final Point[] points = polyline.getPoints();
+		for(int i = 1; i < points.length; i ++){
+			final Point startPoint = points[i - 1];
+			final Point endPoint = points[i];
 			final double distance = Math.abs(distance(startPoint, endPoint));
 			if(distance < minNearestPointDistance)
 				minNearestPointDistance = distance;
@@ -53,7 +54,7 @@ public class EuclideanCalculator implements DistanceCalculator{
 
 
 	@Override
-	public double initialBearing(final Coordinate startPoint, final Coordinate endPoint){
+	public double initialBearing(final Point startPoint, final Point endPoint){
 		final double dx = endPoint.getX() - startPoint.getX();
 		final double dy = endPoint.getY() - startPoint.getY();
 		final double angle = Math.toDegrees(StrictMath.atan2(dx, dy));
@@ -61,13 +62,37 @@ public class EuclideanCalculator implements DistanceCalculator{
 	}
 
 	@Override
-	public Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		//TODO
-		return null;
+	public Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){
+		final double vx = endPoint.getX() - startPoint.getX();
+		final double vy = endPoint.getY() - startPoint.getY();
+		final double ux = startPoint.getX() - point.getX();
+		final double uy = startPoint.getY() - point.getY();
+		final double vu = vx * ux + vy * uy;
+		final double vv = vx * vx + vy * vy;
+		final double t = - vu / vv;
+		if(t >= 0 && t <= 1){
+			final GeometryFactory factory = startPoint.getFactory();
+			return vectorToSegment(t, factory.createPoint(0., 0.), startPoint, endPoint);
+		}
+
+		final double g0 = norm2(vectorToSegment(0., point, startPoint, endPoint));
+		final double g1 = norm2(vectorToSegment(1., point, startPoint, endPoint));
+		return (g0 <= g1? startPoint: endPoint);
 	}
 
+	private Point vectorToSegment(final double t, final Point point, final Point startPoint, final Point endPoint){
+		final GeometryFactory factory = startPoint.getFactory();
+		return factory.createPoint(
+			(1. - t) * startPoint.getX() + t * endPoint.getX() - point.getX(),
+			(1. - t) * startPoint.getY() + t * endPoint.getY() - point.getY()
+		);
+	}
+
+	private double norm2(final Point point) { return point.getX() * point.getX() + point.getY() * point.getY(); }
+
+
 	@Override
-	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
+	public double alongTrackDistance(final Point startPoint, final Point endPoint, final Point point){
 		final double dx21 = endPoint.getX() - startPoint.getX();
 		final double dy21 = endPoint.getY() - startPoint.getY();
 		return Math.abs(dx21 * (startPoint.getY() - point.getY()) - (startPoint.getX() - point.getX()) * dy21)

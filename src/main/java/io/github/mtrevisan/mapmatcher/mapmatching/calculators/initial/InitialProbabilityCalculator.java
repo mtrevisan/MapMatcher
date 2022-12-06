@@ -25,14 +25,14 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
 
 
 public interface InitialProbabilityCalculator{
 
-	void calculateInitialProbability(Coordinate observation, Collection<Edge> segments);
+	void calculateInitialProbability(Point observation, Collection<Edge> segments);
 
 	double initialProbability(Edge segment);
 

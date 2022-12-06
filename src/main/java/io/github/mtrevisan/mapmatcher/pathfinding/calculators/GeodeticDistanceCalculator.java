@@ -38,7 +38,7 @@ public class GeodeticDistanceCalculator implements EdgeWeightCalculator{
 
 	@Override
 	public double calculateWeight(final Node from, final Node to){
-		return GeodeticHelper.orthodromicDistance(from.getCoordinate(), to.getCoordinate());
+		return GeodeticHelper.orthodromicDistance(from.getPoint(), to.getPoint());
 	}
 
 }
