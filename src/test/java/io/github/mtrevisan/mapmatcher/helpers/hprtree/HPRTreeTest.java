@@ -69,7 +69,7 @@ class HPRTreeTest{
 
 		try(final BufferedWriter writer = new BufferedWriter(new FileWriter("src/test/resources/it.highways.simplified.5.wkt"))){
 			for(int i = 0; i < polylines.size(); i ++){
-				//TODO find a way to keep vertices of polylines that connects with nodes of another polyline
+				//TODO find a way to retain vertices of polylines that connects with another polyline
 				Point[] reducedPoints = SIMPLIFIER.simplify(polylines.get(i).getPoints());
 				writer.write(FACTORY.createPolyline(reducedPoints).toString() + "\r\n");
 			}
@@ -78,16 +78,15 @@ class HPRTreeTest{
 
 
 	/*
+	https://clydedacruz.github.io/openstreetmap-wkt-playground/
+
 	https://overpass-turbo.eu/
 [out:json][timeout:125];
 area["name:en"="Italy"]->.it;
 (
-  node["highway"="motorway"](area.it);
   way["highway"="motorway"](area.it);
-  relation["highway"="motorway"](area.it);
-  node["highway"="motorway_link"](area.it);
   way["highway"="motorway_link"](area.it);
-  relation["highway"="motorway_link"](area.it);
+  way["barrier"="toll_booth"](area.it);
 );
 out body;
 >;
