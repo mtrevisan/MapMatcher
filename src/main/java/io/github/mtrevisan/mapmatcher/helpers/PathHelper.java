@@ -25,7 +25,11 @@
 package io.github.mtrevisan.mapmatcher.helpers;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
+import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -36,59 +40,110 @@ import java.util.List;
 
 public class PathHelper{
 
+	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
+
+
 	private PathHelper(){}
 
+
 	public static boolean hasMixedDirections(final List<Node> path, final Edge fromSegment, final Edge toSegment){
-		final List<Edge> pathEdges = extractPathAsEdges(path);
-		pathEdges.add(0, fromSegment);
-		pathEdges.add(toSegment);
+		final Edge[] pathEdges = extractPathAsEdges(path);
+		final Edge[] augmentedPathEdges = new Edge[pathEdges.length + 2];
+		augmentedPathEdges[0] = fromSegment;
+		augmentedPathEdges[augmentedPathEdges.length - 1] = toSegment;
+		System.arraycopy(pathEdges, 0, augmentedPathEdges, 1, pathEdges.length);
+
 		int reverseCount = 0;
-		for(final Edge edge : pathEdges)
+		for(final Edge edge : augmentedPathEdges)
 			if(edge.getID().endsWith("-rev"))
 				reverseCount ++;
-		return (reverseCount > 0 && reverseCount < pathEdges.size());
+		return (reverseCount > 0 && reverseCount < augmentedPathEdges.length);
 	}
 
-	public static Polyline extractPathAsPolyline(final List<Node> path){
+	public static Edge[] extractPathAsEdges(final List<Node> path){
+		final int size = path.size();
+		final Edge[] connectedPath = new Edge[Math.max(size - 1, 0)];
+		for(int i = 1; i < size; i ++)
+			for(final Edge edge : path.get(i - 1).getOutEdges())
+				if(edge.getTo().equals(path.get(i))){
+					connectedPath[i - 1] = edge;
+					break;
+				}
+		return connectedPath;
+	}
+
+
+	public static Edge[] connectPath(final Edge[] path, final Graph graph){
+		final int size = path.length;
+		final List<Edge> connectedPath = new ArrayList<>(size);
+		if(size > 0){
+			int previousIndex = extractNextNonNullEdge(path, 0);
+			if(previousIndex >= 0)
+				connectedPath.add(path[previousIndex]);
+			while(true){
+				final int currentIndex = extractNextNonNullEdge(path, previousIndex + 1);
+				if(currentIndex < 0)
+					break;
+
+				if(!path[previousIndex].equals(path[currentIndex])){
+					if(path[previousIndex].getOutEdges().contains(path[currentIndex]))
+						connectedPath.add(path[currentIndex]);
+					else{
+						//add path from `path[index]` to `path[i]`
+						final List<Node> nodePath = PATH_FINDER.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph)
+							.simplePath();
+						assert !nodePath.isEmpty();
+						for(int j = 1; j < nodePath.size(); j ++){
+							final Node fromNode = nodePath.get(j - 1);
+							final Node toNode = nodePath.get(j);
+							final Edge edge = fromNode.findOutEdges(toNode);
+							assert edge != null;
+							connectedPath.add(edge);
+						}
+						connectedPath.add(path[currentIndex]);
+					}
+				}
+
+				previousIndex = currentIndex;
+			}
+		}
+		return connectedPath.toArray(Edge[]::new);
+	}
+
+	private static int extractNextNonNullEdge(final Edge[] path, int index){
+		final int m = path.length;
+		while(index < m && path[index] == null)
+			index ++;
+		return (index < m? index: -1);
+	}
+
+	public static Polyline extractPathAsPolyline(final Edge[] connectedPath){
 		Polyline polyline = null;
 
 		//search for a feasible path between the projection onto fromSegment and the one onto toSegment
-		if(!path.isEmpty()){
-			final List<Edge> pathAsEdges = extractPathAsEdges(path);
-
+		if(connectedPath != null && connectedPath.length > 0){
 			//calculate number of points
 			int size = 0;
-			for(final Edge edge : pathAsEdges)
+			for(final Edge edge : connectedPath)
 				size += edge.getPolyline().size() - (size > 0? 1: 0);
 
 			//merge segments
 			if(size > 0){
 				final Point[] mergedPoints = new Point[size];
 				size = 0;
-				for(final Edge edge : pathAsEdges){
+				for(final Edge edge : connectedPath){
 					final Point[] points = edge.getPolyline().getPoints();
 					final int count = points.length - (size > 0? 1: 0);
 					assert size == 0 || mergedPoints[size - 1].equals(points[0]);
 					System.arraycopy(points, (size > 0? 1: 0), mergedPoints, size, count);
 					size += count;
 				}
-				final GeometryFactory factory = path.get(0).getPoint().getFactory();
+				final GeometryFactory factory = connectedPath[0].getPolyline().getFactory();
 				polyline = factory.createPolyline(mergedPoints);
 			}
 		}
-		return polyline;
-	}
 
-	public static List<Edge> extractPathAsEdges(final List<Node> path){
-		final int size = path.size();
-		final List<Edge> connectedPath = new ArrayList<>(Math.max(size - 1, 0));
-		for(int i = 1; i < size; i ++)
-			for(final Edge edge : path.get(i - 1).getOutEdges())
-				if(edge.getTo().equals(path.get(i))){
-					connectedPath.add(edge);
-					break;
-				}
-		return connectedPath;
+		return polyline;
 	}
 
 	public static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){

@@ -89,7 +89,8 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 
 		final double observationsDistance = previousObservation.distance(currentObservation);
 
-		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(path);
+		final Edge[] pathAsEdges = PathHelper.extractPathAsEdges(path);
+		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathAsEdges);
 		final double pathDistance = (pathAsPolyline != null
 			? pathAsPolyline.alongTrackDistance(currentObservation) - pathAsPolyline.alongTrackDistance(previousObservation)
 			: observationsDistance);

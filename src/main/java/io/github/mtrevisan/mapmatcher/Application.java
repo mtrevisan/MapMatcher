@@ -27,6 +27,7 @@ package io.github.mtrevisan.mapmatcher;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.helpers.kalman.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
@@ -36,7 +37,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogBayesi
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.NoUTurnPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.LogExponentialTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
@@ -137,12 +137,15 @@ public class Application{
 		final Point[] filteredObservations = extractObservations(tree, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 if(path != null)
-	System.out.println(Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+	System.out.println("Edges by observations: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Edge[] connectedPath = MapMatchingStrategy.connectPath(path, graph);
-
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph);
 if(connectedPath != null)
-	System.out.println(Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
+	System.out.println("Clean path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
+
+		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath);
+if(pathPolyline != null)
+	System.out.println("Polyline: " + pathPolyline);
 	}
 
 //	public static void main(final String[] args){

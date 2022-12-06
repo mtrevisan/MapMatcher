@@ -27,6 +27,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -75,7 +76,7 @@ class MapMatchingStrategyTest{
 		}
 		final Edge[] path = new Edge[]{pathEdge0, pathEdge4};
 
-		final Edge[] connectedPath = MapMatchingStrategy.connectPath(path, graph);
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph);
 
 		Assertions.assertArrayEquals(new Edge[]{pathEdge0, pathEdge2, pathEdge4}, connectedPath);
 	}
