@@ -47,13 +47,23 @@ public interface MapMatchingStrategy{
 		final int size = path.length;
 		final List<Edge> connectedPath = new ArrayList<>(size);
 		if(size > 0){
-			connectedPath.add(path[0]);
-			for(int i = 1; i < size; i ++){
-				if(path[i - 1].getOutEdges().contains(path[i]))
-					connectedPath.add(path[i]);
+			int previousIndex = extractNextNonNullEdge(path, 0);
+			for(int i = 0; i < (previousIndex >= 0? previousIndex: size); i ++)
+				connectedPath.add(null);
+			connectedPath.add(path[previousIndex]);
+			while(true){
+				final int currentIndex = extractNextNonNullEdge(path, previousIndex + 1);
+				if(currentIndex < 0){
+					for(int i = previousIndex + 1; i < size; i ++)
+						connectedPath.add(null);
+					break;
+				}
+
+				if(path[previousIndex].equals(path[currentIndex]) || path[previousIndex].getOutEdges().contains(path[currentIndex]))
+					connectedPath.add(path[currentIndex]);
 				else{
-					//add path from `path[i - 1]` to `path[i]`
-					final List<Node> nodePath = PATH_FINDER.findPath(path[i - 1].getTo(), path[i].getFrom(), graph)
+					//add path from `path[index]` to `path[i]`
+					final List<Node> nodePath = PATH_FINDER.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph)
 						.simplePath();
 					assert !nodePath.isEmpty();
 					for(int j = 1; j < nodePath.size(); j ++){
@@ -63,11 +73,20 @@ public interface MapMatchingStrategy{
 						assert edge != null;
 						connectedPath.add(edge);
 					}
-					connectedPath.add(path[i]);
+					connectedPath.add(path[currentIndex]);
 				}
+
+				previousIndex = currentIndex;
 			}
 		}
 		return connectedPath.toArray(Edge[]::new);
+	}
+
+	private static int extractNextNonNullEdge(final Edge[] path, int index){
+		final int m = path.length;
+		while(index < m && path[index] == null)
+			index ++;
+		return (index < m? index: -1);
 	}
 
 }
