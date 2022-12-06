@@ -26,17 +26,25 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+
+import java.util.List;
 
 
 public class NoUTurnPlugin implements ProbabilityPlugin{
 
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation){
+			final Point previousObservation, final Point currentObservation, final List<Node> path){
 		//penalize u-turns: make then unreachable
-		final boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
+		boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
+
+		if(path != null && !fromSegment.equals(toSegment))
+			//disallow U-turn along multiple edges
+			segmentsReversed = PathHelper.hasMixedDirections(path, fromSegment, toSegment);
+
 		return (segmentsReversed? 0.: 1.);
 	}
 

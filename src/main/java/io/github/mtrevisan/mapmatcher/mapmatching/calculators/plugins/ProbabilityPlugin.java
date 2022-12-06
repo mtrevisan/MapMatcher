@@ -26,11 +26,14 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+
+import java.util.List;
 
 
 public interface ProbabilityPlugin{
 
-	double factor(Edge fromSegment, Edge toSegment, Graph graph, Point previousObservation, Point currentObservation);
+	double factor(Edge fromSegment, Edge toSegment, Graph graph, Point previousObservation, Point currentObservation, List<Node> path);
 
 }

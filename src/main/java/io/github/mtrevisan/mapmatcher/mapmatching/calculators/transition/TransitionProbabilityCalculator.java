@@ -26,22 +26,32 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.ProbabilityPlugin;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public abstract class TransitionProbabilityCalculator{
 
-	protected final List<ProbabilityPlugin> plugins = new ArrayList<>(0);
+	private final Set<ProbabilityPlugin> plugins = new HashSet<>(0);
 
 
-	public TransitionProbabilityCalculator withPlugin(final ProbabilityPlugin plugin){
+	public final TransitionProbabilityCalculator withPlugin(final ProbabilityPlugin plugin){
 		plugins.add(plugin);
 
 		return this;
+	}
+
+	protected final double calculatePluginFactor(final Edge fromSegment, final Edge toSegment, final Graph graph,
+			final Point previousObservation, final Point currentObservation, final List<Node> path){
+		double factor = 1.;
+		for(final ProbabilityPlugin plugin : plugins)
+			factor *= plugin.factor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
+		return factor;
 	}
 
 
