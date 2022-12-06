@@ -25,7 +25,9 @@
 package io.github.mtrevisan.mapmatcher.helpers.kalman;
 
 import io.github.mtrevisan.mapmatcher.spatial.GPSCoordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +50,8 @@ class GPSPositionFilterTest{
 			filtered[i] = GPSCoordinate.of(position[1], position[0], observations[i].getTimestamp());
 		}
 
-		final Polyline filteredPolyline = Polyline.of(filtered);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Polyline filteredPolyline = factory.createPolyline(filtered);
 		final String expected = "LINESTRING (12.172704737567187 45.59108565830172, 12.229859503910493 45.62770504884901," +
 			" 12.237938776924098 45.637719619689236, 12.241386712880304 45.649970282765004, 12.261309951439834 45.65782390745157," +
 			" 12.26893518749547 45.66063877835369, 12.27225985949525 45.66156160402833)";

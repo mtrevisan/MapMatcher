@@ -25,6 +25,7 @@
 package io.github.mtrevisan.mapmatcher.spatial.distances;
 
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
@@ -62,9 +63,33 @@ public class EuclideanCalculator implements DistanceCalculator{
 
 	@Override
 	public Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		//TODO
-		return null;
+		final double vx = endPoint.getX() - startPoint.getX();
+		final double vy = endPoint.getY() - startPoint.getY();
+		final double ux = startPoint.getX() - point.getX();
+		final double uy = startPoint.getY() - point.getY();
+		final double vu = vx * ux + vy * uy;
+		final double vv = vx * vx + vy * vy;
+		final double t = - vu / vv;
+		if(t >= 0 && t <= 1){
+			final GeometryFactory factory = startPoint.getFactory();
+			return vectorToSegment(t, factory.createPoint(0., 0.), startPoint, endPoint);
+		}
+
+		final double g0 = norm2(vectorToSegment(0., point, startPoint, endPoint));
+		final double g1 = norm2(vectorToSegment(1., point, startPoint, endPoint));
+		return (g0 <= g1? startPoint: endPoint);
 	}
+
+	private Coordinate vectorToSegment(final double t, final Coordinate point, final Coordinate startPoint, final Coordinate endPoint){
+		final GeometryFactory factory = startPoint.getFactory();
+		return factory.createPoint(
+			(1. - t) * startPoint.getX() + t * endPoint.getX() - point.getX(),
+			(1. - t) * startPoint.getY() + t * endPoint.getY() - point.getY()
+		);
+	}
+
+	private double norm2(final Coordinate point) { return point.getX() * point.getX() + point.getY() * point.getY(); }
+
 
 	@Override
 	public double alongTrackDistance(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){

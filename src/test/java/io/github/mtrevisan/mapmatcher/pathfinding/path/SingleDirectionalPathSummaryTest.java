@@ -26,8 +26,9 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -42,9 +43,10 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_consisting_of_vertices(){
-		final Node first = new Node("0", Coordinate.of(1., 2.));
-		final Node second = new Node("1", Coordinate.of(2., 2.));
-		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()))));
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		final Node first = new Node("0", factory.createPoint(1., 2.));
+		final Node second = new Node("1", factory.createPoint(2., 2.));
+		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getCoordinate(), second.getCoordinate()))));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final List<Node> result = pathSummary.simplePath();
@@ -64,9 +66,10 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
-		final Node first = new Node("0", Coordinate.of(1., 2.));
-		final Node second = new Node("1", Coordinate.of(2., 2.));
-		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()))));
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		final Node first = new Node("0", factory.createPoint(1., 2.));
+		final Node second = new Node("1", factory.createPoint(2., 2.));
+		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getCoordinate(), second.getCoordinate()))));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final int result = pathSummary.numberOfVertices();
@@ -86,8 +89,9 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_the_number_of_visited_vertices(){
-		final Node first = new Node("0", Coordinate.of(1., 1.));
-		final Node second = new Node("1", Coordinate.of(2., 2.));
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		final Node first = new Node("0", factory.createPoint(1., 1.));
+		final Node second = new Node("1", factory.createPoint(2., 2.));
 		final Set<Node> visitedVertices = new HashSet<>(Arrays.asList(first, second));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(new ArrayList<>(), visitedVertices);
 
@@ -98,9 +102,10 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_distance(){
-		final Node first = new Node("0", Coordinate.of(121.058805, 14.552797));
-		final Node second = new Node("1", Coordinate.of(120.994260, 14.593999));
-		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()))));
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
+		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
+		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getCoordinate(), second.getCoordinate()))));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final double result = pathSummary.totalDistance();
@@ -110,9 +115,10 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_duration(){
-		final Node first = new Node("0", Coordinate.of(121.058805, 14.552797));
-		final Node second = new Node("1", Coordinate.of(120.994260, 14.593999));
-		final Edge edge = Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()));
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
+		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
+		final Edge edge = Edge.createDirectEdge(first, second, factory.createPolyline(first.getCoordinate(), second.getCoordinate()));
 		edge.setWeight(50.);
 		final List<Edge> path = new ArrayList<>(List.of(edge));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
@@ -130,9 +136,10 @@ class SingleDirectionalPathSummaryTest{
 		Assertions.assertFalse(pathSummary.isFound());
 
 
-		final Node first = new Node("0", Coordinate.of(14.552797, 121.058805));
-		final Node second = new Node("1", Coordinate.of(14.593999, 120.994260));
-		path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, Polyline.of(first.getCoordinate(), second.getCoordinate()))));
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Node first = new Node("0", factory.createPoint(14.552797, 121.058805));
+		final Node second = new Node("1", factory.createPoint(14.593999, 120.994260));
+		path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getCoordinate(), second.getCoordinate()))));
 		pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		Assertions.assertTrue(pathSummary.isFound());

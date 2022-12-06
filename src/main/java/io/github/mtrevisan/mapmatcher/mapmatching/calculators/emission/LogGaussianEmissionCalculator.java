@@ -27,7 +27,6 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 import java.util.Collection;
 
@@ -35,12 +34,10 @@ import java.util.Collection;
 public class LogGaussianEmissionCalculator implements EmissionProbabilityCalculator{
 
 	private final double observationStandardDeviation;
-	private final DistanceCalculator distanceCalculator;
 
 
-	public LogGaussianEmissionCalculator(final double observationStandardDeviation, final DistanceCalculator distanceCalculator){
+	public LogGaussianEmissionCalculator(final double observationStandardDeviation){
 		this.observationStandardDeviation = observationStandardDeviation;
-		this.distanceCalculator = distanceCalculator;
 	}
 
 
@@ -59,16 +56,16 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	@Override
 	public double emissionProbability(final Coordinate observation, final Edge segment,
 			final Coordinate previousObservation){
-		final double distance = distanceCalculator.distance(observation, segment.getPolyline());
+		final double distance = observation.distance(segment.getPolyline());
 		final double tmp = distance / observationStandardDeviation;
 
 		//weight given on vehicle heading, which is related to the road direction angle and the trajectory direction angle
 		double tau = 1.;
 		if(previousObservation != null){
-			final Coordinate previousObservationClosest = distanceCalculator.onTrackClosestPoint(previousObservation, segment.getPolyline());
-			final Coordinate currentObservationClosest = distanceCalculator.onTrackClosestPoint(observation, segment.getPolyline());
-			final double angleRoad = distanceCalculator.initialBearing(previousObservationClosest, currentObservationClosest);
-			final double angleGPS = distanceCalculator.initialBearing(previousObservation, observation);
+			final Coordinate previousObservationClosest = segment.getPolyline().onTrackClosestPoint(previousObservation);
+			final Coordinate currentObservationClosest = segment.getPolyline().onTrackClosestPoint(observation);
+			final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
+			final double angleGPS = previousObservation.initialBearing(observation);
 			tau = Math.exp(Math.toRadians(Math.abs(angleRoad - angleGPS)) - 2. / Math.PI);
 		}
 

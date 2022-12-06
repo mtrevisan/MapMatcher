@@ -24,9 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-
-
 /**
  * Encodes points as the index along finite planar Hilbert curves.
  * <p>

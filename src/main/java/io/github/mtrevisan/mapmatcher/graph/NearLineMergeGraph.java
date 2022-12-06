@@ -25,8 +25,8 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,12 +49,10 @@ public class NearLineMergeGraph implements Graph{
 	private final Map<Coordinate, Node> nodeMap = new TreeMap<>();
 
 	private final double threshold;
-	private final DistanceCalculator distanceCalculator;
 
 
-	public NearLineMergeGraph(final double threshold, final DistanceCalculator distanceCalculator){
+	public NearLineMergeGraph(final double threshold){
 		this.threshold = threshold;
-		this.distanceCalculator = distanceCalculator;
 	}
 
 	public Collection<Edge> addApproximateDirectEdge(final Polyline polyline){
@@ -133,16 +131,17 @@ public class NearLineMergeGraph implements Graph{
 		final Node node = nodes.iterator()
 			.next();
 		//connect the new node to the middle point already calculated (get this point from the first node)
-		double latitude = node.getCoordinate().getY();
-		double longitude = node.getCoordinate().getX();
+		Coordinate coordinate = node.getCoordinate();
+		double latitude = coordinate.getY();
+		double longitude = coordinate.getX();
 		if(nodes.size() == 1){
 			//calculate the middle point between the (only) found node, plus the new one
-			final Coordinate coordinate = node.getCoordinate();
 			//NOTE: the points are close enough that simply a Euclidean mean is valid
 			latitude = (newCoordinate.getY() + coordinate.getY()) / 2.;
 			longitude = (newCoordinate.getX() + coordinate.getX()) / 2.;
 		}
-		return Coordinate.of(longitude, latitude);
+		final GeometryFactory factory = coordinate.getFactory();
+		return factory.createPoint(longitude, latitude);
 	}
 
 	private Collection<Node> getApproximateNode(final Coordinate coordinate){
@@ -158,7 +157,7 @@ public class NearLineMergeGraph implements Graph{
 	public Collection<Node> getNodesNear(final Coordinate coordinate){
 		final Set<Node> closest = new HashSet<>(0);
 		for(final Map.Entry<Coordinate, Node> entry : nodeMap.entrySet())
-			if(distanceCalculator.distance(entry.getKey(), coordinate) <= threshold)
+			if(coordinate.distance(entry.getKey()) <= threshold)
 				closest.add(entry.getValue());
 		return closest;
 	}

@@ -27,7 +27,6 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,14 +35,7 @@ import java.util.Map;
 
 public class LogBayesianEmissionCalculator implements EmissionProbabilityCalculator{
 
-	private final DistanceCalculator distanceCalculator;
-
 	private final Map<Edge, Double> emissionProbability = new HashMap<>();
-
-
-	public LogBayesianEmissionCalculator(final DistanceCalculator distanceCalculator){
-		this.distanceCalculator = distanceCalculator;
-	}
 
 
 	@Override
@@ -52,7 +44,7 @@ public class LogBayesianEmissionCalculator implements EmissionProbabilityCalcula
 		//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
 		double cumulativeDistance = 0.;
 		for(final Edge edge : edges){
-			final double distance = distanceCalculator.distance(observation, edge.getPolyline());
+			final double distance = observation.distance(edge.getPolyline());
 			emissionProbability.put(edge, distance);
 			cumulativeDistance += distance;
 		}

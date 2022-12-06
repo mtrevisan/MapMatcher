@@ -45,22 +45,16 @@ public class GeometryFactory{
 	 * @param y	The y-ordinate.
 	 */
 	public Coordinate createPoint(final double x, final double y){
-		//TODO
-//		return Coordinate.of(distanceCalculator, x, y);
-		return null;
+		return Coordinate.of(this, x, y);
 	}
 
 	public Coordinate createPoint(final Coordinate coordinate){
-		//TODO
-//		return Coordinate.of(distanceCalculator, coordinate);
-		return null;
+		return Coordinate.of(this, coordinate);
 	}
 
 
 	public Polyline createPolyline(final Coordinate... coordinates){
-		//TODO
-//		return Polyline.of(distanceCalculator, coordinates);
-		return null;
+		return Polyline.of(this, coordinates);
 	}
 
 }

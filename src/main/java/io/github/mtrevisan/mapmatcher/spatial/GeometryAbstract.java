@@ -25,9 +25,6 @@
 package io.github.mtrevisan.mapmatcher.spatial;
 
 
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
-
-
 public abstract class GeometryAbstract{
 
 	protected final GeometryFactory factory;

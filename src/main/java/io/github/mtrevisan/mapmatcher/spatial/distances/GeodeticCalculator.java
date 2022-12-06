@@ -70,11 +70,11 @@ public class GeodeticCalculator implements DistanceCalculator{
 		return minNearestPointDistance;
 	}
 
-
 	@Override
 	public double initialBearing(final Coordinate startPoint, final Coordinate endPoint){
 		return GeodeticHelper.initialBearing(startPoint, endPoint);
 	}
+
 
 	@Override
 	public Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){

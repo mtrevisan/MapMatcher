@@ -38,8 +38,8 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.Topolog
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import io.github.mtrevisan.mapmatcher.spatial.GPSCoordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -56,27 +56,27 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability_direct_graph(){
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -106,28 +106,27 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_direct_graph(){
 		final double observationStandardDeviation = 5.;
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
-			distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -157,28 +156,27 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_direct_graph(){
 		final double observationStandardDeviation = 5.;
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
-			distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -207,27 +205,27 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability_direct_graph(){
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -254,27 +252,27 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability_bidirectional_graph(){
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -304,28 +302,27 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_bidirectional_graph(){
 		final double observationStandardDeviation = 5.;
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
-			distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -355,28 +352,27 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph(){
 		final double observationStandardDeviation = 5.;
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation,
-			distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -405,27 +401,27 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability_bidirectional_graph(){
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final Coordinate node11 = Coordinate.of(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = Coordinate.of(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = Coordinate.of(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = Coordinate.of(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = Coordinate.of(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = Coordinate.of(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = Coordinate.of(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = Coordinate.of(12.322785599913317, 45.610885391198394);
+		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
-		final Polyline edge0 = Polyline.of(node11, node12_31_41);
-		final Polyline edge1 = Polyline.of(node12_31_41, node22, node23);
-		final Polyline edge2 = Polyline.of(node12_31_41, node32_51_61);
-		final Polyline edge3 = Polyline.of(node12_31_41, node42);
-		final Polyline edge4 = Polyline.of(node32_51_61, node52);
-		final Polyline edge5 = Polyline.of(node32_51_61, node62);
+		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
+		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
+		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
+		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSCoordinate[] observations = new GPSCoordinate[]{
@@ -513,7 +509,7 @@ class ViterbiMapMatchingTest{
 	}
 
 	private static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
 		int e = 0;
 		for(final Polyline edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
@@ -524,7 +520,7 @@ class ViterbiMapMatchingTest{
 	}
 
 	private static Graph extractBidirectionalGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
 		int e = 0;
 		for(final Polyline edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);

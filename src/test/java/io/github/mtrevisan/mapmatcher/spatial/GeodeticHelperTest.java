@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
+import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,9 +36,10 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_utrecht_vento(){
-		Coordinate start = Coordinate.of(5., 52.);
-		Coordinate end = Coordinate.of(6., 51.4);
-		Coordinate point = Coordinate.of(5.5, 52);
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Coordinate start = factory.createPoint(5., 52.);
+		Coordinate end = factory.createPoint(6., 51.4);
+		Coordinate point = factory.createPoint(5.5, 52);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -53,9 +55,10 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_chile_death_lake_island(){
-		Coordinate start = Coordinate.of(29., 42.);
-		Coordinate end = Coordinate.of(-70., -35.);
-		Coordinate point = Coordinate.of(-22., 64.);
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Coordinate start = factory.createPoint(29., 42.);
+		Coordinate end = factory.createPoint(-70., -35.);
+		Coordinate point = factory.createPoint(-22., 64.);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -68,9 +71,10 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_chile_death_lake_siberia(){
-		Coordinate start = Coordinate.of(29., 42.);
-		Coordinate end = Coordinate.of(-70., -35.);
-		Coordinate point = Coordinate.of(43.9, 66.2);
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Coordinate start = factory.createPoint(29., 42.);
+		Coordinate end = factory.createPoint(-70., -35.);
+		Coordinate point = factory.createPoint(43.9, 66.2);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -85,9 +89,10 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_chile_death_lake_alexander_island(){
-		Coordinate start = Coordinate.of(29., 42.);
-		Coordinate end = Coordinate.of(-70., -35.);
-		Coordinate point = Coordinate.of(-78.6, -72.8);
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Coordinate start = factory.createPoint(29., 42.);
+		Coordinate end = factory.createPoint(-70., -35.);
+		Coordinate point = factory.createPoint(-78.6, -72.8);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -102,9 +107,10 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_usa_death_lake_island(){
-		Coordinate start = Coordinate.of(29., 42.);
-		Coordinate end = Coordinate.of(-77., 39.);
-		Coordinate point = Coordinate.of(-22., 64.);
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Coordinate start = factory.createPoint(29., 42.);
+		Coordinate end = factory.createPoint(-77., 39.);
+		Coordinate point = factory.createPoint(-22., 64.);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -117,9 +123,10 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_fontane_san_zeno(){
-		Coordinate start = Coordinate.of(12.238140517207398, 45.65897415921759);
-		Coordinate end = Coordinate.of(12.242949896905884, 45.69828882177029);
-		Coordinate point = Coordinate.of(12.242949896905884, 45.69828882177029);
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Coordinate start = factory.createPoint(12.238140517207398, 45.65897415921759);
+		Coordinate end = factory.createPoint(12.242949896905884, 45.69828882177029);
+		Coordinate point = factory.createPoint(12.242949896905884, 45.69828882177029);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
@@ -132,9 +139,10 @@ class GeodeticHelperTest{
 
 	@Test
 	void should_find_closest_point_regardless_of_great_circle_san_zeno_biancade(){
-		Coordinate start = Coordinate.of(12.343946870589775, 45.65931029901404);
-		Coordinate end = Coordinate.of(12.238140517207398, 45.65897415921759);
-		Coordinate point = Coordinate.of(12.142791962642718, 45.64824627395467);
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		Coordinate start = factory.createPoint(12.343946870589775, 45.65931029901404);
+		Coordinate end = factory.createPoint(12.238140517207398, 45.65897415921759);
+		Coordinate point = factory.createPoint(12.142791962642718, 45.64824627395467);
 
 		Coordinate closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
 		Coordinate closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);

@@ -26,8 +26,10 @@ package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.RamerDouglasPeuckerSimplifier;
+import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -42,9 +44,6 @@ import java.util.List;
 
 class HPRTreeTest{
 
-	private static final GeodeticCalculator DISTANCE_CALCULATOR = new GeodeticCalculator();
-
-
 	@Test
 	void test(){
 		HPRtree<Polyline> tree = new HPRtree<>();
@@ -54,7 +53,11 @@ class HPRTreeTest{
 			tree.insert(geoBoundingBox, polyline);
 		}
 
-		List<Polyline> roads = tree.query(Envelope.of(Coordinate.of(9.01670, 45.60973), Coordinate.of(9.40355, 45.33115)));
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		List<Polyline> roads = tree.query(Envelope.of(
+			factory.createPoint(9.01670, 45.60973),
+			factory.createPoint(9.40355, 45.33115)
+		));
 
 		Assertions.assertEquals(931, roads.size());
 	}
@@ -85,10 +88,11 @@ class HPRTreeTest{
 
 	@Test
 	void query(){
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
 		List<Polyline> geometries = new ArrayList<>();
-		geometries.add(Polyline.of(Coordinate.of(0., 0.), Coordinate.of(10., 10.)));
-		geometries.add(Polyline.of(Coordinate.of(20., 20.), Coordinate.of(30., 30.)));
-		geometries.add(Polyline.of(Coordinate.of(20., 20.), Coordinate.of(30., 30.)));
+		geometries.add(factory.createPolyline(factory.createPoint(0., 0.), factory.createPoint(10., 10.)));
+		geometries.add(factory.createPolyline(factory.createPoint(20., 20.), factory.createPoint(30., 30.)));
+		geometries.add(factory.createPolyline(factory.createPoint(20., 20.), factory.createPoint(30., 30.)));
 		HPRtree<Object> t = new HPRtree<>(3);
 		for(Polyline g : geometries)
 			t.insert(g.getBoundingBox(), new Object());
@@ -174,6 +178,7 @@ class HPRTreeTest{
 		if(!line.startsWith("LINESTRING (") && !line.endsWith(")"))
 			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
 
+		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
 		List<Coordinate> coordinates = new ArrayList<>(0);
 		int startIndex = line.indexOf('(') + 1;
 		while(true){
@@ -184,16 +189,16 @@ class HPRTreeTest{
 			int endIndex = line.indexOf(", ", lonIndex + 1);
 			if(endIndex < 0)
 				endIndex = line.indexOf(')', lonIndex + 1);
-			coordinates.add(Coordinate.of(
+			coordinates.add(factory.createPoint(
 				Double.parseDouble(line.substring(startIndex, lonIndex)),
 				Double.parseDouble(line.substring(lonIndex + 1, endIndex))
 			));
 			startIndex = endIndex + 2;
 		}
 
-		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(DISTANCE_CALCULATOR);
+		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(5.);
-		return Polyline.of(simplifier.simplify(coordinates.toArray(Coordinate[]::new)));
+		return factory.createPolyline(simplifier.simplify(coordinates.toArray(Coordinate[]::new)));
 	}
 
 }

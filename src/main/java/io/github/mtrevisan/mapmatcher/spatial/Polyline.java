@@ -129,6 +129,40 @@ public class Polyline extends GeometryAbstract implements Comparable<Polyline>, 
 	}
 
 
+	public Coordinate onTrackClosestPoint(final Coordinate point){
+		double minClosestPointDistance = Double.MAX_VALUE;
+		Coordinate minClosestPoint = null;
+		for(int i = 1; i < coordinates.length; i ++){
+			final Coordinate startPoint = coordinates[i - 1];
+			final Coordinate endPoint = coordinates[i];
+			final Coordinate closestPoint = point.factory.distanceCalculator.onTrackClosestPoint(startPoint, endPoint, point);
+			final double distance = point.distance(closestPoint);
+			if(distance < minClosestPointDistance){
+				minClosestPointDistance = distance;
+				minClosestPoint = closestPoint;
+			}
+		}
+		return minClosestPoint;
+	}
+
+	public double alongTrackDistance(final Coordinate point){
+		double nearestPointDistance = 0.;
+		double cumulativeDistance = 0.;
+		double minNearestPointDistance = Double.MAX_VALUE;
+		for(int i = 1; i < coordinates.length; i ++){
+			final Coordinate startPoint = coordinates[i - 1];
+			final Coordinate endPoint = coordinates[i];
+			final double distance = Math.abs(point.factory.distanceCalculator.alongTrackDistance(startPoint, endPoint, point));
+			cumulativeDistance += distance;
+			if(distance < minNearestPointDistance){
+				nearestPointDistance += cumulativeDistance;
+				cumulativeDistance = 0.;
+			}
+		}
+		return nearestPointDistance;
+	}
+
+
 	@Override
 	public boolean equals(final Object obj){
 		if(this == obj)

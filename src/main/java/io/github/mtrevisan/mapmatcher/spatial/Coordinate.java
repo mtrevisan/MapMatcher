@@ -68,8 +68,16 @@ public class Coordinate extends GeometryAbstract implements Comparable<Coordinat
 	}
 
 
+	public double initialBearing(final Coordinate point){
+		return factory.distanceCalculator.initialBearing(this, point);
+	}
+
 	public double distance(final Coordinate point){
 		return factory.distanceCalculator.distance(this, point);
+	}
+
+	public double distance(final Polyline polyline){
+		return factory.distanceCalculator.distance(this, polyline);
 	}
 
 

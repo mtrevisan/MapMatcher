@@ -29,7 +29,6 @@ import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +49,7 @@ public class PathHelper{
 		return (reverseCount > 0 && reverseCount < pathEdges.size());
 	}
 
-	public static Polyline extractPathAsPolyline(final List<Node> path, final GeometryFactory factory){
+	public static Polyline extractPathAsPolyline(final List<Node> path){
 		Polyline polyline = null;
 
 		//search for a feasible path between the projection onto fromSegment and the one onto toSegment
@@ -73,10 +72,11 @@ public class PathHelper{
 					System.arraycopy(coordinates, (size > 0? 1: 0), mergedCoordinates, size, count);
 					size += count;
 				}
+				final GeometryFactory factory = path.get(0).getCoordinate().getFactory();
 				polyline = factory.createPolyline(mergedCoordinates);
 			}
 		}
-		return (polyline != null? polyline: factory.createPolyline());
+		return polyline;
 	}
 
 	public static List<Edge> extractPathAsEdges(final List<Node> path){
@@ -96,11 +96,10 @@ public class PathHelper{
 			&& fromSegment.getTo().getCoordinate().equals(toSegment.getFrom().getCoordinate()));
 	}
 
-	public static boolean isGoingForward(final DistanceCalculator distanceCalculator, final Coordinate previousObservation,
-			final Coordinate currentObservation, final Polyline polyline){
+	public static boolean isGoingForward(final Coordinate previousObservation, final Coordinate currentObservation, final Polyline polyline){
 		//calculate Along-Track Distance
-		final double previousATD = distanceCalculator.alongTrackDistance(previousObservation, polyline);
-		final double currentATD = distanceCalculator.alongTrackDistance(currentObservation, polyline);
+		final double previousATD = polyline.alongTrackDistance(previousObservation);
+		final double currentATD = polyline.alongTrackDistance(currentObservation);
 		return (previousATD <= currentATD);
 	}
 

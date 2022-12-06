@@ -44,14 +44,8 @@ import java.util.Stack;
  */
 public class RamerDouglasPeuckerSimplifier{
 
-	private final GeometryFactory factory;
-
 	private double distanceTolerance;
 
-
-	public RamerDouglasPeuckerSimplifier(final GeometryFactory factory){
-		this.factory = factory;
-	}
 
 	/**
 	 * Sets the distance tolerance for the simplification.
@@ -108,6 +102,7 @@ public class RamerDouglasPeuckerSimplifier{
 		}
 
 		final List<Coordinate> coordinates = new ArrayList<>(points.length);
+		final GeometryFactory factory = (points.length > 0? points[0].getFactory(): null);
 		for(int i = 0; i < points.length; i ++)
 			if(usedPoints[i])
 				coordinates.add(factory.createPoint(points[i]));

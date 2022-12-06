@@ -44,7 +44,6 @@ import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.RamerDouglasPeuckerSimplifier;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 
 import java.io.BufferedReader;
@@ -70,11 +69,10 @@ import java.util.Set;
 public class Application{
 
 	public static void main(final String[] args){
-		final DistanceCalculator distanceCalculator = new GeodeticCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator();
-//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialNoUTurnTransitionCalculator(0.0011, distanceCalculator);
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator(distanceCalculator);
+//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialNoUTurnTransitionCalculator(0.0011);
+		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
 
@@ -90,7 +88,7 @@ public class Application{
 
 		//[m]
 		final double distanceTolerance = 10.;
-		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier(distanceCalculator);
+		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(distanceTolerance);
 		final Polyline edge0 = factory.createPolyline(simplifier.simplify(node11, node12_31_41));
 		final Polyline edge1 = factory.createPolyline(simplifier.simplify(node12_31_41, node22, node23));
@@ -141,9 +139,7 @@ if(path != null)
 
 //	public static void main(final String[] args){
 //		final double observationStandardDeviation = 5.;
-//		final DistanceCalculator distanceCalculator = new AngularGeodeticCalculator();
-//		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation,
-//			distanceCalculator);
+//		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation);
 //		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
 //
 //		final Coordinate[] observations1 = new Coordinate[]{
@@ -261,7 +257,7 @@ if(path != null)
 	}
 
 	private static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
 		int e = 0;
 		for(final Polyline edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);
@@ -272,7 +268,7 @@ if(path != null)
 	}
 
 	private static Graph extractBidirectionalGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold, new GeodeticCalculator());
+		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
 		int e = 0;
 		for(final Polyline edge : edges){
 			graph.addApproximateDirectEdge("E" + e, edge);

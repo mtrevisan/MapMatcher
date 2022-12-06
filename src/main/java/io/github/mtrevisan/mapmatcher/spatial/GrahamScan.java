@@ -31,13 +31,6 @@ import java.util.Stack;
 
 public class GrahamScan{
 
-	private final GeometryFactory factory;
-
-
-	public GrahamScan(final GeometryFactory factory){
-		this.factory = factory;
-	}
-
 	/**
 	 * Returns a (closed) {@link Polyline} that represents the convex hull of this polyline.
 	 * <p>
@@ -47,10 +40,10 @@ public class GrahamScan{
 	 *
 	 * @return	The convex hull.
 	 */
-	public Polyline getConvexHull(final Polyline polyline){
+	public static Polyline getConvexHull(final Polyline polyline){
 		final Coordinate[] coordinates = polyline.getCoordinates();
 		if(coordinates.length <= 2)
-			return factory.createPolyline(coordinates);
+			return polyline.factory.createPolyline(coordinates);
 
 		final Coordinate[] points = Arrays.copyOf(coordinates, coordinates.length);
 		polarSort(points);
@@ -59,7 +52,7 @@ public class GrahamScan{
 		final Stack<Coordinate> convexHull = grahamScan(points);
 
 		//convert stack to an array
-		return factory.createPolyline(convexHull.toArray(Coordinate[]::new));
+		return polyline.factory.createPolyline(convexHull.toArray(Coordinate[]::new));
 	}
 
 	static void polarSort(final Coordinate[] points){
