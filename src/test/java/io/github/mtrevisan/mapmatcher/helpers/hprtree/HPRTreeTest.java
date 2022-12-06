@@ -46,6 +46,24 @@ import java.util.Set;
 
 class HPRTreeTest{
 
+	/*
+	https://overpass-turbo.eu/
+[out:json][timeout:125];
+area["name:en"="Italy"]->.it;
+// gather results
+(
+  node["highway"="motorway"](area.it);
+  way["highway"="motorway"](area.it);
+  relation["highway"="motorway"](area.it);
+  node["highway"="motorway_link"](area.it);
+  way["highway"="motorway_link"](area.it);
+  relation["highway"="motorway_link"](area.it);
+);
+// print results
+out body;
+>;
+out skel qt;
+	*/
 	@Test
 	void test(){
 		HPRtree<Polyline> tree = new HPRtree<>();
