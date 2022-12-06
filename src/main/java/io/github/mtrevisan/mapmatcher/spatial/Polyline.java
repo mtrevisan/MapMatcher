@@ -48,7 +48,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		super(factory);
 
 		if(points != null)
-			this.points = Arrays.copyOf(points, points.length);
+			this.points = points;
 		else
 			this.points = new Point[0];
 	}

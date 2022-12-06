@@ -35,20 +35,70 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 class HPRTreeTest{
 
+	private static final GeometryFactory FACTORY = new GeometryFactory(new GeodeticCalculator());
+	private static final RamerDouglasPeuckerSimplifier SIMPLIFIER = new RamerDouglasPeuckerSimplifier();
+	static{
+		SIMPLIFIER.setDistanceTolerance(5.);
+	}
+
+
+
+	//simplify polylines
+	public static void main(String[] args) throws IOException{
+		final File f = new File("src/test/resources/it.highways.wkt");
+		final List<Polyline> polylines = new ArrayList<>();
+		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
+			String readLine;
+			while((readLine = br.readLine()) != null)
+				if(!readLine.isEmpty())
+					polylines.add(parsePolyline(readLine));
+		}
+
+		try(final BufferedWriter writer = new BufferedWriter(new FileWriter("src/test/resources/it.highways.simplified.5.wkt"))){
+			for(int i = 0; i < polylines.size(); i ++){
+				//TODO find a way to keep vertices of polylines that connects with nodes of another polyline
+				Point[] reducedPoints = SIMPLIFIER.simplify(polylines.get(i).getPoints());
+				writer.write(FACTORY.createPolyline(reducedPoints).toString() + "\r\n");
+			}
+		}
+	}
+
+
+	/*
+	https://overpass-turbo.eu/
+[out:json][timeout:125];
+area["name:en"="Italy"]->.it;
+(
+  node["highway"="motorway"](area.it);
+  way["highway"="motorway"](area.it);
+  relation["highway"="motorway"](area.it);
+  node["highway"="motorway_link"](area.it);
+  way["highway"="motorway_link"](area.it);
+  relation["highway"="motorway_link"](area.it);
+);
+out body;
+>;
+out skel qt;
+	*/
 	@Test
-	void test(){
+	void test() throws IOException{
 		HPRtree<Polyline> tree = new HPRtree<>();
-		List<Polyline> polylines = readWKTFile("src/test/resources/it.highways.wkt");
-		for(Polyline polyline : polylines){
+		Set<Point> tollBooths = new HashSet<>(readWKTPointFile("src/test/resources/it.tollBooths.wkt"));
+		List<Polyline> highways = readWKTPolylineFile("src/test/resources/it.highways.simplified.5.wkt");
+		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
 		}
@@ -59,7 +109,7 @@ class HPRTreeTest{
 			factory.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(931, roads.size());
+		Assertions.assertEquals(2167, roads.size());
 	}
 
 	@Test
@@ -159,14 +209,52 @@ class HPRTreeTest{
 	}
 
 
-	private static List<Polyline> readWKTFile(final String filename){
+	private static List<Polyline> readWKTPolylineFile(final String filename) throws IOException{
 		final List<Polyline> lines = new ArrayList<>();
 		final File f = new File(filename);
 		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
 			String readLine;
 			while((readLine = br.readLine()) != null)
+				if(!readLine.isEmpty()){
+					final Polyline simplifiedPolyline = parsePolyline(readLine);
+					lines.add(simplifiedPolyline);
+				}
+		}
+		return lines;
+	}
+
+	private static Polyline parsePolyline(final String line){
+		if(!(line.startsWith("LINESTRING (") || line.startsWith("LINESTRING(")) && !line.endsWith(")"))
+			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
+
+		List<Point> points = new ArrayList<>(0);
+		int startIndex = line.indexOf('(') + 1;
+		while(true){
+			int separatorIndex = line.indexOf(" ", startIndex + 1);
+			if(separatorIndex < 0)
+				break;
+
+			int endIndex = line.indexOf(", ", separatorIndex + 1);
+			if(endIndex < 0)
+				endIndex = line.indexOf(')', separatorIndex + 1);
+			points.add(FACTORY.createPoint(
+				Double.parseDouble(line.substring(startIndex, separatorIndex)),
+				Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
+			));
+			startIndex = endIndex + 2;
+		}
+
+		return FACTORY.createPolyline(points.toArray(Point[]::new));
+	}
+
+	private static List<Point> readWKTPointFile(final String filename){
+		final List<Point> lines = new ArrayList<>();
+		final File f = new File(filename);
+		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
+			String readLine;
+			while((readLine = br.readLine()) != null)
 				if(!readLine.isEmpty())
-					lines.add(parseLineString(readLine));
+					lines.add(parsePoint(readLine));
 		}
 		catch(IOException e){
 			e.printStackTrace();
@@ -174,31 +262,18 @@ class HPRTreeTest{
 		return lines;
 	}
 
-	private static Polyline parseLineString(final String line){
-		if(!line.startsWith("LINESTRING (") && !line.endsWith(")"))
+	private static Point parsePoint(final String line){
+		if(!(line.startsWith("POINT (") || line.startsWith("POINT(")) && !line.endsWith(")"))
 			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
 
 		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		List<Point> points = new ArrayList<>(0);
 		int startIndex = line.indexOf('(') + 1;
-		while(true){
-			int lonIndex = line.indexOf(" ", startIndex + 1);
-			if(lonIndex < 0)
-				break;
-
-			int endIndex = line.indexOf(", ", lonIndex + 1);
-			if(endIndex < 0)
-				endIndex = line.indexOf(')', lonIndex + 1);
-			points.add(factory.createPoint(
-				Double.parseDouble(line.substring(startIndex, lonIndex)),
-				Double.parseDouble(line.substring(lonIndex + 1, endIndex))
-			));
-			startIndex = endIndex + 2;
-		}
-
-		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
-		simplifier.setDistanceTolerance(5.);
-		return factory.createPolyline(simplifier.simplify(points.toArray(Point[]::new)));
+		int separatorIndex = line.indexOf(" ", startIndex + 1);
+		int endIndex = line.indexOf(')', separatorIndex + 1);
+		return factory.createPoint(
+			Double.parseDouble(line.substring(startIndex, separatorIndex)),
+			Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
+		);
 	}
 
 }
