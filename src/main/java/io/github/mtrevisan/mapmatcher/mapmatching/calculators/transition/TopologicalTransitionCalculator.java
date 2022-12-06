@@ -36,7 +36,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import java.util.List;
 
 
-public class TopologicalTransitionCalculator implements TransitionProbabilityCalculator{
+public class TopologicalTransitionCalculator extends TransitionProbabilityCalculator{
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 

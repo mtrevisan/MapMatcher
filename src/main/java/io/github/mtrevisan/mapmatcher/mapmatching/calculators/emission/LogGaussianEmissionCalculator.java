@@ -52,6 +52,7 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	 * </p>
 	 *
 	 * @see <a href="https://hal-enac.archives-ouvertes.fr/hal-01160130/document">Characterization of GNSS receiver position errors for user integrity monitoring in urban environments</a>
+	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	@Override
 	public double emissionProbability(final Point observation, final Edge segment,

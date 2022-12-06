@@ -81,7 +81,7 @@ public class PathHelper{
 
 	public static List<Edge> extractPathAsEdges(final List<Node> path){
 		final int size = path.size();
-		final List<Edge> connectedPath = new ArrayList<>(size - 1);
+		final List<Edge> connectedPath = new ArrayList<>(Math.max(size - 1, 0));
 		for(int i = 1; i < size; i ++)
 			for(final Edge edge : path.get(i - 1).getOutEdges())
 				if(edge.getTo().equals(path.get(i))){

@@ -35,6 +35,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionP
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogBayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.NoUTurnPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalNoUTurnTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
@@ -70,8 +71,10 @@ public class Application{
 
 	public static void main(final String[] args){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator();
-//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialNoUTurnTransitionCalculator(0.0011);
+		final TransitionProbabilityCalculator transitionCalculator = new TopologicalNoUTurnTransitionCalculator()
+			.withPlugin(new NoUTurnPlugin());
+//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialNoUTurnTransitionCalculator(0.0011)
+//			.withPlugin(new NoUTurnPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);

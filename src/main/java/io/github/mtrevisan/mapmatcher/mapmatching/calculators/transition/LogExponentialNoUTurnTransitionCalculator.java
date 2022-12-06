@@ -38,7 +38,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import java.util.List;
 
 
-public class LogExponentialNoUTurnTransitionCalculator implements TransitionProbabilityCalculator{
+public class LogExponentialNoUTurnTransitionCalculator extends TransitionProbabilityCalculator{
 
 	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 

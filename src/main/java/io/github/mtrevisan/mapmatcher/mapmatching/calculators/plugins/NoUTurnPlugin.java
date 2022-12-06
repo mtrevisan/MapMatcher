@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,30 +22,22 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.ProbabilityPlugin;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.ArrayList;
-import java.util.List;
 
+public class NoUTurnPlugin implements ProbabilityPlugin{
 
-public abstract class TransitionProbabilityCalculator{
-
-	protected final List<ProbabilityPlugin> plugins = new ArrayList<>(0);
-
-
-	public TransitionProbabilityCalculator withPlugin(final ProbabilityPlugin plugin){
-		plugins.add(plugin);
-
-		return this;
+	@Override
+	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
+			final Point previousObservation, final Point currentObservation){
+		//penalize u-turns: make then unreachable
+		final boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
+		return (segmentsReversed? 0.: 1.);
 	}
-
-
-	public abstract double transitionProbability(Edge fromSegment, Edge toSegment, Graph graph, Point previousObservation,
-		Point currentObservation);
 
 }
