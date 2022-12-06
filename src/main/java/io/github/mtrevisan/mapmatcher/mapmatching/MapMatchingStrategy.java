@@ -30,7 +30,7 @@ import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public interface MapMatchingStrategy{
 	PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
 
 
-	Edge[] findPath(Graph graph, Coordinate[] observations);
+	Edge[] findPath(Graph graph, Point[] observations);
 
 	static Edge[] connectPath(final Edge[] path, final Graph graph){
 		final int size = path.length;

@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
 
@@ -36,7 +36,7 @@ public class UniformInitialCalculator implements InitialProbabilityCalculator{
 
 
 	@Override
-	public void calculateInitialProbability(final Coordinate observation, final Collection<Edge> segments){
+	public void calculateInitialProbability(final Point observation, final Collection<Edge> segments){
 		initialProbability = InitialProbabilityCalculator.logPr(1. / segments.size());
 	}
 

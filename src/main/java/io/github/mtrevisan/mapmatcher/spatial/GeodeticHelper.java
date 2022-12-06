@@ -53,7 +53,7 @@ public class GeodeticHelper{
 	 * @param endPoint	Ending point.
 	 * @return	The orthodromic distance [m].
 	 */
-	public static double orthodromicDistance(final Coordinate startPoint, final Coordinate endPoint){
+	public static double orthodromicDistance(final Point startPoint, final Point endPoint){
 		final GeodesicData result = REFERENCE_ELLIPSOID.Inverse(startPoint.getY(), startPoint.getX(),
 			endPoint.getY(), endPoint.getX(), GeodesicMask.DISTANCE);
 		return result.s12;
@@ -66,7 +66,7 @@ public class GeodeticHelper{
 	 * @param endPoint	Ending point.
 	 * @return	The initial bearing [°].
 	 */
-	public static double initialBearing(final Coordinate startPoint, final Coordinate endPoint){
+	public static double initialBearing(final Point startPoint, final Point endPoint){
 		final GeodesicData result = REFERENCE_ELLIPSOID.Inverse(startPoint.getY(), startPoint.getX(),
 			endPoint.getY(), endPoint.getX(), GeodesicMask.AZIMUTH);
 		return (result.azi1 < 0.? result.azi1 + 360.: result.azi1);
@@ -80,7 +80,7 @@ public class GeodeticHelper{
 	 * @param distance	The distance to travel [m].
 	 * @return	The destination.
 	 */
-	public static Coordinate destination(final Coordinate startPoint, final double initialBearing, final double distance){
+	public static Point destination(final Point startPoint, final double initialBearing, final double distance){
 		final double initialAzimuth = (initialBearing > 180.? initialBearing - 360.: initialBearing);
 		final GeodesicData result = REFERENCE_ELLIPSOID.Direct(startPoint.getY(), startPoint.getX(), initialAzimuth, distance,
 			GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
@@ -93,16 +93,16 @@ public class GeodeticHelper{
 	 * NOTE: not so precise, but it's enough.
 	 * </p>
 	 *
-	 * @param	startPoint	Coordinate of starting point of the great circle.
-	 * @param	endPoint	Coordinate of ending point of the great circle.
-	 * @param	point	Coordinate of the point.
-	 * @return	The coordinate of the point onto the great circle that is closest to the given point.
+	 * @param	startPoint	Starting point of the great circle.
+	 * @param	endPoint	Ending point of the great circle.
+	 * @param	point	The point.
+	 * @return	The point onto the great circle that is closest to the given point.
 	 *
 	 * @see <a href="https://edwilliams.org/avform147.htm#XTE">Aviation Formulary V1.47</a>
 	 * @see <a href="https://www.researchgate.net/publication/321358300_Intersection_and_point-to-line_solutions_for_geodesics_on_the_ellipsoid">Intersection and point-to-line solutions for geodesics on the ellipsoid</a>
 	 */
-	public static Coordinate onTrackClosestPoint(final Coordinate startPoint, final Coordinate endPoint, final Coordinate point){
-		Coordinate onTrackPoint = startPoint;
+	public static Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){
+		Point onTrackPoint = startPoint;
 		while(true){
 			//[m]
 			final double phiA = Math.toRadians(onTrackPoint.getY());

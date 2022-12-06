@@ -52,21 +52,21 @@ public class Envelope implements Comparable<Envelope>{
 	}
 
 	/**
-	 * Creates an <code>Envelope</code> for a region defined by two Coordinates.
+	 * Creates an <code>Envelope</code> for a region defined by two points.
 	 *
-	 * @param p1	The first Coordinate.
-	 * @param p2	The second Coordinate.
+	 * @param p1	The first point.
+	 * @param p2	The second point.
 	 */
-	public static Envelope of(final Coordinate p1, final Coordinate p2){
+	public static Envelope of(final Point p1, final Point p2){
 		return of(p1.getX(), p2.getX(), p1.getY(), p2.getY());
 	}
 
 	/**
-	 * Creates an <code>Envelope</code> for a region defined by a single Coordinate.
+	 * Creates an envelope for a region defined by a single point.
 	 *
-	 * @param p	The Coordinate.
+	 * @param p	The point.
 	 */
-	public static Envelope of(final Coordinate p){
+	public static Envelope of(final Point p){
 		return of(p.getX(), p.getX(), p.getY(), p.getY());
 	}
 
@@ -196,15 +196,15 @@ public class Envelope implements Comparable<Envelope>{
 
 
 	/**
-	 * Enlarges this <code>Envelope</code> so that it contains the given {@link Coordinate}.
+	 * Enlarges this <code>Envelope</code> so that it contains the given {@link Point}.
 	 * <p>
 	 * Has no effect if the point is already on or within the envelope.
 	 * </p>
 	 *
-	 * @param pp	The Coordinate(s) to expand to include.
+	 * @param pp	The point(s) to include.
 	 */
-	public void expandToInclude(final Coordinate... pp){
-		for(final Coordinate p : pp)
+	public void expandToInclude(final Point... pp){
+		for(final Point p : pp)
 			expandToInclude(p.getX(), p.getY());
 	}
 
@@ -333,10 +333,10 @@ public class Envelope implements Comparable<Envelope>{
 	/**
 	 * Tests if the point <code>p</code> intersects (lies inside) the region of this <code>Envelope</code>.
 	 *
-	 * @param p	The <code>Coordinate</code> to be tested.
-	 * @return	Whether the point intersects this <code>Envelope</code>.
+	 * @param p	The point to be tested.
+	 * @return	Whether the point intersects this envelope.
 	 */
-	public boolean intersects(final Coordinate p){
+	public boolean intersects(final Point p){
 		return !(isNull() || p.getX() > maxX || p.getX() < minX || p.getY() > maxY || p.getY() < minY);
 	}
 

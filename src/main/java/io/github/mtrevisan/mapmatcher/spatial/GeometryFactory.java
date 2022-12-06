@@ -27,34 +27,60 @@ package io.github.mtrevisan.mapmatcher.spatial;
 import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
 
 
-//TODO
-//https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/geom/GeometryFactory.java
+/**
+ * Supplies a set of utility methods for building geometry objects from lists of coordinates.
+ */
 public class GeometryFactory{
 
-	final DistanceCalculator distanceCalculator;
+	protected final DistanceCalculator distanceCalculator;
 
 
 	public GeometryFactory(final DistanceCalculator distanceCalculator){
 		this.distanceCalculator = distanceCalculator;
 	}
 
+
 	/**
-	 * Constructs a <code>Coordinate</code> at (x, y).
+	 * Constructs a point at <code>(x, y)</code>.
 	 *
 	 * @param x	The x-ordinate.
 	 * @param y	The y-ordinate.
 	 */
-	public Coordinate createPoint(final double x, final double y){
-		return Coordinate.of(this, x, y);
+	public Point createPoint(final double x, final double y){
+		return Point.of(this, x, y);
 	}
 
-	public Coordinate createPoint(final Coordinate coordinate){
-		return Coordinate.of(this, coordinate);
+	/**
+	 * Creates a point using the given coordinate.
+	 *
+	 * @param point	A coordinate.
+	 * @return	The created point.
+	 */
+	public Point createPoint(final Point point){
+		if(point == null)
+			throw new IllegalArgumentException("Point cannot be empty");
+
+		return Point.of(this, point);
 	}
 
 
-	public Polyline createPolyline(final Coordinate... coordinates){
-		return Polyline.of(this, coordinates);
+	/**
+	 * Creates a polyline using the given points.
+	 *
+	 * @param points	An array without <code>null</code> elements, or an empty array.
+	 */
+	public Polyline createPolyline(final Point... points){
+		if(points == null)
+			throw new IllegalArgumentException("Points cannot be empty");
+
+		return Polyline.of(this, points);
+	}
+
+	/**
+	 * Creates an empty polyline.
+	 */
+	public Polyline createEmptyPolyline(){
+		return Polyline.of(this);
 	}
 
 }

@@ -330,13 +330,13 @@ public class HPRtree<T>{
 
 	public boolean remove(final Envelope itemEnvelope, final T item){
 		//TODO https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf
-		//TODO find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
-		//TODO delete the item (remove the item from node `L`)
-		//TODO if `L` underflows
-		//	borrow some entries from `s` cooperating siblings
-		//TODO if all the siblings are ready to underflow, merge `s+1` to `s` nodes; then adjust the resulting nodes
-		//TODO adjust MBR and LHV in parent levels: form a set `S` that contains `L` and its cooperating siblings (if underflow has
-		// occurred); then invoke `AdjustTree(s)`
+		//	find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
+		//	delete the item (remove the item from node `L`)
+		//	if `L` underflows
+		//		borrow some entries from `s` cooperating siblings
+		//	if all the siblings are ready to underflow, merge `s+1` to `s` nodes; then adjust the resulting nodes
+		//		adjust MBR and LHV in parent levels: form a set `S` that contains `L` and its cooperating siblings (if underflow has
+		// 	occurred); then invoke `AdjustTree(s)`
 		return false;
 	}
 

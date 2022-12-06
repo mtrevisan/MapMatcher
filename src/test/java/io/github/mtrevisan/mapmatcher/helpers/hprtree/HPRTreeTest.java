@@ -24,9 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
@@ -179,7 +179,7 @@ class HPRTreeTest{
 			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
 
 		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		List<Coordinate> coordinates = new ArrayList<>(0);
+		List<Point> points = new ArrayList<>(0);
 		int startIndex = line.indexOf('(') + 1;
 		while(true){
 			int lonIndex = line.indexOf(" ", startIndex + 1);
@@ -189,7 +189,7 @@ class HPRTreeTest{
 			int endIndex = line.indexOf(", ", lonIndex + 1);
 			if(endIndex < 0)
 				endIndex = line.indexOf(')', lonIndex + 1);
-			coordinates.add(factory.createPoint(
+			points.add(factory.createPoint(
 				Double.parseDouble(line.substring(startIndex, lonIndex)),
 				Double.parseDouble(line.substring(lonIndex + 1, endIndex))
 			));
@@ -198,7 +198,7 @@ class HPRTreeTest{
 
 		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(5.);
-		return factory.createPolyline(simplifier.simplify(coordinates.toArray(Coordinate[]::new)));
+		return factory.createPolyline(simplifier.simplify(points.toArray(Point[]::new)));
 	}
 
 }

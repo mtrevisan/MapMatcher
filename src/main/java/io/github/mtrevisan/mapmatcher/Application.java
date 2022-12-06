@@ -37,11 +37,11 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalNoUTurnTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
-import io.github.mtrevisan.mapmatcher.spatial.GPSCoordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
@@ -77,14 +77,14 @@ public class Application{
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		//[m]
 		final double distanceTolerance = 10.;
@@ -104,33 +104,33 @@ public class Application{
 		}
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations1 = new GPSCoordinate[]{
-			GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations1 = new GPSPoint[]{
+			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
-		final GPSCoordinate[] observations2 = new GPSCoordinate[]{
-			GPSCoordinate.of(12.172704737567187, 45.59108565830172, timestamp),
-			GPSCoordinate.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations2 = new GPSPoint[]{
+			GPSPoint.of(12.172704737567187, 45.59108565830172, timestamp),
+			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
-		final GPSCoordinate[] observations = observations1;
+		final GPSPoint[] observations = observations1;
 
 		final Collection<Polyline> observedEdges = extractObservedEdges(tree, observations, 100_000.);
 		final Graph graph = extractBidirectionalGraph(observedEdges, 1_000.);
 
-		final Coordinate[] filteredObservations = extractObservations(tree, observations, 400.);
+		final Point[] filteredObservations = extractObservations(tree, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 if(path != null)
@@ -142,28 +142,28 @@ if(path != null)
 //		final LogMapMatchingProbabilityCalculator probabilityCalculator = new LogMapMatchingProbabilityCalculator(observationStandardDeviation);
 //		final MapMatchingStrategy strategy = new ViterbiMapMatching(probabilityCalculator);
 //
-//		final Coordinate[] observations1 = new Coordinate[]{
-//			new Coordinate(12.142791962642718, 45.64824627395467),
-//			new Coordinate(12.166829013921557, 45.658700732309484),
-//			new Coordinate(12.190331908504874, 45.663553924585955),
-//			new Coordinate(12.219176370039179, 45.65720735774349),
-//			new Coordinate(12.237871854367, 45.65310037232308),
-//			new Coordinate(12.243213421318018, 45.675125223889154),
-//			new Coordinate(12.23894016775725, 45.691544896329816),
-//			new Coordinate(12.237337697671506, 45.70684070823364),
-//			new Coordinate(12.23306444411162, 45.725861366408196),
-//			new Coordinate(12.215971429868546, 45.731454445518864)
+//		final GPSPoint[] observations1 = new GPSPoint[]{
+//			new GPSPoint(12.142791962642718, 45.64824627395467),
+//			new GPSPoint(12.166829013921557, 45.658700732309484),
+//			new GPSPoint(12.190331908504874, 45.663553924585955),
+//			new GPSPoint(12.219176370039179, 45.65720735774349),
+//			new GPSPoint(12.237871854367, 45.65310037232308),
+//			new GPSPoint(12.243213421318018, 45.675125223889154),
+//			new GPSPoint(12.23894016775725, 45.691544896329816),
+//			new GPSPoint(12.237337697671506, 45.70684070823364),
+//			new GPSPoint(12.23306444411162, 45.725861366408196),
+//			new GPSPoint(12.215971429868546, 45.731454445518864)
 //		};
-//		final Coordinate[] observations2 = new Coordinate[]{
-//			new Coordinate(12.172704737567187, 45.59108565830172),
-//			new Coordinate(12.229859503941071, 45.627705048963094),
-//			new Coordinate(12.241610951232218, 45.6422714215264),
-//			new Coordinate(12.243213421318018, 45.65646065552491),
-//			new Coordinate(12.272057882852266, 45.662060679461206),
-//			new Coordinate(12.304641441251732, 45.66168736195718),
-//			new Coordinate(12.331349276005653, 45.66168736195718)
+//		final GPSPoint[] observations2 = new GPSPoint[]{
+//			new GPSPoint(12.172704737567187, 45.59108565830172),
+//			new GPSPoint(12.229859503941071, 45.627705048963094),
+//			new GPSPoint(12.241610951232218, 45.6422714215264),
+//			new GPSPoint(12.243213421318018, 45.65646065552491),
+//			new GPSPoint(12.272057882852266, 45.662060679461206),
+//			new GPSPoint(12.304641441251732, 45.66168736195718),
+//			new GPSPoint(12.331349276005653, 45.66168736195718)
 //		};
-//		final Coordinate[] observations = observations2;
+//		final GPSPoint[] observations = observations2;
 //
 //		final LineString[] edges = readEdges();
 //		//all italy
@@ -206,28 +206,28 @@ if(path != null)
 	 * @param threshold	The threshold.
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
-	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Coordinate[] observations,
+	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point[] observations,
 			final double threshold){
 		final Set<Polyline> observationsEdges = new LinkedHashSet<>(0);
-		for(final Coordinate observation : observations)
+		for(final Point observation : observations)
 			observationsEdges.addAll(extractObservedEdges(tree, observation, threshold));
 		return observationsEdges;
 	}
 
-	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Coordinate observation,
+	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point observation,
 			final double threshold){
-		final Coordinate north = GeodeticHelper.destination(observation, 0., threshold);
-		final Coordinate east = GeodeticHelper.destination(observation, 90., threshold);
-		final Coordinate sud = GeodeticHelper.destination(observation, 180., threshold);
-		final Coordinate west = GeodeticHelper.destination(observation, 270., threshold);
+		final Point north = GeodeticHelper.destination(observation, 0., threshold);
+		final Point east = GeodeticHelper.destination(observation, 90., threshold);
+		final Point sud = GeodeticHelper.destination(observation, 180., threshold);
+		final Point west = GeodeticHelper.destination(observation, 270., threshold);
 		final Envelope envelope = Envelope.ofEmpty();
 		envelope.expandToInclude(north, east, sud, west);
 		return tree.query(envelope);
 	}
 
-	private static Coordinate[] extractObservations(final HPRtree<Polyline> tree, final GPSCoordinate[] observations,
+	private static Point[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations,
 			final double threshold){
-		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
+		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
 
 		//step 1. Use Kalman filter to smooth the coordinates
 		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
@@ -236,16 +236,16 @@ if(path != null)
 			kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
 				ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
 			final double[] position = kalmanFilter.getPosition();
-			feasibleObservations[i] = GPSCoordinate.of(position[1], position[0], observations[i].getTimestamp());
+			feasibleObservations[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
 		}
 
 		//step 2. Retain all observation that are within a certain radius from an edge
 		for(int i = 0; i < feasibleObservations.length; i ++){
-			final GPSCoordinate observation = feasibleObservations[i];
-			final Coordinate north = GeodeticHelper.destination(observation, 0., threshold);
-			final Coordinate east = GeodeticHelper.destination(observation, 90., threshold);
-			final Coordinate sud = GeodeticHelper.destination(observation, 180., threshold);
-			final Coordinate west = GeodeticHelper.destination(observation, 270., threshold);
+			final GPSPoint observation = feasibleObservations[i];
+			final Point north = GeodeticHelper.destination(observation, 0., threshold);
+			final Point east = GeodeticHelper.destination(observation, 90., threshold);
+			final Point sud = GeodeticHelper.destination(observation, 180., threshold);
+			final Point west = GeodeticHelper.destination(observation, 270., threshold);
 			final Envelope envelope = Envelope.ofEmpty();
 			envelope.expandToInclude(north, east, sud, west);
 			final List<Polyline> edges = tree.query(envelope);

@@ -47,9 +47,9 @@ class PathSummaryCreatorTest{
 		Node end = new Node("2", factory.createPoint(1., 3.));
 		Map<Node, Edge> predecessorTree = new LinkedHashMap<>(2);
 		predecessorTree.put(middle, Edge.createDirectEdge(start, middle,
-			factory.createPolyline(start.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(start.getPoint(), middle.getPoint())));
 		predecessorTree.put(end, Edge.createDirectEdge(middle, end,
-			factory.createPolyline(middle.getCoordinate(), end.getCoordinate())));
+			factory.createPolyline(middle.getPoint(), end.getPoint())));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
@@ -66,9 +66,9 @@ class PathSummaryCreatorTest{
 		Node end = new Node("3", factory.createPoint(1., 1.));
 		Map<Node, Edge> predecessorTree = new LinkedHashMap<>(2);
 		predecessorTree.put(middle, Edge.createDirectEdge(randomNode, middle,
-			factory.createPolyline(randomNode.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(randomNode.getPoint(), middle.getPoint())));
 		predecessorTree.put(end, Edge.createDirectEdge(middle, end,
-			factory.createPolyline(middle.getCoordinate(), end.getCoordinate())));
+			factory.createPolyline(middle.getPoint(), end.getPoint())));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
@@ -86,10 +86,10 @@ class PathSummaryCreatorTest{
 		Node end = new Node("3", factory.createPoint(1., 4.));
 		Map<Node, Edge> predecessorTreeStart = new LinkedHashMap<>(1);
 		predecessorTreeStart.put(middle, Edge.createDirectEdge(randomNode, middle,
-			factory.createPolyline(randomNode.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(randomNode.getPoint(), middle.getPoint())));
 		Map<Node, Edge> predecessorTreeEnd = new LinkedHashMap<>(1);
 		predecessorTreeEnd.put(middle, Edge.createDirectEdge(end, middle,
-			factory.createPolyline(end.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(end.getPoint(), middle.getPoint())));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createBidirectionalPath(start, middle, end, predecessorTreeStart, predecessorTreeEnd);
@@ -107,10 +107,10 @@ class PathSummaryCreatorTest{
 		Node end = new Node("3", factory.createPoint(1., 4.));
 		Map<Node, Edge> predecessorTreeStart = new LinkedHashMap<>(1);
 		predecessorTreeStart.put(middle, Edge.createDirectEdge(start, middle,
-			factory.createPolyline(start.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(start.getPoint(), middle.getPoint())));
 		Map<Node, Edge> predecessorTreeEnd = new LinkedHashMap<>(1);
 		predecessorTreeEnd.put(middle, Edge.createDirectEdge(randomNode, middle,
-			factory.createPolyline(randomNode.getCoordinate(), middle.getCoordinate())));
+			factory.createPolyline(randomNode.getPoint(), middle.getPoint())));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
 		PathSummary result = pathSummaryCreator.createBidirectionalPath(start, middle, end, predecessorTreeStart, predecessorTreeEnd);

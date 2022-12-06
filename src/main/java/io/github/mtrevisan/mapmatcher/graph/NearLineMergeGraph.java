@@ -24,8 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class NearLineMergeGraph implements Graph{
 
 
 	private final Set<Edge> edges = new HashSet<>(0);
-	private final Map<Coordinate, Node> nodeMap = new TreeMap<>();
+	private final Map<Point, Node> nodeMap = new TreeMap<>();
 
 	private final double threshold;
 
@@ -64,15 +64,13 @@ public class NearLineMergeGraph implements Graph{
 		if(polyline.isEmpty())
 			return addedEdges;
 
-		final Coordinate[] coordinates = polyline.getCoordinates();
-		//don't add lines with all coordinates equal
-		if(coordinates.length <= 1)
+		final Point[] points = polyline.getPoints();
+		//don't add lines with all points equal
+		if(points.length <= 1)
 			return addedEdges;
 
-		final Collection<Node> startNodes = connectNodes(coordinates[0],
-			polyline.getStartCoordinate());
-		final Collection<Node> endNodes = connectNodes(coordinates[coordinates.length - 1],
-			polyline.getEndCoordinate());
+		final Collection<Node> startNodes = connectNodes(points[0], polyline.getStartPoint());
+		final Collection<Node> endNodes = connectNodes(points[points.length - 1], polyline.getEndPoint());
 		final Set<Node> intersectionNodes = new HashSet<>(startNodes);
 		intersectionNodes.retainAll(endNodes);
 		for(final Node fromNode : startNodes)
@@ -118,46 +116,46 @@ public class NearLineMergeGraph implements Graph{
 		return addedEdges;
 	}
 
-	private Collection<Node> connectNodes(final Coordinate origin, final Coordinate newCoordinate){
+	private Collection<Node> connectNodes(final Point origin, final Point newPoint){
 		final Collection<Node> nodes = getApproximateNode(origin);
-		final Coordinate virtualStartCoordinate = calculateVirtualCoordinate(nodes, newCoordinate);
+		final Point virtualStartPoint = calculateVirtualPoint(nodes, newPoint);
 		for(final Node node : nodes)
-			node.setCoordinate(virtualStartCoordinate);
+			node.setPoint(virtualStartPoint);
 		return nodes;
 	}
 
 	//NOTE: not the true average, but close enough
-	private static Coordinate calculateVirtualCoordinate(final Collection<Node> nodes, final Coordinate newCoordinate){
+	private static Point calculateVirtualPoint(final Collection<Node> nodes, final Point newPoint){
 		final Node node = nodes.iterator()
 			.next();
 		//connect the new node to the middle point already calculated (get this point from the first node)
-		Coordinate coordinate = node.getCoordinate();
-		double latitude = coordinate.getY();
-		double longitude = coordinate.getX();
+		Point point = node.getPoint();
+		double latitude = point.getY();
+		double longitude = point.getX();
 		if(nodes.size() == 1){
 			//calculate the middle point between the (only) found node, plus the new one
 			//NOTE: the points are close enough that simply a Euclidean mean is valid
-			latitude = (newCoordinate.getY() + coordinate.getY()) / 2.;
-			longitude = (newCoordinate.getX() + coordinate.getX()) / 2.;
+			latitude = (newPoint.getY() + point.getY()) / 2.;
+			longitude = (newPoint.getX() + point.getX()) / 2.;
 		}
-		final GeometryFactory factory = coordinate.getFactory();
+		final GeometryFactory factory = point.getFactory();
 		return factory.createPoint(longitude, latitude);
 	}
 
-	private Collection<Node> getApproximateNode(final Coordinate coordinate){
-		final Collection<Node> closest = getNodesNear(coordinate);
+	private Collection<Node> getApproximateNode(final Point point){
+		final Collection<Node> closest = getNodesNear(point);
 		if(closest.isEmpty()){
-			final Node node = new Node(EMPTY, coordinate);
-			nodeMap.put(coordinate, node);
+			final Node node = new Node(EMPTY, point);
+			nodeMap.put(point, node);
 			closest.add(node);
 		}
 		return closest;
 	}
 
-	public Collection<Node> getNodesNear(final Coordinate coordinate){
+	public Collection<Node> getNodesNear(final Point point){
 		final Set<Node> closest = new HashSet<>(0);
-		for(final Map.Entry<Coordinate, Node> entry : nodeMap.entrySet())
-			if(coordinate.distance(entry.getKey()) <= threshold)
+		for(final Map.Entry<Point, Node> entry : nodeMap.entrySet())
+			if(point.distance(entry.getKey()) <= threshold)
 				closest.add(entry.getValue());
 		return closest;
 	}

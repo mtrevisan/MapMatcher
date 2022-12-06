@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 class GrahamScanTest{
 
 	@Test
-	public void lowest_coordinate1(){
+	public void lowest_point1(){
         /*
             6    |       d
             5    |     b   g
@@ -50,23 +50,23 @@ class GrahamScanTest{
               -1 0 1 2 3 4 5 6
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(2, 4);
-		Coordinate b = factory.createPoint(3, 5);
-		Coordinate c = factory.createPoint(3, 3);
-		Coordinate d = factory.createPoint(4, 6);
-		Coordinate e = factory.createPoint(4, 4);
-		Coordinate f = factory.createPoint(4, 2);
-		Coordinate g = factory.createPoint(5, 5);
-		Coordinate h = factory.createPoint(5, 3);
-		Coordinate i = factory.createPoint(6, 4);
+		Point a = factory.createPoint(2, 4);
+		Point b = factory.createPoint(3, 5);
+		Point c = factory.createPoint(3, 3);
+		Point d = factory.createPoint(4, 6);
+		Point e = factory.createPoint(4, 4);
+		Point f = factory.createPoint(4, 2);
+		Point g = factory.createPoint(5, 5);
+		Point h = factory.createPoint(5, 3);
+		Point i = factory.createPoint(6, 4);
 
-		int lowestIndex = GrahamScan.getLowestPoint(new Coordinate[]{a, b, c, d, e, f, g, h, i});
+		int lowestIndex = GrahamScan.getLowestPoint(new Point[]{a, b, c, d, e, f, g, h, i});
 
 		Assertions.assertEquals(5, lowestIndex);
 	}
 
 	@Test
-	public void lowest_coordinate2(){
+	public void lowest_point2(){
         /*
             6    |       d
             5    |     b   g
@@ -80,26 +80,26 @@ class GrahamScanTest{
               -1 0 1 2 3 4 5 6
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(2, 4);
-		Coordinate b = factory.createPoint(3, 5);
-		Coordinate c = factory.createPoint(3, 3);
-		Coordinate d = factory.createPoint(4, 6);
-		Coordinate e = factory.createPoint(4, 4);
-		Coordinate f = factory.createPoint(4, 2);
-		Coordinate g = factory.createPoint(5, 5);
-		Coordinate h = factory.createPoint(5, 3);
-		Coordinate i = factory.createPoint(6, 4);
-		Coordinate j = factory.createPoint(-1, -1);
-		Coordinate k = factory.createPoint(6, -1);
+		Point a = factory.createPoint(2, 4);
+		Point b = factory.createPoint(3, 5);
+		Point c = factory.createPoint(3, 3);
+		Point d = factory.createPoint(4, 6);
+		Point e = factory.createPoint(4, 4);
+		Point f = factory.createPoint(4, 2);
+		Point g = factory.createPoint(5, 5);
+		Point h = factory.createPoint(5, 3);
+		Point i = factory.createPoint(6, 4);
+		Point j = factory.createPoint(-1, -1);
+		Point k = factory.createPoint(6, -1);
 
-		int lowestIndex = GrahamScan.getLowestPoint(new Coordinate[]{a, b, c, d, e, f, g, h, i, j, k});
+		int lowestIndex = GrahamScan.getLowestPoint(new Point[]{a, b, c, d, e, f, g, h, i, j, k});
 
 		Assertions.assertEquals(9, lowestIndex);
 	}
 
 
 	@Test
-	public void sorted_coordinate_set(){
+	public void sorted_point_set(){
         /*
             6    |
             5    |
@@ -113,25 +113,25 @@ class GrahamScanTest{
               -1 0 1 2 3 4 5 6
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(2, 2);
-		Coordinate b = factory.createPoint(1, 1);
-		Coordinate c = factory.createPoint(0, 0);
-		Coordinate d = factory.createPoint(2, 0);
-		Coordinate e = factory.createPoint(1, 0);
-		Coordinate f = factory.createPoint(0, 1);
-		Coordinate g = factory.createPoint(0, 2);
+		Point a = factory.createPoint(2, 2);
+		Point b = factory.createPoint(1, 1);
+		Point c = factory.createPoint(0, 0);
+		Point d = factory.createPoint(2, 0);
+		Point e = factory.createPoint(1, 0);
+		Point f = factory.createPoint(0, 1);
+		Point g = factory.createPoint(0, 2);
 
-		Coordinate[] coordinates = {a, b, c, d, e, f, g};
-		GrahamScan.polarSort(coordinates);
+		Point[] points = {a, b, c, d, e, f, g};
+		GrahamScan.polarSort(points);
 
-		Assertions.assertEquals(7, coordinates.length);
-		Assertions.assertEquals(c, coordinates[0]);
-		Assertions.assertEquals(e, coordinates[1]);
-		Assertions.assertEquals(d, coordinates[2]);
-		Assertions.assertEquals(b, coordinates[3]);
-		Assertions.assertEquals(a, coordinates[4]);
-		Assertions.assertEquals(f, coordinates[5]);
-		Assertions.assertEquals(g, coordinates[6]);
+		Assertions.assertEquals(7, points.length);
+		Assertions.assertEquals(c, points[0]);
+		Assertions.assertEquals(e, points[1]);
+		Assertions.assertEquals(d, points[2]);
+		Assertions.assertEquals(b, points[3]);
+		Assertions.assertEquals(a, points[4]);
+		Assertions.assertEquals(f, points[5]);
+		Assertions.assertEquals(g, points[6]);
 	}
 
 
@@ -153,14 +153,14 @@ class GrahamScanTest{
               -2 -1 0 1 2 3 4 5 6 7 8 9
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(1, 1);
-		Coordinate b = factory.createPoint(4, 4);
-		Coordinate c = factory.createPoint(8, 8);
-		Coordinate d = factory.createPoint(7, 9);
-		Coordinate e = factory.createPoint(9, 7);
-		Coordinate f = factory.createPoint(0, -1);
-		Coordinate g = factory.createPoint(-1, 0);
-		Coordinate h = factory.createPoint(-2, 1);
+		Point a = factory.createPoint(1, 1);
+		Point b = factory.createPoint(4, 4);
+		Point c = factory.createPoint(8, 8);
+		Point d = factory.createPoint(7, 9);
+		Point e = factory.createPoint(9, 7);
+		Point f = factory.createPoint(0, -1);
+		Point g = factory.createPoint(-1, 0);
+		Point h = factory.createPoint(-2, 1);
 
 		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COLLINEAR, GrahamScan.PolarAngleComparator.orientation(a, b, c));
 		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COLLINEAR, GrahamScan.PolarAngleComparator.orientation(a, c, b));
@@ -210,9 +210,9 @@ class GrahamScanTest{
 	@Test
 	public void orientation2(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(219.3649559090992, 140.84159161824724);
-		Coordinate b = factory.createPoint(168.9018919682399, -5.713787599646864);
-		Coordinate c = factory.createPoint(186.80814046338352, 46.28973405831556);
+		Point a = factory.createPoint(219.3649559090992, 140.84159161824724);
+		Point b = factory.createPoint(168.9018919682399, -5.713787599646864);
+		Point c = factory.createPoint(186.80814046338352, 46.28973405831556);
 
 		Assertions.assertEquals(GrahamScan.PolarAngleComparator.CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(a, b, c));
 		Assertions.assertEquals(GrahamScan.PolarAngleComparator.COUNTER_CLOCKWISE, GrahamScan.PolarAngleComparator.orientation(b, a, c));
@@ -231,12 +231,12 @@ class GrahamScanTest{
               0 1 2 3 4 5 6
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(2, 4);
-		Coordinate b = factory.createPoint(6, 6);
-		Coordinate c = factory.createPoint(3, 3);
-		Coordinate d = factory.createPoint(4, 6);
-		Coordinate e = factory.createPoint(4, 4);
-		Coordinate f = factory.createPoint(5, 5);
+		Point a = factory.createPoint(2, 4);
+		Point b = factory.createPoint(6, 6);
+		Point c = factory.createPoint(3, 3);
+		Point d = factory.createPoint(4, 6);
+		Point e = factory.createPoint(4, 4);
+		Point f = factory.createPoint(5, 5);
 
 		Polyline polyline = factory.createPolyline(c);
 
@@ -291,15 +291,15 @@ class GrahamScanTest{
               0 1 2 3 4 5 6
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(2, 4);
-		Coordinate b = factory.createPoint(3, 5);
-		Coordinate c = factory.createPoint(3, 3);
-		Coordinate d = factory.createPoint(4, 6);
-		Coordinate e = factory.createPoint(4, 4);
-		Coordinate f = factory.createPoint(4, 2);
-		Coordinate g = factory.createPoint(5, 5);
-		Coordinate h = factory.createPoint(5, 3);
-		Coordinate i = factory.createPoint(6, 4);
+		Point a = factory.createPoint(2, 4);
+		Point b = factory.createPoint(3, 5);
+		Point c = factory.createPoint(3, 3);
+		Point d = factory.createPoint(4, 6);
+		Point e = factory.createPoint(4, 4);
+		Point f = factory.createPoint(4, 2);
+		Point g = factory.createPoint(5, 5);
+		Point h = factory.createPoint(5, 3);
+		Point i = factory.createPoint(6, 4);
 
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g, h, i);
 
@@ -325,18 +325,18 @@ class GrahamScanTest{
               -2 -1 0 1 2 3 4 5 6
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(2, 4);
-		Coordinate b = factory.createPoint(3, 5);
-		Coordinate c = factory.createPoint(3, 3);
-		Coordinate d = factory.createPoint(4, 6);
-		Coordinate e = factory.createPoint(4, 4);
-		Coordinate f = factory.createPoint(4, 2);
-		Coordinate g = factory.createPoint(5, 5);
-		Coordinate h = factory.createPoint(5, 3);
-		Coordinate i = factory.createPoint(6, 4);
-		Coordinate j = factory.createPoint(-2, 3);
-		Coordinate k = factory.createPoint(6, -2);
-		Coordinate m = factory.createPoint(6, 6);
+		Point a = factory.createPoint(2, 4);
+		Point b = factory.createPoint(3, 5);
+		Point c = factory.createPoint(3, 3);
+		Point d = factory.createPoint(4, 6);
+		Point e = factory.createPoint(4, 4);
+		Point f = factory.createPoint(4, 2);
+		Point g = factory.createPoint(5, 5);
+		Point h = factory.createPoint(5, 3);
+		Point i = factory.createPoint(6, 4);
+		Point j = factory.createPoint(-2, 3);
+		Point k = factory.createPoint(6, -2);
+		Point m = factory.createPoint(6, 6);
 
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g, h, i, j, k, m);
 
@@ -366,18 +366,18 @@ class GrahamScanTest{
               -2 -1 0 1 2 3 4 5 6 7 8 . . large
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(2, 4);
-		Coordinate b = factory.createPoint(3, 5);
-		Coordinate c = factory.createPoint(3, 3);
-		Coordinate d = factory.createPoint(4, 6);
-		Coordinate e = factory.createPoint(4, 4);
-		Coordinate f = factory.createPoint(4, 2);
-		Coordinate g = factory.createPoint(5, 5);
-		Coordinate h = factory.createPoint(5, 3);
-		Coordinate i = factory.createPoint(6, 4);
-		Coordinate j = factory.createPoint(-2, 7);
-		Coordinate k = factory.createPoint(8, -2);
-		Coordinate m = factory.createPoint(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		Point a = factory.createPoint(2, 4);
+		Point b = factory.createPoint(3, 5);
+		Point c = factory.createPoint(3, 3);
+		Point d = factory.createPoint(4, 6);
+		Point e = factory.createPoint(4, 4);
+		Point f = factory.createPoint(4, 2);
+		Point g = factory.createPoint(5, 5);
+		Point h = factory.createPoint(5, 3);
+		Point i = factory.createPoint(6, 4);
+		Point j = factory.createPoint(-2, 7);
+		Point k = factory.createPoint(8, -2);
+		Point m = factory.createPoint(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g, h, i, j, k, m);
 
@@ -400,9 +400,9 @@ class GrahamScanTest{
               0 1 2 3 4 5 6
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(2, 4);
-		Coordinate b = factory.createPoint(3, 3);
-		Coordinate c = factory.createPoint(4, 2);
+		Point a = factory.createPoint(2, 4);
+		Point b = factory.createPoint(3, 3);
+		Point c = factory.createPoint(4, 2);
 
 		Polyline polyline = factory.createPolyline(a, b, c);
 
@@ -416,9 +416,9 @@ class GrahamScanTest{
 	@Test
 	void should_simplify_polyline(){
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
 
 		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(2_000.);
@@ -430,9 +430,9 @@ class GrahamScanTest{
 	@Test
 	void should_not_simplify_polyline(){
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
 
 		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(10.);
@@ -445,9 +445,9 @@ class GrahamScanTest{
 	@Test
 	void line_collinear_equal23(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(30, 220);
-		Coordinate b = factory.createPoint(240, 220);
-		Coordinate c = factory.createPoint(240, 220);
+		Point a = factory.createPoint(30, 220);
+		Point b = factory.createPoint(240, 220);
+		Point c = factory.createPoint(240, 220);
 		Polyline polyline = factory.createPolyline(a, b, c);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -459,13 +459,13 @@ class GrahamScanTest{
 	@Test
 	void line_collinear_equal123_456(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(130, 240);
-		Coordinate b = factory.createPoint(130, 240);
-		Coordinate c = factory.createPoint(130, 240);
-		Coordinate d = factory.createPoint(570, 240);
-		Coordinate e = factory.createPoint(570, 240);
-		Coordinate f = factory.createPoint(570, 240);
-		Coordinate g = factory.createPoint(650, 240);
+		Point a = factory.createPoint(130, 240);
+		Point b = factory.createPoint(130, 240);
+		Point c = factory.createPoint(130, 240);
+		Point d = factory.createPoint(570, 240);
+		Point e = factory.createPoint(570, 240);
+		Point f = factory.createPoint(570, 240);
+		Point g = factory.createPoint(650, 240);
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -477,9 +477,9 @@ class GrahamScanTest{
 	@Test
 	void multi_collinear_equal12(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(0, 0);
-		Coordinate b = factory.createPoint(0, 0);
-		Coordinate c = factory.createPoint(10, 0);
+		Point a = factory.createPoint(0, 0);
+		Point b = factory.createPoint(0, 0);
+		Point c = factory.createPoint(10, 0);
 		Polyline polyline = factory.createPolyline(a, b, c);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -489,11 +489,11 @@ class GrahamScanTest{
 	}
 
 	@Test
-	void multi_coordinate_collinear_equal23(){
+	void multi_point_collinear_equal23(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(0, 0);
-		Coordinate b = factory.createPoint(10, 0);
-		Coordinate c = factory.createPoint(10, 0);
+		Point a = factory.createPoint(0, 0);
+		Point b = factory.createPoint(10, 0);
+		Point c = factory.createPoint(10, 0);
 		Polyline polyline = factory.createPolyline(a, b, c);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -503,11 +503,11 @@ class GrahamScanTest{
 	}
 
 	@Test
-	void multi_coordinate_collinear_equal_none(){
+	void multi_point_collinear_equal_none(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(0, 0);
-		Coordinate b = factory.createPoint(5, 0);
-		Coordinate c = factory.createPoint(10, 0);
+		Point a = factory.createPoint(0, 0);
+		Point b = factory.createPoint(5, 0);
+		Point c = factory.createPoint(10, 0);
 		Polyline polyline = factory.createPolyline(a, b, c);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -517,11 +517,11 @@ class GrahamScanTest{
 	}
 
 	@Test
-	void multi_coordinate(){
+	void multi_point(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(0, 0);
-		Coordinate b = factory.createPoint(5, 1);
-		Coordinate c = factory.createPoint(10, 0);
+		Point a = factory.createPoint(0, 0);
+		Point b = factory.createPoint(5, 1);
+		Point c = factory.createPoint(10, 0);
 		Polyline polyline = factory.createPolyline(a, b, c);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -531,14 +531,14 @@ class GrahamScanTest{
 	}
 
 	@Test
-	void multi_coordinate_linear(){
+	void multi_point_linear(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(0, 0);
-		Coordinate b = factory.createPoint(0, 0);
-		Coordinate c = factory.createPoint(5, 0);
-		Coordinate d = factory.createPoint(5, 0);
-		Coordinate e = factory.createPoint(10, 0);
-		Coordinate f = factory.createPoint(10, 0);
+		Point a = factory.createPoint(0, 0);
+		Point b = factory.createPoint(0, 0);
+		Point c = factory.createPoint(5, 0);
+		Point d = factory.createPoint(5, 0);
+		Point e = factory.createPoint(10, 0);
+		Point f = factory.createPoint(10, 0);
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -548,7 +548,7 @@ class GrahamScanTest{
 	}
 
 	@Test
-	void collinear_coordinates(){
+	void collinear_points(){
         /*
             2      |
             1  e   f/h g
@@ -557,14 +557,14 @@ class GrahamScanTest{
               -2-1 0 1 2 3
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(-0.2, -0.1);
-		Coordinate b = factory.createPoint(0., -0.1);
-		Coordinate c = factory.createPoint(0.2, -0.1);
-		Coordinate d = factory.createPoint(0., -0.1);
-		Coordinate e = factory.createPoint(-0.2, 0.1);
-		Coordinate f = factory.createPoint(0., 0.1);
-		Coordinate g = factory.createPoint(0.2, 0.1);
-		Coordinate h = factory.createPoint(0., 0.1);
+		Point a = factory.createPoint(-0.2, -0.1);
+		Point b = factory.createPoint(0., -0.1);
+		Point c = factory.createPoint(0.2, -0.1);
+		Point d = factory.createPoint(0., -0.1);
+		Point e = factory.createPoint(-0.2, 0.1);
+		Point f = factory.createPoint(0., 0.1);
+		Point g = factory.createPoint(0.2, 0.1);
+		Point h = factory.createPoint(0., 0.1);
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g, h);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -579,23 +579,23 @@ class GrahamScanTest{
 	@Test
 	void geos_850(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(280756800.63603467, 7571780.5096410504);
-		Coordinate b = factory.createPoint(-0.00043553364940478493, -1.1745985126662545e-05);
-		Coordinate c = factory.createPoint(-0.0040809829767810965, -0.00011006076189068978);
-		Coordinate d = factory.createPoint(-0.0041201583341660313, -0.00011111728913462023);
-		Coordinate e = factory.createPoint(-0.006976907320408115, -0.00018816146492247227);
-		Coordinate f = factory.createPoint(-0.0069397726510486172, -0.00018715997340633273);
-		Coordinate g = factory.createPoint(-0.0074676533800189931, -0.000201396483469504);
-		Coordinate h = factory.createPoint(-0.13462489887442128, -0.0036307230426676734);
-		Coordinate i = factory.createPoint(-0.010721780626750072, -0.00028915762480866283);
-		Coordinate j = factory.createPoint(-0.010775949783764172, -0.00029061852246303201);
-		Coordinate k = factory.createPoint(-0.011934357539045426, -0.0003218598289746266);
-		Coordinate l = factory.createPoint(-0.019390152385490519, -0.00052293649740946452);
-		Coordinate m = factory.createPoint(-0.016403812662021146, -0.00044239736574681491);
-		Coordinate n = factory.createPoint(-0.013937679796751739, -0.00037588778618408299);
-		Coordinate o = factory.createPoint(-0.0073628397580766435, -0.00019856974598662623);
-		Coordinate p = factory.createPoint(-0.0013082267409651623, -3.5281801617658642e-05);
-		Coordinate q = factory.createPoint(-0.0019059940589774278, -5.14030956166791e-05);
+		Point a = factory.createPoint(280756800.63603467, 7571780.5096410504);
+		Point b = factory.createPoint(-0.00043553364940478493, -1.1745985126662545e-05);
+		Point c = factory.createPoint(-0.0040809829767810965, -0.00011006076189068978);
+		Point d = factory.createPoint(-0.0041201583341660313, -0.00011111728913462023);
+		Point e = factory.createPoint(-0.006976907320408115, -0.00018816146492247227);
+		Point f = factory.createPoint(-0.0069397726510486172, -0.00018715997340633273);
+		Point g = factory.createPoint(-0.0074676533800189931, -0.000201396483469504);
+		Point h = factory.createPoint(-0.13462489887442128, -0.0036307230426676734);
+		Point i = factory.createPoint(-0.010721780626750072, -0.00028915762480866283);
+		Point j = factory.createPoint(-0.010775949783764172, -0.00029061852246303201);
+		Point k = factory.createPoint(-0.011934357539045426, -0.0003218598289746266);
+		Point l = factory.createPoint(-0.019390152385490519, -0.00052293649740946452);
+		Point m = factory.createPoint(-0.016403812662021146, -0.00044239736574681491);
+		Point n = factory.createPoint(-0.013937679796751739, -0.00037588778618408299);
+		Point o = factory.createPoint(-0.0073628397580766435, -0.00019856974598662623);
+		Point p = factory.createPoint(-0.0013082267409651623, -3.5281801617658642e-05);
+		Point q = factory.createPoint(-0.0019059940589774278, -5.14030956166791e-05);
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -610,7 +610,7 @@ class GrahamScanTest{
 	 * @see <a href="https://github.com/libgeos/geos/issues/722">Issue 722</a>
 	 */
 	@Test
-	void collinear_coordinates_tiny_x(){
+	void collinear_points_tiny_x(){
         /*
             2      |
             1  e  f/h  g
@@ -619,14 +619,14 @@ class GrahamScanTest{
               -2-1 0 1 2 3
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(-0.2, -0.1);
-		Coordinate b = factory.createPoint(1.38777878e-17, -0.1);
-		Coordinate c = factory.createPoint(0.2, -0.1);
-		Coordinate d = factory.createPoint(-1.38777878e-17, -0.1);
-		Coordinate e = factory.createPoint(-0.2, 0.1);
-		Coordinate f = factory.createPoint(1.38777878e-17, 0.1);
-		Coordinate g = factory.createPoint(0.2, 0.1);
-		Coordinate h = factory.createPoint(-1.38777878e-17, 0.1);
+		Point a = factory.createPoint(-0.2, -0.1);
+		Point b = factory.createPoint(1.38777878e-17, -0.1);
+		Point c = factory.createPoint(0.2, -0.1);
+		Point d = factory.createPoint(-1.38777878e-17, -0.1);
+		Point e = factory.createPoint(-0.2, 0.1);
+		Point f = factory.createPoint(1.38777878e-17, 0.1);
+		Point g = factory.createPoint(0.2, 0.1);
+		Point h = factory.createPoint(-1.38777878e-17, 0.1);
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g, h);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -636,7 +636,7 @@ class GrahamScanTest{
 	}
 
 	@Test
-	void collinear_coordinates_less_tiny_x(){
+	void collinear_points_less_tiny_x(){
         /*
             2      |
             1  e  h|f  g
@@ -645,14 +645,14 @@ class GrahamScanTest{
               -2-1 0 1 2 3
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(-0.2, -0.1);
-		Coordinate b = factory.createPoint(1.38777878e-7, -0.1);
-		Coordinate c = factory.createPoint(0.2, -0.1);
-		Coordinate d = factory.createPoint(-1.38777878e-7, -0.1);
-		Coordinate e = factory.createPoint(-0.2, 0.1);
-		Coordinate f = factory.createPoint(1.38777878e-7, 0.1);
-		Coordinate g = factory.createPoint(0.2, 0.1);
-		Coordinate h = factory.createPoint(-1.38777878e-7, 0.1);
+		Point a = factory.createPoint(-0.2, -0.1);
+		Point b = factory.createPoint(1.38777878e-7, -0.1);
+		Point c = factory.createPoint(0.2, -0.1);
+		Point d = factory.createPoint(-1.38777878e-7, -0.1);
+		Point e = factory.createPoint(-0.2, 0.1);
+		Point f = factory.createPoint(1.38777878e-7, 0.1);
+		Point g = factory.createPoint(0.2, 0.1);
+		Point h = factory.createPoint(-1.38777878e-7, 0.1);
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g, h);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);
@@ -670,27 +670,27 @@ class GrahamScanTest{
 	@Test
 	void geos_sort_failure(){
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Coordinate a = factory.createPoint(140, 350);
-		Coordinate b = factory.createPoint(510, 140);
-		Coordinate c = factory.createPoint(110, 140);
-		Coordinate d = factory.createPoint(250, 290);
-		Coordinate e = factory.createPoint(250, 50);
-		Coordinate f = factory.createPoint(300, 370);
-		Coordinate g = factory.createPoint(450, 310);
-		Coordinate h = factory.createPoint(440, 160);
-		Coordinate i = factory.createPoint(290, 280);
-		Coordinate j = factory.createPoint(220, 160);
-		Coordinate k = factory.createPoint(100, 260);
-		Coordinate l = factory.createPoint(320, 230);
-		Coordinate m = factory.createPoint(200, 280);
-		Coordinate n = factory.createPoint(360, 130);
-		Coordinate o = factory.createPoint(330, 210);
-		Coordinate p = factory.createPoint(380, 80);
-		Coordinate q = factory.createPoint(220, 210);
-		Coordinate r = factory.createPoint(380, 310);
-		Coordinate s = factory.createPoint(260, 150);
-		Coordinate t = factory.createPoint(260, 110);
-		Coordinate u = factory.createPoint(170, 130);
+		Point a = factory.createPoint(140, 350);
+		Point b = factory.createPoint(510, 140);
+		Point c = factory.createPoint(110, 140);
+		Point d = factory.createPoint(250, 290);
+		Point e = factory.createPoint(250, 50);
+		Point f = factory.createPoint(300, 370);
+		Point g = factory.createPoint(450, 310);
+		Point h = factory.createPoint(440, 160);
+		Point i = factory.createPoint(290, 280);
+		Point j = factory.createPoint(220, 160);
+		Point k = factory.createPoint(100, 260);
+		Point l = factory.createPoint(320, 230);
+		Point m = factory.createPoint(200, 280);
+		Point n = factory.createPoint(360, 130);
+		Point o = factory.createPoint(330, 210);
+		Point p = factory.createPoint(380, 80);
+		Point q = factory.createPoint(220, 210);
+		Point r = factory.createPoint(380, 310);
+		Point s = factory.createPoint(260, 150);
+		Point t = factory.createPoint(260, 110);
+		Point u = factory.createPoint(170, 130);
 		Polyline polyline = factory.createPolyline(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u);
 
 		Polyline convexHull = GrahamScan.getConvexHull(polyline);

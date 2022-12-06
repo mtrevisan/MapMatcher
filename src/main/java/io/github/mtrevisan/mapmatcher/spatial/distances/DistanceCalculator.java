@@ -24,21 +24,21 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.distances;
 
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
 public interface DistanceCalculator{
 
-	double distance(Coordinate startPoint, Coordinate endPoint);
+	double distance(Point startPoint, Point endPoint);
 
-	double distance(Coordinate point, Polyline polyline);
+	double distance(Point point, Polyline polyline);
 
-	double initialBearing(Coordinate startPoint, Coordinate endPoint);
+	double initialBearing(Point startPoint, Point endPoint);
 
 
-	Coordinate onTrackClosestPoint(Coordinate startPoint, Coordinate endPoint, Coordinate point);
+	Point onTrackClosestPoint(Point startPoint, Point endPoint, Point point);
 
-	double alongTrackDistance(Coordinate startPoint, Coordinate endPoint, Coordinate point);
+	double alongTrackDistance(Point startPoint, Point endPoint, Point point);
 
 }

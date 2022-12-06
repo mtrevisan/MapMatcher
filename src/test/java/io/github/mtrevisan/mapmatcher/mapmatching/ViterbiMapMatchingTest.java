@@ -36,9 +36,9 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformIni
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalNoUTurnTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Coordinate;
-import io.github.mtrevisan.mapmatcher.spatial.GPSCoordinate;
+import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
@@ -62,14 +62,14 @@ class ViterbiMapMatchingTest{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
 		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
@@ -79,24 +79,24 @@ class ViterbiMapMatchingTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations = new GPSPoint[]{
+			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractDirectGraph(observedEdges, 50.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[null, E0, E0, E0, E1, E1, E1, E1, null, null]";
@@ -112,14 +112,14 @@ class ViterbiMapMatchingTest{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
 		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
@@ -129,24 +129,24 @@ class ViterbiMapMatchingTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations = new GPSPoint[]{
+			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractDirectGraph(observedEdges, 50.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
@@ -162,14 +162,14 @@ class ViterbiMapMatchingTest{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
 		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
@@ -179,24 +179,24 @@ class ViterbiMapMatchingTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations = new GPSPoint[]{
+			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractDirectGraph(observedEdges, 50.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 2_000.);
+		final Point[] filteredObservations = extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
@@ -211,14 +211,14 @@ class ViterbiMapMatchingTest{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
 		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
@@ -228,21 +228,21 @@ class ViterbiMapMatchingTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			GPSCoordinate.of(12.172704737567187, 45.59108565830172, timestamp),
-			GPSCoordinate.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(2, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations = new GPSPoint[]{
+			GPSPoint.of(12.172704737567187, 45.59108565830172, timestamp),
+			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(2, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractDirectGraph(observedEdges, 50.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[null, null, E2, E2, E2, E2, E2]";
@@ -258,14 +258,14 @@ class ViterbiMapMatchingTest{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
 		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
@@ -275,24 +275,24 @@ class ViterbiMapMatchingTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations = new GPSPoint[]{
+			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
@@ -308,14 +308,14 @@ class ViterbiMapMatchingTest{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
 		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
@@ -325,24 +325,24 @@ class ViterbiMapMatchingTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations = new GPSPoint[]{
+			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
@@ -358,14 +358,14 @@ class ViterbiMapMatchingTest{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
 		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
@@ -375,24 +375,24 @@ class ViterbiMapMatchingTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			GPSCoordinate.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSCoordinate.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations = new GPSPoint[]{
+			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 2_000.);
+		final Point[] filteredObservations = extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
@@ -407,14 +407,14 @@ class ViterbiMapMatchingTest{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
-		final Coordinate node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
-		final Coordinate node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		final Coordinate node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		final Coordinate node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-		final Coordinate node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
-		final Coordinate node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
-		final Coordinate node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
-		final Coordinate node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
+		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
+		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
+		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
+		final Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
+		final Point node32_51_61 = factory.createPoint(12.343946870589775, 45.65931029901404);
+		final Point node42 = factory.createPoint(12.25545428412434, 45.61054896081151);
+		final Point node52 = factory.createPoint(12.297776825477285, 45.7345547621876);
+		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
 		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
@@ -424,21 +424,21 @@ class ViterbiMapMatchingTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
-		final GPSCoordinate[] observations = new GPSCoordinate[]{
-			GPSCoordinate.of(12.172704737567187, 45.59108565830172, timestamp),
-			GPSCoordinate.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(2, ChronoUnit.SECONDS))),
-			GPSCoordinate.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+		final GPSPoint[] observations = new GPSPoint[]{
+			GPSPoint.of(12.172704737567187, 45.59108565830172, timestamp),
+			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(2, ChronoUnit.SECONDS))),
+			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
 
-		final Coordinate[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
 		final String expected = "[null, null, E3, E2, E2, E2, E2]";
@@ -460,15 +460,15 @@ class ViterbiMapMatchingTest{
 	 * @param threshold	The threshold.
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
-	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Coordinate[] observations,
+	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Point[] observations,
 			final double threshold){
 		final Set<Polyline> observationsEdges = new LinkedHashSet<>(edges.length);
-		for(final Coordinate observation : observations)
+		for(final Point observation : observations)
 			observationsEdges.addAll(extractObservedEdges(edges, observation, threshold));
 		return observationsEdges;
 	}
 
-	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Coordinate observation,
+	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Point observation,
 			final double threshold){
 		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		final Set<Polyline> observationsEdges = new LinkedHashSet<>(edges.length);
@@ -478,8 +478,8 @@ class ViterbiMapMatchingTest{
 		return observationsEdges;
 	}
 
-	private static Coordinate[] extractObservations(final Polyline[] edges, final GPSCoordinate[] observations, final double threshold){
-		final GPSCoordinate[] feasibleObservations = new GPSCoordinate[observations.length];
+	private static Point[] extractObservations(final Polyline[] edges, final GPSPoint[] observations, final double threshold){
+		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
 
 		//step 1. Use Kalman filter to smooth the coordinates
 		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
@@ -488,13 +488,13 @@ class ViterbiMapMatchingTest{
 			kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
 				ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
 			final double[] position = kalmanFilter.getPosition();
-			feasibleObservations[i] = GPSCoordinate.of(position[1], position[0], observations[i].getTimestamp());
+			feasibleObservations[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
 		}
 
 		//step 2. Retain all observation that are within a certain radius from an edge
 		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
 		for(int i = 0; i < feasibleObservations.length; i ++){
-			final GPSCoordinate observation = feasibleObservations[i];
+			final GPSPoint observation = feasibleObservations[i];
 			boolean edgesFound = false;
 			for(final Polyline edge : edges)
 				if(geodeticCalculator.distance(observation, edge) <= threshold){

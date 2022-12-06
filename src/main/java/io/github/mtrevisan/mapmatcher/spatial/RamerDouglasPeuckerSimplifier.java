@@ -62,7 +62,7 @@ public class RamerDouglasPeuckerSimplifier{
 		this.distanceTolerance = distanceTolerance;
 	}
 
-	public Coordinate[] simplify(final Coordinate... points){
+	public Point[] simplify(final Point... points){
 		final boolean[] usedPoints = new boolean[points.length];
 		Arrays.fill(usedPoints, true);
 
@@ -82,7 +82,7 @@ public class RamerDouglasPeuckerSimplifier{
 				int maxIndex = startIndex;
 				for(int k = maxIndex + 1; k < endIndex; k ++)
 					if(usedPoints[k]){
-						final Coordinate nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
+						final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
 						final double distance = nearestPoint.distance(points[k]);
 						if(distance > maxDistance){
 							maxIndex = k;
@@ -101,12 +101,12 @@ public class RamerDouglasPeuckerSimplifier{
 			}
 		}
 
-		final List<Coordinate> coordinates = new ArrayList<>(points.length);
+		final List<Point> simplifiedPoints = new ArrayList<>(points.length);
 		final GeometryFactory factory = (points.length > 0? points[0].getFactory(): null);
 		for(int i = 0; i < points.length; i ++)
 			if(usedPoints[i])
-				coordinates.add(factory.createPoint(points[i]));
-		return coordinates.toArray(Coordinate[]::new);
+				simplifiedPoints.add(factory.createPoint(points[i]));
+		return simplifiedPoints.toArray(Point[]::new);
 	}
 
 	private static final class KeyValuePair{

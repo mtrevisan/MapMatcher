@@ -37,40 +37,40 @@ public class Polyline extends GeometryAbstract implements Comparable<Polyline>, 
 
 	private static final String SPACE = " ";
 
-	private final Coordinate[] coordinates;
+	private final Point[] points;
 
 
-	public static Polyline of(final GeometryFactory factory, final Coordinate... coordinates){
-		return new Polyline(factory, coordinates);
+	public static Polyline of(final GeometryFactory factory, final Point... points){
+		return new Polyline(factory, points);
 	}
 
-	private Polyline(final GeometryFactory factory, final Coordinate... coordinates){
+	private Polyline(final GeometryFactory factory, final Point... points){
 		super(factory);
 
-		if(coordinates != null)
-			this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
+		if(points != null)
+			this.points = Arrays.copyOf(points, points.length);
 		else
-			this.coordinates = new Coordinate[0];
+			this.points = new Point[0];
 	}
 
 	public boolean isEmpty() {
-		return (coordinates.length == 0);
+		return (points.length == 0);
 	}
 
-	public Coordinate getStartCoordinate(){
-		return (isEmpty()? null: coordinates[0]);
+	public Point getStartPoint(){
+		return (isEmpty()? null: points[0]);
 	}
 
-	public Coordinate getEndCoordinate(){
-		return (isEmpty()? null: coordinates[coordinates.length - 1]);
+	public Point getEndPoint(){
+		return (isEmpty()? null: points[points.length - 1]);
 	}
 
-	public Coordinate[] getCoordinates(){
-		return coordinates;
+	public Point[] getPoints(){
+		return points;
 	}
 
 	public int size(){
-		return coordinates.length;
+		return points.length;
 	}
 
 	public Envelope getBoundingBox(){
@@ -78,14 +78,14 @@ public class Polyline extends GeometryAbstract implements Comparable<Polyline>, 
 		double maxLatitude = Double.NEGATIVE_INFINITY;
 		double minLongitude = Double.POSITIVE_INFINITY;
 		double maxLongitude = Double.NEGATIVE_INFINITY;
-		if(coordinates.length > 0){
-			minLatitude = coordinates[0].getY();
-			maxLatitude = coordinates[0].getY();
-			minLongitude = coordinates[0].getX();
-			maxLongitude = coordinates[0].getX();
+		if(points.length > 0){
+			minLatitude = points[0].getY();
+			maxLatitude = points[0].getY();
+			minLongitude = points[0].getX();
+			maxLongitude = points[0].getX();
 		}
-		for(int i = 1; i < coordinates.length; i ++){
-			final Coordinate point = coordinates[i];
+		for(int i = 1; i < points.length; i ++){
+			final Point point = points[i];
 			if(point.getX() < minLongitude)
 				minLongitude = point.getX();
 			else if(point.getX() > maxLongitude)
@@ -100,13 +100,13 @@ public class Polyline extends GeometryAbstract implements Comparable<Polyline>, 
 	}
 
 	public boolean isClosed(){
-		return (coordinates != null && coordinates[0].equals(coordinates[coordinates.length - 1]));
+		return (points != null && points[0].equals(points[points.length - 1]));
 	}
 
 	public Polyline reverse(){
-		final Coordinate[] reversedCoordinates = Arrays.copyOf(coordinates, coordinates.length);
-		reverse(reversedCoordinates);
-		return of(factory, reversedCoordinates);
+		final Point[] reversedPoints = Arrays.copyOf(points, points.length);
+		reverse(reversedPoints);
+		return of(factory, reversedPoints);
 	}
 
 	/**
@@ -114,10 +114,10 @@ public class Polyline extends GeometryAbstract implements Comparable<Polyline>, 
 	 *
 	 * @param array	The array to reverse in place.
 	 */
-	private static void reverse(final Coordinate[] array){
+	private static void reverse(final Point[] array){
 		int i = 0;
 		int j = array.length - 1;
-		Coordinate tmp;
+		Point tmp;
 		while(j > i){
 			tmp = array[j];
 			array[j] = array[i];
@@ -129,13 +129,13 @@ public class Polyline extends GeometryAbstract implements Comparable<Polyline>, 
 	}
 
 
-	public Coordinate onTrackClosestPoint(final Coordinate point){
+	public Point onTrackClosestPoint(final Point point){
 		double minClosestPointDistance = Double.MAX_VALUE;
-		Coordinate minClosestPoint = null;
-		for(int i = 1; i < coordinates.length; i ++){
-			final Coordinate startPoint = coordinates[i - 1];
-			final Coordinate endPoint = coordinates[i];
-			final Coordinate closestPoint = point.factory.distanceCalculator.onTrackClosestPoint(startPoint, endPoint, point);
+		Point minClosestPoint = null;
+		for(int i = 1; i < points.length; i ++){
+			final Point startPoint = points[i - 1];
+			final Point endPoint = points[i];
+			final Point closestPoint = point.factory.distanceCalculator.onTrackClosestPoint(startPoint, endPoint, point);
 			final double distance = point.distance(closestPoint);
 			if(distance < minClosestPointDistance){
 				minClosestPointDistance = distance;
@@ -145,13 +145,13 @@ public class Polyline extends GeometryAbstract implements Comparable<Polyline>, 
 		return minClosestPoint;
 	}
 
-	public double alongTrackDistance(final Coordinate point){
+	public double alongTrackDistance(final Point point){
 		double nearestPointDistance = 0.;
 		double cumulativeDistance = 0.;
 		double minNearestPointDistance = Double.MAX_VALUE;
-		for(int i = 1; i < coordinates.length; i ++){
-			final Coordinate startPoint = coordinates[i - 1];
-			final Coordinate endPoint = coordinates[i];
+		for(int i = 1; i < points.length; i ++){
+			final Point startPoint = points[i - 1];
+			final Point endPoint = points[i];
 			final double distance = Math.abs(point.factory.distanceCalculator.alongTrackDistance(startPoint, endPoint, point));
 			cumulativeDistance += distance;
 			if(distance < minNearestPointDistance){
@@ -171,25 +171,25 @@ public class Polyline extends GeometryAbstract implements Comparable<Polyline>, 
 			return false;
 
 		final Polyline other = (Polyline)obj;
-		return Arrays.equals(coordinates, other.coordinates);
+		return Arrays.equals(points, other.points);
 	}
 
 	@Override
 	public int hashCode(){
-		return Arrays.hashCode(coordinates);
+		return Arrays.hashCode(points);
 	}
 
 	@Override
 	public String toString(){
 		final StringJoiner sj = new StringJoiner(", ", "LINESTRING (", ")");
-		for(final Coordinate coordinate : coordinates)
-			sj.add(coordinate.getX() + SPACE + coordinate.getY());
+		for(final Point point : points)
+			sj.add(point.getX() + SPACE + point.getY());
 		return sj.toString();
 	}
 
 	@Override
 	public int compareTo(final Polyline other){
-		return Arrays.compare(coordinates, other.coordinates);
+		return Arrays.compare(points, other.points);
 	}
 
 }

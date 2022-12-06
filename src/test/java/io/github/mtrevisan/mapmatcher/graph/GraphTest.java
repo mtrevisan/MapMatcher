@@ -48,10 +48,10 @@ class GraphTest{
 		final Node from = new Node("0", factory.createPoint(22.22, 33.33));
 		final Node to = new Node("1", factory.createPoint(33.22, 44.33));
 
-		final Polyline polyline = factory.createPolyline(from.getCoordinate(), to.getCoordinate());
+		final Polyline polyline = factory.createPolyline(from.getPoint(), to.getPoint());
 		final Set<Edge> addedEdges = (Set<Edge>)graph.addApproximateDirectEdge(polyline);
 
-		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(from.getCoordinate()));
+		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(from.getPoint()));
 		Assertions.assertEquals(1, fromNodes.size());
 		final Collection<Edge> edges = fromNodes.get(0).getOutEdges();
 		Assertions.assertEquals(addedEdges, edges);
@@ -64,12 +64,12 @@ class GraphTest{
 		final Node firstNeighbor = new Node("1", factory.createPoint(1., 2.));
 		final Node secondNeighbor = new Node("2", factory.createPoint(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(0.5);
-		final Polyline polyline12 = factory.createPolyline(node.getCoordinate(), firstNeighbor.getCoordinate());
+		final Polyline polyline12 = factory.createPolyline(node.getPoint(), firstNeighbor.getPoint());
 		graph.addApproximateDirectEdge(polyline12);
-		final Polyline polyline13 = factory.createPolyline(node.getCoordinate(), secondNeighbor.getCoordinate());
+		final Polyline polyline13 = factory.createPolyline(node.getPoint(), secondNeighbor.getPoint());
 		graph.addApproximateDirectEdge(polyline13);
 
-		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(node.getCoordinate()));
+		final List<Node> fromNodes = new ArrayList<>(graph.getNodesNear(node.getPoint()));
 		Assertions.assertEquals(1, fromNodes.size());
 		final Set<Edge> result = new HashSet<>(fromNodes.get(0).getOutEdges());
 
@@ -87,9 +87,9 @@ class GraphTest{
 		final Node firstNeighbor = new Node("1", factory.createPoint(1., 2.));
 		final Node secondNeighbor = new Node("2", factory.createPoint(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(0.5);
-		final Polyline polyline02 = factory.createPolyline(node.getCoordinate(), firstNeighbor.getCoordinate());
+		final Polyline polyline02 = factory.createPolyline(node.getPoint(), firstNeighbor.getPoint());
 		graph.addApproximateDirectEdge("01", polyline02);
-		final Polyline polyline03 = factory.createPolyline(node.getCoordinate(), secondNeighbor.getCoordinate());
+		final Polyline polyline03 = factory.createPolyline(node.getPoint(), secondNeighbor.getPoint());
 		graph.addApproximateDirectEdge("03", polyline03);
 
 		final Set<Node> result = new HashSet<>(graph.nodes());
@@ -105,9 +105,9 @@ class GraphTest{
 		final Node firstNeighbor = new Node("1", factory.createPoint(1., 2.));
 		final Node secondNeighbor = new Node("2", factory.createPoint(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(1.);
-		final Polyline polyline02 = factory.createPolyline(node.getCoordinate(), firstNeighbor.getCoordinate());
+		final Polyline polyline02 = factory.createPolyline(node.getPoint(), firstNeighbor.getPoint());
 		graph.addApproximateDirectEdge("01", polyline02);
-		final Polyline polyline03 = factory.createPolyline(node.getCoordinate(), secondNeighbor.getCoordinate());
+		final Polyline polyline03 = factory.createPolyline(node.getPoint(), secondNeighbor.getPoint());
 		graph.addApproximateDirectEdge("02", polyline03);
 
 		final Collection<Edge> result = new HashSet<>(graph.edges());
