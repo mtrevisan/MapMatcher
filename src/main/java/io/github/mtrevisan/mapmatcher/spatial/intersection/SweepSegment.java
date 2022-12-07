@@ -44,7 +44,7 @@ class SweepSegment{
 
 		Event event1 = new Event(polyline.getStartPoint(), this, Event.Type.POINT_LEFT);
 		Event event2 = new Event(polyline.getEndPoint(), this, Event.Type.POINT_RIGHT);
-		if(!(Objects.compare(event2, event1, Event::compareTo) == 1)){
+		if(Objects.compare(event2, event1, Event::compareTo) != 1){
 			final Event swap = event1;
 			event1 = event2;
 			event2 = swap;
@@ -79,7 +79,8 @@ class SweepSegment{
 	}
 
 	boolean nearlyEqual(final SweepSegment segment){
-		return segment.leftEvent().nearlyEqual(leftEvent()) && segment.rightEvent().nearlyEqual(rightEvent());
+		return (segment.leftEvent().nearlyEqual(leftEvent())
+			&& segment.rightEvent().nearlyEqual(rightEvent()));
 	}
 
 	void updatePosition(final double x){
@@ -87,13 +88,12 @@ class SweepSegment{
 		final double y1 = leftEvent().point().getY();
 		final double x2 = rightEvent().point().getX();
 		final double y2 = rightEvent().point().getY();
-
-		final double y = y1 + (((y2 - y1) * (x - x1)) / (x2 - x1));
+		final double y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
 		this.setPosition(y);
 	}
 
 	//TODO
-	static Point intersection(final SweepSegment segment1, final SweepSegment segment2, final GeometryFactory factory){
+	static Point intersection(final SweepSegment segment1, final SweepSegment segment2){
 		final double x1 = segment1.leftEvent().point().getX();
 		final double y1 = segment1.leftEvent().point().getY();
 		final double x2 = segment1.rightEvent().point().getX();
@@ -115,6 +115,7 @@ class SweepSegment{
 			final double px = x1 + ta * (x2 - x1);
 			final double py = y1 + ta * (y2 - y1);
 
+			final GeometryFactory factory = segment1.leftEvent().point().getFactory();
 			return factory.createPoint(px, py);
 		}
 

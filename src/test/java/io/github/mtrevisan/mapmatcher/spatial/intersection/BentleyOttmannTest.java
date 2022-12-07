@@ -50,7 +50,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(13.32, 4.22), factory.createPoint(2.42, 12.67))
 		);
 
-		BentleyOttmann bentleyOttmann = new BentleyOttmann(factory);
+		BentleyOttmann bentleyOttmann = new BentleyOttmann();
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
 
@@ -69,7 +69,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(9.5, 3.91), factory.createPoint(11, 10.06))
 		);
 
-		BentleyOttmann bentleyOttmann = new BentleyOttmann(factory);
+		BentleyOttmann bentleyOttmann = new BentleyOttmann();
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
 
@@ -89,7 +89,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(6.2, 6.98), factory.createPoint(5.9, 1.82))
 		);
 
-		BentleyOttmann bentleyOttmann = new BentleyOttmann(factory);
+		BentleyOttmann bentleyOttmann = new BentleyOttmann();
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
 
@@ -107,7 +107,7 @@ class BentleyOttmannTest{
 		);
 
 		Map<Polyline, List<Point>> intersectionsOnPolyline = new HashMap<>();
-		BentleyOttmann bentleyOttmann = new BentleyOttmann(factory);
+		BentleyOttmann bentleyOttmann = new BentleyOttmann();
 		bentleyOttmann.addPolylines(polylines);
 
 		bentleyOttmann.findIntersections((polyline1, polyline2, intersection) -> {
@@ -139,7 +139,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(3.2599935084955, 2.1656817027123), factory.createPoint(6.47285474689, 9.7758064156891))
 		);
 
-		BentleyOttmann bentleyOttmann = new BentleyOttmann(factory);
+		BentleyOttmann bentleyOttmann = new BentleyOttmann();
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
 

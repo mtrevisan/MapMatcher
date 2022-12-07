@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
-import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
@@ -33,9 +32,10 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 
+/**
+ * @see <a href="https://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm">Bentley–Ottmann algorithm</a>
+ */
 public class BentleyOttmann{
-
-	private final GeometryFactory factory;
 
 	private final PriorityQueue<Event> eventQueue = new PriorityQueue<>(){
 		@Override
@@ -52,10 +52,6 @@ public class BentleyOttmann{
 	private final SweepLine sweepLine = new SweepLine();
 	private final List<Point> intersections = new ArrayList<>();
 
-
-	public BentleyOttmann(final GeometryFactory factory){
-		this.factory = factory;
-	}
 
 	public void addPolylines(final List<Polyline> polylines){
 		for(final Polyline polyline : polylines){
@@ -115,7 +111,7 @@ public class BentleyOttmann{
 
 	private void addEventIfIntersection(final SweepSegment segment1, final SweepSegment segment2, final Event event){
 		if(segment1 != null && segment2 != null){
-			final Point point = SweepSegment.intersection(segment1, segment2, factory);
+			final Point point = SweepSegment.intersection(segment1, segment2);
 			if(point != null && point.getX() > event.point().getX())
 				eventQueue.add(new Event(point, segment1, segment2));
 		}
@@ -123,7 +119,7 @@ public class BentleyOttmann{
 
 	private void addEventIfIntersectionAndCheck(final SweepSegment segment1, final SweepSegment segment2, final Event event){
 		if(segment1 != null && segment2 != null){
-			final Point point = SweepSegment.intersection(segment1, segment2, factory);
+			final Point point = SweepSegment.intersection(segment1, segment2);
 			if(point != null && point.getX() > event.point().getX()){
 				final Event e = new Event(point, segment1, segment2);
 				if(!eventQueue.contains(e))
