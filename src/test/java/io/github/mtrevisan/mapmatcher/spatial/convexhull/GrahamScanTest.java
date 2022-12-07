@@ -27,9 +27,9 @@ package io.github.mtrevisan.mapmatcher.spatial.convexhull;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

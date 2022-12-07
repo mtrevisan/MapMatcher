@@ -34,28 +34,28 @@ public class SweepLine extends TreeSet<SweepSegment>{
 		super(Comparator.comparingDouble(SweepSegment::position));
 	}
 
-	void remove(final SweepSegment s){
-		removeIf(sweepSegment -> sweepSegment.nearlyEqual(s));
+	void remove(final SweepSegment segment){
+		removeIf(sweepSegment -> sweepSegment.nearlyEqual(segment));
 	}
 
-	void swap(final SweepSegment s1, final SweepSegment s2){
-		remove(s1);
-		remove(s2);
+	void swap(final SweepSegment segment1, final SweepSegment segment2){
+		remove(segment1);
+		remove(segment2);
 
-		final double swap = s1.position();
-		s1.setPosition(s2.position());
-		s2.setPosition(swap);
+		final double swap = segment1.position();
+		segment1.setPosition(segment2.position());
+		segment2.setPosition(swap);
 
-		add(s1);
-		add(s2);
+		add(segment1);
+		add(segment2);
 	}
 
-	SweepSegment above(final SweepSegment s){
-		return higher(s);
+	SweepSegment above(final SweepSegment segment){
+		return higher(segment);
 	}
 
-	SweepSegment below(final SweepSegment s){
-		return lower(s);
+	SweepSegment below(final SweepSegment segment){
+		return lower(segment);
 	}
 
 	void updatePositions(final double x){

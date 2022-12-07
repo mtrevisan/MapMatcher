@@ -28,9 +28,9 @@ import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -67,6 +67,7 @@ class HPRTreeTest{
 					polylines.add(parsePolyline(readLine));
 		}
 
+long start = System.currentTimeMillis();
 		//https://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm
 		//https://www.npmjs.com/package/sweepline-intersections?activeTab=readme
 		//https://github.com/topics/bentley-ottmann
@@ -78,6 +79,7 @@ class HPRTreeTest{
 				writer.write(FACTORY.createPolyline(reducedPoints).toString() + "\r\n");
 			}
 		}
+System.out.println(System.currentTimeMillis() - start);
 	}
 
 

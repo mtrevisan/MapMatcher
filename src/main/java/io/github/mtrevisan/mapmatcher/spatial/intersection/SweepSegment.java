@@ -28,11 +28,10 @@ import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
-import java.util.Locale;
 import java.util.Objects;
 
 
-public class SweepSegment{
+class SweepSegment{
 
 	private final Event event1;
 	private final Event event2;
@@ -93,7 +92,7 @@ public class SweepSegment{
 		this.setPosition(y);
 	}
 
-	// See: http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
+	//TODO
 	static Point intersection(final SweepSegment segment1, final SweepSegment segment2, final GeometryFactory factory){
 		final double x1 = segment1.leftEvent().point().getX();
 		final double y1 = segment1.leftEvent().point().getY();
@@ -124,7 +123,7 @@ public class SweepSegment{
 
 	@Override
 	public String toString(){
-		return String.format(Locale.getDefault(), "[%s : %s]", leftEvent(), rightEvent());
+		return "SweepSegment{left = " + leftEvent() + ", right = " + rightEvent() + "}";
 	}
 
 }

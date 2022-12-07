@@ -30,7 +30,6 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 
 public class Event implements Comparable<Event>{
@@ -103,7 +102,7 @@ public class Event implements Comparable<Event>{
 
 	@Override
 	public String toString(){
-		return String.format(Locale.getDefault(), "[%s, %s]", point().getX(), point().getY());
+		return "Event(x = " + point.getX() + ", y = " + point.getY() + "}";
 	}
 
 }

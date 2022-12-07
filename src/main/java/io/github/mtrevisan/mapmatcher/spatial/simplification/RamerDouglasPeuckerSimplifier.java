@@ -28,6 +28,7 @@ import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Stack;
 
@@ -66,15 +67,23 @@ public class RamerDouglasPeuckerSimplifier{
 
 
 	public Point[] simplify(final Point... points){
+		final BitSet preservePoints = new BitSet(points.length);
+
+		return simplify(preservePoints, points);
+	}
+
+	public Point[] simplify(final BitSet preservePoints, final Point... points){
+		if(preservePoints.size() < points.length)
+			throw new IllegalArgumentException("Preserve points length differs from points length");
+
 		if(points.length < 3)
 			return points;
 
 		int startIndex = 0;
 		int endIndex = points.length - 1;
 
-		final boolean[] preservePoints = new boolean[points.length];
-		preservePoints[startIndex] = true;
-		preservePoints[endIndex] = true;
+		preservePoints.set(startIndex, true);
+		preservePoints.set(endIndex, true);
 
 		final Stack<KeyValuePair> stack = new Stack<>();
 		stack.push(new KeyValuePair(startIndex, endIndex));
@@ -88,7 +97,7 @@ public class RamerDouglasPeuckerSimplifier{
 			double maxDistance = distanceTolerance;
 			int maxIndex = startIndex;
 			for(int k = maxIndex + 1; k < endIndex; k ++)
-				if(!preservePoints[k]){
+				if(!preservePoints.get(k)){
 					final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
 					final double distance = nearestPoint.distance(points[k]);
 					if(distance > maxDistance){
@@ -103,17 +112,18 @@ public class RamerDouglasPeuckerSimplifier{
 				stack.push(new KeyValuePair(maxIndex, endIndex));
 			}
 			else{
-				preservePoints[startIndex] = true;
-				preservePoints[endIndex] = true;
+				preservePoints.set(startIndex, true);
+				preservePoints.set(endIndex, true);
 			}
 		}
 
 		final List<Point> simplifiedPoints = new ArrayList<>(points.length);
 		for(int i = 0; i < points.length; i ++)
-			if(preservePoints[i])
+			if(preservePoints.get(i))
 				simplifiedPoints.add(points[i]);
 		return simplifiedPoints.toArray(Point[]::new);
 	}
+
 
 	private static final class KeyValuePair{
 		private final int startIndex;
