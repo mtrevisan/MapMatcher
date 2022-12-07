@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial.bentleyottmann;
+package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -34,27 +34,27 @@ import java.util.Objects;
 
 public class SweepSegment{
 
-	private final Event e1;
-	private final Event e2;
-	private final Polyline segment;
+	private final Event event1;
+	private final Event event2;
+	private final Polyline polyline;
 	private double position;
 
 
-	SweepSegment(final Polyline s){
-		segment = s;
+	SweepSegment(final Polyline polyline){
+		this.polyline = polyline;
 
-		Event e1 = new Event(s.getStartPoint(), this, Event.Type.POINT_LEFT);
-		Event e2 = new Event(s.getEndPoint(), this, Event.Type.POINT_RIGHT);
-		if(!(Objects.compare(e2, e1, Event::compareTo) == 1)){
-			final Event swap = e1;
-			e1 = e2;
-			e2 = swap;
-			e1.setType(Event.Type.POINT_LEFT);
-			e2.setType(Event.Type.POINT_RIGHT);
+		Event event1 = new Event(polyline.getStartPoint(), this, Event.Type.POINT_LEFT);
+		Event event2 = new Event(polyline.getEndPoint(), this, Event.Type.POINT_RIGHT);
+		if(!(Objects.compare(event2, event1, Event::compareTo) == 1)){
+			final Event swap = event1;
+			event1 = event2;
+			event2 = swap;
+			event1.setType(Event.Type.POINT_LEFT);
+			event2.setType(Event.Type.POINT_RIGHT);
 		}
 
-		this.e1 = e1;
-		this.e2 = e2;
+		this.event1 = event1;
+		this.event2 = event2;
 
 		updatePosition(leftEvent().point().getX());
 	}
@@ -68,19 +68,19 @@ public class SweepSegment{
 	}
 
 	Event leftEvent(){
-		return e1;
+		return event1;
 	}
 
 	Event rightEvent(){
-		return e2;
+		return event2;
 	}
 
 	Polyline segment(){
-		return segment;
+		return polyline;
 	}
 
-	boolean nearlyEqual(final SweepSegment s){
-		return s.leftEvent().nearlyEqual(leftEvent()) && s.rightEvent().nearlyEqual(rightEvent());
+	boolean nearlyEqual(final SweepSegment segment){
+		return segment.leftEvent().nearlyEqual(leftEvent()) && segment.rightEvent().nearlyEqual(rightEvent());
 	}
 
 	void updatePosition(final double x){
@@ -94,16 +94,16 @@ public class SweepSegment{
 	}
 
 	// See: http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
-	static Point intersection(final SweepSegment s1, final SweepSegment s2, final GeometryFactory factory){
-		final double x1 = s1.leftEvent().point().getX();
-		final double y1 = s1.leftEvent().point().getY();
-		final double x2 = s1.rightEvent().point().getX();
-		final double y2 = s1.rightEvent().point().getY();
+	static Point intersection(final SweepSegment segment1, final SweepSegment segment2, final GeometryFactory factory){
+		final double x1 = segment1.leftEvent().point().getX();
+		final double y1 = segment1.leftEvent().point().getY();
+		final double x2 = segment1.rightEvent().point().getX();
+		final double y2 = segment1.rightEvent().point().getY();
 
-		final double x3 = s2.leftEvent().point().getX();
-		final double y3 = s2.leftEvent().point().getY();
-		final double x4 = s2.rightEvent().point().getX();
-		final double y4 = s2.rightEvent().point().getY();
+		final double x3 = segment2.leftEvent().point().getX();
+		final double y3 = segment2.leftEvent().point().getY();
+		final double x4 = segment2.rightEvent().point().getX();
+		final double y4 = segment2.rightEvent().point().getY();
 
 		final double v = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
 		if(v == 0.)

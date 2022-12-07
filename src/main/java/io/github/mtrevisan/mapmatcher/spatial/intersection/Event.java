@@ -22,8 +22,9 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial.bentleyottmann;
+package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
+import io.github.mtrevisan.mapmatcher.helpers.MathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.ArrayList;
@@ -34,29 +35,30 @@ import java.util.Locale;
 
 public class Event implements Comparable<Event>{
 
-	enum Type{
+	protected enum Type{
 		POINT_LEFT, POINT_RIGHT, INTERSECTION
 	}
 
-	private static final double EPSILON = 1E-9;
+	private static final double EPSILON = 1.e-9;
 
 	private Type type;
 	private final Point point;
 	private final List<SweepSegment> segments = new ArrayList<>();
 
 
-	Event(final Point p, final SweepSegment s1, final Type type){
-		point = p;
+	Event(final Point point, final SweepSegment segment, final Type type){
+		this.point = point;
 		this.type = type;
-		segments.add(s1);
+
+		segments.add(segment);
 	}
 
-	Event(final Point p, final SweepSegment s1, final SweepSegment s2){
-		this(p, s1, Type.INTERSECTION);
+	Event(final Point point, final SweepSegment segment1, final SweepSegment segment2){
+		this(point, segment1, Type.INTERSECTION);
 
-		segments.add(s2);
+		segments.add(segment2);
 
-		// Ensure s1 is always above s2
+		//ensure segment1 is always above segment2
 		if(!(segments.get(0).position() > segments.get(1).position()))
 			Collections.swap(segments, 0, 1);
 	}
@@ -81,41 +83,27 @@ public class Event implements Comparable<Event>{
 		return segments.get(1);
 	}
 
-	@Override
-	public String toString(){
-		return String.format(Locale.getDefault(), "[%s, %s]", point().getX(), point().getY());
+	boolean nearlyEqual(final Event event){
+		return (MathHelper.nearlyEqual(point().getX(), event.point().getX(), EPSILON)
+			&& MathHelper.nearlyEqual(point().getY(), event.point().getY(), EPSILON));
 	}
 
 	@Override
-	public int compareTo(final Event e){
-		if(e.point().getX() < point().getX() || (nearlyEqual(e.point().getX(), point().getX()) && e.point().getY() < point().getY()))
+	public int compareTo(final Event event){
+		final double epx = event.point().getX();
+		final double epy = event.point().getY();
+		final double px = point().getX();
+		final double py = point().getY();
+		if(epx < px || MathHelper.nearlyEqual(epx, px, EPSILON) && epy < py)
 			return 1;
-		if(e.point().getX() > point().getX() || (nearlyEqual(e.point().getX(), point().getX()) && e.point().getY() > point().getY()))
+		if(epx > px || MathHelper.nearlyEqual(epx, px, EPSILON) && epy > py)
 			return -1;
 		return 0;
 	}
 
-	boolean nearlyEqual(final Event e){
-		return nearlyEqual(point().getX(), e.point().getX()) && nearlyEqual(point().getY(), e.point().getY());
-	}
-
-	// Taken from: https://floating-point-gui.de/errors/comparison/
-	private static boolean nearlyEqual(final double a, final double b){
-		final double absA = Math.abs(a);
-		final double absB = Math.abs(b);
-		final double diff = Math.abs(a - b);
-
-		//shortcut, handles infinities
-		if(a == b)
-			return true;
-
-		//a or b is zero or both are extremely close to it
-		//relative error is less meaningful here
-		if(a == 0 || b == 0 || (absA + absB < Double.MIN_NORMAL))
-			return diff < (Event.EPSILON * Double.MIN_NORMAL);
-
-		//use relative error
-		return diff / Math.min((absA + absB), Double.MAX_VALUE) < Event.EPSILON;
+	@Override
+	public String toString(){
+		return String.format(Locale.getDefault(), "[%s, %s]", point().getX(), point().getY());
 	}
 
 }

@@ -22,14 +22,13 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial.bentleyottmann;
+package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -52,7 +51,6 @@ public class BentleyOttmann{
 	};
 	private final SweepLine sweepLine = new SweepLine();
 	private final List<Point> intersections = new ArrayList<>();
-	private OnIntersectionListener listener;
 
 
 	public BentleyOttmann(final GeometryFactory factory){
@@ -68,81 +66,80 @@ public class BentleyOttmann{
 	}
 
 	public void findIntersections(){
+		findIntersections(null);
+	}
+
+	public void findIntersections(final OnIntersectionListener listener){
 		while(!eventQueue.isEmpty()){
 			final Event event = eventQueue.poll();
 			if(event.type() == Event.Type.POINT_LEFT){
-				final SweepSegment segE = event.firstSegment();
+				final SweepSegment segmentLeft = event.firstSegment();
 
 				sweepLine.updatePositions(event.point().getX());
-				sweepLine.add(segE);
+				sweepLine.add(segmentLeft);
 
-				final SweepSegment segA = sweepLine.above(segE);
-				final SweepSegment segB = sweepLine.below(segE);
+				final SweepSegment segmentAbove = sweepLine.above(segmentLeft);
+				final SweepSegment segmentBelow = sweepLine.below(segmentLeft);
 
-				//System.out.println("LEFT POINT -> seg: " + segE.segment() + ", above: " + (segA != null? segA.segment(): "") + ", below: " + (segB != null? segB.segment(): ""));
-
-				addEventIfIntersection(segE, segA, event, false);
-				addEventIfIntersection(segE, segB, event, false);
+				addEventIfIntersection(segmentLeft, segmentAbove, event);
+				addEventIfIntersection(segmentLeft, segmentBelow, event);
 			}
 			else if(event.type() == Event.Type.POINT_RIGHT){
-				final SweepSegment segE = event.firstSegment();
-				final SweepSegment segA = sweepLine.above(segE);
-				final SweepSegment segB = sweepLine.below(segE);
+				final SweepSegment segmentRight = event.firstSegment();
+				final SweepSegment segmentAbove = sweepLine.above(segmentRight);
+				final SweepSegment segmentBelow = sweepLine.below(segmentRight);
 
-				//System.out.println("RIGHT POINT -> seg: " + segE.segment() + ", above: " + (segA != null? segA.segment(): "") + ", below: " + (segB != null? segB.segment(): ""));
+				sweepLine.remove(segmentRight);
 
-				sweepLine.remove(segE);
-
-				addEventIfIntersection(segA, segB, event, true);
+				addEventIfIntersectionAndCheck(segmentAbove, segmentBelow, event);
 			}
 			else{
 				intersections.add(event.point());
 
-				final SweepSegment segE1 = event.firstSegment();
-				final SweepSegment segE2 = event.secondSegment();
+				final SweepSegment segmentIntersection1 = event.firstSegment();
+				final SweepSegment segmentIntersection2 = event.secondSegment();
 
 				if(listener != null)
-					listener.onIntersection(segE1.segment(), segE2.segment(), event.point());
+					listener.onIntersection(segmentIntersection1.segment(), segmentIntersection2.segment(), event.point());
 
-				sweepLine.swap(segE1, segE2);
+				sweepLine.swap(segmentIntersection1, segmentIntersection2);
 
-				final SweepSegment segA = sweepLine.above(segE2);
-				final SweepSegment segB = sweepLine.below(segE1);
+				final SweepSegment segmentAbove = sweepLine.above(segmentIntersection2);
+				final SweepSegment segmentBelow = sweepLine.below(segmentIntersection1);
 
-				//System.out.println("INTERSECTION POINT -> seg1: " + segE1.segment() + ", seg2: " + segE2.segment() + ", above " + segE2.segment() + ": " + (segA != null? segA.segment(): "") + ", below " + segE1.segment() + ": " + (segB != null? segB.segment(): ""));
+				addEventIfIntersectionAndCheck(segmentIntersection2, segmentAbove, event);
+				addEventIfIntersectionAndCheck(segmentIntersection1, segmentBelow, event);
+			}
+		}
+	}
 
-				addEventIfIntersection(segE2, segA, event, true);
-				addEventIfIntersection(segE1, segB, event, true);
+	private void addEventIfIntersection(final SweepSegment segment1, final SweepSegment segment2, final Event event){
+		if(segment1 != null && segment2 != null){
+			final Point point = SweepSegment.intersection(segment1, segment2, factory);
+			if(point != null && point.getX() > event.point().getX())
+				eventQueue.add(new Event(point, segment1, segment2));
+		}
+	}
+
+	private void addEventIfIntersectionAndCheck(final SweepSegment segment1, final SweepSegment segment2, final Event event){
+		if(segment1 != null && segment2 != null){
+			final Point point = SweepSegment.intersection(segment1, segment2, factory);
+			if(point != null && point.getX() > event.point().getX()){
+				final Event e = new Event(point, segment1, segment2);
+				if(!eventQueue.contains(e))
+					eventQueue.add(e);
 			}
 		}
 	}
 
 	public List<Point> intersections(){
-		return Collections.unmodifiableList(intersections);
-	}
-
-	public void setListener(final OnIntersectionListener listener){
-		this.listener = listener;
+		return intersections;
 	}
 
 	public void reset(){
 		intersections.clear();
 		eventQueue.clear();
 		sweepLine.clear();
-	}
-
-	private void addEventIfIntersection(final SweepSegment s1, final SweepSegment s2, final Event event, final boolean check){
-		if(s1 != null && s2 != null){
-			final Point i = SweepSegment.intersection(s1, s2, factory);
-			if(i != null && i.getX() > event.point().getX()){
-				final Event e = new Event(i, s1, s2);
-				if(check)
-					if(eventQueue.contains(e))
-						return;
-
-				eventQueue.add(e);
-			}
-		}
 	}
 
 }

@@ -22,45 +22,38 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial.bentleyottmann;
+package io.github.mtrevisan.mapmatcher.spatial.simplification;
 
-import java.util.Comparator;
-import java.util.TreeSet;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 
-public class SweepLine extends TreeSet<SweepSegment>{
+class RamerDouglasPeuckerSimplifierTest{
 
-	SweepLine(){
-		super(Comparator.comparingDouble(SweepSegment::position));
-	}
+	@Test
+	void simple(){
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		Point[] points = new Point[]{
+			factory.createPoint(1., 1.),
+			factory.createPoint(1.3, 2.),
+			factory.createPoint(2., 1.2),
+			factory.createPoint(3., 1.)
+		};
 
-	void remove(final SweepSegment s){
-		removeIf(sweepSegment -> sweepSegment.nearlyEqual(s));
-	}
+		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
+		simplifier.setDistanceTolerance(0.5);
 
-	void swap(final SweepSegment s1, final SweepSegment s2){
-		remove(s1);
-		remove(s2);
+		Point[] reducedPoints = simplifier.simplify(points);
 
-		final double swap = s1.position();
-		s1.setPosition(s2.position());
-		s2.setPosition(swap);
-
-		add(s1);
-		add(s2);
-	}
-
-	SweepSegment above(final SweepSegment s){
-		return higher(s);
-	}
-
-	SweepSegment below(final SweepSegment s){
-		return lower(s);
-	}
-
-	void updatePositions(final double x){
-		for(final SweepSegment s : this)
-			s.updatePosition(x);
+		Point[] expected = new Point[]{
+			factory.createPoint(1., 1.),
+			factory.createPoint(1.3, 2.),
+			factory.createPoint(3., 1.)
+		};
+		Assertions.assertArrayEquals(expected, reducedPoints);
 	}
 
 }

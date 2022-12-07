@@ -22,7 +22,10 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial;
+package io.github.mtrevisan.mapmatcher.spatial.simplification;
+
+import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.ArrayList;
 import java.util.List;

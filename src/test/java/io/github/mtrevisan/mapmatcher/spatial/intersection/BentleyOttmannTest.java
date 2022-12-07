@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial.bentleyottmann;
+package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -109,12 +109,13 @@ class BentleyOttmannTest{
 		Map<Polyline, List<Point>> intersectionsOnPolyline = new HashMap<>();
 		BentleyOttmann bentleyOttmann = new BentleyOttmann(factory);
 		bentleyOttmann.addPolylines(polylines);
-		bentleyOttmann.setListener((s1, s2, p) -> {
-			intersectionsOnPolyline.computeIfAbsent(s1, k -> new ArrayList<>()).add(p);
-			intersectionsOnPolyline.computeIfAbsent(s2, k -> new ArrayList<>()).add(p);
-		});
 
-		bentleyOttmann.findIntersections();
+		bentleyOttmann.findIntersections((polyline1, polyline2, intersection) -> {
+			intersectionsOnPolyline.computeIfAbsent(polyline1, k -> new ArrayList<>(1))
+				.add(intersection);
+			intersectionsOnPolyline.computeIfAbsent(polyline2, k -> new ArrayList<>(1))
+				.add(intersection);
+		});
 
 		Assertions.assertEquals(4, intersectionsOnPolyline.size());
 	}

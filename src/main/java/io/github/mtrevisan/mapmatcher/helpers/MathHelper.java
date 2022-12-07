@@ -22,36 +22,37 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial;
-
-import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+package io.github.mtrevisan.mapmatcher.helpers;
 
 
-class RamerDouglasPeuckerSimplifierTest{
+public class MathHelper{
 
-	@Test
-	void simple(){
-		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Point[] points = new Point[]{
-			factory.createPoint(1., 1.),
-			factory.createPoint(1.3, 2.),
-			factory.createPoint(2., 1.2),
-			factory.createPoint(3., 1.)
-		};
+	private MathHelper(){}
 
-		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
-		simplifier.setDistanceTolerance(0.5);
 
-		Point[] reducedPoints = simplifier.simplify(points);
+	/**
+	 * @see <a href="https://floating-point-gui.de/errors/comparison/">Comparison</a>
+	 *
+	 * @param a	The first value.
+	 * @param b	The second value.
+	 * @param epsilon	The margin.
+	 * @return	Whether the values are nearly equal.
+	 */
+	public static boolean nearlyEqual(final double a, final double b, final double epsilon){
+		final double absA = Math.abs(a);
+		final double absB = Math.abs(b);
+		final double diff = Math.abs(a - b);
 
-		Point[] expected = new Point[]{
-			factory.createPoint(1., 1.),
-			factory.createPoint(1.3, 2.),
-			factory.createPoint(3., 1.)
-		};
-		Assertions.assertArrayEquals(expected, reducedPoints);
+		//shortcut, handles infinities
+		if(a == b)
+			return true;
+
+		//`a` or `b` is zero or both are extremely close to it relative error is less meaningful here
+		if(a == 0. || b == 0. || absA + absB < Double.MIN_NORMAL)
+			return (diff < epsilon * Double.MIN_NORMAL);
+
+		//use relative error
+		return (diff < epsilon * Math.min((absA + absB), Double.MAX_VALUE));
 	}
 
 }

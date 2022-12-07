@@ -28,7 +28,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.RamerDouglasPeuckerSimplifier;
+import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import org.junit.jupiter.api.Assertions;
@@ -70,8 +70,6 @@ class HPRTreeTest{
 		//https://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm
 		//https://www.npmjs.com/package/sweepline-intersections?activeTab=readme
 		//https://github.com/topics/bentley-ottmann
-		//https://github.com/valenpe7/bentley-ottmann/tree/master/bentley-ottmann/src/bentley_ottmann
-		//https://github.com/stanislav-antonov/bentley-ottmann/tree/master/src/bentleyottmann
 		//http://geomalgorithms.com/a09-_intersect-3.html
 		try(final BufferedWriter writer = new BufferedWriter(new FileWriter("src/test/resources/it.highways.simplified.5.wkt"))){
 			for(int i = 0; i < polylines.size(); i ++){

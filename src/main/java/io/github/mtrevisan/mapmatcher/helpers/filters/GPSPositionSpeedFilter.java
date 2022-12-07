@@ -22,39 +22,43 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.kalman;
+package io.github.mtrevisan.mapmatcher.helpers.filters;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 
 
-public class GPSPositionFilter{
+public class GPSPositionSpeedFilter{
 
 	private final KalmanFilter filter;
 
 
 	/*
-	 * Create a GPS filter that only tracks one dimension of position.
+	 * Create a GPS filter that only tracks two dimensions of position and velocity.
+	 * The inherent assumption is that changes in velocity are randomly distributed around 0.
 	 * Noise that the higher `observationNoise` is, the more a path will be "smoothed".
 	 */
-	public GPSPositionFilter(final double processNoise, final double observationNoise){
+	public GPSPositionSpeedFilter(final double processNoise, final double observationNoise){
 		//The state model has four dimensions: x, y, dx/dt, dy/dt.
 		//Each time step we can only observe position, not velocity, so the observation vector has only two dimensions.
-		filter = new KalmanFilter(2, 2);
+		filter = new KalmanFilter(4, 2);
 
 		//Assuming the axes are rectilinear does not work well at the poles, but it has the bonus that we don't need to convert between
 		//lat/long and more rectangular coordinates. The slight inaccuracy of our physics model is not too important.
 		filter.setStateTransition(MatrixUtils.createRealIdentityMatrix(filter.getStateDimension()));
+		setSecondsPerTimeStep(1.);
 
 		//observe (x, y) in each time step
 		filter.setObservationModel(MatrixUtils.createRealMatrix(new double[][]{
-			new double[]{1., 0.},
-			new double[]{0., 1.}
+			new double[]{1., 0., 0., 0.},
+			new double[]{0., 1., 0., 0.}
 		}));
 
 		//noise in the world
 		filter.setProcessNoiseCovariance(MatrixUtils.createRealMatrix(new double[][]{
-			new double[]{processNoise, 0.},
-			new double[]{0., processNoise}
+			new double[]{processNoise, 0., 0., 0.},
+			new double[]{0., processNoise, 0., 0.},
+			new double[]{0., 0., 1., 0.},
+			new double[]{0., 0., 0., 1.}
 		}));
 
 		//noise in the observations
@@ -72,12 +76,18 @@ public class GPSPositionFilter{
 			.scalarMultiply(trillion));
 	}
 
-	public void updatePosition(final double latitude, final double longitude){
+	public void updatePosition(final double latitude, final double longitude, final long elapsedTime){
 		filter.setObservation(MatrixUtils.createRealMatrix(new double[][]{
 			new double[]{latitude},
 			new double[]{longitude}
 		}));
+		setSecondsPerTimeStep(elapsedTime);
 		filter.update();
+	}
+
+	private void setSecondsPerTimeStep(final double timeLapse){
+		filter.setStateTransition(0, 2, timeLapse);
+		filter.setStateTransition(1, 3, timeLapse);
 	}
 
 	/** Extract filtered position. */
@@ -86,6 +96,14 @@ public class GPSPositionFilter{
 		latLon[0] = filter.getStateEstimate(0, 0);
 		latLon[1] = filter.getStateEstimate(1, 0);
 		return latLon;
+	}
+
+	/** Extract speed with latitude/longitude-per-second units. */
+	public double[] getSpeed(){
+		final double[] deltaLatLon = new double[2];
+		deltaLatLon[0] = filter.getStateEstimate(2, 0);
+		deltaLatLon[1] = filter.getStateEstimate(3, 0);
+		return deltaLatLon;
 	}
 
 }
