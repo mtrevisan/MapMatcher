@@ -28,6 +28,8 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
+//https://en.wikipedia.org/wiki/DE-9IM
+//https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/geom/IntersectionMatrix.java
 public class GeodeticPolylineCalculator implements IntersectionCalculator{
 
 	@Override
