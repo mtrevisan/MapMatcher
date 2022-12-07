@@ -27,12 +27,16 @@ package io.github.mtrevisan.mapmatcher.spatial;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 
 public class Point extends Geometry implements Comparable<Point>, Serializable{
 
 	@Serial
 	private static final long serialVersionUID = 3422386613349753773L;
+
+	private static final String SPACE = " ";
+
 
 	private final double x;
 	private final double y;
@@ -100,7 +104,9 @@ public class Point extends Geometry implements Comparable<Point>, Serializable{
 
 	@Override
 	public String toString(){
-		return "(" + x + ", " + y + ")";
+		final StringJoiner sj = new StringJoiner(", ", "POINT (", ")");
+		sj.add(x + SPACE + y);
+		return sj.toString();
 	}
 
 	@Override

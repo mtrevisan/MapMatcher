@@ -55,11 +55,10 @@ class SweepSegment{
 
 		this.geometry = polyline;
 
-		final Point startPoint = polyline.getStartPoint();
-		final Point endPoint = polyline.getEndPoint();
-		final int order = calculator.compare(endPoint, startPoint);
-		this.event1 = new Event((order == 1? startPoint: endPoint), this, Event.Type.POINT_LEFT, calculator);
-		this.event2 = new Event((order == 1? endPoint: startPoint), this, Event.Type.POINT_RIGHT, calculator);
+		final Point leftmostPoint = calculator.leftmostPoint(polyline);
+		final Point rightPoint = calculator.rightmostPoint(polyline);
+		this.event1 = new Event(leftmostPoint, this, Event.Type.POINT_LEFT, calculator);
+		this.event2 = new Event(rightPoint, this, Event.Type.POINT_RIGHT, calculator);
 
 		updateYIndex(getLeftEvent().point().getX());
 	}
@@ -84,14 +83,12 @@ class SweepSegment{
 		return geometry;
 	}
 
-	//FIXME
 	boolean isNearlyEqual(final SweepSegment segment){
 		return (segment.getLeftEvent().nearlyEqual(getLeftEvent())
 			&& segment.getRightEvent().nearlyEqual(getRightEvent()));
 	}
 
 	void updateYIndex(final double x){
-		//FIXME
 		final double y = calculator.calculateYIndex(getLeftEvent().point(), getRightEvent().point(), x);
 		this.setYIndex(y);
 	}

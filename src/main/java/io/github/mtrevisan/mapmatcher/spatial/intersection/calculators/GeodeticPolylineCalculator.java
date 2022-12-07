@@ -28,16 +28,36 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-public interface IntersectionCalculator{
+public class GeodeticPolylineCalculator implements IntersectionCalculator{
 
-	Point leftmostPoint(Polyline polyline);
+	@Override
+	public Point leftmostPoint(final Polyline polyline){
+		//TODO
+		return null;
+	}
 
-	Point rightmostPoint(Polyline polyline);
+	@Override
+	public Point rightmostPoint(final Polyline polyline){
+		//TODO
+		return null;
+	}
 
-	double calculateYIndex(Point pointLeft, Point pointRight, double x);
+	@Override
+	public double calculateYIndex(final Point pointLeft, final Point pointRight, final double x){
+		//TODO
+		return 0.;
+	}
 
-	int compare(Point point1, Point point2);
+	@Override
+	public int compare(final Point point1, final Point point2){
+		//TODO
+		return 0;
+	}
 
-	Point intersection(Polyline polyline1, Polyline polyline2);
+	@Override
+	public Point intersection(final Polyline polyline1, final Polyline polyline2){
+		//TODO
+		return null;
+	}
 
 }

@@ -32,7 +32,7 @@ import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.intersection.BentleyOttmann;
 import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.SegmentCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.EuclideanSegmentCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -72,7 +72,7 @@ class HPRTreeTest{
 		final Set<Point> tollBooths = extractPoints(tollBoothsFile);
 
 		//filter only toll booths on highways
-		filterPointsAlongPolylines(roads, tollBooths);
+		filterPointsAlongPolylines(tollBooths, roads);
 		final File outputTollBoothsFile = new File("src/test/resources/it.tollBooths.simplified.wkt");
 		writePoints(tollBooths, outputTollBoothsFile);
 
@@ -98,7 +98,7 @@ class HPRTreeTest{
 		return new HashSet<>(readWKTPointFile(file));
 	}
 
-	private static Set<Point> filterPointsAlongPolylines(final Collection<Polyline> polylines, final Set<Point> points){
+	private static Set<Point> filterPointsAlongPolylines(final Set<Point> points, final Collection<Polyline> polylines){
 		final Iterator<Point> itr = points.iterator();
 		while(itr.hasNext()){
 			final Point point = itr.next();
@@ -115,7 +115,7 @@ class HPRTreeTest{
 	}
 
 	private static List<Polyline> simplifyPolylines(final Collection<Polyline> polylines, final double tolerance){
-		final IntersectionCalculator calculator = new SegmentCalculator();
+		final IntersectionCalculator calculator = new EuclideanSegmentCalculator();
 		final BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		final Map<Polyline, BitSet> preservePointsOnPolylines = new HashMap<>(polylines.size());

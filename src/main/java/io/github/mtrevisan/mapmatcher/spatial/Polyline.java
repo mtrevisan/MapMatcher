@@ -37,6 +37,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 	private static final String SPACE = " ";
 
+
 	private final Point[] points;
 
 

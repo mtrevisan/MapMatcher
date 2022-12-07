@@ -30,10 +30,26 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-public class SegmentCalculator implements IntersectionCalculator{
+public class EuclideanSegmentCalculator implements IntersectionCalculator{
 
 	private static final double EPSILON = 1.e-9;
 
+
+	@Override
+	public Point leftmostPoint(final Polyline polyline){
+		final Point startPoint = polyline.getStartPoint();
+		final Point endPoint = polyline.getEndPoint();
+		final int order = compare(endPoint, startPoint);
+		return (order == 1? startPoint: endPoint);
+	}
+
+	@Override
+	public Point rightmostPoint(final Polyline polyline){
+		final Point startPoint = polyline.getStartPoint();
+		final Point endPoint = polyline.getEndPoint();
+		final int order = compare(endPoint, startPoint);
+		return (order == 1? endPoint: startPoint);
+	}
 
 	@Override
 	public double calculateYIndex(final Point pointLeft, final Point pointRight, final double x){
@@ -60,16 +76,15 @@ public class SegmentCalculator implements IntersectionCalculator{
 
 	@Override
 	public Point intersection(final Polyline polyline1, final Polyline polyline2){
-		final int order = compare(polyline1.getEndPoint(), polyline2.getStartPoint());
-		final Point pointLeft = (order >= 0? polyline1.getStartPoint(): polyline1.getEndPoint());
-		final Point pointRight = (order >= 0? polyline1.getEndPoint(): polyline1.getStartPoint());
+		final Point pointLeft = leftmostPoint(polyline1);
+		final Point pointRight = rightmostPoint(polyline1);
 		final double x1 = pointLeft.getX();
 		final double y1 = pointLeft.getY();
 		final double x2 = pointRight.getX();
 		final double y2 = pointRight.getY();
 
-		final Point segmentPointLeft = (order >= 0? polyline2.getStartPoint(): polyline2.getEndPoint());
-		final Point segmentPointRight = (order >= 0? polyline2.getEndPoint(): polyline2.getStartPoint());
+		final Point segmentPointLeft = leftmostPoint(polyline2);
+		final Point segmentPointRight = rightmostPoint(polyline2);
 		final double x3 = segmentPointLeft.getX();
 		final double y3 = segmentPointLeft.getY();
 		final double x4 = segmentPointRight.getX();

@@ -83,7 +83,6 @@ public class Event implements Comparable<Event>{
 		return segments.get(1);
 	}
 
-	//FIXME
 	boolean nearlyEqual(final Event event){
 		return (MathHelper.nearlyEqual(point().getX(), event.point().getX(), EPSILON)
 			&& MathHelper.nearlyEqual(point().getY(), event.point().getY(), EPSILON));
