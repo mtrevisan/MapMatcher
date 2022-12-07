@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
+import io.github.mtrevisan.mapmatcher.spatial.Geometry;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -106,7 +107,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(13.32, 4.22), factory.createPoint(2.42, 12.67))
 		);
 
-		Map<Polyline, List<Point>> intersectionsOnPolyline = new HashMap<>();
+		Map<Geometry, List<Point>> intersectionsOnPolyline = new HashMap<>();
 		BentleyOttmann bentleyOttmann = new BentleyOttmann();
 		bentleyOttmann.addPolylines(polylines);
 

@@ -58,7 +58,7 @@ public class Event implements Comparable<Event>{
 		segments.add(segment2);
 
 		//ensure segment1 is always above segment2
-		if(!(segments.get(0).position() > segments.get(1).position()))
+		if(!(segments.get(0).getYPosition() > segments.get(1).getYPosition()))
 			Collections.swap(segments, 0, 1);
 	}
 
@@ -89,13 +89,13 @@ public class Event implements Comparable<Event>{
 
 	@Override
 	public int compareTo(final Event event){
-		final double epx = event.point().getX();
-		final double epy = event.point().getY();
 		final double px = point().getX();
 		final double py = point().getY();
-		if(epx < px || MathHelper.nearlyEqual(epx, px, EPSILON) && epy < py)
+		final double epx = event.point().getX();
+		final double epy = event.point().getY();
+		if(px > epx || MathHelper.nearlyEqual(px, epx, EPSILON) && py > epy)
 			return 1;
-		if(epx > px || MathHelper.nearlyEqual(epx, px, EPSILON) && epy > py)
+		if(px < epx || MathHelper.nearlyEqual(px, epx, EPSILON) && py < epy)
 			return -1;
 		return 0;
 	}

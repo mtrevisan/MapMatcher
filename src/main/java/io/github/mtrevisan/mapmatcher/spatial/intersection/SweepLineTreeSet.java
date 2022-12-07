@@ -28,23 +28,23 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 
-public class SweepLine extends TreeSet<SweepSegment>{
+public class SweepLineTreeSet extends TreeSet<SweepSegment>{
 
-	SweepLine(){
-		super(Comparator.comparingDouble(SweepSegment::position));
+	SweepLineTreeSet(){
+		super(Comparator.comparingDouble(SweepSegment::getYPosition));
 	}
 
 	void remove(final SweepSegment segment){
-		removeIf(sweepSegment -> sweepSegment.nearlyEqual(segment));
+		removeIf(sweepSegment -> sweepSegment.isNearlyEqual(segment));
 	}
 
 	void swap(final SweepSegment segment1, final SweepSegment segment2){
 		remove(segment1);
 		remove(segment2);
 
-		final double swap = segment1.position();
-		segment1.setPosition(segment2.position());
-		segment2.setPosition(swap);
+		final double swap = segment1.getYPosition();
+		segment1.setYPosition(segment2.getYPosition());
+		segment2.setYPosition(swap);
 
 		add(segment1);
 		add(segment2);
@@ -58,9 +58,9 @@ public class SweepLine extends TreeSet<SweepSegment>{
 		return lower(segment);
 	}
 
-	void updatePositions(final double x){
-		for(final SweepSegment s : this)
-			s.updatePosition(x);
+	void updateYPositions(final double x){
+		for(final SweepSegment segment : this)
+			segment.updateYPosition(x);
 	}
 
 }

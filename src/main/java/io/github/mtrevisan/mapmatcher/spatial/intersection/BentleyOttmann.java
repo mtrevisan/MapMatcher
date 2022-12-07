@@ -34,6 +34,7 @@ import java.util.PriorityQueue;
 
 /**
  * @see <a href="https://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm">Bentley–Ottmann algorithm</a>
+ * @see <a href="https://apps.dtic.mil/sti/pdfs/ADA058768.pdf">Algorithms for reporting and counting geometric intersections</a>
  */
 public class BentleyOttmann{
 
@@ -49,15 +50,15 @@ public class BentleyOttmann{
 			return result;
 		}
 	};
-	private final SweepLine sweepLine = new SweepLine();
+	private final SweepLineTreeSet sweepLine = new SweepLineTreeSet();
 	private final List<Point> intersections = new ArrayList<>();
 
 
 	public void addPolylines(final List<Polyline> polylines){
 		for(final Polyline polyline : polylines){
 			final SweepSegment ss = new SweepSegment(polyline);
-			eventQueue.add(ss.leftEvent());
-			eventQueue.add(ss.rightEvent());
+			eventQueue.add(ss.getLeftEvent());
+			eventQueue.add(ss.getRightEvent());
 		}
 	}
 
@@ -69,24 +70,21 @@ public class BentleyOttmann{
 		while(!eventQueue.isEmpty()){
 			final Event event = eventQueue.poll();
 			if(event.type() == Event.Type.POINT_LEFT){
+				sweepLine.updateYPositions(event.point().getX());
 				final SweepSegment segmentLeft = event.firstSegment();
-
-				sweepLine.updatePositions(event.point().getX());
 				sweepLine.add(segmentLeft);
 
 				final SweepSegment segmentAbove = sweepLine.above(segmentLeft);
-				final SweepSegment segmentBelow = sweepLine.below(segmentLeft);
-
 				addEventIfIntersection(segmentLeft, segmentAbove, event);
+				final SweepSegment segmentBelow = sweepLine.below(segmentLeft);
 				addEventIfIntersection(segmentLeft, segmentBelow, event);
 			}
 			else if(event.type() == Event.Type.POINT_RIGHT){
 				final SweepSegment segmentRight = event.firstSegment();
-				final SweepSegment segmentAbove = sweepLine.above(segmentRight);
-				final SweepSegment segmentBelow = sweepLine.below(segmentRight);
-
 				sweepLine.remove(segmentRight);
 
+				final SweepSegment segmentAbove = sweepLine.above(segmentRight);
+				final SweepSegment segmentBelow = sweepLine.below(segmentRight);
 				addEventIfIntersectionAndCheck(segmentAbove, segmentBelow, event);
 			}
 			else{
@@ -96,14 +94,13 @@ public class BentleyOttmann{
 				final SweepSegment segmentIntersection2 = event.secondSegment();
 
 				if(listener != null)
-					listener.onIntersection(segmentIntersection1.segment(), segmentIntersection2.segment(), event.point());
+					listener.onIntersection(segmentIntersection1.getGeometry(), segmentIntersection2.getGeometry(), event.point());
 
 				sweepLine.swap(segmentIntersection1, segmentIntersection2);
 
 				final SweepSegment segmentAbove = sweepLine.above(segmentIntersection2);
-				final SweepSegment segmentBelow = sweepLine.below(segmentIntersection1);
-
 				addEventIfIntersectionAndCheck(segmentIntersection2, segmentAbove, event);
+				final SweepSegment segmentBelow = sweepLine.below(segmentIntersection1);
 				addEventIfIntersectionAndCheck(segmentIntersection1, segmentBelow, event);
 			}
 		}
@@ -111,7 +108,7 @@ public class BentleyOttmann{
 
 	private void addEventIfIntersection(final SweepSegment segment1, final SweepSegment segment2, final Event event){
 		if(segment1 != null && segment2 != null){
-			final Point point = SweepSegment.intersection(segment1, segment2);
+			final Point point = segment1.intersection(segment2);
 			if(point != null && point.getX() > event.point().getX())
 				eventQueue.add(new Event(point, segment1, segment2));
 		}
@@ -119,7 +116,7 @@ public class BentleyOttmann{
 
 	private void addEventIfIntersectionAndCheck(final SweepSegment segment1, final SweepSegment segment2, final Event event){
 		if(segment1 != null && segment2 != null){
-			final Point point = SweepSegment.intersection(segment1, segment2);
+			final Point point = segment1.intersection(segment2);
 			if(point != null && point.getX() > event.point().getX()){
 				final Event e = new Event(point, segment1, segment2);
 				if(!eventQueue.contains(e))

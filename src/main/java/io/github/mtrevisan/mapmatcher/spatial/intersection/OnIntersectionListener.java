@@ -24,12 +24,13 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
+import io.github.mtrevisan.mapmatcher.spatial.Geometry;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
 public interface OnIntersectionListener{
 
-	void onIntersection(Polyline polyline1, Polyline polyline2, Point intersection);
+	void onIntersection(Geometry geometry1, Geometry geometry2, Point intersection);
 
 }
