@@ -26,6 +26,7 @@ package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.helpers.MathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,30 +41,30 @@ public class Event implements Comparable<Event>{
 
 	private static final double EPSILON = 1.e-9;
 
-	private Type type;
+	private final Type type;
 	private final Point point;
 	private final List<SweepSegment> segments = new ArrayList<>();
 
+	private final IntersectionCalculator calculator;
 
-	Event(final Point point, final SweepSegment segment, final Type type){
+
+	Event(final Point point, final SweepSegment segment, final Type type, final IntersectionCalculator calculator){
+		this.calculator = calculator;
+
 		this.point = point;
 		this.type = type;
 
 		segments.add(segment);
 	}
 
-	Event(final Point point, final SweepSegment segment1, final SweepSegment segment2){
-		this(point, segment1, Type.INTERSECTION);
+	Event(final Point point, final SweepSegment segment1, final SweepSegment segment2, final IntersectionCalculator calculator){
+		this(point, segment1, Type.INTERSECTION, calculator);
 
 		segments.add(segment2);
 
 		//ensure segment1 is always above segment2
-		if(!(segments.get(0).getYPosition() > segments.get(1).getYPosition()))
+		if(segments.get(0).getYIndex() <= segments.get(1).getYIndex())
 			Collections.swap(segments, 0, 1);
-	}
-
-	void setType(final Type type){
-		this.type = type;
 	}
 
 	Type type(){
@@ -82,6 +83,7 @@ public class Event implements Comparable<Event>{
 		return segments.get(1);
 	}
 
+	//FIXME
 	boolean nearlyEqual(final Event event){
 		return (MathHelper.nearlyEqual(point().getX(), event.point().getX(), EPSILON)
 			&& MathHelper.nearlyEqual(point().getY(), event.point().getY(), EPSILON));
@@ -89,15 +91,7 @@ public class Event implements Comparable<Event>{
 
 	@Override
 	public int compareTo(final Event event){
-		final double px = point().getX();
-		final double py = point().getY();
-		final double epx = event.point().getX();
-		final double epy = event.point().getY();
-		if(px > epx || MathHelper.nearlyEqual(px, epx, EPSILON) && py > epy)
-			return 1;
-		if(px < epx || MathHelper.nearlyEqual(px, epx, EPSILON) && py < epy)
-			return -1;
-		return 0;
+		return calculator.compare(point(), event.point());
 	}
 
 	@Override

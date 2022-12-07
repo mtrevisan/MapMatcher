@@ -22,45 +22,18 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial.intersection;
+package io.github.mtrevisan.mapmatcher.spatial.intersection.calculators;
 
-import java.util.Comparator;
-import java.util.TreeSet;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-public class SweepLineTreeSet extends TreeSet<SweepSegment>{
+public interface IntersectionCalculator{
 
-	SweepLineTreeSet(){
-		super(Comparator.comparingDouble(SweepSegment::getYIndex));
-	}
+	double calculateYIndex(Point pointLeft, Point pointRight, double x);
 
-	void remove(final SweepSegment segment){
-		removeIf(sweepSegment -> sweepSegment.isNearlyEqual(segment));
-	}
+	int compare(Point point1, Point point2);
 
-	void swap(final SweepSegment segment1, final SweepSegment segment2){
-		remove(segment1);
-		remove(segment2);
-
-		final double swap = segment1.getYIndex();
-		segment1.setYIndex(segment2.getYIndex());
-		segment2.setYIndex(swap);
-
-		add(segment1);
-		add(segment2);
-	}
-
-	SweepSegment above(final SweepSegment segment){
-		return higher(segment);
-	}
-
-	SweepSegment below(final SweepSegment segment){
-		return lower(segment);
-	}
-
-	void updateYIndexes(final double x){
-		for(final SweepSegment segment : this)
-			segment.updateYIndex(x);
-	}
+	Point intersection(Polyline polyline1, Polyline polyline2);
 
 }

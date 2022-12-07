@@ -136,16 +136,10 @@ public class Application{
 
 		final Point[] filteredObservations = extractObservations(tree, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
-if(path != null)
-	System.out.println("Edges by observations: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph);
-if(connectedPath != null)
-	System.out.println("Clean path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
 		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath);
-if(pathPolyline != null)
-	System.out.println("Polyline: " + pathPolyline);
 	}
 
 //	public static void main(final String[] args){

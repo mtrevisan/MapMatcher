@@ -26,7 +26,6 @@ package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.spatial.Geometry;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
-import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
 public interface OnIntersectionListener{

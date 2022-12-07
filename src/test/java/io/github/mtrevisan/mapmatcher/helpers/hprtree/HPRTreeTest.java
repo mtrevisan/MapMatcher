@@ -30,6 +30,9 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.BentleyOttmann;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.SegmentCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,41 +44,124 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
 class HPRTreeTest{
 
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeodeticCalculator());
-	private static final RamerDouglasPeuckerSimplifier SIMPLIFIER = new RamerDouglasPeuckerSimplifier();
-	static{
-		SIMPLIFIER.setDistanceTolerance(5.);
+
+
+
+	//simplify and create road and tool-booths files
+	public static void main(String[] args) throws IOException{
+		//extract highways
+		final File roadsFile = new File("src/test/resources/it.highways.wkt");
+		final List<Polyline> roads = extractPolylines(roadsFile);
+
+		//extract toll booths
+		final File tollBoothsFile = new File("src/test/resources/it.tollBooths.wkt");
+		final Set<Point> tollBooths = extractPoints(tollBoothsFile);
+
+		//filter only toll booths on highways
+		filterPointsAlongPolylines(roads, tollBooths);
+		final File outputTollBoothsFile = new File("src/test/resources/it.tollBooths.simplified.wkt");
+		writePoints(tollBooths, outputTollBoothsFile);
+
+		//preserve connection point on highways coming from connection links
+		final List<Polyline> reducedRoads = simplifyPolylines(roads, 5.);
+
+		final File outputRoadsFile = new File("src/test/resources/it.highways.simplified.5.wkt");
+		writePolylines(reducedRoads, outputRoadsFile);
 	}
 
-
-
-	//simplify polylines
-	public static void main(String[] args) throws IOException{
-		final File f = new File("src/test/resources/it.highways.wkt");
+	private static List<Polyline> extractPolylines(final File file) throws IOException{
 		final List<Polyline> polylines = new ArrayList<>();
-		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
+		try(final BufferedReader br = new BufferedReader(new FileReader(file))){
 			String readLine;
 			while((readLine = br.readLine()) != null)
 				if(!readLine.isEmpty())
 					polylines.add(parsePolyline(readLine));
 		}
+		return polylines;
+	}
 
-long start = System.currentTimeMillis();
-		try(final BufferedWriter writer = new BufferedWriter(new FileWriter("src/test/resources/it.highways.simplified.5.wkt"))){
-			for(int i = 0; i < polylines.size(); i ++){
-				//TODO find a way to retain vertices of polylines that connects with another polyline
-				Point[] reducedPoints = SIMPLIFIER.simplify(polylines.get(i).getPoints());
-				writer.write(FACTORY.createPolyline(reducedPoints).toString() + "\r\n");
-			}
+	private static Set<Point> extractPoints(final File file){
+		return new HashSet<>(readWKTPointFile(file));
+	}
+
+	private static Set<Point> filterPointsAlongPolylines(final Collection<Polyline> polylines, final Set<Point> points){
+		final Iterator<Point> itr = points.iterator();
+		while(itr.hasNext()){
+			final Point point = itr.next();
+			boolean found = false;
+			for(final Polyline polyline : polylines)
+				if(polyline.getStartPoint().equals(point) || polyline.getEndPoint().equals(point)){
+					found = true;
+					break;
+				}
+			if(!found)
+				itr.remove();
 		}
-System.out.println(System.currentTimeMillis() - start);
+		return points;
+	}
+
+	private static List<Polyline> simplifyPolylines(final Collection<Polyline> polylines, final double tolerance){
+		final IntersectionCalculator calculator = new SegmentCalculator();
+		final BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
+		bentleyOttmann.addPolylines(polylines);
+		final Map<Polyline, BitSet> preservePointsOnPolylines = new HashMap<>(polylines.size());
+		bentleyOttmann.findIntersections((polyline1, polyline2, intersection) -> {
+			final Polyline p1 = (Polyline)polyline1;
+			final Polyline p2 = (Polyline)polyline2;
+			final Set<Point> intersectionPoint = new HashSet<>(Arrays.asList(p1.getPoints()));
+			intersectionPoint.retainAll(new HashSet<>(Arrays.asList(p2.getPoints())));
+			if(intersectionPoint.size() == 1){
+				intersection = intersectionPoint.iterator().next();
+
+				int index = p1.indexOf(intersection);
+				if(index > 0 && index < p1.size() - 1)
+					preservePointsOnPolylines.computeIfAbsent(p1, k -> new BitSet(p1.size()))
+						.set(index, true);
+
+				index = p2.indexOf(intersection);
+				if(index > 0 && index < p2.size() - 1)
+					preservePointsOnPolylines.computeIfAbsent(p2, k -> new BitSet(p2.size()))
+						.set(index, true);
+			}
+		});
+
+		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
+		simplifier.setDistanceTolerance(tolerance);
+		final List<Polyline> reducedPolylines = new ArrayList<>(polylines.size());
+		for(final Polyline polyline : polylines){
+			final BitSet preservePoints = preservePointsOnPolylines.getOrDefault(polyline, new BitSet(polyline.size()));
+			final Point[] reducedPoints = simplifier.simplify(preservePoints, polyline.getPoints());
+			reducedPolylines.add(FACTORY.createPolyline(reducedPoints));
+		}
+		return reducedPolylines;
+	}
+
+	private static void writePoints(final Collection<Point> points, final File outputFile) throws IOException{
+		try(final BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))){
+			for(final Point point : points)
+				writer.write(point.toString() + "\r\n");
+		}
+	}
+
+	private static void writePolylines(final Collection<Polyline> polylines, final File outputFile) throws IOException{
+		try(final BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))){
+			for(final Polyline polyline : polylines)
+				writer.write(polyline.toString() + "\r\n");
+		}
 	}
 
 
@@ -97,7 +183,7 @@ out skel qt;
 	@Test
 	void test() throws IOException{
 		HPRtree<Polyline> tree = new HPRtree<>();
-		Set<Point> tollBooths = new HashSet<>(readWKTPointFile("src/test/resources/it.tollBooths.wkt"));
+		Set<Point> tollBooths = new HashSet<>(readWKTPointFile(new File("src/test/resources/it.tollBooths.wkt")));
 		List<Polyline> highways = readWKTPolylineFile("src/test/resources/it.highways.simplified.5.wkt");
 		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
@@ -248,10 +334,9 @@ out skel qt;
 		return FACTORY.createPolyline(points.toArray(Point[]::new));
 	}
 
-	private static List<Point> readWKTPointFile(final String filename){
+	private static List<Point> readWKTPointFile(final File file){
 		final List<Point> lines = new ArrayList<>();
-		final File f = new File(filename);
-		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
+		try(final BufferedReader br = new BufferedReader(new FileReader(file))){
 			String readLine;
 			while((readLine = br.readLine()) != null)
 				if(!readLine.isEmpty())

@@ -29,6 +29,8 @@ import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.SegmentCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +53,8 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(13.32, 4.22), factory.createPoint(2.42, 12.67))
 		);
 
-		BentleyOttmann bentleyOttmann = new BentleyOttmann();
+		IntersectionCalculator calculator = new SegmentCalculator();
+		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
 
@@ -70,7 +73,8 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(9.5, 3.91), factory.createPoint(11, 10.06))
 		);
 
-		BentleyOttmann bentleyOttmann = new BentleyOttmann();
+		IntersectionCalculator calculator = new SegmentCalculator();
+		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
 
@@ -90,7 +94,8 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(6.2, 6.98), factory.createPoint(5.9, 1.82))
 		);
 
-		BentleyOttmann bentleyOttmann = new BentleyOttmann();
+		IntersectionCalculator calculator = new SegmentCalculator();
+		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
 
@@ -107,10 +112,11 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(13.32, 4.22), factory.createPoint(2.42, 12.67))
 		);
 
-		Map<Geometry, List<Point>> intersectionsOnPolyline = new HashMap<>();
-		BentleyOttmann bentleyOttmann = new BentleyOttmann();
+		IntersectionCalculator calculator = new SegmentCalculator();
+		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 
+		Map<Geometry, List<Point>> intersectionsOnPolyline = new HashMap<>();
 		bentleyOttmann.findIntersections((polyline1, polyline2, intersection) -> {
 			intersectionsOnPolyline.computeIfAbsent(polyline1, k -> new ArrayList<>(1))
 				.add(intersection);
@@ -140,7 +146,8 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(3.2599935084955, 2.1656817027123), factory.createPoint(6.47285474689, 9.7758064156891))
 		);
 
-		BentleyOttmann bentleyOttmann = new BentleyOttmann();
+		IntersectionCalculator calculator = new SegmentCalculator();
+		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
 

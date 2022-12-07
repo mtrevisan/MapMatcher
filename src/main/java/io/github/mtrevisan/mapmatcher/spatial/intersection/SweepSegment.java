@@ -25,9 +25,9 @@
 package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.spatial.Geometry;
-import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
 
 
 class SweepSegment{
@@ -36,46 +36,40 @@ class SweepSegment{
 	private final Event event2;
 	private final Geometry geometry;
 
-	private double yPosition;
+	private double yIndex;
+
+	private final IntersectionCalculator calculator;
 
 
-	SweepSegment(final Point point){
+	SweepSegment(final Point point, final IntersectionCalculator calculator){
+		this.calculator = calculator;
+
 		this.geometry = point;
 
-		Event event1 = new Event(point, this, Event.Type.POINT_LEFT);
-		Event event2 = new Event(point, this, Event.Type.POINT_RIGHT);
-
-		this.event1 = event1;
-		this.event2 = event2;
+		this.event1 = new Event(point, this, Event.Type.POINT_LEFT, calculator);
+		this.event2 = new Event(point, this, Event.Type.POINT_RIGHT, calculator);
 	}
 
-	SweepSegment(final Polyline polyline){
+	SweepSegment(final Polyline polyline, final IntersectionCalculator calculator){
+		this.calculator = calculator;
+
 		this.geometry = polyline;
 
-		Event event1 = new Event(polyline.getStartPoint(), this, Event.Type.POINT_LEFT);
-		Event event2 = new Event(polyline.getEndPoint(), this, Event.Type.POINT_RIGHT);
-		if(event2.compareTo(event1) < 1){
-			//swap events
-			final Event swap = event1;
-			event1 = event2;
-			event2 = swap;
+		final Point startPoint = polyline.getStartPoint();
+		final Point endPoint = polyline.getEndPoint();
+		final int order = calculator.compare(endPoint, startPoint);
+		this.event1 = new Event((order == 1? startPoint: endPoint), this, Event.Type.POINT_LEFT, calculator);
+		this.event2 = new Event((order == 1? endPoint: startPoint), this, Event.Type.POINT_RIGHT, calculator);
 
-			event1.setType(Event.Type.POINT_LEFT);
-			event2.setType(Event.Type.POINT_RIGHT);
-		}
-
-		this.event1 = event1;
-		this.event2 = event2;
-
-		updateYPosition(getLeftEvent().point().getX());
+		updateYIndex(getLeftEvent().point().getX());
 	}
 
-	double getYPosition(){
-		return yPosition;
+	double getYIndex(){
+		return yIndex;
 	}
 
-	void setYPosition(final double yPosition){
-		this.yPosition = yPosition;
+	void setYIndex(final double yIndex){
+		this.yIndex = yIndex;
 	}
 
 	Event getLeftEvent(){
@@ -90,49 +84,20 @@ class SweepSegment{
 		return geometry;
 	}
 
+	//FIXME
 	boolean isNearlyEqual(final SweepSegment segment){
 		return (segment.getLeftEvent().nearlyEqual(getLeftEvent())
 			&& segment.getRightEvent().nearlyEqual(getRightEvent()));
 	}
 
-	void updateYPosition(final double x){
-		final double x1 = getLeftEvent().point().getX();
-		final double y1 = getLeftEvent().point().getY();
-		final double x2 = getRightEvent().point().getX();
-		final double y2 = getRightEvent().point().getY();
-		//equation of line passing through two points
-		final double y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
-		this.setYPosition(y);
+	void updateYIndex(final double x){
+		//FIXME
+		final double y = calculator.calculateYIndex(getLeftEvent().point(), getRightEvent().point(), x);
+		this.setYIndex(y);
 	}
 
-	//TODO
 	Point intersection(final SweepSegment segment){
-		final double x1 = getLeftEvent().point().getX();
-		final double y1 = getLeftEvent().point().getY();
-		final double x2 = getRightEvent().point().getX();
-		final double y2 = getRightEvent().point().getY();
-
-		final double x3 = segment.getLeftEvent().point().getX();
-		final double y3 = segment.getLeftEvent().point().getY();
-		final double x4 = segment.getRightEvent().point().getX();
-		final double y4 = segment.getRightEvent().point().getY();
-
-		final double v = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
-		if(v == 0.)
-			return null;
-
-		final double ta = ((y3 - y4) * (x1 - x3) + (x4 - x3) * (y1 - y3)) / v;
-		final double tb = ((y1 - y2) * (x1 - x3) + (x2 - x1) * (y1 - y3)) / v;
-
-		if(ta >= 0. && ta <= 1. && tb >= 0. && tb <= 1.){
-			final double px = x1 + ta * (x2 - x1);
-			final double py = y1 + ta * (y2 - y1);
-
-			final GeometryFactory factory = getLeftEvent().point().getFactory();
-			return factory.createPoint(px, py);
-		}
-
-		return null;
+		return calculator.intersection((Polyline)geometry, (Polyline)segment.geometry);
 	}
 
 	@Override

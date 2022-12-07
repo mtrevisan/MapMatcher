@@ -69,6 +69,13 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		return points;
 	}
 
+	public int indexOf(final Point point){
+		for(int i = 0; i < points.length; i ++)
+			if(points[i].equals(point))
+				return i;
+		return -1;
+	}
+
 	public int size(){
 		return points.length;
 	}

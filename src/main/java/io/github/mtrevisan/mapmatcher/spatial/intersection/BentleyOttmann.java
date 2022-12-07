@@ -26,8 +26,10 @@ package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -53,10 +55,24 @@ public class BentleyOttmann{
 	private final SweepLineTreeSet sweepLine = new SweepLineTreeSet();
 	private final List<Point> intersections = new ArrayList<>();
 
+	private final IntersectionCalculator calculator;
 
-	public void addPolylines(final List<Polyline> polylines){
+
+	public BentleyOttmann(final IntersectionCalculator calculator){
+		this.calculator = calculator;
+	}
+
+	public void addPoints(final Collection<Point> points){
+		for(final Point point : points){
+			final SweepSegment ss = new SweepSegment(point, calculator);
+			eventQueue.add(ss.getLeftEvent());
+			eventQueue.add(ss.getRightEvent());
+		}
+	}
+
+	public void addPolylines(final Collection<Polyline> polylines){
 		for(final Polyline polyline : polylines){
-			final SweepSegment ss = new SweepSegment(polyline);
+			final SweepSegment ss = new SweepSegment(polyline, calculator);
 			eventQueue.add(ss.getLeftEvent());
 			eventQueue.add(ss.getRightEvent());
 		}
@@ -70,7 +86,7 @@ public class BentleyOttmann{
 		while(!eventQueue.isEmpty()){
 			final Event event = eventQueue.poll();
 			if(event.type() == Event.Type.POINT_LEFT){
-				sweepLine.updateYPositions(event.point().getX());
+				sweepLine.updateYIndexes(event.point().getX());
 				final SweepSegment segmentLeft = event.firstSegment();
 				sweepLine.add(segmentLeft);
 
@@ -110,7 +126,7 @@ public class BentleyOttmann{
 		if(segment1 != null && segment2 != null){
 			final Point point = segment1.intersection(segment2);
 			if(point != null && point.getX() > event.point().getX())
-				eventQueue.add(new Event(point, segment1, segment2));
+				eventQueue.add(new Event(point, segment1, segment2, calculator));
 		}
 	}
 
@@ -118,7 +134,7 @@ public class BentleyOttmann{
 		if(segment1 != null && segment2 != null){
 			final Point point = segment1.intersection(segment2);
 			if(point != null && point.getX() > event.point().getX()){
-				final Event e = new Event(point, segment1, segment2);
+				final Event e = new Event(point, segment1, segment2, calculator);
 				if(!eventQueue.contains(e))
 					eventQueue.add(e);
 			}
