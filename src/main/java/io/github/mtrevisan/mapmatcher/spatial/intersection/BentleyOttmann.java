@@ -37,6 +37,7 @@ import java.util.PriorityQueue;
 /**
  * @see <a href="https://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm">Bentley–Ottmann algorithm</a>
  * @see <a href="https://apps.dtic.mil/sti/pdfs/ADA058768.pdf">Algorithms for reporting and counting geometric intersections</a>
+ * @see <a href="https://core.ac.uk/download/pdf/38922445.pdf">asdf</a>
  */
 public class BentleyOttmann{
 
