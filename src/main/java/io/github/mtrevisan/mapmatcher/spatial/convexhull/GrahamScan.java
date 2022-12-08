@@ -22,7 +22,10 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial;
+package io.github.mtrevisan.mapmatcher.spatial.convexhull;
+
+import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -46,7 +49,7 @@ public class GrahamScan{
 	public static Polyline getConvexHull(final Polyline polyline){
 		final Point[] points = polyline.getPoints();
 		if(points.length <= 2)
-			return polyline.factory.createPolyline(points);
+			return polyline.getFactory().createPolyline(points);
 
 		final Point[] sortedPoints = Arrays.copyOf(points, points.length);
 		polarSort(sortedPoints);
@@ -55,7 +58,7 @@ public class GrahamScan{
 		final Stack<Point> convexHull = grahamScan(sortedPoints);
 
 		//convert stack to an array
-		return polyline.factory.createPolyline(convexHull.toArray(Point[]::new));
+		return polyline.getFactory().createPolyline(convexHull.toArray(Point[]::new));
 	}
 
 	static void polarSort(final Point[] points){

@@ -37,6 +37,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 	private static final String SPACE = " ";
 
+
 	private final Point[] points;
 
 
@@ -67,6 +68,13 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 	public Point[] getPoints(){
 		return points;
+	}
+
+	public int indexOf(final Point point){
+		for(int i = 0; i < points.length; i ++)
+			if(points[i].equals(point))
+				return i;
+		return -1;
 	}
 
 	public int size(){
@@ -135,7 +143,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		for(int i = 1; i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
-			final Point closestPoint = point.factory.distanceCalculator.onTrackClosestPoint(startPoint, endPoint, point);
+			final Point closestPoint = point.factory.topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
 			final double distance = point.distance(closestPoint);
 			if(distance < minClosestPointDistance){
 				minClosestPointDistance = distance;
@@ -152,7 +160,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		for(int i = 1; i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
-			final double distance = Math.abs(point.factory.distanceCalculator.alongTrackDistance(startPoint, endPoint, point));
+			final double distance = Math.abs(point.factory.topologyCalculator.alongTrackDistance(startPoint, endPoint, point));
 			cumulativeDistance += distance;
 			if(distance < minNearestPointDistance){
 				nearestPointDistance += cumulativeDistance;

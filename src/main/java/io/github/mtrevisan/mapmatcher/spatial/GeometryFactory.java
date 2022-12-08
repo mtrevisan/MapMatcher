@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 
 /**
@@ -32,11 +32,11 @@ import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
  */
 public class GeometryFactory{
 
-	protected final DistanceCalculator distanceCalculator;
+	protected final TopologyCalculator topologyCalculator;
 
 
-	public GeometryFactory(final DistanceCalculator distanceCalculator){
-		this.distanceCalculator = distanceCalculator;
+	public GeometryFactory(final TopologyCalculator topologyCalculator){
+		this.topologyCalculator = topologyCalculator;
 	}
 
 

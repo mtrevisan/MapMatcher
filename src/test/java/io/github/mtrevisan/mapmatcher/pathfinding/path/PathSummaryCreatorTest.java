@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
-import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

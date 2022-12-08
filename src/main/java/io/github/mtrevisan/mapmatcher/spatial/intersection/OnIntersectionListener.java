@@ -22,26 +22,14 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial;
+package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
-import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
-
-
-public abstract class Geometry{
-
-	protected final GeometryFactory factory;
+import io.github.mtrevisan.mapmatcher.spatial.Geometry;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 
-	public Geometry(final GeometryFactory factory){
-		this.factory = factory;
-	}
+public interface OnIntersectionListener{
 
-	public GeometryFactory getFactory(){
-		return factory;
-	}
-
-	public TopologyCalculator getDistanceCalculator(){
-		return factory.topologyCalculator;
-	}
+	void onIntersection(Geometry geometry1, Geometry geometry2, Point intersection);
 
 }

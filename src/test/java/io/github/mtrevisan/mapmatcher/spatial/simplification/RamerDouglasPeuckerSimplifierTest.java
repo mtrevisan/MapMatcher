@@ -22,26 +22,38 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial;
+package io.github.mtrevisan.mapmatcher.spatial.simplification;
 
-import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 
-public abstract class Geometry{
+class RamerDouglasPeuckerSimplifierTest{
 
-	protected final GeometryFactory factory;
+	@Test
+	void simple(){
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		Point[] points = new Point[]{
+			factory.createPoint(1., 1.),
+			factory.createPoint(1.3, 2.),
+			factory.createPoint(2., 1.2),
+			factory.createPoint(3., 1.)
+		};
 
+		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
+		simplifier.setDistanceTolerance(0.5);
 
-	public Geometry(final GeometryFactory factory){
-		this.factory = factory;
-	}
+		Point[] reducedPoints = simplifier.simplify(points);
 
-	public GeometryFactory getFactory(){
-		return factory;
-	}
-
-	public TopologyCalculator getDistanceCalculator(){
-		return factory.topologyCalculator;
+		Point[] expected = new Point[]{
+			factory.createPoint(1., 1.),
+			factory.createPoint(1.3, 2.),
+			factory.createPoint(3., 1.)
+		};
+		Assertions.assertArrayEquals(expected, reducedPoints);
 	}
 
 }

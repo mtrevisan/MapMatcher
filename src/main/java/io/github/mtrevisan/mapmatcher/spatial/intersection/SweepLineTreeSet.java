@@ -22,36 +22,45 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial;
+package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
-import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.util.Comparator;
+import java.util.TreeSet;
 
 
-class RamerDouglasPeuckerSimplifierTest{
+public class SweepLineTreeSet extends TreeSet<SweepSegment>{
 
-	@Test
-	void simple(){
-		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Point[] points = new Point[]{
-			factory.createPoint(1., 1.),
-			factory.createPoint(1.3, 2.),
-			factory.createPoint(2., 1.2),
-			factory.createPoint(3., 1.)
-		};
+	SweepLineTreeSet(){
+		super(Comparator.comparingDouble(SweepSegment::getYIndex));
+	}
 
-		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
-		simplifier.setDistanceTolerance(0.5);
+	void remove(final SweepSegment segment){
+		removeIf(sweepSegment -> sweepSegment.isNearlyEqual(segment));
+	}
 
-		Point[] reducedPoints = simplifier.simplify(points);
+	void swap(final SweepSegment segment1, final SweepSegment segment2){
+		remove(segment1);
+		remove(segment2);
 
-		Point[] expected = new Point[]{
-			factory.createPoint(1., 1.),
-			factory.createPoint(1.3, 2.),
-			factory.createPoint(3., 1.)
-		};
-		Assertions.assertArrayEquals(expected, reducedPoints);
+		final double swap = segment1.getYIndex();
+		segment1.setYIndex(segment2.getYIndex());
+		segment2.setYIndex(swap);
+
+		add(segment1);
+		add(segment2);
+	}
+
+	SweepSegment above(final SweepSegment segment){
+		return higher(segment);
+	}
+
+	SweepSegment below(final SweepSegment segment){
+		return lower(segment);
+	}
+
+	void updateYIndexes(final double x){
+		for(final SweepSegment segment : this)
+			segment.updateYIndex(x);
 	}
 
 }

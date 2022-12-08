@@ -26,18 +26,18 @@ package io.github.mtrevisan.mapmatcher.distances;
 
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
-import io.github.mtrevisan.mapmatcher.spatial.distances.DistanceCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
-class DistanceCalculatorTest{
+class TopologyCalculatorTest{
 
 	@Test
 	void should_calculate_approximate_distance_between_points_close_to_expected_distance(){
-		final DistanceCalculator calculator = new GeodeticCalculator();
-		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final TopologyCalculator calculator = new GeoidalCalculator();
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point[] points = new Point[]{
 			factory.createPoint(121.058805, 14.552797),
 			factory.createPoint(120.994260, 14.593999),

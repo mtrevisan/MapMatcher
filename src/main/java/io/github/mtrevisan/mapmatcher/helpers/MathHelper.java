@@ -22,26 +22,37 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial;
-
-import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
+package io.github.mtrevisan.mapmatcher.helpers;
 
 
-public abstract class Geometry{
+public class MathHelper{
 
-	protected final GeometryFactory factory;
+	private MathHelper(){}
 
 
-	public Geometry(final GeometryFactory factory){
-		this.factory = factory;
-	}
+	/**
+	 * @see <a href="https://floating-point-gui.de/errors/comparison/">Comparison</a>
+	 *
+	 * @param a	The first value.
+	 * @param b	The second value.
+	 * @param epsilon	The margin.
+	 * @return	Whether the values are nearly equal.
+	 */
+	public static boolean nearlyEqual(final double a, final double b, final double epsilon){
+		final double absA = Math.abs(a);
+		final double absB = Math.abs(b);
+		final double diff = Math.abs(a - b);
 
-	public GeometryFactory getFactory(){
-		return factory;
-	}
+		//shortcut, handles infinities
+		if(a == b)
+			return true;
 
-	public TopologyCalculator getDistanceCalculator(){
-		return factory.topologyCalculator;
+		//`a` or `b` is zero or both are extremely close to it relative error is less meaningful here
+		if(a == 0. || b == 0. || absA + absB < Double.MIN_NORMAL)
+			return (diff < epsilon * Double.MIN_NORMAL);
+
+		//use relative error
+		return (diff < epsilon * Math.min((absA + absB), Double.MAX_VALUE));
 	}
 
 }

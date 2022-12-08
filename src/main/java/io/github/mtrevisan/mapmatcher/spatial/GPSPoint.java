@@ -24,14 +24,14 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 
 import java.time.ZonedDateTime;
 
 
 public class GPSPoint extends Point{
 
-	private static final GeometryFactory FACTORY = new GeometryFactory(new GeodeticCalculator());
+	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
 
 	private final ZonedDateTime timestamp;

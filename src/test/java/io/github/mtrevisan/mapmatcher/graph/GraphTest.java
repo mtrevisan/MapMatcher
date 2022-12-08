@@ -26,8 +26,8 @@ package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +43,7 @@ class GraphTest{
 
 	@Test
 	void should_connect_two_vertices_in_graph(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final NearLineMergeGraph graph = new NearLineMergeGraph(500.);
 		final Node from = new Node("0", factory.createPoint(22.22, 33.33));
 		final Node to = new Node("1", factory.createPoint(33.22, 44.33));

@@ -22,13 +22,15 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial.distances;
+package io.github.mtrevisan.mapmatcher.spatial.topologies;
 
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
+import java.util.List;
 
-public interface DistanceCalculator{
+
+public interface TopologyCalculator{
 
 	double distance(Point startPoint, Point endPoint);
 
@@ -40,5 +42,16 @@ public interface DistanceCalculator{
 	Point onTrackClosestPoint(Point startPoint, Point endPoint, Point point);
 
 	double alongTrackDistance(Point startPoint, Point endPoint, Point point);
+
+
+	Point leftmostPoint(Polyline polyline);
+
+	Point rightmostPoint(Polyline polyline);
+
+	double calculateYIndex(Point pointLeft, Point pointRight, double x);
+
+	int compare(Point point1, Point point2);
+
+	List<Point> intersection(Polyline polyline1, Polyline polyline2);
 
 }
