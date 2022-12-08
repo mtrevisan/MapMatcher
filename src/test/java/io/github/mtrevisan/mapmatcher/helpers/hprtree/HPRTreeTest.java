@@ -76,7 +76,7 @@ class HPRTreeTest{
 		writePoints(tollBooths, outputTollBoothsFile);
 
 		//preserve connection point on highways coming from connection links
-		final List<Polyline> reducedRoads = simplifyPolylines(roads, 5.);
+		final Collection<Polyline> reducedRoads = simplifyPolylines(roads, 5.);
 
 		final File outputRoadsFile = new File("src/test/resources/it.highways.simplified.5.wkt");
 		writePolylines(reducedRoads, outputRoadsFile);
@@ -113,8 +113,11 @@ class HPRTreeTest{
 		return points;
 	}
 
-	private static List<Polyline> simplifyPolylines(final Collection<Polyline> polylines, final double tolerance){
-		final TopologyCalculator calculator = new EuclideanCalculator();
+	private static Collection<Polyline> simplifyPolylines(final Collection<Polyline> polylines, final double tolerance){
+		if(polylines.isEmpty())
+			return polylines;
+
+		final TopologyCalculator calculator = polylines.iterator().next().getDistanceCalculator();
 		final BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		final Map<Polyline, BitSet> preservePointsOnPolylines = new HashMap<>(polylines.size());
