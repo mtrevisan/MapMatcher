@@ -27,8 +27,8 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
-import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -102,7 +102,7 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_distance(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
 		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
 		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))));
@@ -115,7 +115,7 @@ class SingleDirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_duration(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
 		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
 		final Edge edge = Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()));
@@ -136,7 +136,7 @@ class SingleDirectionalPathSummaryTest{
 		Assertions.assertFalse(pathSummary.isFound());
 
 
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Node first = new Node("0", factory.createPoint(14.552797, 121.058805));
 		final Node second = new Node("1", factory.createPoint(14.593999, 120.994260));
 		path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))));

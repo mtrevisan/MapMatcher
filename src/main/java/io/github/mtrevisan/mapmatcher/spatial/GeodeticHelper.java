@@ -103,6 +103,7 @@ public class GeodeticHelper{
 	 */
 	public static Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){
 		Point onTrackPoint = startPoint;
+		boolean firstIteration = true;
 		while(true){
 			//[m]
 			final double phiA = Math.toRadians(onTrackPoint.getY());
@@ -126,7 +127,7 @@ public class GeodeticHelper{
 			final double angleAP = Math.toRadians(initialBearingStartToEnd - initialBearingStartToPoint);
 			//calculate Cross-Track Distance [m]
 			final double sinAngleAP = StrictMath.sin(angleAP);
-			if(sinAngleAP == 1.)
+			if(Math.abs(sinAngleAP) == 1.)
 				break;
 
 			//[rad]
@@ -135,25 +136,145 @@ public class GeodeticHelper{
 			final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
 			final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
 			final double c = StrictMath.tan((distanceStartToPoint - xtd) / 2.);
-			final double atd = 2. * EARTH_EQUATORIAL_RADIUS * StrictMath.atan((a / b) * c);
+			final double atd = (firstIteration
+				? 2. * EARTH_EQUATORIAL_RADIUS * StrictMath.atan((a / b) * c)
+				//formula obtained from the Napier pentagon for right-angle spherical triangles and unlike the one used in the first
+				//iteration, this one has no instabilities near the exact solution but a sharp convergence to it
+				: EARTH_EQUATORIAL_RADIUS * StrictMath.atan(StrictMath.cos(angleAP) * StrictMath.tan(distanceStartToPoint)));
 			if(Math.abs(atd) < ON_TRACK_POINT_PRECISION)
 				break;
 
 			//compute a point along the great circle from start to end point that lies at distance ATD
 			onTrackPoint = destination(onTrackPoint, initialBearingStartToEnd, atd);
+
+			firstIteration = false;
 		}
 
-		final double angleAB = initialBearing(startPoint, endPoint);
-		final double angleAX = initialBearing(startPoint, onTrackPoint);
-		final double angleBX = initialBearing(endPoint, onTrackPoint);
-		final double angleBA = initialBearing(endPoint, startPoint);
-		final double angleA = Math.abs(angleAX - angleAB);
-		final double angleB = Math.abs(angleBX - angleBA);
-		if(angleA > 90.)
-			return startPoint;
-		else if(angleB > 90.)
-			return endPoint;
+		return limitOnTrack(startPoint, endPoint, onTrackPoint);
+	}
+
+	private static Point limitOnTrack(final Point startPoint, final Point endPoint, Point onTrackPoint){
+		if(Math.abs(initialBearing(startPoint, onTrackPoint) - initialBearing(startPoint, endPoint)) > 90.)
+			onTrackPoint = startPoint;
+		else if(Math.abs(initialBearing(endPoint, onTrackPoint) - initialBearing(endPoint, startPoint)) > 90.)
+			onTrackPoint = endPoint;
 		return onTrackPoint;
+	}
+
+	/**
+	 * @param startPoint1	Start point of the first geodesic.
+	 * @param endPoint1	End point of the first geodesic.
+	 * @param startPoint2	Start point of the second geodesic.
+	 * @param endPoint2	End point of the second geodesic.
+	 * @return	The intersection point.
+	 *
+	 * @see <a href="https://www.mdpi.com/2076-3417/11/11/5129">Accurate algorithms for spatial operations on the spheroid in a spatial database management system</a>
+	 * @see <a href="https://kth.diva-portal.org/smash/get/diva2:1065075/FULLTEXT01.pdf">Tests of new solutions to the direct and indirect geodetic problems on the ellipsoid</a>
+	 */
+	public static Point intersection(final Point startPoint1, final Point endPoint1, final Point startPoint2, final Point endPoint2){
+		double lonA = startPoint1.getX();
+		double latA = startPoint1.getY();
+		final double lonB = endPoint1.getX();
+		final double latB = endPoint1.getY();
+		double lonC = startPoint2.getX();
+		double latC = startPoint2.getY();
+		final double lonD = endPoint2.getX();
+		final double latD = endPoint2.getY();
+		double lonX, latX;
+
+		boolean firstIteration = true;
+		while(true){
+			final double initialAzimuthAB = REFERENCE_ELLIPSOID.Inverse(latA, lonA, latB, lonB, GeodesicMask.AZIMUTH)
+				.azi1;
+			final double initialAzimuthCD = REFERENCE_ELLIPSOID.Inverse(latC, lonC, latD, lonD, GeodesicMask.AZIMUTH)
+				.azi1;
+			final GeodesicData inverseAC = REFERENCE_ELLIPSOID.Inverse(latA, lonA, latC, lonC,
+				GeodesicMask.AZIMUTH | GeodesicMask.DISTANCE);
+
+			final double relativeAzimuthA = Math.toRadians(inverseAC.azi1 - initialAzimuthAB);
+			final double relativeAzimuthC = Math.toRadians(initialAzimuthCD - inverseAC.azi2) + Math.PI;
+
+			final double angleAC = inverseAC.s12 / EARTH_EQUATORIAL_RADIUS;
+			final double sinAC = StrictMath.sin(angleAC);
+			final double cosAC = StrictMath.cos(angleAC);
+			final double angleAX = StrictMath.atan(sinAC
+				/ (cosAC * StrictMath.cos(relativeAzimuthA) + StrictMath.sin(relativeAzimuthA) / StrictMath.tan(relativeAzimuthC)));
+			final double distanceAX = EARTH_EQUATORIAL_RADIUS * angleAX;
+
+			double angleCX = StrictMath.atan(sinAC
+				/ (cosAC * StrictMath.cos(relativeAzimuthC) + StrictMath.sin(relativeAzimuthC) / StrictMath.tan(relativeAzimuthA)));
+			final double distanceCX = EARTH_EQUATORIAL_RADIUS * angleCX;
+
+			GeodesicData intersectionAB = REFERENCE_ELLIPSOID.Direct(latA, lonA, initialAzimuthAB, distanceAX,
+				GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+			GeodesicData intersectionCD = REFERENCE_ELLIPSOID.Direct(latC, lonC, initialAzimuthCD, distanceCX,
+				GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+
+			if(firstIteration){
+				//avoid selecting almost antipodal intersection:
+				if(!isOnTrack(lonA, latA, lonB, latB, intersectionAB.lon2, intersectionAB.lat2))
+					intersectionAB = REFERENCE_ELLIPSOID.Direct(latA, lonA, initialAzimuthAB + 180., distanceAX,
+						GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+				if(!isOnTrack(lonC, latC, lonD, latD, intersectionCD.lon2, intersectionCD.lat2))
+					intersectionCD = REFERENCE_ELLIPSOID.Direct(latC, lonC, initialAzimuthCD + 180., distanceCX,
+						GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+			}
+			firstIteration = false;
+
+			if(Math.abs(distanceAX) < ON_TRACK_POINT_PRECISION && Math.abs(distanceCX) < ON_TRACK_POINT_PRECISION){
+				latX = (intersectionAB.lat2 + intersectionCD.lat2) / 2.;
+				lonX = (intersectionAB.lon2 + intersectionCD.lon2) / 2.;
+				break;
+			}
+			else{
+				latA = intersectionAB.lat2;
+				lonA = intersectionAB.lon2;
+				latC = intersectionCD.lat2;
+				lonC = intersectionCD.lon2;
+			}
+		}
+
+		@SuppressWarnings("SuspiciousNameCombination")
+		Point intersection = startPoint1.factory.createPoint(lonX, latX);
+		intersection = limitIntersection(startPoint1, endPoint1, startPoint2, endPoint2, intersection);
+		intersection = limitIntersection(startPoint2, endPoint2, startPoint1, endPoint1, intersection);
+		return intersection;
+	}
+
+	private static boolean isOnTrack(final double lon1, final double lat1, final double lon2, final double lat2,
+			double lonP, double latP){
+		boolean onTrack = true;
+		final double initialAzimuth1P = REFERENCE_ELLIPSOID.Inverse(lat1, lon1, latP, lonP, GeodesicMask.AZIMUTH)
+			.azi1;
+		final double initialAzimuth12 = REFERENCE_ELLIPSOID.Inverse(lat1, lon1, lat2, lon2, GeodesicMask.AZIMUTH)
+			.azi1;
+		if(Math.abs(initialAzimuth1P - initialAzimuth12) > 90.)
+			onTrack = false;
+		else{
+			final double initialAzimuth2P = REFERENCE_ELLIPSOID.Inverse(lat2, lon2, latP, lonP, GeodesicMask.AZIMUTH)
+				.azi1;
+			final double initialAzimuth21 = REFERENCE_ELLIPSOID.Inverse(lat2, lon2, lat1, lon1, GeodesicMask.AZIMUTH)
+				.azi1;
+			if(Math.abs(initialAzimuth2P - initialAzimuth21) > 90.)
+				onTrack = false;
+		}
+		return onTrack;
+	}
+
+	private static Point limitIntersection(final Point startPoint1, final Point endPoint1, final Point startPoint2, final Point endPoint2,
+			Point intersection){
+		if(intersection != null){
+			if(Math.abs(initialBearing(startPoint1, intersection) - initialBearing(startPoint1, endPoint1)) > 90.)
+				intersection = limitIntersection(startPoint2, endPoint2, startPoint1);
+			else if(Math.abs(initialBearing(endPoint1, intersection) - initialBearing(endPoint1, startPoint1)) > 90.)
+				intersection = limitIntersection(startPoint2, endPoint2, endPoint1);
+		}
+		return intersection;
+	}
+
+	private static Point limitIntersection(final Point startPoint, final Point endPoint, final Point point){
+		final Point intersection = onTrackClosestPoint(startPoint, endPoint, point);
+		return (intersection != null && orthodromicDistance(point, intersection) < ON_TRACK_POINT_PRECISION? point: null);
 	}
 
 }

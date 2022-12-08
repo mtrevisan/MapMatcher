@@ -30,7 +30,7 @@ import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
-import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 
 import java.util.ArrayList;
 import java.util.Arrays;

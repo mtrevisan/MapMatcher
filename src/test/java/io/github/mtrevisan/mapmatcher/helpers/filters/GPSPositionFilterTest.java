@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.helpers.filters;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,7 +50,7 @@ class GPSPositionFilterTest{
 			filtered[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
 		}
 
-		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Polyline filteredPolyline = factory.createPolyline(filtered);
 		final String expected = "LINESTRING (12.172704737567187 45.59108565830172, 12.229859503910493 45.62770504884901," +
 			" 12.237938776924098 45.637719619689236, 12.241386712880304 45.649970282765004, 12.261309951439834 45.65782390745157," +

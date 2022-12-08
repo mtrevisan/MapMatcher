@@ -28,9 +28,9 @@ import io.github.mtrevisan.mapmatcher.spatial.Geometry;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.EuclideanSegmentCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +45,7 @@ class BentleyOttmannTest{
 
 	@Test
 	void find_intersections1(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		List<Polyline> polylines = Arrays.asList(
 			factory.createPolyline(factory.createPoint(0.8, 6.1), factory.createPoint(11.72, 9.32)),
 			factory.createPolyline(factory.createPoint(6.84, 3.56), factory.createPoint(15.06, 8.38)),
@@ -53,7 +53,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(13.32, 4.22), factory.createPoint(2.42, 12.67))
 		);
 
-		IntersectionCalculator calculator = new EuclideanSegmentCalculator();
+		TopologyCalculator calculator = new EuclideanCalculator();
 		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
@@ -63,7 +63,7 @@ class BentleyOttmannTest{
 
 	@Test
 	void find_intersections2(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		List<Polyline> polylines = Arrays.asList(
 			factory.createPolyline(factory.createPoint(0.8, 6.1), factory.createPoint(11.72, 9.32)),
 			factory.createPolyline(factory.createPoint(6.84, 3.56), factory.createPoint(15.06, 8.38)),
@@ -73,7 +73,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(9.5, 3.91), factory.createPoint(11, 10.06))
 		);
 
-		IntersectionCalculator calculator = new EuclideanSegmentCalculator();
+		TopologyCalculator calculator = new EuclideanCalculator();
 		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
@@ -83,7 +83,7 @@ class BentleyOttmannTest{
 
 	@Test
 	void find_intersections3(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		List<Polyline> polylines = Arrays.asList(
 			factory.createPolyline(factory.createPoint(1.76, 6.86), factory.createPoint(3.84, 4.76)),
 			factory.createPolyline(factory.createPoint(3.96, 5.36), factory.createPoint(1.22, 2.4)),
@@ -94,7 +94,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(6.2, 6.98), factory.createPoint(5.9, 1.82))
 		);
 
-		IntersectionCalculator calculator = new EuclideanSegmentCalculator();
+		TopologyCalculator calculator = new EuclideanCalculator();
 		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();
@@ -104,7 +104,7 @@ class BentleyOttmannTest{
 
 	@Test
 	void find_intersections4(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		List<Polyline> polylines = Arrays.asList(
 			factory.createPolyline(factory.createPoint(0.8, 6.1), factory.createPoint(11.72, 9.32)),
 			factory.createPolyline(factory.createPoint(6.84, 3.56), factory.createPoint(15.06, 8.38)),
@@ -112,7 +112,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(13.32, 4.22), factory.createPoint(2.42, 12.67))
 		);
 
-		IntersectionCalculator calculator = new EuclideanSegmentCalculator();
+		TopologyCalculator calculator = new EuclideanCalculator();
 		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 
@@ -129,7 +129,7 @@ class BentleyOttmannTest{
 
 	@Test
 	void find_intersections5(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		List<Polyline> polylines = Arrays.asList(
 			factory.createPolyline(factory.createPoint(2.0681655529586, 6.7721029389621), factory.createPoint(3.8750905945826, 4.7795349136096)),
 			factory.createPolyline(factory.createPoint(3.7637048043455, 5.0765636875751), factory.createPoint(2.5013325149917, 2.9107288774094)),
@@ -146,7 +146,7 @@ class BentleyOttmannTest{
 			factory.createPolyline(factory.createPoint(3.2599935084955, 2.1656817027123), factory.createPoint(6.47285474689, 9.7758064156891))
 		);
 
-		IntersectionCalculator calculator = new EuclideanSegmentCalculator();
+		TopologyCalculator calculator = new EuclideanCalculator();
 		BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		bentleyOttmann.findIntersections();

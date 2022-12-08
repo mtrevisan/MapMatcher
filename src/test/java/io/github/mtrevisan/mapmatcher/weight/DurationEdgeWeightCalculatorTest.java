@@ -29,7 +29,7 @@ import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDurationCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +38,7 @@ class DurationEdgeWeightCalculatorTest{
 
 	@Test
 	void should_return_edge_duration_in_minutes(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		Point[] points = new Point[]{
 			factory.createPoint(121.058805, 14.552797),
 			factory.createPoint(120.994260, 14.593999),
@@ -66,7 +66,7 @@ class DurationEdgeWeightCalculatorTest{
 
 	@Test
 	void should_return_duration_in_minutes_between_vertices_with_max_possible_speed(){
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		Point[] points = new Point[]{
 			factory.createPoint(121.058805, 14.552797),
 			factory.createPoint(120.994260, 14.593999),

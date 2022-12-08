@@ -24,6 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
+
 
 public abstract class Geometry{
 
@@ -36,6 +38,10 @@ public abstract class Geometry{
 
 	public GeometryFactory getFactory(){
 		return factory;
+	}
+
+	public TopologyCalculator getDistanceCalculator(){
+		return factory.topologyCalculator;
 	}
 
 }

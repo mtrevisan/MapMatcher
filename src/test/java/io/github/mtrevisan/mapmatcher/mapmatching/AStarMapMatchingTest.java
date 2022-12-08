@@ -38,7 +38,7 @@ import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 import org.junit.jupiter.api.Assertions;
 
 import java.time.ZonedDateTime;
@@ -59,7 +59,7 @@ class AStarMapMatchingTest{
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -109,7 +109,7 @@ class AStarMapMatchingTest{
 		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -159,7 +159,7 @@ class AStarMapMatchingTest{
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 
-		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -214,11 +214,11 @@ class AStarMapMatchingTest{
 	 */
 	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Point[] observations,
 			final double threshold){
-		final GeodeticCalculator geodeticCalculator = new GeodeticCalculator();
+		final GeoidalCalculator geoidalCalculator = new GeoidalCalculator();
 		final Set<Polyline> observationsEdges = new LinkedHashSet<>(edges.length);
 		for(final Point observation : observations){
 			for(final Polyline edge : edges)
-				if(geodeticCalculator.distance(observation, edge) <= threshold)
+				if(geoidalCalculator.distance(observation, edge) <= threshold)
 					observationsEdges.add(edge);
 		}
 		return observationsEdges;

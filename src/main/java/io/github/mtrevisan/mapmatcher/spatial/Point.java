@@ -73,15 +73,15 @@ public class Point extends Geometry implements Comparable<Point>, Serializable{
 
 
 	public double distance(final Point point){
-		return factory.distanceCalculator.distance(this, point);
+		return factory.topologyCalculator.distance(this, point);
 	}
 
 	public double distance(final Polyline polyline){
-		return factory.distanceCalculator.distance(this, polyline);
+		return factory.topologyCalculator.distance(this, polyline);
 	}
 
 	public double initialBearing(final Point point){
-		return factory.distanceCalculator.initialBearing(this, point);
+		return factory.topologyCalculator.initialBearing(this, point);
 	}
 
 

@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.helpers.MathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,10 +45,10 @@ public class Event implements Comparable<Event>{
 	private final Point point;
 	private final List<SweepSegment> segments = new ArrayList<>();
 
-	private final IntersectionCalculator calculator;
+	private final TopologyCalculator calculator;
 
 
-	Event(final Point point, final SweepSegment segment, final Type type, final IntersectionCalculator calculator){
+	Event(final Point point, final SweepSegment segment, final Type type, final TopologyCalculator calculator){
 		this.calculator = calculator;
 
 		this.point = point;
@@ -57,7 +57,7 @@ public class Event implements Comparable<Event>{
 		segments.add(segment);
 	}
 
-	Event(final Point point, final SweepSegment segment1, final SweepSegment segment2, final IntersectionCalculator calculator){
+	Event(final Point point, final SweepSegment segment1, final SweepSegment segment2, final TopologyCalculator calculator){
 		this(point, segment1, Type.INTERSECTION, calculator);
 
 		segments.add(segment2);

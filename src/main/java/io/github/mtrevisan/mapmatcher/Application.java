@@ -45,8 +45,8 @@ import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,7 +55,6 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -80,7 +79,7 @@ public class Application{
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
 
-		final GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);

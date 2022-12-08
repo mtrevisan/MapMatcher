@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.spatial.simplification;
 
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
-import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

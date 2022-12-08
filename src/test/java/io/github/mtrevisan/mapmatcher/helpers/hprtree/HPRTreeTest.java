@@ -28,12 +28,11 @@ import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.distances.EuclideanCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.distances.GeodeticCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.intersection.BentleyOttmann;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.EuclideanSegmentCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +56,7 @@ import java.util.Set;
 
 class HPRTreeTest{
 
-	private static final GeometryFactory FACTORY = new GeometryFactory(new GeodeticCalculator());
+	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
 
 
@@ -115,7 +114,7 @@ class HPRTreeTest{
 	}
 
 	private static List<Polyline> simplifyPolylines(final Collection<Polyline> polylines, final double tolerance){
-		final IntersectionCalculator calculator = new EuclideanSegmentCalculator();
+		final TopologyCalculator calculator = new EuclideanCalculator();
 		final BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
 		bentleyOttmann.addPolylines(polylines);
 		final Map<Polyline, BitSet> preservePointsOnPolylines = new HashMap<>(polylines.size());
@@ -190,7 +189,7 @@ out skel qt;
 			tree.insert(geoBoundingBox, polyline);
 		}
 
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		List<Polyline> roads = tree.query(Envelope.of(
 			factory.createPoint(9.01670, 45.60973),
 			factory.createPoint(9.40355, 45.33115)
@@ -352,7 +351,7 @@ out skel qt;
 		if(!(line.startsWith("POINT (") || line.startsWith("POINT(")) && !line.endsWith(")"))
 			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
 
-		GeometryFactory factory = new GeometryFactory(new GeodeticCalculator());
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		int startIndex = line.indexOf('(') + 1;
 		int separatorIndex = line.indexOf(" ", startIndex + 1);
 		int endIndex = line.indexOf(')', separatorIndex + 1);

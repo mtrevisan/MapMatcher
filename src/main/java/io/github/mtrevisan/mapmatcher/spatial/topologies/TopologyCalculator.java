@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2022 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,13 +22,27 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.spatial.intersection.calculators;
+package io.github.mtrevisan.mapmatcher.spatial.topologies;
 
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
+import java.util.List;
 
-public interface IntersectionCalculator{
+
+public interface TopologyCalculator{
+
+	double distance(Point startPoint, Point endPoint);
+
+	double distance(Point point, Polyline polyline);
+
+	double initialBearing(Point startPoint, Point endPoint);
+
+
+	Point onTrackClosestPoint(Point startPoint, Point endPoint, Point point);
+
+	double alongTrackDistance(Point startPoint, Point endPoint, Point point);
+
 
 	Point leftmostPoint(Polyline polyline);
 
@@ -38,6 +52,6 @@ public interface IntersectionCalculator{
 
 	int compare(Point point1, Point point2);
 
-	Point intersection(Polyline polyline1, Polyline polyline2);
+	List<Point> intersection(Polyline polyline1, Polyline polyline2);
 
 }

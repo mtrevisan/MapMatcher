@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.spatial.intersection;
 
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,10 +56,10 @@ public class BentleyOttmann{
 	private final SweepLineTreeSet sweepLine = new SweepLineTreeSet();
 	private final List<Point> intersections = new ArrayList<>();
 
-	private final IntersectionCalculator calculator;
+	private final TopologyCalculator calculator;
 
 
-	public BentleyOttmann(final IntersectionCalculator calculator){
+	public BentleyOttmann(final TopologyCalculator calculator){
 		this.calculator = calculator;
 	}
 
@@ -72,11 +72,14 @@ public class BentleyOttmann{
 	}
 
 	public void addPolylines(final Collection<Polyline> polylines){
-		for(final Polyline polyline : polylines){
-			final SweepSegment ss = new SweepSegment(polyline, calculator);
-			eventQueue.add(ss.getLeftEvent());
-			eventQueue.add(ss.getRightEvent());
-		}
+		for(final Polyline polyline : polylines)
+			addPolyline(polyline);
+	}
+
+	public void addPolyline(final Polyline polyline){
+		final SweepSegment ss = new SweepSegment(polyline, calculator);
+		eventQueue.add(ss.getLeftEvent());
+		eventQueue.add(ss.getRightEvent());
 	}
 
 	public void findIntersections(){
@@ -125,20 +128,22 @@ public class BentleyOttmann{
 
 	private void addEventIfIntersection(final SweepSegment segment1, final SweepSegment segment2, final Event event){
 		if(segment1 != null && segment2 != null){
-			final Point point = segment1.intersection(segment2);
-			if(point != null && point.getX() > event.point().getX())
-				eventQueue.add(new Event(point, segment1, segment2, calculator));
+			final List<Point> points = segment1.intersection(segment2);
+			for(final Point point : points)
+				if(point.getX() > event.point().getX())
+					eventQueue.add(new Event(point, segment1, segment2, calculator));
 		}
 	}
 
 	private void addEventIfIntersectionAndCheck(final SweepSegment segment1, final SweepSegment segment2, final Event event){
 		if(segment1 != null && segment2 != null){
-			final Point point = segment1.intersection(segment2);
-			if(point != null && point.getX() > event.point().getX()){
-				final Event e = new Event(point, segment1, segment2, calculator);
-				if(!eventQueue.contains(e))
-					eventQueue.add(e);
-			}
+			final List<Point> points = segment1.intersection(segment2);
+			for(final Point point : points)
+				if(point.getX() > event.point().getX()){
+					final Event e = new Event(point, segment1, segment2, calculator);
+					if(!eventQueue.contains(e))
+						eventQueue.add(e);
+				}
 		}
 	}
 

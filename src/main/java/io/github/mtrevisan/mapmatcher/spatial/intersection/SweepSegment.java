@@ -27,7 +27,9 @@ package io.github.mtrevisan.mapmatcher.spatial.intersection;
 import io.github.mtrevisan.mapmatcher.spatial.Geometry;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.calculators.IntersectionCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
+
+import java.util.List;
 
 
 class SweepSegment{
@@ -38,10 +40,10 @@ class SweepSegment{
 
 	private double yIndex;
 
-	private final IntersectionCalculator calculator;
+	private final TopologyCalculator calculator;
 
 
-	SweepSegment(final Point point, final IntersectionCalculator calculator){
+	SweepSegment(final Point point, final TopologyCalculator calculator){
 		this.calculator = calculator;
 
 		this.geometry = point;
@@ -50,7 +52,7 @@ class SweepSegment{
 		this.event2 = new Event(point, this, Event.Type.POINT_RIGHT, calculator);
 	}
 
-	SweepSegment(final Polyline polyline, final IntersectionCalculator calculator){
+	SweepSegment(final Polyline polyline, final TopologyCalculator calculator){
 		this.calculator = calculator;
 
 		this.geometry = polyline;
@@ -93,7 +95,7 @@ class SweepSegment{
 		this.setYIndex(y);
 	}
 
-	Point intersection(final SweepSegment segment){
+	List<Point> intersection(final SweepSegment segment){
 		return calculator.intersection((Polyline)geometry, (Polyline)segment.geometry);
 	}
 
