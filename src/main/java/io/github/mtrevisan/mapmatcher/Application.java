@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -135,10 +136,16 @@ public class Application{
 
 		final Point[] filteredObservations = extractObservations(tree, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
+if(path != null)
+	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph);
+if(path != null)
+	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
 		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath);
+if(path != null)
+	System.out.println("path polyline: " + pathPolyline);
 	}
 
 //	public static void main(final String[] args){

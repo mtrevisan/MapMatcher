@@ -185,7 +185,6 @@ out skel qt;
 	@Test
 	void test() throws IOException{
 		HPRtree<Polyline> tree = new HPRtree<>();
-		Set<Point> tollBooths = new HashSet<>(readWKTPointFile(new File("src/test/resources/it.tollBooths.wkt")));
 		List<Polyline> highways = readWKTPolylineFile("src/test/resources/it.highways.simplified.5.wkt");
 		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
