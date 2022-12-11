@@ -74,7 +74,7 @@ public class PathHelper{
 
 
 	public static Edge[] connectPath(final Edge[] path, final Graph graph){
-		final int size = path.length;
+		final int size = (path != null? path.length: 0);
 		final List<Edge> connectedPath = new ArrayList<>(size);
 		if(size > 0){
 			int previousIndex = extractNextNonNullEdge(path, 0);

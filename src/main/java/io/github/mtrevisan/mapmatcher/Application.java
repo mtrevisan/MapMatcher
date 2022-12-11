@@ -48,13 +48,8 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -187,21 +182,6 @@ if(path != null)
 //			System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 //	}
 
-	private static List<String> readWKTFile(final String filename){
-		final List<String> lines = new ArrayList<>();
-		final File f = new File(filename);
-		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
-			String readLine;
-			while((readLine = br.readLine()) != null)
-				if(!readLine.isEmpty())
-					lines.add(readLine);
-		}
-		catch(IOException e){
-			e.printStackTrace();
-		}
-		return lines;
-	}
-
 
 	/**
 	 * Extract a set of candidate road links within a certain distance to all observation.
@@ -225,8 +205,7 @@ if(path != null)
 		return observationsEdges;
 	}
 
-	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point observation,
-			final double threshold){
+	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point observation, final double threshold){
 		final Point north = GeodeticHelper.destination(observation, 0., threshold);
 		final Point east = GeodeticHelper.destination(observation, 90., threshold);
 		final Point sud = GeodeticHelper.destination(observation, 180., threshold);
@@ -236,8 +215,7 @@ if(path != null)
 		return tree.query(envelope);
 	}
 
-	private static Point[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations,
-			final double threshold){
+	private static Point[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations, final double threshold){
 		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
 
 		//step 1. Use Kalman filter to smooth the coordinates

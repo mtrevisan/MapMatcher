@@ -58,27 +58,47 @@ class HPRTreeTest{
 
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
+	private static final String FILENAME_ROADS_RAW = "src/test/resources/it.highways.wkt";
+	private static final String FILENAME_TOLL_BOOTHS_RAW = "src/test/resources/it.tollBooths.wkt";
+	private static final String FILENAME_ROADS_SIMPLIFIED = "src/test/resources/it.tollBooths.simplified.wkt";
+	private static final String FILENAME_TOLL_BOOTHS_SIMPLIFIED = "src/test/resources/it.highways.simplified.5.wkt";
 
 
-	//simplify and create road and tool-booths files
+	/*
+	https://clydedacruz.github.io/openstreetmap-wkt-playground/
+
+	https://overpass-turbo.eu/
+[out:json][timeout:125];
+area["name:en"="Italy"]->.it;
+(
+  way["highway"="motorway"](area.it);
+  way["highway"="motorway_link"](area.it);
+  way["barrier"="toll_booth"](area.it);
+);
+out body;
+>;
+out skel qt;
+	*/
+	//simplify and create roads and toll-booths files
 	public static void main(String[] args) throws IOException{
 		//extract highways
-		final File roadsFile = new File("src/test/resources/it.highways.wkt");
+		final File roadsFile = new File(FILENAME_ROADS_RAW);
 		final List<Polyline> roads = extractPolylines(roadsFile);
 
 		//extract toll booths
-		final File tollBoothsFile = new File("src/test/resources/it.tollBooths.wkt");
+		final File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		final Set<Point> tollBooths = extractPoints(tollBoothsFile);
 
 		//filter only toll booths on highways
 		filterPointsAlongPolylines(tollBooths, roads);
-		final File outputTollBoothsFile = new File("src/test/resources/it.tollBooths.simplified.wkt");
+		final File outputTollBoothsFile = new File(FILENAME_ROADS_SIMPLIFIED);
+
 		writePoints(tollBooths, outputTollBoothsFile);
 
 		//preserve connection point on highways coming from connection links
 		final Collection<Polyline> reducedRoads = simplifyPolylines(roads, 5.);
 
-		final File outputRoadsFile = new File("src/test/resources/it.highways.simplified.5.wkt");
+		final File outputRoadsFile = new File(FILENAME_TOLL_BOOTHS_SIMPLIFIED);
 		writePolylines(reducedRoads, outputRoadsFile);
 	}
 
@@ -93,8 +113,56 @@ class HPRTreeTest{
 		return polylines;
 	}
 
+	private static Polyline parsePolyline(final String line){
+		if(!(line.startsWith("LINESTRING (") || line.startsWith("LINESTRING(")) && !line.endsWith(")"))
+			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
+
+		List<Point> points = new ArrayList<>(0);
+		int startIndex = line.indexOf('(') + 1;
+		while(true){
+			int separatorIndex = line.indexOf(" ", startIndex + 1);
+			if(separatorIndex < 0)
+				break;
+
+			int endIndex = line.indexOf(", ", separatorIndex + 1);
+			if(endIndex < 0)
+				endIndex = line.indexOf(')', separatorIndex + 1);
+			points.add(FACTORY.createPoint(
+				Double.parseDouble(line.substring(startIndex, separatorIndex)),
+				Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
+			));
+			startIndex = endIndex + 2;
+		}
+
+		return FACTORY.createPolyline(points.toArray(Point[]::new));
+	}
+
 	private static Set<Point> extractPoints(final File file){
-		return new HashSet<>(readWKTPointFile(file));
+		final List<Point> lines = new ArrayList<>();
+		try(final BufferedReader br = new BufferedReader(new FileReader(file))){
+			String readLine;
+			while((readLine = br.readLine()) != null)
+				if(!readLine.isEmpty())
+					lines.add(parsePoint(readLine));
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		return new HashSet<>(lines);
+	}
+
+	private static Point parsePoint(final String line){
+		if(!(line.startsWith("POINT (") || line.startsWith("POINT(")) && !line.endsWith(")"))
+			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
+
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		int startIndex = line.indexOf('(') + 1;
+		int separatorIndex = line.indexOf(" ", startIndex + 1);
+		int endIndex = line.indexOf(')', separatorIndex + 1);
+		return factory.createPoint(
+			Double.parseDouble(line.substring(startIndex, separatorIndex)),
+			Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
+		);
 	}
 
 	private static Set<Point> filterPointsAlongPolylines(final Set<Point> points, final Collection<Polyline> polylines){
@@ -167,25 +235,10 @@ class HPRTreeTest{
 	}
 
 
-	/*
-	https://clydedacruz.github.io/openstreetmap-wkt-playground/
-
-	https://overpass-turbo.eu/
-[out:json][timeout:125];
-area["name:en"="Italy"]->.it;
-(
-  way["highway"="motorway"](area.it);
-  way["highway"="motorway_link"](area.it);
-  way["barrier"="toll_booth"](area.it);
-);
-out body;
->;
-out skel qt;
-	*/
 	@Test
-	void test() throws IOException{
+	void query_tree() throws IOException{
 		HPRtree<Polyline> tree = new HPRtree<>();
-		List<Polyline> highways = readWKTPolylineFile("src/test/resources/it.highways.simplified.5.wkt");
+		List<Polyline> highways = extractPolylines(new File(FILENAME_TOLL_BOOTHS_SIMPLIFIED));
 		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
@@ -284,83 +337,17 @@ out skel qt;
 		queryGrid(100, new HPRtree<>(2));
 	}
 
-	private void queryGrid(int size, HPRtree<Integer> t){
+
+	private void queryGrid(int size, HPRtree<Integer> tree){
 		for(int i = 0; i < size; i ++)
-			t.insert(Envelope.of(i, i + 1, i, i + 1), i);
+			tree.insert(Envelope.of(i, i + 1, i, i + 1), i);
 
-		t.query(Envelope.of(0, 1, 0, 1));
+		tree.query(Envelope.of(0, 1, 0, 1));
 
-		Assertions.assertEquals(3, t.query(Envelope.of(5, 6, 5, 6)).size());
-		Assertions.assertEquals(3, t.query(Envelope.of(9, 10, 9, 10)).size());
-		Assertions.assertEquals(3, t.query(Envelope.of(25, 26, 25, 26)).size());
-		Assertions.assertEquals(11, t.query(Envelope.of(0, 10, 0, 10)).size());
-	}
-
-
-	private static List<Polyline> readWKTPolylineFile(final String filename) throws IOException{
-		final List<Polyline> lines = new ArrayList<>();
-		final File f = new File(filename);
-		try(final BufferedReader br = new BufferedReader(new FileReader(f))){
-			String readLine;
-			while((readLine = br.readLine()) != null)
-				if(!readLine.isEmpty()){
-					final Polyline simplifiedPolyline = parsePolyline(readLine);
-					lines.add(simplifiedPolyline);
-				}
-		}
-		return lines;
-	}
-
-	private static Polyline parsePolyline(final String line){
-		if(!(line.startsWith("LINESTRING (") || line.startsWith("LINESTRING(")) && !line.endsWith(")"))
-			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
-
-		List<Point> points = new ArrayList<>(0);
-		int startIndex = line.indexOf('(') + 1;
-		while(true){
-			int separatorIndex = line.indexOf(" ", startIndex + 1);
-			if(separatorIndex < 0)
-				break;
-
-			int endIndex = line.indexOf(", ", separatorIndex + 1);
-			if(endIndex < 0)
-				endIndex = line.indexOf(')', separatorIndex + 1);
-			points.add(FACTORY.createPoint(
-				Double.parseDouble(line.substring(startIndex, separatorIndex)),
-				Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
-			));
-			startIndex = endIndex + 2;
-		}
-
-		return FACTORY.createPolyline(points.toArray(Point[]::new));
-	}
-
-	private static List<Point> readWKTPointFile(final File file){
-		final List<Point> lines = new ArrayList<>();
-		try(final BufferedReader br = new BufferedReader(new FileReader(file))){
-			String readLine;
-			while((readLine = br.readLine()) != null)
-				if(!readLine.isEmpty())
-					lines.add(parsePoint(readLine));
-		}
-		catch(IOException e){
-			e.printStackTrace();
-		}
-		return lines;
-	}
-
-	private static Point parsePoint(final String line){
-		if(!(line.startsWith("POINT (") || line.startsWith("POINT(")) && !line.endsWith(")"))
-			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
-
-		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		int startIndex = line.indexOf('(') + 1;
-		int separatorIndex = line.indexOf(" ", startIndex + 1);
-		int endIndex = line.indexOf(')', separatorIndex + 1);
-		return factory.createPoint(
-			Double.parseDouble(line.substring(startIndex, separatorIndex)),
-			Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
-		);
+		Assertions.assertEquals(3, tree.query(Envelope.of(5, 6, 5, 6)).size());
+		Assertions.assertEquals(3, tree.query(Envelope.of(9, 10, 9, 10)).size());
+		Assertions.assertEquals(3, tree.query(Envelope.of(25, 26, 25, 26)).size());
+		Assertions.assertEquals(11, tree.query(Envelope.of(0, 10, 0, 10)).size());
 	}
 
 }
