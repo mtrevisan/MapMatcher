@@ -36,13 +36,13 @@ public class KalmanFilter{
 	private final int stateDimension;
 	private final int observationDimension;
 
-	//state-transition model, F_k
+	//state-transition model (the kinematic equations, predicts how the state would evolve naturally without input), F_k
 	private RealMatrix stateTransition;
-	//observation mode, H_k
+	//observation mode (which things in the state matrix are actually measured), H_k
 	private RealMatrix observationModel;
-	//covariance of the process noise, Q_k
+	//covariance of the process noise (how bad the prediction model is at telling us what is actually going on), Q_k
 	private RealMatrix processNoiseCovariance;
-	//covariance of the observation noise, R_k
+	//covariance of the observation noise (how much noise is inherent to the measurement -- not what is actually happening --), R_k
 	private RealMatrix observationNoiseCovariance;
 
 	//the observation is modified by the user before every time step
