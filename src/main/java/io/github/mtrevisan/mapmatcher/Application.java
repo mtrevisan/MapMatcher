@@ -36,6 +36,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionP
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogBayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.DirectionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.NoUTurnPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
@@ -68,7 +69,8 @@ public class Application{
 	public static void main(final String[] args){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
-			.withPlugin(new NoUTurnPlugin());
+			.withPlugin(new NoUTurnPlugin())
+			.withPlugin(new DirectionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
 //			.withPlugin(new NoUTurnPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
@@ -138,7 +140,7 @@ if(path != null)
 if(path != null)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath);
+		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath, observations[0], observations[observations.length - 1]);
 if(path != null)
 	System.out.println("path polyline: " + pathPolyline);
 	}

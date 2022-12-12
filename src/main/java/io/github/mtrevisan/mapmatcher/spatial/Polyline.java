@@ -24,6 +24,8 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -140,10 +142,11 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	public Point onTrackClosestPoint(final Point point){
 		double minClosestPointDistance = Double.MAX_VALUE;
 		Point minClosestPoint = null;
+		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
 		for(int i = 1; i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
-			final Point closestPoint = point.factory.topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
+			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
 			final double distance = point.distance(closestPoint);
 			if(distance < minClosestPointDistance){
 				minClosestPointDistance = distance;

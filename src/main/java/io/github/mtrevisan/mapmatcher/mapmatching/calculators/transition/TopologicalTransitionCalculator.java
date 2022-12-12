@@ -76,7 +76,7 @@ public class TopologicalTransitionCalculator extends TransitionProbabilityCalcul
 			a = PROBABILITY_SAME_EDGE;
 		else if(!path.isEmpty())
 			a = PROBABILITY_CONNECTED_EDGES;
-		return InitialProbabilityCalculator.logPr(a);
+		return InitialProbabilityCalculator.logPr(a * factor);
 	}
 
 }

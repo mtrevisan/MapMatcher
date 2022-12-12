@@ -90,7 +90,8 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 		final double observationsDistance = previousObservation.distance(currentObservation);
 
 		final Edge[] pathAsEdges = PathHelper.extractPathAsEdges(path);
-		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathAsEdges);
+		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathAsEdges, fromSegment, toSegment,
+			previousObservation, currentObservation);
 		final double pathDistance = (pathAsPolyline != null
 			? pathAsPolyline.alongTrackDistance(currentObservation) - pathAsPolyline.alongTrackDistance(previousObservation)
 			: observationsDistance);
@@ -99,7 +100,8 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
 		//return InitialProbabilityCalculator.logPr(path.isEmpty()? (1. - PROBABILITY_SAME_EDGE) * a: PROBABILITY_SAME_EDGE * a);
 		//in order to overcome overflow on exponential
-		return Math.log((path.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE) * inverseRateParameter)
+		return Math.log((pathAsPolyline == null || pathAsPolyline.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE)
+			* inverseRateParameter / factor)
 			- Math.abs(observationsDistance - pathDistance) / inverseRateParameter;
 	}
 
