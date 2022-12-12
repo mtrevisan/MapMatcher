@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
@@ -32,7 +32,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import java.util.List;
 
 
-public interface ProbabilityPlugin{
+public interface TransitionProbabilityPlugin{
 
 	double factor(Edge fromSegment, Edge toSegment, Graph graph, Point previousObservation, Point currentObservation, List<Node> path);
 

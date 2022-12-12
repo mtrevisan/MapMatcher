@@ -28,14 +28,15 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.filters.GPSPositionSpeedFilter;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogBayesianEmissionCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogGaussianEmissionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.NoUTurnPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.NoUTurnTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -57,9 +58,11 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability_direct_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -107,9 +110,11 @@ class ViterbiMapMatchingTest{
 	void should_match_E0_E1_with_gaussian_emission_probability_direct_graph(){
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -157,9 +162,11 @@ class ViterbiMapMatchingTest{
 	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_direct_graph(){
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -206,9 +213,11 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability_direct_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -253,10 +262,12 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability_bidirectional_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
-			.withPlugin(new NoUTurnPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin())
+			.withPlugin(new NoUTurnTransitionPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -304,10 +315,12 @@ class ViterbiMapMatchingTest{
 	void should_match_E0_E1_with_gaussian_emission_probability_bidirectional_graph(){
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
-			.withPlugin(new NoUTurnPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin())
+			.withPlugin(new NoUTurnTransitionPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -355,10 +368,12 @@ class ViterbiMapMatchingTest{
 	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph(){
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
-			.withPlugin(new NoUTurnPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new LogGaussianEmissionCalculator(observationStandardDeviation);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin())
+			.withPlugin(new NoUTurnTransitionPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -405,9 +420,11 @@ class ViterbiMapMatchingTest{
 	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability_bidirectional_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator();
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);

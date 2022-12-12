@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -28,18 +28,12 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.Collections;
 import java.util.List;
 
 
-public class TopologicalTransitionCalculator extends TransitionProbabilityCalculator{
-
-	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
+public class TopologicalTransitionPlugin implements TransitionProbabilityPlugin{
 
 	private static final double PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
 	private static final double PROBABILITY_SAME_EDGE = Math.exp(-0.5);
@@ -60,23 +54,15 @@ public class TopologicalTransitionCalculator extends TransitionProbabilityCalcul
 	 * </p>
 	 */
 	@Override
-	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation){
-		final List<Node> path = (fromSegment.equals(toSegment)
-			? Collections.emptyList()
-			: PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph).simplePath());
-		final double factor = calculatePluginFactor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
-		if(factor == 0.)
-			return InitialProbabilityCalculator.logPr(0.);
-
-
+	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
+			final Point previousObservation, final Point currentObservation, final List<Node> path){
 		double a = 0.;
 		//if the node is the same
 		if(fromSegment.equals(toSegment))
 			a = PROBABILITY_SAME_EDGE;
 		else if(!path.isEmpty())
 			a = PROBABILITY_CONNECTED_EDGES;
-		return InitialProbabilityCalculator.logPr(a * factor);
+		return InitialProbabilityCalculator.logPr(a);
 	}
 
 }

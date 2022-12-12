@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2021 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -29,19 +29,13 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
-import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
-import java.util.Collections;
 import java.util.List;
 
 
-public class LogExponentialTransitionCalculator extends TransitionProbabilityCalculator{
-
-	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
+public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin{
 
 	/**
 	 * 0.5 < p_same < 0.8
@@ -54,7 +48,7 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 	private final double inverseRateParameter;
 
 
-	public LogExponentialTransitionCalculator(final double inverseRateParameter){
+	public ShortestPathTransitionPlugin(final double inverseRateParameter){
 		this.inverseRateParameter = inverseRateParameter;
 	}
 
@@ -77,16 +71,8 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	@Override
-	public double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation){
-		final List<Node> path = (fromSegment.equals(toSegment)
-			? Collections.emptyList()
-			: PATH_FINDER.findPath(fromSegment.getTo(), toSegment.getFrom(), graph).simplePath());
-		final double factor = calculatePluginFactor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
-		if(factor == 0.)
-			return InitialProbabilityCalculator.logPr(0.);
-
-
+	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
+			final Point previousObservation, final Point currentObservation, final List<Node> path){
 		final double observationsDistance = previousObservation.distance(currentObservation);
 
 		final Edge[] pathAsEdges = PathHelper.extractPathAsEdges(path);
@@ -100,8 +86,7 @@ public class LogExponentialTransitionCalculator extends TransitionProbabilityCal
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
 		//return InitialProbabilityCalculator.logPr(path.isEmpty()? (1. - PROBABILITY_SAME_EDGE) * a: PROBABILITY_SAME_EDGE * a);
 		//in order to overcome overflow on exponential
-		return Math.log((pathAsPolyline == null || pathAsPolyline.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE)
-			* inverseRateParameter / factor)
+		return InitialProbabilityCalculator.logPr((pathAsPolyline == null || pathAsPolyline.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE) / inverseRateParameter)
 			- Math.abs(observationsDistance - pathDistance) / inverseRateParameter;
 	}
 

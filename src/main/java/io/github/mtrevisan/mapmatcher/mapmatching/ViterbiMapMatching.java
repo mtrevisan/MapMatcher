@@ -26,13 +26,19 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -48,13 +54,18 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 	private final TransitionProbabilityCalculator transitionProbabilityCalculator;
 	private final EmissionProbabilityCalculator emissionProbabilityCalculator;
 
+	private final PathFindingStrategy pathFinder;
+
 
 	public ViterbiMapMatching(final InitialProbabilityCalculator initialProbabilityCalculator,
 			final TransitionProbabilityCalculator transitionProbabilityCalculator,
-			final EmissionProbabilityCalculator emissionProbabilityCalculator){
+			final EmissionProbabilityCalculator emissionProbabilityCalculator,
+			final EdgeWeightCalculator edgeWeightCalculator){
 		this.initialProbabilityCalculator = initialProbabilityCalculator;
 		this.transitionProbabilityCalculator = transitionProbabilityCalculator;
 		this.emissionProbabilityCalculator = emissionProbabilityCalculator;
+
+		pathFinder = new AStarPathFinder(edgeWeightCalculator);
 	}
 
 	@Override
@@ -98,8 +109,10 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			for(final Edge toEdge : graphEdges){
 				minProbability = Double.POSITIVE_INFINITY;
 				for(final Edge fromEdge : graphEdges){
+					final List<Node> pathFromTo = pathFinder.findPath(fromEdge.getTo(), toEdge.getFrom(), graph).simplePath();
 					final double probability = fScores.get(fromEdge)[previousObservationIndex]
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation);
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation,
+							pathFromTo);
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;

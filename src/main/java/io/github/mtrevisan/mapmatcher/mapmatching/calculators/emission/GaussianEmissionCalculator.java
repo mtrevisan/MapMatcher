@@ -31,7 +31,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import java.util.Collection;
 
 
-public class LogGaussianEmissionCalculator implements EmissionProbabilityCalculator{
+public class GaussianEmissionCalculator implements EmissionProbabilityCalculator{
 
 	/**
 	 * 0.5 < tau0 < 1
@@ -44,7 +44,7 @@ public class LogGaussianEmissionCalculator implements EmissionProbabilityCalcula
 	private final double observationStandardDeviation;
 
 
-	public LogGaussianEmissionCalculator(final double observationStandardDeviation){
+	public GaussianEmissionCalculator(final double observationStandardDeviation){
 		this.observationStandardDeviation = observationStandardDeviation;
 	}
 

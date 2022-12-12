@@ -27,7 +27,6 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.ProbabilityPlugin;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.HashSet;
@@ -35,27 +34,23 @@ import java.util.List;
 import java.util.Set;
 
 
-public abstract class TransitionProbabilityCalculator{
+public class TransitionProbabilityCalculator{
 
-	private final Set<ProbabilityPlugin> plugins = new HashSet<>(0);
+	private final Set<TransitionProbabilityPlugin> plugins = new HashSet<>(0);
 
 
-	public final TransitionProbabilityCalculator withPlugin(final ProbabilityPlugin plugin){
+	public final TransitionProbabilityCalculator withPlugin(final TransitionProbabilityPlugin plugin){
 		plugins.add(plugin);
 
 		return this;
 	}
 
-	protected final double calculatePluginFactor(final Edge fromSegment, final Edge toSegment, final Graph graph,
+	public final double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
 			final Point previousObservation, final Point currentObservation, final List<Node> path){
-		double factor = 1.;
-		for(final ProbabilityPlugin plugin : plugins)
-			factor *= plugin.factor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
+		double factor = 0.;
+		for(final TransitionProbabilityPlugin plugin : plugins)
+			factor += plugin.factor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
 		return factor;
 	}
-
-
-	public abstract double transitionProbability(Edge fromSegment, Edge toSegment, Graph graph, Point previousObservation,
-		Point currentObservation);
 
 }

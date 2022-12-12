@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class LogBayesianEmissionCalculator implements EmissionProbabilityCalculator{
+public class BayesianEmissionCalculator implements EmissionProbabilityCalculator{
 
 	private final Map<Edge, Double> emissionProbability = new HashMap<>();
 

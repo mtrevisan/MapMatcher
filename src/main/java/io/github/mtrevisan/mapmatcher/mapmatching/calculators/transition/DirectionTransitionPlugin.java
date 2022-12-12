@@ -22,12 +22,13 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
@@ -35,7 +36,10 @@ import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 import java.util.List;
 
 
-public class DirectionPlugin implements ProbabilityPlugin{
+public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
+
+	private static final double PROBABILITY_SAME_EDGE = Math.exp(-0.5);
+
 
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
@@ -45,12 +49,12 @@ public class DirectionPlugin implements ProbabilityPlugin{
 		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathAsEdges, fromSegment, toSegment,
 			previousObservation, currentObservation);
 		if(pathAsPolyline == null)
-			return 1.;
+			return PROBABILITY_SAME_EDGE;
 
 		final Point previousOnTrackPoint = pathAsPolyline.onTrackClosestPoint(previousObservation);
 		final Point currentOnTrackPoint = pathAsPolyline.onTrackClosestPoint(currentObservation);
 		if(previousOnTrackPoint.equals(currentOnTrackPoint))
-			return 1.;
+			return PROBABILITY_SAME_EDGE;
 
 
 		final TopologyCalculator calculator = previousObservation.getDistanceCalculator();
@@ -67,7 +71,7 @@ public class DirectionPlugin implements ProbabilityPlugin{
 		//angle difference
 		final double initialBearingDifference = Math.abs(observationInitialBearing - onPathInitialBearing);
 
-		return Math.abs(StrictMath.cos(Math.toRadians(initialBearingDifference)));
+		return InitialProbabilityCalculator.logPr(Math.abs(StrictMath.cos(Math.toRadians(initialBearingDifference))));
 	}
 
 }

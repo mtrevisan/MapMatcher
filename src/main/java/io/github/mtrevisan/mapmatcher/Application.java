@@ -32,14 +32,15 @@ import io.github.mtrevisan.mapmatcher.helpers.filters.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.LogBayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.DirectionPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins.NoUTurnPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.NoUTurnTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
@@ -68,14 +69,17 @@ public class Application{
 
 	public static void main(final String[] args){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TopologicalTransitionCalculator()
-			.withPlugin(new NoUTurnPlugin())
-			.withPlugin(new DirectionPlugin());
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin())
+			.withPlugin(new NoUTurnTransitionPlugin())
+			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
 //			.withPlugin(new NoUTurnPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new LogBayesianEmissionCalculator();
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator);
-//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator);
+		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
+//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator,
+//			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -136,7 +140,7 @@ public class Application{
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Edge[] connectedPath = PathHelper.connectPath(path, graph);
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new GeodeticDistanceCalculator());
 if(path != null)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 

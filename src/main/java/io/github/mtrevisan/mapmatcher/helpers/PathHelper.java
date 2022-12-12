@@ -29,7 +29,7 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -40,9 +40,6 @@ import java.util.List;
 
 
 public class PathHelper{
-
-	private static final PathFindingStrategy PATH_FINDER = new AStarPathFinder(new NodeCountCalculator());
-
 
 	private PathHelper(){}
 
@@ -74,7 +71,7 @@ public class PathHelper{
 	}
 
 
-	public static Edge[] connectPath(final Edge[] path, final Graph graph){
+	public static Edge[] connectPath(final Edge[] path, final Graph graph, final EdgeWeightCalculator calculator){
 		final int size = (path != null? path.length: 0);
 		final List<Edge> connectedPath = new ArrayList<>(size);
 		if(size > 0){
@@ -91,7 +88,8 @@ public class PathHelper{
 						connectedPath.add(path[currentIndex]);
 					else{
 						//add path from `path[index]` to `path[i]`
-						final List<Node> nodePath = PATH_FINDER.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph)
+						final PathFindingStrategy pathFinder = new AStarPathFinder(calculator);
+						final List<Node> nodePath = pathFinder.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph)
 							.simplePath();
 						assert !nodePath.isEmpty();
 						for(int j = 1; j < nodePath.size(); j ++){

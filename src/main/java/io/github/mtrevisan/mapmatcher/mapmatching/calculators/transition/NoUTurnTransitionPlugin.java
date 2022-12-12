@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators.plugins;
+package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
@@ -33,7 +33,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import java.util.List;
 
 
-public class NoUTurnPlugin implements ProbabilityPlugin{
+public class NoUTurnTransitionPlugin implements TransitionProbabilityPlugin{
 
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
@@ -45,7 +45,7 @@ public class NoUTurnPlugin implements ProbabilityPlugin{
 			//disallow U-turn along multiple edges
 			segmentsReversed = PathHelper.hasMixedDirections(path, fromSegment, toSegment);
 
-		return (segmentsReversed? 0.: 1.);
+		return (segmentsReversed? Double.POSITIVE_INFINITY: 0.);
 	}
 
 }
