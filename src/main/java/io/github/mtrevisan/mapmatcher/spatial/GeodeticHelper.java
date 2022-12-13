@@ -28,6 +28,9 @@ import net.sf.geographiclib.Geodesic;
 import net.sf.geographiclib.GeodesicData;
 import net.sf.geographiclib.GeodesicMask;
 
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
  * @see <a href="https://community.qlik.com/t5/QlikView-App-Dev/WGS84-Compliant-Great-Circle-Distance-Calculation/td-p/241905">WGS84 Compliant Great Circle Distance Calculation</a>
@@ -41,7 +44,7 @@ public class GeodeticHelper{
 	private static final double EARTH_EQUATORIAL_RADIUS = REFERENCE_ELLIPSOID.EquatorialRadius();
 
 	//[m]
-	private static final double ON_TRACK_POINT_PRECISION = 0.5;
+	private static final double ON_TRACK_POINT_PRECISION = 0.1;
 
 
 	private GeodeticHelper(){}
@@ -101,8 +104,12 @@ public class GeodeticHelper{
 	 * @see <a href="https://edwilliams.org/avform147.htm#XTE">Aviation Formulary V1.47</a>
 	 * @see <a href="https://www.researchgate.net/publication/321358300_Intersection_and_point-to-line_solutions_for_geodesics_on_the_ellipsoid">Intersection and point-to-line solutions for geodesics on the ellipsoid</a>
 	 */
-	/** FIXME need to be corrected (see @link {@link GeodeticHelperTest#closest_point_avoid_endless_back_and_forth()}) */
 	public static Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){
+		//NOTE: do not use the entire calculated ATD as there may be an endless back and forth calculation between two points around
+		//	the true point on track
+		final Set<Double> historicalATD = new HashSet<>(3);
+		double factor = 1.;
+
 		Point onTrackPoint = startPoint;
 		boolean firstIteration = true;
 		while(true){
@@ -134,7 +141,7 @@ public class GeodeticHelper{
 			//[rad]
 			final double xtd = StrictMath.asin(StrictMath.sin(distanceStartToPoint) * sinAngleAP);
 			//calculate Along-Track Distance [rad]
-			final double atd;
+			double atd;
 			if(firstIteration){
 				final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
 				final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
@@ -143,13 +150,16 @@ public class GeodeticHelper{
 			}
 			else
 				atd = EARTH_EQUATORIAL_RADIUS * StrictMath.atan(StrictMath.cos(angleAP) * StrictMath.tan(distanceStartToPoint));
+			if(historicalATD.contains(atd)){
+				factor *= 0.5;
+				atd *= factor;
+			}
+			else
+				historicalATD.add(atd);
 			if(Math.abs(atd) < ON_TRACK_POINT_PRECISION)
 				break;
 
 			//compute a point along the great circle from start to end point that lies at distance ATD
-			//NOTE: do not use the entire calculated ATD as there may be an endless back and forth calculation between two points around
-			//	the true point on track
-//			onTrackPoint = destination(onTrackPoint, initialBearingStartToEnd, atd * 0.5);
 			onTrackPoint = destination(onTrackPoint, initialBearingStartToEnd, atd);
 
 			firstIteration = false;
