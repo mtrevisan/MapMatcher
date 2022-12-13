@@ -70,19 +70,17 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 	@Override
 	public Edge[] findPath(final Graph graph, final Point[] observations){
+		int i = extractNextObservation(observations, 0);
+		if(i < 0)
+			//no observations: cannot calculate path
+			return null;
+
 		final Collection<Edge> graphEdges = graph.edges();
 
 		final int n = graphEdges.size();
 		final int m = observations.length;
 		final Map<Edge, double[]> fScores = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
-
-		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
-		// correct segment
-		int i = extractNextObservation(observations, 0);
-		if(i < 0)
-			//no observations: cannot calculate path
-			return null;
 
 		Point currentObservation = observations[i];
 		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);

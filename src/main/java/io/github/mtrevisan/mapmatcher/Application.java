@@ -68,6 +68,8 @@ import java.util.Set;
 public class Application{
 
 	public static void main(final String[] args){
+		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
+		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new TopologicalTransitionPlugin())

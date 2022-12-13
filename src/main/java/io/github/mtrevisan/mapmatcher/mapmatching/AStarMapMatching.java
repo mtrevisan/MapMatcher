@@ -70,6 +70,11 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 	@Override
 	public Edge[] findPath(final Graph graph, final Point[] observations){
+		int i = extractNextObservation(observations, 0);
+		if(i < 0)
+			//no observations: cannot calculate path
+			return null;
+
 		final Collection<Edge> graphEdges = graph.edges();
 
 		final int n = graphEdges.size();
@@ -80,13 +85,6 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		//set of discovered nodes that may need to be (re-)expanded
 		final FibonacciHeap<Edge> frontier = new FibonacciHeap<>();
 		final Map<Edge, FibonacciHeap.Node<Edge>> seenNodes = new HashMap<>(n);
-
-		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
-		// correct segment
-		int i = extractNextObservation(observations, 0);
-		if(i < 0)
-			//no observations: cannot calculate path
-			return null;
 
 		Point currentObservation = observations[i];
 		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
