@@ -140,17 +140,17 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 
 	public Point onTrackClosestPoint(final Point point){
-		double distance = -1.;
+		double xtd = -1.;
 		double minClosestPointDistance = Double.MAX_VALUE;
 		Point minClosestPoint = null;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
-		for(int i = 1; distance != 0. && i < points.length; i ++){
+		for(int i = 1; xtd != 0. && i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
 			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
-			distance = point.distance(closestPoint);
-			if(distance < minClosestPointDistance){
-				minClosestPointDistance = distance;
+			xtd = point.distance(closestPoint);
+			if(xtd < minClosestPointDistance){
+				minClosestPointDistance = xtd;
 				minClosestPoint = closestPoint;
 			}
 		}
@@ -158,21 +158,28 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	}
 
 	public double alongTrackDistance(final Point point){
-		double distance = -1.;
-		double nearestPointDistance = 0.;
+		double atd = 0.;
+		double xtd = -1.;
+		double minClosestPointDistance = Double.MAX_VALUE;
 		double cumulativeDistance = 0.;
-		double minNearestPointDistance = Double.MAX_VALUE;
-		for(int i = 1; distance != 0. && i < points.length; i ++){
+		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
+		for(int i = 1; xtd != 0. && i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
-			distance = Math.abs(point.factory.topologyCalculator.alongTrackDistance(startPoint, endPoint, point));
-			cumulativeDistance += distance;
-			if(distance < minNearestPointDistance){
-				nearestPointDistance += cumulativeDistance;
+			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
+
+			final double onTrackDistance = startPoint.distance(closestPoint);
+			cumulativeDistance += onTrackDistance;
+
+			xtd = point.distance(closestPoint);
+			if(xtd < minClosestPointDistance){
+				minClosestPointDistance = xtd;
+
+				atd += cumulativeDistance;
 				cumulativeDistance = 0.;
 			}
 		}
-		return nearestPointDistance;
+		return (xtd >= 0.? atd: -1.);
 	}
 
 

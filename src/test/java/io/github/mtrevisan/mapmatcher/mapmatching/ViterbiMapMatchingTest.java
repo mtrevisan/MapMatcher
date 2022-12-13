@@ -461,7 +461,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations);
 
-		final String expected = "[null, null, E3, E2, E2, E2, E2]";
+		final String expected = "[null, null, E3, E2-rev, E2-rev, E2-rev, E2-rev]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
