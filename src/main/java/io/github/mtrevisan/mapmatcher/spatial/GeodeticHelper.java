@@ -41,7 +41,7 @@ public class GeodeticHelper{
 	private static final double EARTH_EQUATORIAL_RADIUS = REFERENCE_ELLIPSOID.EquatorialRadius();
 
 	//[m]
-	private static final double ON_TRACK_POINT_PRECISION = 0.1;
+	private static final double ON_TRACK_POINT_PRECISION = 0.5;
 
 
 	private GeodeticHelper(){}
@@ -133,18 +133,22 @@ public class GeodeticHelper{
 			//[rad]
 			final double xtd = StrictMath.asin(StrictMath.sin(distanceStartToPoint) * sinAngleAP);
 			//calculate Along-Track Distance [rad]
-			final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
-			final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
-			final double c = StrictMath.tan((distanceStartToPoint - xtd) / 2.);
-			final double atd = (firstIteration
-				? 2. * EARTH_EQUATORIAL_RADIUS * StrictMath.atan((a / b) * c)
-				//formula obtained from the Napier pentagon for right-angle spherical triangles and unlike the one used in the first
-				//iteration, this one has no instabilities near the exact solution but a sharp convergence to it
-				: EARTH_EQUATORIAL_RADIUS * StrictMath.atan(StrictMath.cos(angleAP) * StrictMath.tan(distanceStartToPoint)));
+			final double atd;
+			if(firstIteration){
+				final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
+				final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
+				final double c = StrictMath.tan((distanceStartToPoint - xtd) / 2.);
+				atd = 2. * EARTH_EQUATORIAL_RADIUS * StrictMath.atan((a / b) * c);
+			}
+			else
+				atd = EARTH_EQUATORIAL_RADIUS * StrictMath.atan(StrictMath.cos(angleAP) * StrictMath.tan(distanceStartToPoint));
 			if(Math.abs(atd) < ON_TRACK_POINT_PRECISION)
 				break;
 
 			//compute a point along the great circle from start to end point that lies at distance ATD
+			//NOTE: do not use the entire calculated ATD as there may be an endless back and forth calculation between two points around
+			//	the true point on track
+//			onTrackPoint = destination(onTrackPoint, initialBearingStartToEnd, atd * 0.5);
 			onTrackPoint = destination(onTrackPoint, initialBearingStartToEnd, atd);
 
 			firstIteration = false;

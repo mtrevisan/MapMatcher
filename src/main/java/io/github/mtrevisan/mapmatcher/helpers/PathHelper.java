@@ -36,6 +36,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -125,70 +126,62 @@ public class PathHelper{
 	public static Polyline extractPathAsPolyline(final Edge[] connectedPath, final Edge fromSegment, final Edge toSegment,
 			final Point previousObservation, final Point currentObservation){
 		//cut first segment
-		final int fromSegmentIndex = onTrackClosestIndex(fromSegment, previousObservation);
+		final Object[] fromSegmentIndexPoint = onTrackClosestIndex(fromSegment, previousObservation);
+		final int fromSegmentIndex = (int)fromSegmentIndexPoint[0];
+		final Point fromSegmentPoint = (Point)fromSegmentIndexPoint[1];
 		//cut last segment
-		final int toSegmentIndex = onTrackClosestIndex(toSegment, currentObservation);
-
-		//calculate number of points
-		int size = (fromSegmentIndex >= 0? fromSegment.getPolyline().size() - fromSegmentIndex: 0);
-		for(final Edge edge : connectedPath)
-			size += edge.getPolyline().size() - (size > 0? 1: 0);
-		size += (toSegmentIndex >= 0? toSegment.getPolyline().size() - toSegmentIndex: 0);
+		final Object[] toSegmentIndexPoint = onTrackClosestIndex(toSegment, currentObservation);
+		final int toSegmentIndex = (int)toSegmentIndexPoint[0];
+		final Point toSegmentPoint = (Point)toSegmentIndexPoint[1];
 
 		//merge segments
-		Polyline polyline = null;
-		if(size > 0){
-			final Point[] mergedPoints = new Point[size];
-			size = 0;
+		final List<Point> mergedPoints = new ArrayList<>();
 
-			if(fromSegmentIndex >= 0){
-				final Point[] points = fromSegment.getPolyline().getPoints();
-				final int count = points.length - fromSegmentIndex;
-				System.arraycopy(points, fromSegmentIndex, mergedPoints, size, count);
-				size += count;
-			}
+		mergedPoints.add(fromSegmentPoint);
+		Point[] points = fromSegment.getPolyline().getPoints();
+		for(int i = fromSegmentIndex; i < points.length; i ++)
+			mergedPoints.add(points[i]);
 
-			for(final Edge edge : connectedPath){
-				final Point[] points = edge.getPolyline().getPoints();
-				final int count = points.length - (size > 0? 1: 0);
-				assert size == 0 || mergedPoints[size - 1].equals(points[0]);
-				System.arraycopy(points, (size > 0? 1: 0), mergedPoints, size, count);
-				size += count;
-			}
-
-			if(toSegmentIndex >= 0){
-				final Point[] points = toSegment.getPolyline().getPoints();
-				final int count = points.length - toSegmentIndex;
-				System.arraycopy(points, 0, mergedPoints, size, count);
-			}
-
-			final GeometryFactory factory = (connectedPath.length > 0? connectedPath[0].getPolyline(): previousObservation)
-				.getFactory();
-			polyline = factory.createPolyline(mergedPoints);
+		for(int i = 1; i < connectedPath.length - 1; i ++){
+			final Edge edge = connectedPath[i];
+			points = edge.getPolyline().getPoints();
+			mergedPoints.addAll(Arrays.asList(points));
 		}
-		return polyline;
+
+		points = toSegment.getPolyline().getPoints();
+		for(int i = 0; i < toSegmentIndex - 1; i ++)
+			mergedPoints.add(points[i]);
+		mergedPoints.add(toSegmentPoint);
+
+		final GeometryFactory factory = previousObservation.getFactory();
+		return factory.createPolyline(mergedPoints.toArray(Point[]::new));
 	}
 
-	private static int onTrackClosestIndex(final Edge segment, final Point point){
+	private static Object[] onTrackClosestIndex(final Edge segment, final Point point){
 		if(segment == null || point == null)
-			return -1;
+			return new Object[]{-1, null};
 
+		double distance = -1.;
 		double minClosestPointDistance = Double.MAX_VALUE;
+		Point minClosestPoint = null;
 		int minClosestIndex = -1;
-		final Point[] points = segment.getPolyline()
-			.getPoints();
+		final Polyline polyline = segment.getPolyline();
+		final Point[] points = polyline.getPoints();
 		final TopologyCalculator distanceCalculator = point.getDistanceCalculator();
-		for(int i = 1; i < points.length; i ++){
+		for(int i = 1; distance != 0. && i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
 			final Point closestPoint = distanceCalculator.onTrackClosestPoint(startPoint, endPoint, point);
-			final double distance = point.distance(closestPoint);
+			distance = point.distance(closestPoint);
 			if(distance < minClosestPointDistance){
 				minClosestPointDistance = distance;
+				minClosestPoint = closestPoint;
 				minClosestIndex = i;
 			}
 		}
-		return minClosestIndex;
+		if(minClosestPoint != null && polyline.alongTrackDistance(points[minClosestIndex]) <= polyline.alongTrackDistance(minClosestPoint))
+			minClosestIndex ++;
+		return new Object[]{minClosestIndex, minClosestPoint};
 	}
 
 	public static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){

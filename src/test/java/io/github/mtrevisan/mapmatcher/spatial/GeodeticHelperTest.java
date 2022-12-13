@@ -153,6 +153,23 @@ class GeodeticHelperTest{
 		Assertions.assertEquals(45.658_974_2, closestPointOnTrackEndStart.getY(), 0.000_000_05);
 	}
 
+	//FIXME if ON_TRACK_POINT_PRECISION = 0.13 or less then this error will appear
+	@Test
+	void closest_point_avoid_endless_back_and_forth(){
+		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		Point start = factory.createPoint(12.159747628109386, 45.66132709541773);
+		Point end = factory.createPoint(12.238140517207398, 45.65897415921759);
+		Point point = factory.createPoint(12.236943866570124, 45.65901048207397);
+
+		Point closestPointOnTrackStartEnd = GeodeticHelper.onTrackClosestPoint(start, end, point);
+		Point closestPointOnTrackEndStart = GeodeticHelper.onTrackClosestPoint(end, start, point);
+
+		Assertions.assertEquals(12.236_943_6, closestPointOnTrackStartEnd.getX(), 0.000_000_05);
+		Assertions.assertEquals(45.659_010_5, closestPointOnTrackStartEnd.getY(), 0.000_000_05);
+		Assertions.assertEquals(12.236_945_9, closestPointOnTrackEndStart.getX(), 0.000_000_05);
+		Assertions.assertEquals(45.659_010_4, closestPointOnTrackEndStart.getY(), 0.000_000_05);
+	}
+
 
 	@Test
 	void intersection1(){

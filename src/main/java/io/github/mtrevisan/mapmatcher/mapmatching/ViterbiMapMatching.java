@@ -36,7 +36,6 @@ import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculat
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

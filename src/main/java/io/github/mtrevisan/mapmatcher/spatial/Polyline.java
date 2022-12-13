@@ -140,14 +140,15 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 
 	public Point onTrackClosestPoint(final Point point){
+		double distance = -1.;
 		double minClosestPointDistance = Double.MAX_VALUE;
 		Point minClosestPoint = null;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
-		for(int i = 1; i < points.length; i ++){
+		for(int i = 1; distance != 0. && i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
 			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
-			final double distance = point.distance(closestPoint);
+			distance = point.distance(closestPoint);
 			if(distance < minClosestPointDistance){
 				minClosestPointDistance = distance;
 				minClosestPoint = closestPoint;
@@ -157,13 +158,14 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	}
 
 	public double alongTrackDistance(final Point point){
+		double distance = -1.;
 		double nearestPointDistance = 0.;
 		double cumulativeDistance = 0.;
 		double minNearestPointDistance = Double.MAX_VALUE;
-		for(int i = 1; i < points.length; i ++){
+		for(int i = 1; distance != 0. && i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
-			final double distance = Math.abs(point.factory.topologyCalculator.alongTrackDistance(startPoint, endPoint, point));
+			distance = Math.abs(point.factory.topologyCalculator.alongTrackDistance(startPoint, endPoint, point));
 			cumulativeDistance += distance;
 			if(distance < minNearestPointDistance){
 				nearestPointDistance += cumulativeDistance;
