@@ -101,6 +101,7 @@ public class GeodeticHelper{
 	 * @see <a href="https://edwilliams.org/avform147.htm#XTE">Aviation Formulary V1.47</a>
 	 * @see <a href="https://www.researchgate.net/publication/321358300_Intersection_and_point-to-line_solutions_for_geodesics_on_the_ellipsoid">Intersection and point-to-line solutions for geodesics on the ellipsoid</a>
 	 */
+	/** FIXME need to be corrected (see @link {@link GeodeticHelperTest#closest_point_avoid_endless_back_and_forth()}) */
 	public static Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){
 		Point onTrackPoint = startPoint;
 		boolean firstIteration = true;
