@@ -138,6 +138,37 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		}
 	}
 
+	public Polyline[] cut(final Point point){
+		double xtd = -1.;
+		double minClosestPointDistance = Double.MAX_VALUE;
+		Point minClosestPoint = null;
+		int cutIndexEnd = -1;
+		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
+		for(int i = 1; xtd != 0. && i < points.length; i ++){
+			final Point startPoint = points[i - 1];
+			final Point endPoint = points[i];
+			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
+			xtd = point.distance(closestPoint);
+			if(xtd < minClosestPointDistance){
+				minClosestPointDistance = xtd;
+				minClosestPoint = closestPoint;
+
+				cutIndexEnd = i;
+			}
+		}
+
+		final Point[] firstList = new Point[cutIndexEnd];
+		System.arraycopy(points, 0, firstList, 0, cutIndexEnd - 1);
+		firstList[cutIndexEnd - 1] = minClosestPoint;
+		final Point[] secondList = new Point[cutIndexEnd + 1];
+		secondList[0] = minClosestPoint;
+		System.arraycopy(points, cutIndexEnd, secondList, 1, points.length - cutIndexEnd);
+		return new Polyline[]{
+			point.factory.createPolyline(firstList),
+			point.factory.createPolyline(secondList)
+		};
+	}
+
 
 	public Point onTrackClosestPoint(final Point point){
 		double xtd = -1.;
