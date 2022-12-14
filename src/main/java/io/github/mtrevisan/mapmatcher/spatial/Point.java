@@ -84,6 +84,10 @@ public class Point extends Geometry implements Comparable<Point>, Serializable{
 		return factory.topologyCalculator.initialBearing(this, point);
 	}
 
+	public Point destination(final double initialBearing, final double distance){
+		return factory.topologyCalculator.destination(this, initialBearing, distance);
+	}
+
 
 	@Override
 	public boolean equals(final Object obj){

@@ -31,6 +31,6 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 public interface MapMatchingStrategy{
 
-	Edge[] findPath(Graph graph, Point[] observations);
+	Edge[] findPath(Graph graph, Point[] observations, double edgesNearObservationThreshold);
 
 }

@@ -68,7 +68,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 	}
 
 	@Override
-	public Edge[] findPath(final Graph graph, final Point[] observations){
+	public Edge[] findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
 		int i = extractNextObservation(observations, 0);
 		if(i < 0)
 			//no observations: cannot calculate path
@@ -103,9 +103,16 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
-			for(final Edge toEdge : graphEdges){
+			final Collection<Edge> graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
+				? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
+				: graphEdges);
+			for(final Edge toEdge : graphEdgesNearCurrentObservation){
 				minProbability = Double.POSITIVE_INFINITY;
-				for(final Edge fromEdge : graphEdges){
+
+				final Collection<Edge> graphEdgesNearPreviousObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
+					? graph.getEdgesNear(previousObservation, edgesNearObservationThreshold)
+					: graphEdges);
+				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
 					final List<Node> pathFromTo = pathFinder.findPath(fromEdge.getTo(), toEdge.getFrom(), graph).simplePath();
 					final double probability = fScores.get(fromEdge)[previousObservationIndex]
 						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation,

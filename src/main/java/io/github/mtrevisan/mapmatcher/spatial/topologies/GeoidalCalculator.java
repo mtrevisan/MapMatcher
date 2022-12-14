@@ -84,6 +84,11 @@ public class GeoidalCalculator implements TopologyCalculator{
 		return GeodeticHelper.initialBearing(startPoint, endPoint);
 	}
 
+	@Override
+	public Point destination(final Point startPoint, final double initialBearing, final double distance){
+		return GeodeticHelper.destination(startPoint, initialBearing, distance);
+	}
+
 
 	@Override
 	public Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){

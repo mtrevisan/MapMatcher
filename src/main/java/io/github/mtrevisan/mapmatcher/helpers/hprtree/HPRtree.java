@@ -27,6 +27,7 @@ package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -226,6 +227,14 @@ public class HPRtree<T>{
 	}
 
 
+	public Collection<T> nodes(){
+		final List<T> list = new ArrayList<>(items.size());
+		for(final Item<T> item : items)
+			list.add(item.getItem());
+		return list;
+	}
+
+
 	public List<T> query(final Envelope searchEnvelope){
 		build();
 
@@ -253,10 +262,8 @@ public class HPRtree<T>{
 
 			//visit the item if its envelope intersects search env
 			final Item<T> item = items.get(itemIndex);
-			if(intersects(item.getEnvelope(), searchEnvelope)){
-				//if(item.getEnvelope().intersects(searchEnv))
+			if(intersects(item.getEnvelope(), searchEnvelope))
 				visitor.visitItem(item.getItem());
-			}
 		}
 	}
 

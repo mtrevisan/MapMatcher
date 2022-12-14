@@ -24,15 +24,18 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
+import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -50,9 +53,17 @@ public class NearLineMergeGraph implements Graph{
 
 	private final double threshold;
 
+	private HPRtree<Polyline> tree;
+
 
 	public NearLineMergeGraph(final double threshold){
 		this.threshold = threshold;
+	}
+
+	public NearLineMergeGraph withTree(){
+		tree = new HPRtree<>();
+
+		return this;
 	}
 
 	public Collection<Edge> addApproximateDirectEdge(final Polyline polyline){
@@ -113,6 +124,12 @@ public class NearLineMergeGraph implements Graph{
 						LOGGER.debug("Connect edge {} to intersection node {} and {}", edge.getID(), intersectionNode1.getID(), intersectionNode2.getID());
 					}
 				}
+
+		if(tree != null){
+			final Envelope geoBoundingBox = polyline.getBoundingBox();
+			tree.insert(geoBoundingBox, polyline);
+		}
+
 		return addedEdges;
 	}
 
@@ -171,16 +188,6 @@ public class NearLineMergeGraph implements Graph{
 	}
 
 	/**
-	 * Returns an iterator over the nodes in this graph.
-	 *
-	 * @return	The node iterator.
-	 */
-	@Override
-	public Iterator<Node> nodeIterator(){
-		return nodeMap.values().iterator();
-	}
-
-	/**
 	 * Returns the edges that have been added to this graph.
 	 *
 	 * @return	The edges.
@@ -190,14 +197,30 @@ public class NearLineMergeGraph implements Graph{
 		return edges;
 	}
 
-	/**
-	 * Returns an iterator over the edges in this graph, in the order in which they were added.
-	 *
-	 * @return	The edge iterator.
-	 */
+
 	@Override
-	public Iterator<Edge> edgeIterator(){
-		return edges.iterator();
+	public boolean canHaveEdgesNear(){
+		return (tree != null);
+	}
+
+	@Override
+	public Collection<Edge> getEdgesNear(final Point point, final double threshold){
+		if(tree == null)
+			throw new IllegalArgumentException("Tree is not defined, call .withTree() while constructing the graph");
+
+		final Point north = point.destination(0., threshold);
+		final Point east = point.destination(90., threshold);
+		final Point sud = point.destination(180., threshold);
+		final Point west = point.destination(270., threshold);
+		final Envelope envelope = Envelope.ofEmpty();
+		envelope.expandToInclude(north, east, sud, west);
+		final List<Polyline> polylines = tree.query(envelope);
+
+		final List<Edge> edges = new ArrayList<>(0);
+		for(final Edge edge : this.edges)
+			if(polylines.contains(edge.getPolyline()))
+				edges.add(edge);
+		return edges;
 	}
 
 }

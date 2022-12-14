@@ -24,8 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.spatial.Point;
+
 import java.util.Collection;
-import java.util.Iterator;
 
 
 public interface Graph{
@@ -38,24 +39,15 @@ public interface Graph{
 	Collection<Node> nodes();
 
 	/**
-	 * Returns an iterator over the nodes in this graph.
-	 *
-	 * @return	The node iterator.
-	 */
-	Iterator<Node> nodeIterator();
-
-	/**
 	 * Returns the edges that have been added to this graph.
 	 *
 	 * @return	The edges.
 	 */
 	Collection<Edge> edges();
 
-	/**
-	 * Returns an iterator over the edges in this graph, in the order in which they were added.
-	 *
-	 * @return	The edge iterator.
-	 */
-	Iterator<Edge> edgeIterator();
+
+	boolean canHaveEdgesNear();
+
+	Collection<Edge> getEdgesNear(Point point, double threshold);
 
 }

@@ -160,7 +160,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		final Point[] firstList = new Point[cutIndexEnd];
 		System.arraycopy(points, 0, firstList, 0, cutIndexEnd - 1);
 		firstList[cutIndexEnd - 1] = minClosestPoint;
-		final Point[] secondList = new Point[cutIndexEnd + 1];
+		final Point[] secondList = new Point[points.length - cutIndexEnd + 1];
 		secondList[0] = minClosestPoint;
 		System.arraycopy(points, cutIndexEnd, secondList, 1, points.length - cutIndexEnd);
 		return new Polyline[]{
@@ -234,7 +234,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	public String toString(){
 		final StringJoiner sj = new StringJoiner(", ", "LINESTRING (", ")");
 		for(final Point point : points)
-			sj.add(point.getX() + SPACE + point.getY());
+			sj.add(point != null? point.getX() + SPACE + point.getY(): "<null>");
 		return sj.toString();
 	}
 

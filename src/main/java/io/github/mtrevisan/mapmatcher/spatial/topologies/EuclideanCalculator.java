@@ -69,6 +69,14 @@ public class EuclideanCalculator implements TopologyCalculator{
 	}
 
 	@Override
+	public Point destination(final Point startPoint, final double initialBearing, final double distance){
+		final double dx = distance * StrictMath.cos(Math.toRadians(initialBearing));
+		final double dy = distance * StrictMath.sin(Math.toRadians(initialBearing));
+		final GeometryFactory factory = startPoint.getFactory();
+		return factory.createPoint(startPoint.getX() + dx, startPoint.getY() + dy);
+	}
+
+	@Override
 	public Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){
 		final double vx = endPoint.getX() - startPoint.getX();
 		final double vy = endPoint.getY() - startPoint.getY();

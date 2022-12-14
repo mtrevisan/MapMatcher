@@ -68,7 +68,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	}
 
 	@Override
-	public Edge[] findPath(final Graph graph, final Point[] observations){
+	public Edge[] findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
 		int i = extractNextObservation(observations, 0);
 		if(i < 0)
 			//no observations: cannot calculate path

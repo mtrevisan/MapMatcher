@@ -38,6 +38,8 @@ public interface TopologyCalculator{
 
 	double initialBearing(Point startPoint, Point endPoint);
 
+	Point destination(Point startPoint, double initialBearing, double distance);
+
 
 	Point onTrackClosestPoint(Point startPoint, Point endPoint, Point point);
 
