@@ -82,15 +82,15 @@ class AStarMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
@@ -134,15 +134,15 @@ class AStarMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
@@ -186,12 +186,12 @@ class AStarMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.172704737567187, 45.59108565830172, timestamp),
-			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS))),
-			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = timestamp.plus(60, ChronoUnit.SECONDS)))
+			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = advanceTime(timestamp, 60))),
+			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
@@ -241,6 +241,10 @@ class AStarMapMatchingTest{
 			e ++;
 		}
 		return graph;
+	}
+
+	private static ZonedDateTime advanceTime(final ZonedDateTime timestamp, final int amountToAdd){
+		return timestamp.plus(amountToAdd, ChronoUnit.SECONDS);
 	}
 
 }

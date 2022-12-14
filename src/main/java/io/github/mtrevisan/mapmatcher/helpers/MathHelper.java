@@ -52,7 +52,7 @@ public class MathHelper{
 			return (diff < epsilon * Double.MIN_NORMAL);
 
 		//use relative error
-		return (diff < epsilon * Math.min((absA + absB), Double.MAX_VALUE));
+		return (diff < epsilon * Math.min(absA + absB, Double.MAX_VALUE));
 	}
 
 }

@@ -83,7 +83,7 @@ public class BayesianEmissionCalculator implements EmissionProbabilityCalculator
 	@Override
 	public double emissionProbability(final Point observation, final Edge segment,
 			final Point previousObservation){
-		return emissionProbability.get(segment);
+		return emissionProbability.getOrDefault(segment, Double.POSITIVE_INFINITY);
 	}
 
 }
