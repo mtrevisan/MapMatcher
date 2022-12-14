@@ -69,8 +69,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 	@Override
 	public Edge[] findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
-		int i = extractNextObservation(observations, 0);
-		if(i < 0)
+		int currentObservationIndex = extractNextObservation(observations, 0);
+		if(currentObservationIndex < 0)
 			//no observations: cannot calculate path
 			return null;
 
@@ -81,29 +81,32 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		final Map<Edge, double[]> fScores = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
-		Point currentObservation = observations[i];
+		Point currentObservation = observations[currentObservationIndex];
 		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
-		for(final Edge edge : graphEdges){
-			fScores.computeIfAbsent(edge, k -> new double[m])[i] = initialProbabilityCalculator.initialProbability(edge)
+		Collection<Edge> graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
+			? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
+			: graphEdges);
+		for(final Edge edge : graphEdgesNearCurrentObservation){
+			fScores.computeIfAbsent(edge, k -> new double[m])[currentObservationIndex] = initialProbabilityCalculator.initialProbability(edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, null);
-			path.computeIfAbsent(edge, k -> new Edge[n])[i] = edge;
+			path.computeIfAbsent(edge, k -> new Edge[n])[currentObservationIndex] = edge;
 		}
 
 		double minProbability;
-		int previousObservationIndex = i;
+		int previousObservationIndex = currentObservationIndex;
 		while(true){
 			final Point previousObservation = observations[previousObservationIndex];
-			i = extractNextObservation(observations, previousObservationIndex + 1);
-			if(i < 0)
+			currentObservationIndex = extractNextObservation(observations, previousObservationIndex + 1);
+			if(currentObservationIndex < 0)
 				break;
 
-			currentObservation = observations[i];
+			currentObservation = observations[currentObservationIndex];
 
 			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
-			final Collection<Edge> graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
+			graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
 				? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
 				: graphEdges);
 			for(final Edge toEdge : graphEdgesNearCurrentObservation){
@@ -114,19 +117,19 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 					: graphEdges);
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
 					final List<Node> pathFromTo = pathFinder.findPath(fromEdge.getTo(), toEdge.getFrom(), graph).simplePath();
-					final double probability = fScores.get(fromEdge)[previousObservationIndex]
+					final double probability = (fScores.containsKey(fromEdge)? fScores.get(fromEdge)[previousObservationIndex]: 0.)
 						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation,
 							pathFromTo);
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;
-						fScores.get(toEdge)[i] = probability
+						fScores.computeIfAbsent(toEdge, k -> new double[m])[currentObservationIndex] = probability
 							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,
-							newPath.computeIfAbsent(toEdge, k -> new Edge[m]), 0, i);
-						newPath.get(toEdge)[i] = toEdge;
+							newPath.computeIfAbsent(toEdge, k -> new Edge[m]), 0, currentObservationIndex);
+						newPath.get(toEdge)[currentObservationIndex] = toEdge;
 					}
 				}
 			}
@@ -135,7 +138,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			path.putAll(newPath);
 			newPath.clear();
 
-			previousObservationIndex = i;
+			previousObservationIndex = currentObservationIndex;
 		}
 
 		minProbability = Double.POSITIVE_INFINITY;
