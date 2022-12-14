@@ -138,7 +138,7 @@ public class Application{
 		final Graph graph = extractBidirectionalGraph(observedEdges, 1_000.);
 
 		final Point[] filteredObservations = extractObservations(tree, observations, 400.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_350.);
+		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
