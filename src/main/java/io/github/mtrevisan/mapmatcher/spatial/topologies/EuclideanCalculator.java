@@ -47,16 +47,55 @@ public class EuclideanCalculator implements TopologyCalculator{
 
 	@Override
 	public double distance(final Point point, final Polyline polyline){
-		double minNearestPointDistance = Double.MAX_VALUE;
 		final Point[] points = polyline.getPoints();
+		double minNearestPointDistance = distance(point, points[0]);
 		for(int i = 1; i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
-			final double distance = Math.abs(distance(startPoint, endPoint));
+			final double distance = Math.abs(distance(point, startPoint, endPoint));
 			if(distance < minNearestPointDistance)
 				minNearestPointDistance = distance;
 		}
 		return minNearestPointDistance;
+	}
+
+	private double distance(final Point point, final Point startPoint, final Point endPoint){
+		//if start is the same as end, then just compute distance to one of the endpoints
+		if(startPoint.getX() == endPoint.getX() && startPoint.getY() == endPoint.getY())
+			return distance(point, startPoint);
+
+		/*
+		 * (1) r = AC dot AB
+		 *         ---------
+		 *         ||AB||^2
+		 *
+		 * r has the following meaning:
+		 *   r=0 P = A
+		 *   r=1 P = B
+		 *   r<0 P is on the backward extension of AB
+		 *   r>1 P is on the forward extension of AB
+		 *   0<r<1 P is interior to AB
+		 */
+		final double len2 = (endPoint.getX() - startPoint.getX()) * (endPoint.getX() - startPoint.getX())
+			+ (endPoint.getY() - startPoint.getY()) * (endPoint.getY() - startPoint.getY());
+		final double r = ((point.getX() - startPoint.getX()) * (endPoint.getX() - startPoint.getX())
+			+ (point.getY() - startPoint.getY()) * (endPoint.getY() - startPoint.getY())) / len2;
+
+		if(r <= 0.)
+			return distance(point, startPoint);
+		if(r >= 1.)
+			return distance(point, endPoint);
+
+		/*
+		 * (2) s = (Ay-Cy)(Bx-Ax)-(Ax-Cx)(By-Ay)
+		 *         -----------------------------
+		 *                    L^2
+		 *
+		 * Then the distance from C to P = |s|*L.
+		 */
+		final double s = ((startPoint.getY() - point.getY()) * (endPoint.getX() - startPoint.getX())
+			- (startPoint.getX() - point.getX()) * (endPoint.getY() - startPoint.getY())) / len2;
+		return Math.abs(s) * Math.sqrt(len2);
 	}
 
 
