@@ -90,9 +90,9 @@ public class NearLineMergeGraph implements Graph{
 				if(id != null){
 					edge.setID(id);
 
-					String nodeID = (fromNode.getID() != null && fromNode.getID().length() > 0? fromNode.getID() + ",": "N:");
+					String nodeID = (fromNode.getID() != null && fromNode.getID().length() > 0? fromNode.getID() + ",": EMPTY);
 					fromNode.setID(nodeID + edge.getID() + "/from");
-					nodeID = (toNode.getID() != null && toNode.getID().length() > 0? toNode.getID() + ",": "N:");
+					nodeID = (toNode.getID() != null && toNode.getID().length() > 0? toNode.getID() + ",": EMPTY);
 					toNode.setID(nodeID + edge.getID() + "/to");
 				}
 				if(!edges.contains(edge)){
@@ -111,7 +111,7 @@ public class NearLineMergeGraph implements Graph{
 					if(id != null){
 						edge.setID(id);
 
-						final String nodeID = (edge.getID() != null && edge.getID().length() > 0? edge.getID() + ",": "N:");
+						final String nodeID = (edge.getID() != null && edge.getID().length() > 0? edge.getID() + ",": EMPTY);
 						edge.setID(nodeID + edge.getID() + "/from-to");
 					}
 					if(!edges.contains(edge)){

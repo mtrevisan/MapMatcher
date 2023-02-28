@@ -66,11 +66,11 @@ class MapMatchingStrategyTest{
 		Edge pathEdge2 = null;
 		Edge pathEdge4 = null;
 		for(final Edge e : graph.edges()){
-			if(e.getID().equals("E0"))
+			if(e.getID().equals("0"))
 				pathEdge0 = e;
-			else if(e.getID().equals("E2"))
+			else if(e.getID().equals("2"))
 				pathEdge2 = e;
-			else if(e.getID().equals("E4"))
+			else if(e.getID().equals("4"))
 				pathEdge4 = e;
 		}
 		final Edge[] path = new Edge[]{pathEdge0, pathEdge4};

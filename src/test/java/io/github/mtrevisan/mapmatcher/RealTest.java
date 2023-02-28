@@ -28,6 +28,7 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
+import io.github.mtrevisan.mapmatcher.mapmatching.AStarMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
@@ -77,7 +78,7 @@ public class RealTest{
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
-//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator,
+//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			new GeodeticDistanceCalculator());
 
 		Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
@@ -90,8 +91,8 @@ public class RealTest{
 
 		GPSPoint[] observations = extract("CA202RX", ";");
 
-		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 100_000.);
-		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 1_000.);
+		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 1_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 500.);
 
 		final Point[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);

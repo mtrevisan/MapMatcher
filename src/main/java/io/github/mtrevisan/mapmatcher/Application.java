@@ -74,7 +74,7 @@ public class Application{
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
-//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator,
+//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			new GeodeticDistanceCalculator());
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
