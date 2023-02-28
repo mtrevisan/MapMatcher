@@ -61,7 +61,7 @@ public class Edge{
 		if(polyline == null)
 			throw new IllegalArgumentException("`geometry` cannot be null");
 
-		id = "E-" + Objects.requireNonNullElse(from.getID(), "<null>")
+		id = Objects.requireNonNullElse(from.getID(), "<null>")
 			+ "-" + Objects.requireNonNullElse(to.getID(), "<null>");
 		this.from = from;
 		this.to = to;

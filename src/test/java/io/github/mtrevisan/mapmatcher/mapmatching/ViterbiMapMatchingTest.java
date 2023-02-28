@@ -24,10 +24,10 @@
  */
 package io.github.mtrevisan.mapmatcher.mapmatching;
 
+import io.github.mtrevisan.mapmatcher.TestPathHelper;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
-import io.github.mtrevisan.mapmatcher.helpers.filters.GPSPositionSpeedFilter;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
@@ -46,11 +46,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 
 class ViterbiMapMatchingTest{
@@ -84,22 +81,22 @@ class ViterbiMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractDirectGraph(observedEdges, 50.);
+		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
 
-		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
 		final String expected = "[null, E0, E0, E0, E1, E1, E1, E1, null, null]";
@@ -136,22 +133,22 @@ class ViterbiMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractDirectGraph(observedEdges, 50.);
+		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
 
-		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
 		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
@@ -188,22 +185,22 @@ class ViterbiMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractDirectGraph(observedEdges, 50.);
+		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
 
-		final Point[] filteredObservations = extractObservations(edges, observations, 2_000.);
+		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
 
 		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
@@ -239,19 +236,19 @@ class ViterbiMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.172704737567187, 45.59108565830172, timestamp),
-			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = advanceTime(timestamp, 2))),
-			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = TestPathHelper.advanceTime(timestamp, 2))),
+			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractDirectGraph(observedEdges, 50.);
+		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
 
-		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
 		final String expected = "[null, null, E2, E2, E2, E2, E2]";
@@ -289,22 +286,22 @@ class ViterbiMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
+		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
-		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
 		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
@@ -342,22 +339,22 @@ class ViterbiMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
+		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
-		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
 		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
@@ -395,22 +392,22 @@ class ViterbiMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.142791962642718, 45.64824627395467, timestamp),
-			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.166829013921557, 45.658700732309484, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.190331908504874, 45.663553924585955, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.219176370039179, 45.65720735774349, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237871854367, 45.65310037232308, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.675125223889154, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23894016775725, 45.691544896329816, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.237337697671506, 45.70684070823364, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.23306444411162, 45.725861366408196, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
+		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
-		final Point[] filteredObservations = extractObservations(edges, observations, 2_000.);
+		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
 
 		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
@@ -446,115 +443,23 @@ class ViterbiMapMatchingTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.172704737567187, 45.59108565830172, timestamp),
-			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = advanceTime(timestamp, 2))),
-			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.304641441251732, 45.66168736195718, (timestamp = TestPathHelper.advanceTime(timestamp, 2))),
+			GPSPoint.of(12.331349276005653, 45.66168736195718, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Collection<Polyline> observedEdges = extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = extractBidirectionalGraph(observedEdges, 50.);
+		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
-		final Point[] filteredObservations = extractObservations(edges, observations, 400.);
+		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
 		final String expected = "[null, null, E3, E2, E2, E2, E2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
-	}
-
-
-	/**
-	 * Extract a set of candidate road links within a certain distance to all observation.
-	 * <p>
-	 * Measurement error <code>ε_m = ε_p + ε_r</code>, where </ode>ε_p</code> is the positioning error (<em>20 m</em>),
-	 * <code>ε_r = 0.5 * w / sin(α / 2)</code> is the road error, <code>w</code> is the road width (max <em>8 m</em>), and <code>α</code>
-	 * is the angle between two intersecting roads (consider it to be <em>90°</em>).
-	 * This lead to <code>ε_m = 20 + 5.7 = 26 m</code>, a savvy choice is <em>50 m</em>.
-	 * </p>
-	 *
-	 * @param edges	The set of road links.
-	 * @param observations	The observations.
-	 * @param threshold	The threshold.
-	 * @return	The list of road links whose distance is less than the given radius from each observation.
-	 */
-	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Point[] observations,
-			final double threshold){
-		final Set<Polyline> observationsEdges = new LinkedHashSet<>(edges.length);
-		for(final Point observation : observations)
-			observationsEdges.addAll(extractObservedEdges(edges, observation, threshold));
-		return observationsEdges;
-	}
-
-	private static Collection<Polyline> extractObservedEdges(final Polyline[] edges, final Point observation,
-			final double threshold){
-		final GeoidalCalculator geoidalCalculator = new GeoidalCalculator();
-		final Set<Polyline> observationsEdges = new LinkedHashSet<>(edges.length);
-		for(final Polyline edge : edges)
-			if(geoidalCalculator.distance(observation, edge) <= threshold)
-				observationsEdges.add(edge);
-		return observationsEdges;
-	}
-
-	private static Point[] extractObservations(final Polyline[] edges, final GPSPoint[] observations, final double threshold){
-		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
-
-		//step 1. Use Kalman filter to smooth the coordinates
-		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
-		feasibleObservations[0] = observations[0];
-		for(int i = 1; i < observations.length; i ++){
-			kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
-				ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
-			final double[] position = kalmanFilter.getPosition();
-			feasibleObservations[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
-		}
-
-		//step 2. Retain all observation that are within a certain radius from an edge
-		final GeoidalCalculator geoidalCalculator = new GeoidalCalculator();
-		for(int i = 0; i < feasibleObservations.length; i ++){
-			final GPSPoint observation = feasibleObservations[i];
-			boolean edgesFound = false;
-			for(final Polyline edge : edges)
-				if(geoidalCalculator.distance(observation, edge) <= threshold){
-					edgesFound = true;
-					break;
-				}
-			if(!edgesFound)
-				feasibleObservations[i] = null;
-		}
-
-		return feasibleObservations;
-	}
-
-	private static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold)
-			.withTree();
-		int e = 0;
-		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge("E" + e, edge);
-
-			e ++;
-		}
-		return graph;
-	}
-
-	private static Graph extractBidirectionalGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold)
-			.withTree();
-		int e = 0;
-		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge("E" + e, edge);
-			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
-
-			e ++;
-		}
-		return graph;
-	}
-
-	private static ZonedDateTime advanceTime(final ZonedDateTime timestamp, final int amountToAdd){
-		return timestamp.plus(amountToAdd, ChronoUnit.SECONDS);
 	}
 
 }

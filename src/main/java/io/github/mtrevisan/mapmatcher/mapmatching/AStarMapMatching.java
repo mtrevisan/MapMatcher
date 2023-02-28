@@ -155,11 +155,13 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 		double minProbability = Double.POSITIVE_INFINITY;
 		Edge minProbabilityEdge = null;
-		for(final Edge edge : graphEdges)
-			if(fScores.get(edge)[previousObservationIndex] < minProbability){
-				minProbability = fScores.get(edge)[previousObservationIndex];
+		for(final Edge edge : graphEdges){
+			final double[] fScore = fScores.get(edge);
+			if(fScore != null && fScore[previousObservationIndex] < minProbability){
+				minProbability = fScore[previousObservationIndex];
 				minProbabilityEdge = edge;
 			}
+		}
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
 	}
 
