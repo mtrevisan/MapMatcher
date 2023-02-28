@@ -58,13 +58,13 @@
 
 		<!-- Logging -->
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-		<slf4j.slf4j-api.version>2.0.5</slf4j.slf4j-api.version>
+		<slf4j.slf4j-api.version>2.0.6</slf4j.slf4j-api.version>
 		<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
 		<logback.logback-classic.version>1.4.5</logback.logback-classic.version>
 
 		<!-- JUnit -->
 		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
-		<junit.junit-jupiter-engine.version>5.9.1</junit.junit-jupiter-engine.version>
+		<junit.junit-jupiter-engine.version>5.9.2</junit.junit-jupiter-engine.version>
 	</properties>
 
 	<repositories>
