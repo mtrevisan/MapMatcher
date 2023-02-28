@@ -127,8 +127,11 @@ public class PathHelper{
 	}
 
 	public static Polyline extractPathAsPolyline(final Edge[] connectedPath, final Point previousObservation, final Point currentObservation){
-		final Edge fromSegment = (connectedPath.length > 0? connectedPath[0]: null);
-		final Edge toSegment = (connectedPath.length > 0? connectedPath[connectedPath.length - 1]: null);
+		if(connectedPath.length == 0)
+			return null;
+
+		final Edge fromSegment = connectedPath[0];
+		final Edge toSegment = connectedPath[connectedPath.length - 1];
 		return extractPathAsPolyline(connectedPath, fromSegment, toSegment, previousObservation, currentObservation);
 	}
 
