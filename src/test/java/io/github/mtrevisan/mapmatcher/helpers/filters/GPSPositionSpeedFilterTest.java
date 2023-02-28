@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.filters;
 
+import io.github.mtrevisan.mapmatcher.TestPathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -42,12 +43,12 @@ class GPSPositionSpeedFilterTest{
 		ZonedDateTime timestamp = ZonedDateTime.now();
 		final GPSPoint[] observations = new GPSPoint[]{
 			GPSPoint.of(12.172704737567187, 45.59108565830172, timestamp),
-			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.273057882852266, 45.662160679461206, (timestamp = advanceTime(timestamp, 60))),
-			GPSPoint.of(12.274057882852266, 45.662060679461206, (timestamp = advanceTime(timestamp, 60)))
+			GPSPoint.of(12.229859503941071, 45.627705048963094, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.241610951232218, 45.6422714215264, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.243213421318018, 45.65646065552491, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.272057882852266, 45.662060679461206, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.273057882852266, 45.662160679461206, (timestamp = TestPathHelper.advanceTime(timestamp, 60))),
+			GPSPoint.of(12.274057882852266, 45.662060679461206, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 		final GPSPositionSpeedFilter filter = new GPSPositionSpeedFilter(3., 5.);
 		final GPSPoint[] filtered = new GPSPoint[observations.length];
@@ -65,10 +66,6 @@ class GPSPositionSpeedFilterTest{
 			" 12.241610951293309 45.642271421754465, 12.243227378335003 45.6564611741726, 12.272020508158173 45.662072494559595," +
 			" 12.273095919119376 45.66216831699165, 12.274058174532831 45.66206098650002)";
 		Assertions.assertEquals(expected, filteredPolyline.toString());
-	}
-
-	private static ZonedDateTime advanceTime(final ZonedDateTime timestamp, final int amountToAdd){
-		return timestamp.plus(amountToAdd, ChronoUnit.SECONDS);
 	}
 
 }

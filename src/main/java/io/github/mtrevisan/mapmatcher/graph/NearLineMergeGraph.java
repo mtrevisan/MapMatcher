@@ -210,10 +210,10 @@ public class NearLineMergeGraph implements Graph{
 
 		final Point north = point.destination(0., threshold);
 		final Point east = point.destination(90., threshold);
-		final Point sud = point.destination(180., threshold);
+		final Point south = point.destination(180., threshold);
 		final Point west = point.destination(270., threshold);
 		final Envelope envelope = Envelope.ofEmpty();
-		envelope.expandToInclude(north, east, sud, west);
+		envelope.expandToInclude(north, east, south, west);
 		final List<Polyline> polylines = tree.query(envelope);
 
 		final List<Edge> edges = new ArrayList<>(0);

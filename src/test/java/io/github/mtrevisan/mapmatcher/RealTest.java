@@ -24,6 +24,22 @@
  */
 package io.github.mtrevisan.mapmatcher;
 
+import io.github.mtrevisan.mapmatcher.graph.Edge;
+import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
+import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
+import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
+import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.NoUTurnTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -38,6 +54,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -47,11 +65,46 @@ public class RealTest{
 
 
 	public static void main(String[] args) throws IOException{
-		List<Polyline> roads = extractPolylines("it.highways.simplified.5.wkt");
+		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
+		// correct segment
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new TopologicalTransitionPlugin())
+			.withPlugin(new NoUTurnTransitionPlugin())
+			.withPlugin(new DirectionTransitionPlugin());
+//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
+//			.withPlugin(new NoUTurnPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			new GeodeticDistanceCalculator());
+//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, probabilityCalculator,
+//			new GeodeticDistanceCalculator());
+
+		Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
+			.toArray(Polyline[]::new);
+		final HPRtree<Polyline> tree = new HPRtree<>();
+		for(final Polyline road : roads){
+			final Envelope geoBoundingBox = road.getBoundingBox();
+			tree.insert(geoBoundingBox, road);
+		}
 
 		GPSPoint[] observations = extract("CA202RX", ";");
 
-		System.out.println();
+		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 100_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 1_000.);
+
+		final Point[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
+		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
+if(path != null)
+	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new GeodeticDistanceCalculator());
+if(path != null)
+	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
+
+		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath, observations[0], observations[observations.length - 1]);
+if(path != null)
+	System.out.println("path polyline: " + pathPolyline);
 	}
 
 

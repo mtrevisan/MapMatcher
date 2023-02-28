@@ -26,7 +26,6 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -37,7 +36,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.Collection;
 
 
 class MapMatchingStrategyTest{
@@ -62,7 +60,7 @@ class MapMatchingStrategyTest{
 		final Polyline edge5 = factory.createPolyline(node32_51_61, node62);
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final Graph graph = extractDirectGraph(Arrays.asList(edges), 50.);
+		final Graph graph = PathHelper.extractDirectGraph(Arrays.asList(edges), 50.);
 
 		Edge pathEdge0 = null;
 		Edge pathEdge2 = null;
@@ -80,18 +78,6 @@ class MapMatchingStrategyTest{
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new GeodeticDistanceCalculator());
 
 		Assertions.assertArrayEquals(new Edge[]{pathEdge0, pathEdge2, pathEdge4}, connectedPath);
-	}
-
-
-	private static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
-		int e = 0;
-		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge("E" + e, edge);
-
-			e ++;
-		}
-		return graph;
 	}
 
 }

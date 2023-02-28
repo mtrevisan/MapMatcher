@@ -26,9 +26,7 @@ package io.github.mtrevisan.mapmatcher;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
-import io.github.mtrevisan.mapmatcher.helpers.filters.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
@@ -43,7 +41,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.Transit
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
-import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -54,9 +51,6 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -134,10 +128,10 @@ public class Application{
 		};
 		final GPSPoint[] observations = observations1;
 
-		final Collection<Polyline> observedEdges = extractObservedEdges(tree, observations, 100_000.);
-		final Graph graph = extractBidirectionalGraph(observedEdges, 1_000.);
+		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 100_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 1_000.);
 
-		final Point[] filteredObservations = extractObservations(tree, observations, 400.);
+		final Point[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
@@ -190,91 +184,6 @@ if(path != null)
 //			System.out.println(Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 //	}
 
-
-	/**
-	 * Extract a set of candidate road links within a certain distance to all observation.
-	 * <p>
-	 * Measurement error <code>ε_m = ε_p + ε_r</code>, where </ode>ε_p</code> is the positioning error (<em>20 m</em>),
-	 * <code>ε_r = 0.5 * w / sin(α / 2)</code> is the road error, <code>w</code> is the road width (max <em>8 m</em>), and <code>α</code>
-	 * is the angle between two intersecting roads (consider it to be <em>90°</em>).
-	 * This lead to <code>ε_m = 20 + 5.7 = 26 m</code>, a savvy choice is <em>50 m</em>.
-	 * </p>
-	 *
-	 * @param tree	The set of road links.
-	 * @param observations	The observations.
-	 * @param threshold	The threshold.
-	 * @return	The list of road links whose distance is less than the given radius from each observation.
-	 */
-	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point[] observations,
-			final double threshold){
-		final Set<Polyline> observationsEdges = new LinkedHashSet<>(0);
-		for(final Point observation : observations)
-			observationsEdges.addAll(extractObservedEdges(tree, observation, threshold));
-		return observationsEdges;
-	}
-
-	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point observation, final double threshold){
-		final Point north = GeodeticHelper.destination(observation, 0., threshold);
-		final Point east = GeodeticHelper.destination(observation, 90., threshold);
-		final Point sud = GeodeticHelper.destination(observation, 180., threshold);
-		final Point west = GeodeticHelper.destination(observation, 270., threshold);
-		final Envelope envelope = Envelope.ofEmpty();
-		envelope.expandToInclude(north, east, sud, west);
-		return tree.query(envelope);
-	}
-
-	private static Point[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations, final double threshold){
-		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
-
-		//step 1. Use Kalman filter to smooth the coordinates
-		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
-		feasibleObservations[0] = observations[0];
-		for(int i = 1; i < observations.length; i ++){
-			kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
-				ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
-			final double[] position = kalmanFilter.getPosition();
-			feasibleObservations[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
-		}
-
-		//step 2. Retain all observation that are within a certain radius from an edge
-		for(int i = 0; i < feasibleObservations.length; i ++){
-			final GPSPoint observation = feasibleObservations[i];
-			final Point north = GeodeticHelper.destination(observation, 0., threshold);
-			final Point east = GeodeticHelper.destination(observation, 90., threshold);
-			final Point sud = GeodeticHelper.destination(observation, 180., threshold);
-			final Point west = GeodeticHelper.destination(observation, 270., threshold);
-			final Envelope envelope = Envelope.ofEmpty();
-			envelope.expandToInclude(north, east, sud, west);
-			final List<Polyline> edges = tree.query(envelope);
-			if(edges.isEmpty())
-				feasibleObservations[i] = null;
-		}
-
-		return feasibleObservations;
-	}
-
-	private static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
-		int e = 0;
-		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge("E" + e, edge);
-
-			e ++;
-		}
-		return graph;
-	}
-
-	private static Graph extractBidirectionalGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
-		int e = 0;
-		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge("E" + e, edge);
-			graph.addApproximateDirectEdge("E" + e + "-rev", edge.reverse());
-
-			e ++;
-		}
-		return graph;
-	}
 
 	private static ZonedDateTime advanceTime(final ZonedDateTime timestamp, final int amountToAdd){
 		return timestamp.plus(amountToAdd, ChronoUnit.SECONDS);
