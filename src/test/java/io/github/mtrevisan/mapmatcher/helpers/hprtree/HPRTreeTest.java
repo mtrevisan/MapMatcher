@@ -60,8 +60,8 @@ class HPRTreeTest{
 
 	private static final String FILENAME_ROADS_RAW = "src/test/resources/it.highways.wkt";
 	private static final String FILENAME_TOLL_BOOTHS_RAW = "src/test/resources/it.tollBooths.wkt";
-	private static final String FILENAME_ROADS_SIMPLIFIED = "src/test/resources/it.tollBooths.simplified.wkt";
-	private static final String FILENAME_TOLL_BOOTHS_SIMPLIFIED = "src/test/resources/it.highways.simplified.5.wkt";
+	private static final String FILENAME_ROADS_SIMPLIFIED = "src/test/resources/it.highways.simplified.5.wkt";
+	private static final String FILENAME_TOLL_BOOTHS_SIMPLIFIED = "src/test/resources/it.tollBooths.simplified.wkt";
 
 
 	/*
@@ -91,14 +91,14 @@ out skel qt;
 
 		//filter only toll booths on highways
 		filterPointsAlongPolylines(tollBooths, roads);
-		final File outputTollBoothsFile = new File(FILENAME_ROADS_SIMPLIFIED);
+		final File outputTollBoothsFile = new File(FILENAME_TOLL_BOOTHS_SIMPLIFIED);
 
 		writePoints(tollBooths, outputTollBoothsFile);
 
 		//preserve connection point on highways coming from connection links
 		final Collection<Polyline> reducedRoads = simplifyPolylines(roads, 5.);
 
-		final File outputRoadsFile = new File(FILENAME_TOLL_BOOTHS_SIMPLIFIED);
+		final File outputRoadsFile = new File(FILENAME_ROADS_SIMPLIFIED);
 		writePolylines(reducedRoads, outputRoadsFile);
 	}
 
@@ -238,7 +238,7 @@ out skel qt;
 	@Test
 	void query_tree() throws IOException{
 		HPRtree<Polyline> tree = new HPRtree<>();
-		List<Polyline> highways = extractPolylines(new File(FILENAME_TOLL_BOOTHS_SIMPLIFIED));
+		List<Polyline> highways = extractPolylines(new File(FILENAME_ROADS_SIMPLIFIED));
 		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
