@@ -78,12 +78,13 @@ public class Application{
 		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(distanceTolerance);
 		final Polyline edge0 = factory.createPolyline(simplifier.simplify(node11, node12_31_41));
-		final Polyline edge1 = factory.createPolyline(simplifier.simplify(node12_31_41, node22, node23));
+		final Polyline edge1 = factory.createPolyline(simplifier.simplify(node12_31_41, node22));
+		final Polyline edge1bis = factory.createPolyline(simplifier.simplify(node22, node23));
 		final Polyline edge2 = factory.createPolyline(simplifier.simplify(node12_31_41, node32_51_61));
 		final Polyline edge3 = factory.createPolyline(simplifier.simplify(node12_31_41, node42));
 		final Polyline edge4 = factory.createPolyline(simplifier.simplify(node32_51_61, node52));
 		final Polyline edge5 = factory.createPolyline(simplifier.simplify(node32_51_61, node62));
-		final Polyline[] polylines = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final Polyline[] polylines = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5, edge1bis};
 		final HPRtree<Polyline> tree = new HPRtree<>();
 		for(final Polyline polyline : polylines){
 			final Envelope geoBoundingBox = polyline.getBoundingBox();
@@ -135,6 +136,7 @@ public class Application{
 			distanceCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			distanceCalculator);
+System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
