@@ -26,6 +26,7 @@ package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -38,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 
 
@@ -84,6 +86,7 @@ public class NearLineMergeGraph implements Graph{
 		final Collection<Node> endNodes = connectNodes(points[points.length - 1], polyline.getEndPoint());
 		final Set<Node> intersectionNodes = new HashSet<>(startNodes);
 		intersectionNodes.retainAll(endNodes);
+
 		for(final Node fromNode : startNodes)
 			for(final Node toNode : endNodes){
 				final Edge edge = Edge.createDirectEdge(fromNode, toNode, polyline);
@@ -94,6 +97,8 @@ public class NearLineMergeGraph implements Graph{
 					fromNode.setID(nodeID + edge.getID() + "/from");
 					nodeID = (toNode.getID() != null && toNode.getID().length() > 0? toNode.getID() + ",": EMPTY);
 					toNode.setID(nodeID + edge.getID() + "/to");
+
+					LOGGER.debug("Create edge '{}' from '{}' to '{}'", edge.getID(), fromNode.getPoint(), toNode.getPoint());
 				}
 				if(!edges.contains(edge)){
 					fromNode.addOutEdge(edge);
@@ -101,7 +106,7 @@ public class NearLineMergeGraph implements Graph{
 
 					addedEdges.add(edge);
 
-					LOGGER.debug("Connect edge {} to node {} and {}", edge.getID(), fromNode.getID(), toNode.getID());
+					LOGGER.debug("Connect edge '{}' to node '{}' and '{}'", edge.getID(), fromNode.getID(), toNode.getID());
 				}
 			}
 		for(final Node intersectionNode1 : intersectionNodes)
@@ -113,6 +118,8 @@ public class NearLineMergeGraph implements Graph{
 
 						final String nodeID = (edge.getID() != null && edge.getID().length() > 0? edge.getID() + ",": EMPTY);
 						edge.setID(nodeID + edge.getID() + "/from-to");
+
+						LOGGER.debug("Create self edge '{}': point {}", edge.getID(), edge.getFrom().getPoint());
 					}
 					if(!edges.contains(edge)){
 						intersectionNode1.addOutEdge(edge);
@@ -121,7 +128,7 @@ public class NearLineMergeGraph implements Graph{
 
 						addedEdges.add(edge);
 
-						LOGGER.debug("Connect edge {} to intersection node {} and {}", edge.getID(), intersectionNode1.getID(), intersectionNode2.getID());
+						LOGGER.debug("Connect edge '{}' to intersection node '{}' and '{}'", edge.getID(), intersectionNode1.getID(), intersectionNode2.getID());
 					}
 				}
 
@@ -177,21 +184,16 @@ public class NearLineMergeGraph implements Graph{
 		return closest;
 	}
 
-	/**
-	 * Returns the nodes that have been added to this graph.
-	 *
-	 * @return	The nodes.
-	 */
+	@Override
+	public boolean isEmpty(){
+		return nodeMap.isEmpty();
+	}
+
 	@Override
 	public Collection<Node> nodes(){
 		return nodeMap.values();
 	}
 
-	/**
-	 * Returns the edges that have been added to this graph.
-	 *
-	 * @return	The edges.
-	 */
 	@Override
 	public Collection<Edge> edges(){
 		return edges;
@@ -221,6 +223,49 @@ public class NearLineMergeGraph implements Graph{
 			if(polylines.contains(edge.getPolyline()))
 				edges.add(edge);
 		return edges;
+	}
+
+	@Override
+	public Node getClosestNode(final Point point){
+		if(tree == null)
+			throw new IllegalArgumentException("Tree is not defined, call .withTree() while constructing the graph");
+
+		Node closestNode = null;
+		double minimumDistance = Double.POSITIVE_INFINITY;
+		for(final Map.Entry<Point, Node> entry : nodeMap.entrySet()){
+			final double distance = point.distance(entry.getKey());
+			if(distance <= minimumDistance){
+				minimumDistance = distance;
+				closestNode = entry.getValue();
+			}
+		}
+		return closestNode;
+	}
+
+
+	@Override
+	public String toString(){
+		return graphAsString()
+			.toString();
+	}
+
+	@Override
+	public String toStringWithObservations(final GPSPoint[] observations){
+		final StringJoiner sj = graphAsString();
+		for(final GPSPoint observation : observations)
+			if(observation != null)
+				sj.add(observation.toString());
+		return sj.toString();
+	}
+
+	private StringJoiner graphAsString(){
+		final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
+		for(final Edge edge : edges){
+			final Point from = edge.getFrom().getPoint();
+			final Point to = edge.getTo().getPoint();
+			sj.add(from.getFactory().createPolyline(from, to).toString());
+		}
+		return sj;
 	}
 
 }

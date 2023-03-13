@@ -46,6 +46,11 @@ public class GeodeticHelper{
 	//[m]
 	private static final double ON_TRACK_POINT_PRECISION = 0.1;
 
+	//mean Earth radius [m]
+	private static final double EARTH_RADIUS = 6_371_000.;
+	private static final double EARTH_CIRCUMFERENCE = 2. * StrictMath.PI * EARTH_RADIUS;
+	private static final double METERS_PER_DEGREE = EARTH_CIRCUMFERENCE / 360.;
+
 
 	private GeodeticHelper(){}
 
@@ -105,6 +110,9 @@ public class GeodeticHelper{
 	 * @see <a href="https://www.researchgate.net/publication/321358300_Intersection_and_point-to-line_solutions_for_geodesics_on_the_ellipsoid">Intersection and point-to-line solutions for geodesics on the ellipsoid</a>
 	 */
 	public static Point onTrackClosestPoint(final Point startPoint, final Point endPoint, final Point point){
+		if(startPoint.equals(endPoint))
+			return startPoint;
+
 		//NOTE: do not use the entire calculated ATD as there may be an endless back and forth calculation between two points around
 		//	the true point on track
 		final Set<Double> historicalATD = new HashSet<>(3);
@@ -290,6 +298,29 @@ public class GeodeticHelper{
 	private static Point limitIntersection(final Point startPoint, final Point endPoint, final Point point){
 		final Point intersection = onTrackClosestPoint(startPoint, endPoint, point);
 		return (intersection != null && orthodromicDistance(point, intersection) < ON_TRACK_POINT_PRECISION? point: null);
+	}
+
+
+	/**
+	 * Returns the equivalent measurement error sigma in latitude.
+	 *
+	 * @param measurementErrorSigma	The measurement error sigma [m].
+	 * @return	[°].
+	 */
+	public static double measurementErrorSigmaInLatitude(final double measurementErrorSigma){
+		return measurementErrorSigma / METERS_PER_DEGREE;
+	}
+
+	/**
+	 * Returns the equivalent measurement error sigma in longitude.
+	 *
+	 * @param measurementErrorSigma	The measurement error sigma [m].
+	 * @param latitude	The latitude.
+	 * @return	[°].
+	 */
+	public static double measurementErrorSigmaInLongitude(final double measurementErrorSigma, final double latitude){
+		final double circumference = 2. * StrictMath.PI * EARTH_RADIUS * StrictMath.cos(StrictMath.toRadians(latitude));
+		return measurementErrorSigma * 360. / circumference;
 	}
 
 }

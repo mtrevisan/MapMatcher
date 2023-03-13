@@ -165,11 +165,11 @@ public class PathHelper{
 			&& fromSegment.getTo().getPoint().equals(toSegment.getFrom().getPoint()));
 	}
 
-	public static boolean isGoingForward(final Point previousObservation, final Point currentObservation, final Polyline polyline){
+	public static boolean isGoingBackward(final Point previousObservation, final Point currentObservation, final Polyline polyline){
 		//calculate Along-Track Distance
 		final double previousATD = polyline.alongTrackDistance(previousObservation);
 		final double currentATD = polyline.alongTrackDistance(currentObservation);
-		return (previousATD <= currentATD);
+		return (currentATD < previousATD);
 	}
 
 
@@ -188,24 +188,39 @@ public class PathHelper{
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
 	public static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point[] observations,
-			final double threshold){
-		final Set<Polyline> observationsEdges = new LinkedHashSet<>(0);
-		for(final Point observation : observations)
-			observationsEdges.addAll(extractObservedEdges(tree, observation, threshold));
-		return observationsEdges;
-	}
+		final double threshold){
+		//collect max and min of X and Y:
+		double maxX = Double.NEGATIVE_INFINITY;
+		double minX = Double.POSITIVE_INFINITY;
+		double maxY = Double.NEGATIVE_INFINITY;
+		double minY = Double.POSITIVE_INFINITY;
+		for(final Point observation : observations){
+			final double x = observation.getX();
+			if(x > maxX)
+				maxX = x;
+			else if(x < minX)
+				minX = x;
 
-	private static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point observation, final double threshold){
-		final Point north = GeodeticHelper.destination(observation, 0., threshold);
-		final Point east = GeodeticHelper.destination(observation, 90., threshold);
-		final Point south = GeodeticHelper.destination(observation, 180., threshold);
-		final Point west = GeodeticHelper.destination(observation, 270., threshold);
-		final Envelope envelope = Envelope.ofEmpty();
-		envelope.expandToInclude(north, east, south, west);
+			final double y = observation.getY();
+			if(y > maxY)
+				maxY = y;
+			else if(y < minY)
+				minY = y;
+		}
+
+		//create an envelope around max and min:
+		final GeometryFactory factory = observations[0].getFactory();
+		final Point max = Point.of(factory, maxX, maxY);
+		final Point min = Point.of(factory, minX, minY);
+		final Point northEast = GeodeticHelper.destination(GeodeticHelper.destination(max, 0., threshold), 90., threshold);
+		final Point southWest = GeodeticHelper.destination(GeodeticHelper.destination(min, 180., threshold), 270., threshold);
+		final Envelope envelope = Envelope.of(northEast, southWest);
+
+		//query the tree
 		return tree.query(envelope);
 	}
 
-	public static Point[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations, final double threshold){
+	public static GPSPoint[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations, final double threshold){
 		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
 
 		//step 1. Use Kalman filter to smooth the coordinates

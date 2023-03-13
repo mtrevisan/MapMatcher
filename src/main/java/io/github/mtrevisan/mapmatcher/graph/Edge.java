@@ -114,8 +114,8 @@ public class Edge{
 		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Edge edge = (Edge)obj;
-		return (Objects.equals(from, edge.from) && Objects.equals(to, edge.to) && Objects.equals(weight, edge.weight));
+		final Edge other = (Edge)obj;
+		return (Objects.equals(from, other.from) && Objects.equals(to, other.to) && Objects.equals(weight, other.weight));
 	}
 
 	@Override

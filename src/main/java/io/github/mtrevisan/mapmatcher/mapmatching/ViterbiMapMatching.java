@@ -36,6 +36,7 @@ import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculat
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,26 +71,130 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		pathFinder = new AStarPathFinder(edgeWeightCalculator);
 	}
 
+	/*static class Label{
+		int timeStep;
+
+		Point observation;
+		Point snap;
+		Node closestNode;
+		Edge edge;
+
+		double probability;
+
+		Label back;
+	}*/
+
+	//https://github.com/graphhopper/map-matching/blob/master/hmm-lib/src/main/java/com/bmw/hmm/ViterbiAlgorithm.java
+	/*@Override
+	public Edge[] findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
+		if(graph.isEmpty())
+			//no graph: cannot calculate path
+			return null;
+
+		int currentObservationIndex = extractNextObservation(observations, 0);
+		if(currentObservationIndex < 0)
+			//no observations: cannot calculate path
+			return null;
+
+
+		final PriorityQueue<Label> queue = new PriorityQueue<>(Comparator.comparing(node -> node.probability));
+		Point currentObservation = observations[currentObservationIndex];
+		final Collection<Edge> graphEdges = graph.edges();
+		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
+		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
+		for(final Edge edge : graphEdges){
+			final Polyline edgePolyline = edge.getPolyline();
+			final Point snap = edgePolyline.onTrackClosestPoint(currentObservation);
+			final double probability = initialProbabilityCalculator.initialProbability(edge)
+				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, null);
+			final Label label = new Label();
+			label.observation = currentObservation;
+			label.snap = snap;
+			label.closestNode = (edgePolyline.alongTrackDistance(snap) < edgePolyline.alongTrackDistance(edgePolyline.getEndPoint())
+				? edge.getFrom()
+				: edge.getTo());
+			label.edge = edge;
+			label.probability = probability;
+			queue.add(label);
+		}
+
+
+		double minProbability;
+		Label node = null;
+		int previousObservationIndex = currentObservationIndex;
+		while(!queue.isEmpty()){
+			node = queue.poll();
+
+			final Point previousObservation = observations[previousObservationIndex];
+			currentObservationIndex = extractNextObservation(observations, previousObservationIndex + 1);
+			if(currentObservationIndex < 0)
+				break;
+
+			currentObservation = observations[currentObservationIndex];
+
+			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
+
+			final Label best = new Label();
+			final Edge fromEdge = node.edge;
+			for(final Edge toEdge : graphEdges){
+				minProbability = Double.POSITIVE_INFINITY;
+
+				final List<Node> pathFromTo = pathFinder.findPath(node.closestNode, toEdge.getTo(), graph)
+					.simplePath();
+				if(!pathFromTo.isEmpty()){
+					final double probability = node.probability
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation,
+						pathFromTo);
+					if(probability < minProbability){
+						best.timeStep = node.timeStep + 1;
+						best.observation = currentObservation;
+						best.snap = node.snap;
+						best.edge = toEdge;
+						best.probability = probability
+							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
+						best.back = node;
+					}
+				}
+			}
+			if(best.timeStep > 0)
+				queue.add(best);
+
+			previousObservationIndex = currentObservationIndex;
+		}
+
+
+		final List<Edge> result = new ArrayList<>(observations.length);
+		while(node != null){
+			result.add(node.edge);
+
+			node = node.back;
+		}
+		Collections.reverse(result);
+		return (result.isEmpty()? null: result.toArray(Edge[]::new));
+	}*/
+
 	@Override
 	public Edge[] findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
+		if(graph.isEmpty())
+			//no graph: cannot calculate path
+			return null;
+
 		int currentObservationIndex = extractNextObservation(observations, 0);
 		if(currentObservationIndex < 0)
 			//no observations: cannot calculate path
 			return null;
 
 		final Collection<Edge> graphEdges = graph.edges();
-
-		final int n = graphEdges.size();
-		final int m = observations.length;
 		final Map<Edge, double[]> score = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
 		Point currentObservation = observations[currentObservationIndex];
-		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		Collection<Edge> graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
 			? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
 			: graphEdges);
+		final int n = graphEdges.size();
+		final int m = observations.length;
 		for(final Edge edge : graphEdgesNearCurrentObservation){
 			score.computeIfAbsent(edge, k -> new double[m])[currentObservationIndex] = initialProbabilityCalculator.initialProbability(edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, null);
@@ -105,25 +210,27 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				break;
 
 			currentObservation = observations[currentObservationIndex];
-
-			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
-
-			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
+			//select the road links near the GPS points withing a certain distance
+			Collection<Edge> graphEdgesNearPreviousObservation = graphEdgesNearCurrentObservation;
 			graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
 				? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
 				: graphEdges);
+
+			//calculate the emission probability matrix
+			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
+
+			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
 			for(final Edge toEdge : graphEdgesNearCurrentObservation){
 				minProbability = Double.POSITIVE_INFINITY;
 
-				final Collection<Edge> graphEdgesNearPreviousObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
-					? graph.getEdgesNear(previousObservation, edgesNearObservationThreshold)
-					: graphEdges);
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-					final List<Node> pathFromTo = pathFinder.findPath(fromEdge.getTo(), toEdge.getFrom(), graph).simplePath();
+					final List<Node> pathFromTo = calculatePath(fromEdge, toEdge, graph, previousObservation, currentObservation);
+
 					final double probability = (score.containsKey(fromEdge)? score.get(fromEdge)[previousObservationIndex]: 0.)
+						//calculate the state transition probability matrix
 						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation,
 							pathFromTo);
-					if(probability < minProbability){
+					if(probability <= minProbability){
 						//record minimum probability
 						minProbability = probability;
 						score.computeIfAbsent(toEdge, k -> new double[m])[currentObservationIndex] = probability
@@ -148,12 +255,27 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		Edge minProbabilityEdge = null;
 		for(final Edge edge : graphEdges){
 			final double[] fScore = score.get(edge);
-			if(fScore != null && fScore[previousObservationIndex] < minProbability){
-				minProbability = fScore[previousObservationIndex];
+			final double edgeScore = (fScore != null? fScore[previousObservationIndex]: 0.);
+			if(edgeScore > 0. && edgeScore < minProbability){
+				minProbability = edgeScore;
 				minProbabilityEdge = edge;
 			}
 		}
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
+	}
+
+	private List<Node> calculatePath(final Edge fromEdge, final Edge toEdge, final Graph graph,
+			final Point previousObservation, final Point currentObservation){
+		final Node previousNode = graph.getClosestNode(fromEdge.getPolyline().onTrackClosestPoint(previousObservation));
+		final List<Node> pathFromTo;
+		if(fromEdge.equals(toEdge))
+			pathFromTo = Collections.singletonList(previousNode);
+		else{
+			final Node currentNode = graph.getClosestNode(toEdge.getPolyline().onTrackClosestPoint(currentObservation));
+			pathFromTo = pathFinder.findPath(previousNode, currentNode, graph)
+				.simplePath();
+		}
+		return pathFromTo;
 	}
 
 	private static int extractNextObservation(final Point[] observations, int index){

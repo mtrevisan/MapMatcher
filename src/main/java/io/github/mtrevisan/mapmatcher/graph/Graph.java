@@ -24,12 +24,20 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
 
 
 public interface Graph{
+
+	/**
+	 * Returns whether the graph has no nodes.
+	 *
+	 * @return	Whether the graph is empty.
+	 */
+	boolean isEmpty();
 
 	/**
 	 * Returns the nodes that have been added to this graph.
@@ -49,5 +57,9 @@ public interface Graph{
 	boolean canHaveEdgesNear();
 
 	Collection<Edge> getEdgesNear(Point point, double threshold);
+
+	Node getClosestNode(Point point);
+
+	String toStringWithObservations(GPSPoint[] observations);
 
 }

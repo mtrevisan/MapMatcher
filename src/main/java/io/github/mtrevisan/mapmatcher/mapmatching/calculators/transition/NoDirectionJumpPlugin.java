@@ -29,38 +29,27 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
-//import java.util.HashSet;
 import java.util.List;
-//import java.util.Set;
 
 
-public class NoUTurnTransitionPlugin implements TransitionProbabilityPlugin{
+public class NoDirectionJumpPlugin implements TransitionProbabilityPlugin{
 
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
 			final Point previousObservation, final Point currentObservation, final List<Node> path){
-		//penalize u-turns: make then unreachable
-		boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
+		final Edge[] pathEdges = PathHelper.extractPathAsEdges(path);
+		final Edge[] augmentedPathEdges = new Edge[pathEdges.length + 2];
+		augmentedPathEdges[0] = fromSegment;
+		augmentedPathEdges[augmentedPathEdges.length - 1] = toSegment;
+		System.arraycopy(pathEdges, 0, augmentedPathEdges, 1, pathEdges.length);
+		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(augmentedPathEdges,
+			previousObservation, currentObservation);
 
-		if(path != null && !fromSegment.equals(toSegment))
-			//disallow U-turn along multiple edges
-			segmentsReversed = PathHelper.hasMixedDirections(path, fromSegment, toSegment);
-
-		return (segmentsReversed? Double.POSITIVE_INFINITY: 0.);
-
-
-//		final Edge[] pathEdges = PathHelper.extractPathAsEdges(path);
-//		Set<String> froms = new HashSet<>(pathEdges.length + 2);
-//		froms.add(fromSegment.getFrom().getID());
-//		if(froms.contains(fromSegment.getTo().getID()))
-//			return Double.POSITIVE_INFINITY;
-//		for(final Edge edge : pathEdges)
-//			if(!froms.add(edge.getFrom().getID()) || froms.contains(edge.getTo().getID()))
-//				return Double.POSITIVE_INFINITY;
-//		if(!froms.add(toSegment.getFrom().getID()) || froms.contains(toSegment.getTo().getID()))
-//			return Double.POSITIVE_INFINITY;
-//		return 0.;
+		if(PathHelper.isGoingBackward(previousObservation, currentObservation, pathAsPolyline))
+			return Double.POSITIVE_INFINITY;
+		return 0.;
 	}
 
 }

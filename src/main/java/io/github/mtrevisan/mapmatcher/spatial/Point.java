@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2021-2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,6 +23,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 package io.github.mtrevisan.mapmatcher.spatial;
+
+import io.github.mtrevisan.mapmatcher.helpers.MathHelper;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -99,6 +101,14 @@ public class Point extends Geometry implements Comparable<Point>, Serializable{
 		final Point other = (Point)obj;
 		return (Double.doubleToLongBits(x) == Double.doubleToLongBits(other.x)
 			&& Double.doubleToLongBits(y) == Double.doubleToLongBits(other.y));
+	}
+
+	public boolean equals(final Point other, final double precision){
+		if(this == other)
+			return true;
+
+		return (MathHelper.nearlyEqual(x, other.x, precision)
+			&& MathHelper.nearlyEqual(y, other.y, precision));
 	}
 
 	@Override

@@ -24,6 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 
 public class MathHelper{
 
@@ -53,6 +56,23 @@ public class MathHelper{
 
 		//use relative error
 		return (diff < epsilon * Math.min(absA + absB, Double.MAX_VALUE));
+	}
+
+	/**
+	 * Round the value to the specified number of decimal places.
+	 */
+	public static String roundToString(final double value, final int decimalPlaces){
+		try{
+			final BigDecimal bd = new BigDecimal(Double.toString(value))
+				.setScale(decimalPlaces, RoundingMode.HALF_UP);
+			return bd.toPlainString();
+		}
+		catch(final NumberFormatException ignored){
+			if(Double.isInfinite(value))
+				return (value > 0? "+Inf": "-Inf");
+			else
+				return "NaN";
+		}
 	}
 
 }

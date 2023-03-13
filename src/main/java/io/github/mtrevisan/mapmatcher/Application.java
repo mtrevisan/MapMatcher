@@ -36,6 +36,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.NoUTurnTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
@@ -62,21 +63,6 @@ import java.util.Collection;
 public class Application{
 
 	public static void main(final String[] args){
-		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
-		// correct segment
-		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin())
-			.withPlugin(new NoUTurnTransitionPlugin())
-			.withPlugin(new DirectionTransitionPlugin());
-//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
-//			.withPlugin(new NoUTurnPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
-//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-//			new GeodeticDistanceCalculator());
-
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
@@ -128,15 +114,32 @@ public class Application{
 		};
 		final GPSPoint[] observations = observations1;
 
-		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 100_000.);
-		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 1_000.);
+		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 1_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 500.);
 
-		final Point[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
+		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 390.);
+		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
+		// correct segment
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+//			.withPlugin(new ShortestPathTransitionPlugin(3.))
+			.withPlugin(new TopologicalTransitionPlugin())
+//			.withPlugin(new NoUTurnTransitionPlugin())
+//			.withPlugin(new DirectionTransitionPlugin())
+			;
+//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
+//			.withPlugin(new NoUTurnPlugin());
+		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final GeodeticDistanceCalculator distanceCalculator = new GeodeticDistanceCalculator();
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			distanceCalculator);
+//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+//			distanceCalculator);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new GeodeticDistanceCalculator());
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, distanceCalculator);
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 

@@ -41,6 +41,9 @@ public class Node{
 
 
 	public Node(final String id, final Point point){
+		if(point == null)
+			throw new IllegalArgumentException("`point` cannot be null");
+
 		this.id = id;
 		this.point = point;
 	}
