@@ -46,6 +46,9 @@ import java.util.Map;
  * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
  * @see <a href="https://journals.sagepub.com/doi/pdf/10.1177/1550147718772541">Log-Viterbi algorithm applied on second-order hidden Markov model for human activity recognition</a>
  * @see <a href="https://aclanthology.org/P99-1023.pdf">A second–order Hidden Markov Model for part–of–speech tagging</a>
+ *
+ * http://www.mit.edu/~jaillet/general/map_matching_itsc2012-final.pdf
+ * https://www.researchgate.net/publication/320721676_Enhanced_Map-Matching_Algorithm_with_a_Hidden_Markov_Model_for_Mobile_Phone_Positioning
  */
 public class ViterbiMapMatching implements MapMatchingStrategy{
 
@@ -78,7 +81,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 		final int n = graphEdges.size();
 		final int m = observations.length;
-		final Map<Edge, double[]> fScores = new HashMap<>();
+		final Map<Edge, double[]> score = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
 		Point currentObservation = observations[currentObservationIndex];
@@ -88,7 +91,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
 			: graphEdges);
 		for(final Edge edge : graphEdgesNearCurrentObservation){
-			fScores.computeIfAbsent(edge, k -> new double[m])[currentObservationIndex] = initialProbabilityCalculator.initialProbability(edge)
+			score.computeIfAbsent(edge, k -> new double[m])[currentObservationIndex] = initialProbabilityCalculator.initialProbability(edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, null);
 			path.computeIfAbsent(edge, k -> new Edge[n])[currentObservationIndex] = edge;
 		}
@@ -117,13 +120,13 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 					: graphEdges);
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
 					final List<Node> pathFromTo = pathFinder.findPath(fromEdge.getTo(), toEdge.getFrom(), graph).simplePath();
-					final double probability = (fScores.containsKey(fromEdge)? fScores.get(fromEdge)[previousObservationIndex]: 0.)
+					final double probability = (score.containsKey(fromEdge)? score.get(fromEdge)[previousObservationIndex]: 0.)
 						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation,
 							pathFromTo);
 					if(probability < minProbability){
 						//record minimum probability
 						minProbability = probability;
-						fScores.computeIfAbsent(toEdge, k -> new double[m])[currentObservationIndex] = probability
+						score.computeIfAbsent(toEdge, k -> new double[m])[currentObservationIndex] = probability
 							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 
 						//record path
@@ -144,7 +147,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		minProbability = Double.POSITIVE_INFINITY;
 		Edge minProbabilityEdge = null;
 		for(final Edge edge : graphEdges){
-			final double[] fScore = fScores.get(edge);
+			final double[] fScore = score.get(edge);
 			if(fScore != null && fScore[previousObservationIndex] < minProbability){
 				minProbability = fScore[previousObservationIndex];
 				minProbabilityEdge = edge;
