@@ -99,7 +99,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
-		final String expected = "[null, E0, E0, E0, E1, E1, E1, E1, null, null]";
+		final String expected = "[null, 0, 0, 0, 1, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -151,7 +151,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
-		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
+		final String expected = "[null, 0, 0, 0, 0, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -203,7 +203,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
 
-		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
+		final String expected = "[0, 0, 0, 0, 0, 1, 1, 1, 1, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -251,7 +251,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
-		final String expected = "[null, null, E2, E2, E2, E2, E2]";
+		final String expected = "[null, null, 2, 2, 2, 2, 2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -304,7 +304,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
-		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
+		final String expected = "[null, 0, 0, 0, 0, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -357,7 +357,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
-		final String expected = "[null, E0, E0, E0, E0, E1, E1, E1, null, null]";
+		final String expected = "[null, 0, 0, 0, 0, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -410,7 +410,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
 
-		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
+		final String expected = "[0, 0, 0, 0, 0, 1, 1, 1, 1, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -458,7 +458,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
-		final String expected = "[null, null, E3, E2, E2, E2, E2]";
+		final String expected = "[null, null, 3, 2, 2, 2, 2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
