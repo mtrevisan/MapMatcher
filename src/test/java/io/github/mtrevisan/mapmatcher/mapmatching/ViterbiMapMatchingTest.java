@@ -124,7 +124,8 @@ class ViterbiMapMatchingTest{
 		final Point node62 = factory.createPoint(12.322785599913317, 45.610885391198394);
 
 		final Polyline edge0 = factory.createPolyline(node11, node12_31_41);
-		final Polyline edge1 = factory.createPolyline(node12_31_41, node22, node23);
+		final Polyline edge1 = factory.createPolyline(node12_31_41, node22);
+		final Polyline edge1bis = factory.createPolyline(node22, node23);
 		final Polyline edge2 = factory.createPolyline(node12_31_41, node32_51_61);
 		final Polyline edge3 = factory.createPolyline(node12_31_41, node42);
 		final Polyline edge4 = factory.createPolyline(node32_51_61, node52);
@@ -144,7 +145,7 @@ class ViterbiMapMatchingTest{
 			GPSPoint.of(12.215971429868546, 45.731454445518864, (timestamp = TestPathHelper.advanceTime(timestamp, 60)))
 		};
 
-		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5, edge1bis};
 		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
 

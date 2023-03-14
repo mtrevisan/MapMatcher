@@ -140,8 +140,6 @@ public class Application{
 //			distanceCalculator);
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("path: [null, 0, 0, 0-rev, 3, 1, 1-rev, 4, null, 4-rev]");
-System.out.println("path: [null, 0, 0, 0, 3, 1-rev, 1-rev, 4, null, 4]");
 System.out.println("path: [null, 0, 0, 0, 3, 1, 1, 4, null, 4]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
