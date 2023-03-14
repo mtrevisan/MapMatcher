@@ -83,10 +83,10 @@ public class GaussianEmissionCalculator implements EmissionProbabilityCalculator
 		}
 
 		//expansion of:
-		//final double probability = Math.exp(-0.5 * tau * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
+		//final double probability = Math.exp(-0.5 * tau * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
 		//return InitialProbabilityCalculator.logPr(probability);
 		//in order to overcome overflow on exponential
-		return 0.5 * tau * tmp * tmp - InitialProbabilityCalculator.logPr(K2 * observationStandardDeviation);
+		return 0.5 * tau * tmp - InitialProbabilityCalculator.logPr(K2 * observationStandardDeviation);
 	}
 
 }

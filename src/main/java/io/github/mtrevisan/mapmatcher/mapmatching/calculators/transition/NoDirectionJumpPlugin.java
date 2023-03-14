@@ -25,31 +25,17 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-
-import java.util.List;
 
 
 public class NoDirectionJumpPlugin implements TransitionProbabilityPlugin{
 
 	@Override
-	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation, final List<Node> path){
-		final Edge[] pathEdges = PathHelper.extractPathAsEdges(path);
-		final Edge[] augmentedPathEdges = new Edge[pathEdges.length + 2];
-		augmentedPathEdges[0] = fromSegment;
-		augmentedPathEdges[augmentedPathEdges.length - 1] = toSegment;
-		System.arraycopy(pathEdges, 0, augmentedPathEdges, 1, pathEdges.length);
-		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(augmentedPathEdges,
-			previousObservation, currentObservation);
-
-		if(PathHelper.isGoingBackward(previousObservation, currentObservation, pathAsPolyline))
-			return Double.POSITIVE_INFINITY;
-		return 0.;
+	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
+			final Polyline path){
+		return (PathHelper.isSegmentsReversed(fromSegment, toSegment)? Double.POSITIVE_INFINITY: 0.);
 	}
 
 }

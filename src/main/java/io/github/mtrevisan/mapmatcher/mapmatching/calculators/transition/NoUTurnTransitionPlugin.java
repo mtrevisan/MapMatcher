@@ -25,29 +25,34 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
-//import java.util.HashSet;
-import java.util.List;
-//import java.util.Set;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class NoUTurnTransitionPlugin implements TransitionProbabilityPlugin{
 
 	@Override
-	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation, final List<Node> path){
+	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
+			final Polyline path){
 		//penalize u-turns: make then unreachable
-		boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
+		final Point[] points = path.getPoints();
+		final Set<Point> seenPoints = new HashSet<>(points.length);
+		for(int i = points.length - 1; i >= 0; i --)
+			if(!seenPoints.add(points[i]))
+				return Double.POSITIVE_INFINITY;
+		return 0.;
 
-		if(path != null && !fromSegment.equals(toSegment))
-			//disallow U-turn along multiple edges
-			segmentsReversed = PathHelper.hasMixedDirections(path, fromSegment, toSegment);
 
-		return (segmentsReversed? Double.POSITIVE_INFINITY: 0.);
+//		boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
+//
+//		if(path != null && !isSegmentsTheSame(fromSegment, toSegment))
+//			//disallow U-turn along multiple edges
+//			segmentsReversed = PathHelper.hasMixedDirections(path, fromSegment, toSegment);
+//
+//		return (segmentsReversed? Double.POSITIVE_INFINITY: 0.);
 
 
 //		final Edge[] pathEdges = PathHelper.extractPathAsEdges(path);

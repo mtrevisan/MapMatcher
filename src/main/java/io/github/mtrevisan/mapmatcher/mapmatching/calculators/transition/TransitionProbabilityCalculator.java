@@ -25,12 +25,10 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -45,11 +43,11 @@ public class TransitionProbabilityCalculator{
 		return this;
 	}
 
-	public final double transitionProbability(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation, final List<Node> path){
+	public final double transitionProbability(final Edge fromSegment, final Edge toSegment,
+			final Point previousObservation, final Point currentObservation, final Polyline path){
 		double factor = 0.;
 		for(final TransitionProbabilityPlugin plugin : plugins)
-			factor += plugin.factor(fromSegment, toSegment, graph, previousObservation, currentObservation, path);
+			factor += plugin.factor(fromSegment, toSegment, previousObservation, currentObservation, path);
 		return factor;
 	}
 

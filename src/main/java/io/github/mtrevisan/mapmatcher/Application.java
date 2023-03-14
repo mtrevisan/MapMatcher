@@ -32,6 +32,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
@@ -116,21 +117,22 @@ public class Application{
 		final GPSPoint[] observations = observations1;
 
 		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 1_000.);
-		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 500.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 5.);
 
-		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 390.);
+		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 900.);
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 //			.withPlugin(new ShortestPathTransitionPlugin(3.))
 			.withPlugin(new TopologicalTransitionPlugin())
-//			.withPlugin(new NoUTurnTransitionPlugin())
-//			.withPlugin(new DirectionTransitionPlugin())
+			.withPlugin(new NoUTurnTransitionPlugin())
+			.withPlugin(new DirectionTransitionPlugin())
 			;
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
 //			.withPlugin(new NoUTurnPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+//		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
 		final GeodeticDistanceCalculator distanceCalculator = new GeodeticDistanceCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			distanceCalculator);
@@ -138,6 +140,9 @@ public class Application{
 //			distanceCalculator);
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
+System.out.println("path: [null, 0, 0, 0-rev, 3, 1, 1-rev, 4, null, 4-rev]");
+System.out.println("path: [null, 0, 0, 0, 3, 1-rev, 1-rev, 4, null, 4]");
+System.out.println("path: [null, 0, 0, 0, 3, 1, 1, 4, null, 4]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 

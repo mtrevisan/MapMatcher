@@ -138,7 +138,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		}
 	}
 
-	public Polyline[] cut(final Point point){
+	public Point[][] cut(final Point point){
 		double xtd = -1.;
 		double minClosestPointDistance = Double.MAX_VALUE;
 		Point minClosestPoint = null;
@@ -163,9 +163,9 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		final Point[] secondList = new Point[points.length - cutIndexEnd + 1];
 		secondList[0] = minClosestPoint;
 		System.arraycopy(points, cutIndexEnd, secondList, 1, points.length - cutIndexEnd);
-		return new Polyline[]{
-			point.factory.createPolyline(firstList),
-			point.factory.createPolyline(secondList)
+		return new Point[][]{
+			firstList,
+			secondList
 		};
 	}
 

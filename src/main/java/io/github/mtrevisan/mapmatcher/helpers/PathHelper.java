@@ -42,31 +42,16 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 
 public class PathHelper{
 
+	public static final String REVERSED_EDGE_SUFFIX = "-rev";
+
 	private PathHelper(){}
 
-
-	public static boolean hasMixedDirections(final List<Node> path, final Edge fromSegment, final Edge toSegment){
-		final Edge[] pathEdges = extractPathAsEdges(path);
-		final Edge[] augmentedPathEdges = new Edge[pathEdges.length + 2];
-		augmentedPathEdges[0] = fromSegment;
-		augmentedPathEdges[augmentedPathEdges.length - 1] = toSegment;
-		System.arraycopy(pathEdges, 0, augmentedPathEdges, 1, pathEdges.length);
-
-		int reverseCount = 0;
-		for(final Edge edge : augmentedPathEdges)
-			if(edge.getID().endsWith("-rev"))
-				reverseCount ++;
-		return (reverseCount > 0 && reverseCount < augmentedPathEdges.length);
-	}
 
 	public static Edge[] extractPathAsEdges(final List<Node> path){
 		final int size = path.size();
@@ -135,29 +120,47 @@ public class PathHelper{
 		return extractPathAsPolyline(connectedPath, fromSegment, toSegment, previousObservation, currentObservation);
 	}
 
+	public static Polyline extractPathAsPolyline(final List<Node> path, final Edge fromSegment, final Edge toSegment,
+			final Point previousObservation, final Point currentObservation){
+		final Edge[] pathAsEdges = extractPathAsEdges(path);
+		return extractPathAsPolyline(pathAsEdges, fromSegment, toSegment, previousObservation, currentObservation);
+	}
+
 	public static Polyline extractPathAsPolyline(final Edge[] connectedPath, final Edge fromSegment, final Edge toSegment,
 			final Point previousObservation, final Point currentObservation){
 		//cut first segment
-		final Polyline[] fromSegmentCut = fromSegment.getPolyline().cut(previousObservation);
+		final Point[][] fromSegmentCut = fromSegment.getPolyline().cut(previousObservation);
 		//cut last segment
-		final Polyline[] toSegmentCut = toSegment.getPolyline().cut(currentObservation);
+		final Point[][] toSegmentCut = toSegment.getPolyline().cut(currentObservation);
 
 		//merge segments
-		Point[] points = fromSegmentCut[1].getPoints();
-		final List<Point> mergedPoints = new ArrayList<>(Arrays.asList(points));
+		int size = fromSegmentCut[1].length + toSegmentCut[0].length;
+		for(int i = 1; i < connectedPath.length - 1; i ++)
+			size += connectedPath[i].getPolyline().size();
+		final Point[] mergedPoints = new Point[size];
+		size = fromSegmentCut[1].length;
+		System.arraycopy(fromSegmentCut[1], 0, mergedPoints, 0, size);
 
 		for(int i = 1; i < connectedPath.length - 1; i ++){
 			final Edge edge = connectedPath[i];
-			points = edge.getPolyline().getPoints();
-			mergedPoints.addAll(Arrays.asList(points));
+			final Point[] points = edge.getPolyline().getPoints();
+			System.arraycopy(points, 0, mergedPoints, size, points.length);
+
+			size += points.length;
 		}
 
-		points = toSegmentCut[0].getPoints();
-		for(int i = 0; i < points.length - 1; i ++)
-			mergedPoints.add(points[i]);
+		System.arraycopy(toSegmentCut[0], 0, mergedPoints, size, toSegmentCut[0].length);
 
 		final GeometryFactory factory = previousObservation.getFactory();
-		return factory.createPolyline(mergedPoints.toArray(Point[]::new));
+		return factory.createPolyline(mergedPoints);
+	}
+
+	public static boolean isSegmentsTheSame(final Edge fromSegment, final Edge toSegment){
+		return fromSegment.equals(toSegment);
+	}
+
+	public static boolean isSegmentsTheSameOrReversed(final Edge fromSegment, final Edge toSegment){
+		return (fromSegment.equals(toSegment) || isSegmentsReversed(fromSegment, toSegment));
 	}
 
 	public static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){
@@ -236,14 +239,18 @@ public class PathHelper{
 		//step 2. Retain all observation that are within a certain radius from an edge
 		for(int i = 0; i < feasibleObservations.length; i ++){
 			final GPSPoint observation = feasibleObservations[i];
-			final Point north = GeodeticHelper.destination(observation, 0., threshold);
-			final Point east = GeodeticHelper.destination(observation, 90., threshold);
-			final Point south = GeodeticHelper.destination(observation, 180., threshold);
-			final Point west = GeodeticHelper.destination(observation, 270., threshold);
-			final Envelope envelope = Envelope.ofEmpty();
-			envelope.expandToInclude(north, east, south, west);
+			final Point northEast = GeodeticHelper.destination(GeodeticHelper.destination(observation, 0., threshold), 90., threshold);
+			final Point southWest = GeodeticHelper.destination(GeodeticHelper.destination(observation, 180., threshold), 270., threshold);
+			final Envelope envelope = Envelope.of(northEast, southWest);
+
 			final List<Polyline> edges = tree.query(envelope);
-			if(edges.isEmpty())
+			double minDistance = Double.POSITIVE_INFINITY;
+			for(final Polyline edge : edges){
+				final double distance = observation.distance(edge);
+				if(distance < minDistance)
+					minDistance = distance;
+			}
+			if(edges.isEmpty() || minDistance > threshold)
 				feasibleObservations[i] = null;
 		}
 
@@ -269,7 +276,7 @@ public class PathHelper{
 		int e = 0;
 		for(final Polyline edge : edges){
 			graph.addApproximateDirectEdge(String.valueOf(e), edge);
-			graph.addApproximateDirectEdge(e + "-rev", edge.reverse());
+			graph.addApproximateDirectEdge(e + REVERSED_EDGE_SUFFIX, edge.reverse());
 
 			e ++;
 		}

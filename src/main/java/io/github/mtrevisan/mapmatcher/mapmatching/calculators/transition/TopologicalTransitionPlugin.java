@@ -25,16 +25,17 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
-import java.util.List;
+import java.nio.file.Path;
 
 
 public class TopologicalTransitionPlugin implements TransitionProbabilityPlugin{
 
+	private static final double PROBABILITY_UNCONNECTED_EDGES = 0.;
 	private static final double PROBABILITY_CONNECTED_EDGES = Math.exp(-1.);
 	private static final double PROBABILITY_SAME_EDGE = Math.exp(-0.5);
 
@@ -54,13 +55,12 @@ public class TopologicalTransitionPlugin implements TransitionProbabilityPlugin{
 	 * </p>
 	 */
 	@Override
-	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation, final List<Node> path){
-		double a = 0.;
-		//if the node is the same
-		if(fromSegment.equals(toSegment))
+	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
+			final Polyline path){
+		double a = PROBABILITY_UNCONNECTED_EDGES;
+		if(PathHelper.isSegmentsTheSame(fromSegment, toSegment))
 			a = PROBABILITY_SAME_EDGE;
-		else if(!path.isEmpty())
+		else if(path.size() <= 3)
 			a = PROBABILITY_CONNECTED_EDGES;
 		return InitialProbabilityCalculator.logPr(a);
 	}
