@@ -30,8 +30,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
-import java.nio.file.Path;
-
 
 public class TopologicalTransitionPlugin implements TransitionProbabilityPlugin{
 

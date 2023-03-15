@@ -172,17 +172,13 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	}
 
 	private List<Node> calculatePath(final Edge fromEdge, final Edge toEdge, final Graph graph,
-			final Point previousObservation, final Point currentObservation){
-		final int closestPreviousPoint = (fromEdge.getPoint(Edge.POINT_FROM).distance(previousObservation) < fromEdge.getPoint(Edge.POINT_TO).distance(previousObservation)
-			? Edge.POINT_FROM: Edge.POINT_TO);
-		final Node previousNode = (closestPreviousPoint == Edge.POINT_FROM? fromEdge.getFrom(): fromEdge.getTo());
+		final Point previousObservation, final Point currentObservation){
+		final Node previousNode = graph.getClosestNode(fromEdge.getPolyline().onTrackClosestPoint(previousObservation));
 		final List<Node> pathFromTo;
 		if(fromEdge.equals(toEdge))
 			pathFromTo = Collections.singletonList(previousNode);
 		else{
-			final int closestCurrentPoint = (toEdge.getPoint(Edge.POINT_FROM).distance(currentObservation) < toEdge.getPoint(Edge.POINT_TO).distance(currentObservation)
-				? Edge.POINT_FROM: Edge.POINT_TO);
-			final Node currentNode = (closestCurrentPoint == Edge.POINT_FROM? toEdge.getFrom(): toEdge.getTo());
+			final Node currentNode = graph.getClosestNode(toEdge.getPolyline().onTrackClosestPoint(currentObservation));
 			pathFromTo = pathFinder.findPath(previousNode, currentNode, graph)
 				.simplePath();
 		}

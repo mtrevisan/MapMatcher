@@ -129,31 +129,27 @@ public class PathHelper{
 	public static Polyline extractPathAsPolyline(final Edge[] connectedPath, final Edge fromSegment, final Edge toSegment,
 			final Point previousObservation, final Point currentObservation){
 		//cut first segment
-		final int distanceFromIndex = (fromSegment.getPoint(Edge.POINT_FROM).distance(previousObservation) < fromSegment.getPoint(Edge.POINT_TO).distance(previousObservation)
-			? Edge.POINT_FROM: Edge.POINT_TO);
+		final Point[][] fromSegmentCut = fromSegment.getPolyline().cut(previousObservation);
 		//cut last segment
-		final int distanceToIndex = (toSegment.getPoint(Edge.POINT_FROM).distance(currentObservation) < toSegment.getPoint(Edge.POINT_TO).distance(currentObservation)
-			? Edge.POINT_FROM: Edge.POINT_TO);
+		final Point[][] toSegmentCut = toSegment.getPolyline().cut(currentObservation);
 
 		//merge segments
-		int size = (2 - distanceFromIndex) + (distanceToIndex + 1);
+		int size = fromSegmentCut[1].length + toSegmentCut[0].length;
 		for(int i = 1; i < connectedPath.length - 1; i ++)
-			size += 2;
+			size += connectedPath[i].getPolyline().size();
 		final Point[] mergedPoints = new Point[size];
-		size = 0;
-		if(distanceFromIndex == Edge.POINT_FROM)
-			mergedPoints[size ++] = fromSegment.getPoint(Edge.POINT_FROM);
-		mergedPoints[size ++] = fromSegment.getPoint(Edge.POINT_TO);
+		size = fromSegmentCut[1].length;
+		System.arraycopy(fromSegmentCut[1], 0, mergedPoints, 0, size);
 
 		for(int i = 1; i < connectedPath.length - 1; i ++){
 			final Edge edge = connectedPath[i];
-			mergedPoints[size ++] = edge.getPoint(Edge.POINT_FROM);
-			mergedPoints[size ++] = edge.getPoint(Edge.POINT_TO);
+			final Point[] points = edge.getPolyline().getPoints();
+			System.arraycopy(points, 0, mergedPoints, size, points.length);
+
+			size += points.length;
 		}
 
-		mergedPoints[size ++] = toSegment.getPoint(Edge.POINT_FROM);
-		if(distanceToIndex == Edge.POINT_TO)
-			mergedPoints[size] = toSegment.getPoint(Edge.POINT_TO);
+		System.arraycopy(toSegmentCut[0], 0, mergedPoints, size, toSegmentCut[0].length);
 
 		final GeometryFactory factory = previousObservation.getFactory();
 		return factory.createPolyline(mergedPoints);

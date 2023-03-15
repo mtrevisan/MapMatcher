@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
@@ -32,9 +33,6 @@ import java.util.Objects;
 
 
 public class Edge{
-
-	public static final int POINT_FROM = 0;
-	public static final int POINT_TO = 1;
 
 	private String id;
 	protected final Node from;
@@ -74,15 +72,6 @@ public class Edge{
 		this.id = id;
 	}
 
-	public Point getPoint(final int index){
-		return (index == POINT_FROM? from: to)
-			.getPoint();
-	}
-
-	public Polyline getPolyline(){
-		return from.getPoint().getFactory().createPolyline(from.getPoint(), to.getPoint());
-	}
-
 	public Node getFrom(){
 		return from;
 	}
@@ -93,6 +82,13 @@ public class Edge{
 
 	public Collection<Edge> getOutEdges(){
 		return to.getOutEdges();
+	}
+
+	//FIXME reduce the computation of this polyline
+	public Polyline getPolyline(){
+		final Point point = from.getPoint();
+		final GeometryFactory factory = point.getFactory();
+		return factory.createPolyline(point, to.getPoint());
 	}
 
 	public double getWeight(){
