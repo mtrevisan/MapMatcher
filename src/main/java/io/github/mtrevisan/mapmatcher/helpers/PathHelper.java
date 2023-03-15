@@ -215,8 +215,8 @@ public class PathHelper{
 		final GeometryFactory factory = observations[0].getFactory();
 		final Point max = Point.of(factory, maxX, maxY);
 		final Point min = Point.of(factory, minX, minY);
-		final Point northEast = GeodeticHelper.destination(GeodeticHelper.destination(max, 0., threshold), 90., threshold);
-		final Point southWest = GeodeticHelper.destination(GeodeticHelper.destination(min, 180., threshold), 270., threshold);
+		final Point northEast = GeodeticHelper.destination(max, 45., threshold);
+		final Point southWest = GeodeticHelper.destination(min, 225., threshold);
 		final Envelope envelope = Envelope.of(northEast, southWest);
 
 		//query the tree
@@ -239,8 +239,8 @@ public class PathHelper{
 		//step 2. Retain all observation that are within a certain radius from an edge
 		for(int i = 0; i < feasibleObservations.length; i ++){
 			final GPSPoint observation = feasibleObservations[i];
-			final Point northEast = GeodeticHelper.destination(GeodeticHelper.destination(observation, 0., threshold), 90., threshold);
-			final Point southWest = GeodeticHelper.destination(GeodeticHelper.destination(observation, 180., threshold), 270., threshold);
+			final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
+			final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
 			final Envelope envelope = Envelope.of(northEast, southWest);
 
 			final List<Polyline> edges = tree.query(envelope);

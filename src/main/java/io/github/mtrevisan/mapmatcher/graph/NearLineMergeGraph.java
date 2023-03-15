@@ -208,8 +208,8 @@ public class NearLineMergeGraph implements Graph{
 		if(tree == null)
 			throw new IllegalArgumentException("Tree is not defined, call .withTree() while constructing the graph");
 
-		final Point northEast = GeodeticHelper.destination(GeodeticHelper.destination(point, 0., threshold), 90., threshold);
-		final Point southWest = GeodeticHelper.destination(GeodeticHelper.destination(point, 180., threshold), 270., threshold);
+		final Point northEast = GeodeticHelper.destination(point, 45., threshold);
+		final Point southWest = GeodeticHelper.destination(point, 225., threshold);
 		final Envelope envelope = Envelope.of(northEast, southWest);
 		final List<Polyline> polylines = tree.query(envelope);
 
