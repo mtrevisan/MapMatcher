@@ -27,6 +27,7 @@ package io.github.mtrevisan.mapmatcher.graph;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
+import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -68,28 +70,23 @@ public class NearLineMergeGraph implements Graph{
 		return this;
 	}
 
-	public Collection<Edge> addApproximateDirectEdge(final Polyline polyline){
-		return addApproximateDirectEdge(null, polyline);
+	public Collection<Edge> addApproximateDirectEdge(final Point from, final Point to){
+		return addApproximateDirectEdge(null, from, to);
 	}
 
-	public Collection<Edge> addApproximateDirectEdge(final String id, final Polyline polyline){
+	public Collection<Edge> addApproximateDirectEdge(final String id, final Point from, final Point to){
+		if(from == null || to == null)
+			return Collections.emptyList();
+
 		final Collection<Edge> addedEdges = new HashSet<>(0);
-		if(polyline.isEmpty())
-			return addedEdges;
-
-		final Point[] points = polyline.getPoints();
-		//don't add lines with all points equal
-		if(points.length <= 1)
-			return addedEdges;
-
-		final Collection<Node> startNodes = connectNodes(points[0], polyline.getStartPoint());
-		final Collection<Node> endNodes = connectNodes(points[points.length - 1], polyline.getEndPoint());
+		final Collection<Node> startNodes = connectNodes(from);
+		final Collection<Node> endNodes = connectNodes(to);
 		final Set<Node> intersectionNodes = new HashSet<>(startNodes);
 		intersectionNodes.retainAll(endNodes);
 
 		for(final Node fromNode : startNodes)
 			for(final Node toNode : endNodes){
-				final Edge edge = Edge.createDirectEdge(fromNode, toNode, polyline);
+				final Edge edge = Edge.createDirectEdge(fromNode, toNode);
 				if(id != null){
 					edge.setID(id);
 
@@ -112,7 +109,7 @@ public class NearLineMergeGraph implements Graph{
 		for(final Node intersectionNode1 : intersectionNodes)
 			for(final Node intersectionNode2 : intersectionNodes)
 				if(!intersectionNode1.equals(intersectionNode2)){
-					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2, polyline);
+					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2);
 					if(id != null){
 						edge.setID(id);
 
@@ -133,6 +130,7 @@ public class NearLineMergeGraph implements Graph{
 				}
 
 		if(tree != null){
+			final Polyline polyline = from.getFactory().createPolyline(from, to);
 			final Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
 		}
@@ -140,8 +138,8 @@ public class NearLineMergeGraph implements Graph{
 		return addedEdges;
 	}
 
-	private Collection<Node> connectNodes(final Point origin, final Point newPoint){
-		final Collection<Node> nodes = getApproximateNode(origin);
+	private Collection<Node> connectNodes(final Point newPoint){
+		final Collection<Node> nodes = getApproximateNode(newPoint);
 		final Point virtualStartPoint = calculateVirtualPoint(nodes, newPoint);
 		for(final Node node : nodes)
 			node.setPoint(virtualStartPoint);
@@ -210,12 +208,9 @@ public class NearLineMergeGraph implements Graph{
 		if(tree == null)
 			throw new IllegalArgumentException("Tree is not defined, call .withTree() while constructing the graph");
 
-		final Point north = point.destination(0., threshold);
-		final Point east = point.destination(90., threshold);
-		final Point south = point.destination(180., threshold);
-		final Point west = point.destination(270., threshold);
-		final Envelope envelope = Envelope.ofEmpty();
-		envelope.expandToInclude(north, east, south, west);
+		final Point northEast = GeodeticHelper.destination(GeodeticHelper.destination(point, 0., threshold), 90., threshold);
+		final Point southWest = GeodeticHelper.destination(GeodeticHelper.destination(point, 180., threshold), 270., threshold);
+		final Envelope envelope = Envelope.of(northEast, southWest);
 		final List<Polyline> polylines = tree.query(envelope);
 
 		final List<Edge> edges = new ArrayList<>(0);

@@ -55,8 +55,7 @@ class DurationEdgeWeightCalculatorTest{
 			double expectedDuration = expectedDurations[i];
 			double maxSpeed = maxSpeeds[i];
 			GeodeticDurationCalculator edgeWeightCalculator = new GeodeticDurationCalculator();
-			final Edge edge = Edge.createDirectEdge(new Node("0", fromPoints), new Node("1", toPoints),
-				factory.createPolyline(fromPoints, toPoints));
+			final Edge edge = Edge.createDirectEdge(new Node("0", fromPoints), new Node("1", toPoints));
 			edge.setWeight(maxSpeed);
 			double actualDistance = edgeWeightCalculator.calculateWeight(edge);
 

@@ -46,7 +46,7 @@ class SingleDirectionalPathSummaryTest{
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
 		final Node first = new Node("0", factory.createPoint(1., 2.));
 		final Node second = new Node("1", factory.createPoint(2., 2.));
-		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))));
+		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second)));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final List<Node> result = pathSummary.simplePath();
@@ -69,7 +69,7 @@ class SingleDirectionalPathSummaryTest{
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
 		final Node first = new Node("0", factory.createPoint(1., 2.));
 		final Node second = new Node("1", factory.createPoint(2., 2.));
-		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))));
+		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second)));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final int result = pathSummary.numberOfVertices();
@@ -105,7 +105,7 @@ class SingleDirectionalPathSummaryTest{
 		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
 		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
-		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))));
+		final List<Edge> path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second)));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		final double result = pathSummary.totalDistance();
@@ -118,7 +118,7 @@ class SingleDirectionalPathSummaryTest{
 		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
 		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
-		final Edge edge = Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()));
+		final Edge edge = Edge.createDirectEdge(first, second);
 		edge.setWeight(50.);
 		final List<Edge> path = new ArrayList<>(List.of(edge));
 		final SingleDirectionalPathSummary pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
@@ -139,7 +139,7 @@ class SingleDirectionalPathSummaryTest{
 		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Node first = new Node("0", factory.createPoint(14.552797, 121.058805));
 		final Node second = new Node("1", factory.createPoint(14.593999, 120.994260));
-		path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))));
+		path = new ArrayList<>(List.of(Edge.createDirectEdge(first, second)));
 		pathSummary = SingleDirectionalPathSummary.ofPath(path, new HashSet<>());
 
 		Assertions.assertTrue(pathSummary.isFound());

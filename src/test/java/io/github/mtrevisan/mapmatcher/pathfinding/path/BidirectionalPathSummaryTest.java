@@ -47,7 +47,7 @@ class BidirectionalPathSummaryTest{
 		Node first = new Node("0", factory.createPoint(1., 2.));
 		Node second = new Node("1", factory.createPoint(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))
+			Edge.createDirectEdge(first, second)
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -71,7 +71,7 @@ class BidirectionalPathSummaryTest{
 		final Node first = new Node("0", factory.createPoint(1., 2.));
 		final Node second = new Node("1", factory.createPoint(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))
+			Edge.createDirectEdge(first, second)
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -110,7 +110,7 @@ class BidirectionalPathSummaryTest{
 		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
 		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
 		ArrayList<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))
+			Edge.createDirectEdge(first, second)
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -124,7 +124,7 @@ class BidirectionalPathSummaryTest{
 		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
 		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
-		final Edge edge = Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()));
+		final Edge edge = Edge.createDirectEdge(first, second);
 		edge.setWeight(50.);
 		ArrayList<Edge> path = new ArrayList<>(List.of(edge));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
@@ -147,7 +147,7 @@ class BidirectionalPathSummaryTest{
 		Node node1 = new Node("0", factory.createPoint(14.552797, 121.058805));
 		Node node2 = new Node("1", factory.createPoint(14.593999, 120.994260));
 		path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(node1, node2, factory.createPolyline(node1.getPoint(), node2.getPoint()))
+			Edge.createDirectEdge(node1, node2)
 		));
 		pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 

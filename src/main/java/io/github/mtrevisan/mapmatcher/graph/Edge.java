@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
@@ -34,38 +33,34 @@ import java.util.Objects;
 
 public class Edge{
 
+	public static final int POINT_FROM = 0;
+	public static final int POINT_TO = 1;
+
 	private String id;
 	protected final Node from;
 	protected final Node to;
-	protected final Polyline polyline;
 
 	private double weight;
 
 
-	public static Edge createDirectEdge(final Node from, final Node to, final Polyline polyline){
-		return new Edge(from, to, polyline);
+	public static Edge createDirectEdge(final Node from, final Node to){
+		return new Edge(from, to);
 	}
 
 	public static Edge createSelfEdge(final Node node){
-		final Point point = node.getPoint();
-		final GeometryFactory factory = point.getFactory();
-		final Polyline polyline = factory.createPolyline(point, point);
-		return new Edge(node, node, polyline);
+		return new Edge(node, node);
 	}
 
-	private Edge(final Node from, final Node to, final Polyline polyline){
+	private Edge(final Node from, final Node to){
 		if(from == null)
 			throw new IllegalArgumentException("`from` node cannot be null");
 		if(to == null)
 			throw new IllegalArgumentException("`to` node cannot be null");
-		if(polyline == null)
-			throw new IllegalArgumentException("`geometry` cannot be null");
 
 		id = Objects.requireNonNullElse(from.getID(), "<null>")
 			+ "-" + Objects.requireNonNullElse(to.getID(), "<null>");
 		this.from = from;
 		this.to = to;
-		this.polyline = polyline;
 	}
 
 	public String getID(){
@@ -77,6 +72,15 @@ public class Edge{
 			throw new IllegalArgumentException("`id` cannot be null or empty");
 
 		this.id = id;
+	}
+
+	public Point getPoint(final int index){
+		return (index == POINT_FROM? from: to)
+			.getPoint();
+	}
+
+	public Polyline getPolyline(){
+		return from.getPoint().getFactory().createPolyline(from.getPoint(), to.getPoint());
 	}
 
 	public Node getFrom(){
@@ -91,10 +95,6 @@ public class Edge{
 		return to.getOutEdges();
 	}
 
-	public Polyline getPolyline(){
-		return polyline;
-	}
-
 	public double getWeight(){
 		return weight;
 	}
@@ -104,7 +104,7 @@ public class Edge{
 	}
 
 	public Edge reversed(){
-		return createDirectEdge(to, from, polyline.reverse());
+		return createDirectEdge(to, from);
 	}
 
 	@Override

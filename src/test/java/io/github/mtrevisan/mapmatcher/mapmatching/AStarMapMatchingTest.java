@@ -207,8 +207,9 @@ class AStarMapMatchingTest{
 		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
 		int e = 0;
 		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge(String.valueOf(e), edge);
-			graph.addApproximateDirectEdge(e + "-rev", edge.reverse());
+			graph.addApproximateDirectEdge(String.valueOf(e), edge.getStartPoint(), edge.getEndPoint());
+			final Polyline reverse = edge.reverse();
+			graph.addApproximateDirectEdge(e + "-rev", reverse.getStartPoint(), reverse.getEndPoint());
 
 			e ++;
 		}
