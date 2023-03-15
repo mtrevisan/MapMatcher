@@ -136,6 +136,7 @@ public class Application{
 			distanceCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			distanceCalculator);
+
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 System.out.println("path: [null, 0, 0, 0, 3, 1, 1, 4, null, 4]");
@@ -149,6 +150,25 @@ if(connectedPath.length > 0)
 		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath, observations[0], observations[observations.length - 1]);
 if(pathPolyline != null)
 	System.out.println("path polyline: " + pathPolyline);
+
+		if(path != null){
+			double averagePositioningError = 0.;
+			int windowSize = 0;
+			for(int i = 0; i < filteredObservations.length; i ++)
+				if(filteredObservations[i] != null){
+					averagePositioningError += filteredObservations[i].distance(path[i].getPolyline());
+					windowSize ++;
+				}
+			averagePositioningError /= windowSize;
+System.out.println("average positioning error: " + averagePositioningError);
+		}
+
+		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
+		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order
+		//HMM: `P(g_t−1, g_t | c^i_t−1, c^j) = P(c^j_t | c^i_t−1) · P(g_t−1 | c^i_t−1) · P(g_t | c^j_t)`
+		//The state transition probability `P(c^i_t | c^j_t-2, c^k_t-1) ? β · e^(-k_t · β)`, where `β = 1/λ`, and λ is the mean of k_t, and
+		//	k_t is the difference between the great-circle distance from g_t-1 to g_t+1 and the route length from c^i_t-1 to c^j_t+1:
+		//	k_t = |sum(n=t-2..t-1, dist(g^i_n, g^j_n+1)) - sum(n=t-2..t-1, routeDist(c^i_n, c^j_n+1)) |
 	}
 
 	//	public static void main(final String[] args){
