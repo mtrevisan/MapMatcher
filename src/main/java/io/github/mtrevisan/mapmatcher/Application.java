@@ -77,17 +77,16 @@ public class Application{
 		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(distanceTolerance);
 		final Polyline edge0 = factory.createPolyline(simplifier.simplify(node11, node12_31_41));
-		final Polyline edge1 = factory.createPolyline(simplifier.simplify(node12_31_41, node22));
-		final Polyline edge1bis = factory.createPolyline(simplifier.simplify(node22, node23));
+		final Polyline edge1 = factory.createPolyline(simplifier.simplify(node12_31_41, node22, node23));
 		final Polyline edge2 = factory.createPolyline(simplifier.simplify(node12_31_41, node32_51_61));
 		final Polyline edge3 = factory.createPolyline(simplifier.simplify(node12_31_41, node42));
 		final Polyline edge4 = factory.createPolyline(simplifier.simplify(node32_51_61, node52));
 		final Polyline edge5 = factory.createPolyline(simplifier.simplify(node32_51_61, node62));
-		final Polyline[] polylines = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5, edge1bis};
+		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final HPRtree<Polyline> tree = new HPRtree<>();
-		for(final Polyline polyline : polylines){
-			final Envelope geoBoundingBox = polyline.getBoundingBox();
-			tree.insert(geoBoundingBox, polyline);
+		for(final Polyline edge : edges){
+			final Envelope geoBoundingBox = edge.getBoundingBox();
+			tree.insert(geoBoundingBox, edge);
 		}
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
@@ -139,7 +138,7 @@ public class Application{
 
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("path: [null, 0, 0, 0, 3, 1, 1, 4, null, 4]");
+System.out.println("path: [null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, 1.1]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
@@ -166,7 +165,7 @@ System.out.println("average positioning error: " + averagePositioningError);
 		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
 		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order
 		//HMM: `P(g_t−1, g_t | c^i_t−1, c^j) = P(c^j_t | c^i_t−1) · P(g_t−1 | c^i_t−1) · P(g_t | c^j_t)`
-		//The state transition probability `P(c^i_t | c^j_t-2, c^k_t-1) ? β · e^(-k_t · β)`, where `β = 1/λ`, and λ is the mean of k_t, and
+		//The state transition probability `P(c^i_t | c^j_t-2, c^k_t-1) = β · e^(-k_t · β)`, where `β = 1/λ`, and λ is the mean of k_t, and
 		//	k_t is the difference between the great-circle distance from g_t-1 to g_t+1 and the route length from c^i_t-1 to c^j_t+1:
 		//	k_t = |sum(n=t-2..t-1, dist(g^i_n, g^j_n+1)) - sum(n=t-2..t-1, routeDist(c^i_n, c^j_n+1)) |
 	}

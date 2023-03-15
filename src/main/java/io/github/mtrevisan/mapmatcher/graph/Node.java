@@ -35,6 +35,7 @@ import java.util.Set;
 public class Node{
 
 	private String id;
+
 	private Point point;
 
 	private final Set<Edge> outEdges = new HashSet<>(0);

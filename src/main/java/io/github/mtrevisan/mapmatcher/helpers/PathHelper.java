@@ -49,6 +49,7 @@ import java.util.List;
 public class PathHelper{
 
 	public static final String REVERSED_EDGE_SUFFIX = "-rev";
+	public static final String SEGMENT_LEG_SEPARATOR = ".";
 
 	private PathHelper(){}
 
@@ -258,26 +259,36 @@ public class PathHelper{
 	}
 
 
+	//create id as `<segment>(.<leg>)?
 	public static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold)
 			.withTree();
 		int e = 0;
 		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge(String.valueOf(e), edge.getStartPoint(), edge.getEndPoint());
+			final Point[] edgePoints = edge.getPoints();
+			for(int i = 1; i < edgePoints.length; i ++){
+				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
+				graph.addApproximateDirectEdge(id, edgePoints[i - 1], edgePoints[i]);
+			}
 
 			e ++;
 		}
 		return graph;
 	}
 
+	//create id as `<segment>(.<leg>)?(-rev)?`
 	public static Graph extractBidirectionalGraph(final Collection<Polyline> edges, final double threshold){
 		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold)
 			.withTree();
 		int e = 0;
 		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge(String.valueOf(e), edge.getStartPoint(), edge.getEndPoint());
-			final Polyline reverse = edge.reverse();
-			graph.addApproximateDirectEdge(e + REVERSED_EDGE_SUFFIX, reverse.getStartPoint(), reverse.getEndPoint());
+			final Point[] edgePoints = edge.getPoints();
+			for(int i = 1; i < edgePoints.length; i ++){
+				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
+				graph.addApproximateDirectEdge(id, edgePoints[i - 1], edgePoints[i]);
+				//add reversed
+				graph.addApproximateDirectEdge(id + REVERSED_EDGE_SUFFIX, edgePoints[i], edgePoints[i - 1]);
+			}
 
 			e ++;
 		}

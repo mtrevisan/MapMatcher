@@ -35,6 +35,7 @@ import java.util.Objects;
 public class Edge{
 
 	private String id;
+
 	protected final Node from;
 	protected final Node to;
 
