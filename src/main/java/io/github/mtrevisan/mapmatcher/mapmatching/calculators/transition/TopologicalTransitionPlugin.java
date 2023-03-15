@@ -58,7 +58,7 @@ public class TopologicalTransitionPlugin implements TransitionProbabilityPlugin{
 		double a = PROBABILITY_UNCONNECTED_EDGES;
 		if(PathHelper.isSegmentsTheSame(fromSegment, toSegment))
 			a = PROBABILITY_SAME_EDGE;
-		else if(path.size() <= 3)
+		else if(!path.isEmpty())
 			a = PROBABILITY_CONNECTED_EDGES;
 		return InitialProbabilityCalculator.logPr(a);
 	}

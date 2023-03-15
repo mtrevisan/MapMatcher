@@ -191,6 +191,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
 		Point currentObservation = observations[currentObservationIndex];
+		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		Collection<Edge> graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
 			? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)

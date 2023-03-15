@@ -129,6 +129,10 @@ public class PathHelper{
 
 	public static Polyline extractPathAsPolyline(final Edge[] connectedPath, final Edge fromSegment, final Edge toSegment,
 			final Point previousObservation, final Point currentObservation){
+		final GeometryFactory factory = previousObservation.getFactory();
+		if(connectedPath.length == 0)
+			return factory.createEmptyPolyline();
+
 		//cut first segment
 		final Point[][] fromSegmentCut = fromSegment.getPolyline().cut(previousObservation);
 		//cut last segment
@@ -152,7 +156,6 @@ public class PathHelper{
 
 		System.arraycopy(toSegmentCut[0], 0, mergedPoints, size, toSegmentCut[0].length);
 
-		final GeometryFactory factory = previousObservation.getFactory();
 		return factory.createPolyline(mergedPoints);
 	}
 

@@ -40,6 +40,7 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	private static final double PROBABILITY_SAME_EDGE = 0.6;
+	private static final double PROBABILITY_UNCONNECTED_EDGES = 0.;
 
 
 	private final double inverseRateParameter;
@@ -70,6 +71,9 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
+		if(path.isEmpty())
+			return InitialProbabilityCalculator.logPr(PROBABILITY_UNCONNECTED_EDGES);
+
 		final double observationsDistance = previousObservation.distance(currentObservation);
 		final double pathDistance = path.alongTrackDistance(path.onTrackClosestPoint(currentObservation))
 			- path.alongTrackDistance(path.onTrackClosestPoint(previousObservation));

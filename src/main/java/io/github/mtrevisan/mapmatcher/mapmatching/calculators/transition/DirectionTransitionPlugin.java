@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -34,16 +33,14 @@ import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 
-	private static final double PROBABILITY_SAME_EDGE = Math.exp(-0.5);
+	private static final double PROBABILITY_UNCONNECTED_EDGES = 0.;
 
 
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
-		double a;
-		if(PathHelper.isSegmentsTheSame(fromSegment, toSegment))
-			a = PROBABILITY_SAME_EDGE;
-		else{
+		double a = PROBABILITY_UNCONNECTED_EDGES;
+		if(!path.isEmpty()){
 			final Point previousOnTrackPoint = path.onTrackClosestPoint(previousObservation);
 			final Point currentOnTrackPoint = path.onTrackClosestPoint(currentObservation);
 			final TopologyCalculator calculator = previousObservation.getDistanceCalculator();
