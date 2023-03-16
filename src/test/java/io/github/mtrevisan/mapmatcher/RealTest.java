@@ -35,8 +35,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionP
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.NoUTurnTransitionPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
@@ -69,11 +68,9 @@ public class RealTest{
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin())
-			.withPlugin(new NoUTurnTransitionPlugin())
+			.withPlugin(new ShortestPathTransitionPlugin(68.))
 			.withPlugin(new DirectionTransitionPlugin());
-//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
-//			.withPlugin(new NoUTurnPlugin());
+//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -89,11 +86,13 @@ public class RealTest{
 		}
 
 		GPSPoint[] observations = extract("CA202RX", ";");
+observations = Arrays.copyOfRange(observations, 163, 172);
 
-		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 1_000.);
-		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 500.);
+		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 15.);
 
-		final Point[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
+		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
+System.out.println(graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
@@ -102,9 +101,22 @@ if(path != null)
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath, observations[0], observations[observations.length - 1]);
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 if(pathPolyline != null)
 	System.out.println("path polyline: " + pathPolyline);
+
+		if(path != null){
+			double averagePositioningError = 0.;
+			int windowSize = 0;
+			for(int i = 0; i < filteredObservations.length; i ++)
+				if(filteredObservations[i] != null){
+					averagePositioningError += filteredObservations[i].distance(path[i].getPolyline());
+					windowSize ++;
+				}
+			averagePositioningError /= windowSize;
+System.out.println("average positioning error: " + averagePositioningError);
+		}
 	}
 
 

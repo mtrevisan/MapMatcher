@@ -33,8 +33,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionP
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.NoUTurnTransitionPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
@@ -56,7 +55,7 @@ class ViterbiMapMatchingTest{
 	void should_match_E0_E1_with_bayesian_emission_probability_direct_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -99,7 +98,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
-		final String expected = "[null, 0, 0, 0, 1.0, 1.0, 1.0, 1.1, null, null]";
+		final String expected = "[null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -108,7 +107,7 @@ class ViterbiMapMatchingTest{
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -151,7 +150,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
-		final String expected = "[null, 0, 0, 0, 1.0, 1.0, 1.0, 1.1, null, null]";
+		final String expected = "[null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -160,7 +159,7 @@ class ViterbiMapMatchingTest{
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -203,7 +202,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
 
-		final String expected = "[0, 0, 0, 0, 1.0, 1.0, 1.0, 1.1, 1.1, 1.1]";
+		final String expected = "[0, 0, 0, 0, 3, 1.0, 1.0, 1.1, 1.1, 1.1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -211,7 +210,7 @@ class ViterbiMapMatchingTest{
 	void should_match_E3_E2_with_bayesian_emission_probability_direct_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -251,7 +250,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
-		final String expected = "[null, null, 2, 2, 2, 2, 2]";
+		final String expected = "[null, null, 3, 2, 2, 2, 2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -260,8 +259,7 @@ class ViterbiMapMatchingTest{
 	void should_match_E0_E1_with_bayesian_emission_probability_bidirectional_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin())
-			.withPlugin(new NoUTurnTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -313,8 +311,7 @@ class ViterbiMapMatchingTest{
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin())
-			.withPlugin(new NoUTurnTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -366,8 +363,7 @@ class ViterbiMapMatchingTest{
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin())
-			.withPlugin(new NoUTurnTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -418,7 +414,7 @@ class ViterbiMapMatchingTest{
 	void should_match_E3_E2_with_bayesian_emission_probability_bidirectional_graph(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -458,7 +454,7 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
-		final String expected = "[null, null, 2, 2, 2, 2, 2]";
+		final String expected = "[null, null, 3, 2, 2, 2, 2-rev]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 

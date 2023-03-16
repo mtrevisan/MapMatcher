@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -75,15 +74,17 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 			return InitialProbabilityCalculator.logPr(PROBABILITY_UNCONNECTED_EDGES);
 
 		final double observationsDistance = previousObservation.distance(currentObservation);
-		final double pathDistance = path.alongTrackDistance(path.onTrackClosestPoint(currentObservation))
-			- path.alongTrackDistance(path.onTrackClosestPoint(previousObservation));
+		final Point previousOnTrackPoint = path.onTrackClosestPoint(previousObservation);
+		final Point currentOnTrackPoint = path.onTrackClosestPoint(currentObservation);
+		final double pathDistance = (previousOnTrackPoint.equals(currentOnTrackPoint)
+			? 0.
+			: path.alongTrackDistance(currentOnTrackPoint) - path.alongTrackDistance(previousOnTrackPoint));
 
 		//expansion of:
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
 		//return InitialProbabilityCalculator.logPr((sameSegment? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * a);
 		//in order to overcome overflow on exponential
-		final boolean sameOrConnectedSegments = (PathHelper.isSegmentsTheSameOrReversed(fromSegment, toSegment) || path.size() <= 3);
-		return InitialProbabilityCalculator.logPr((sameOrConnectedSegments? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * inverseRateParameter)
+		return InitialProbabilityCalculator.logPr((path.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE) * inverseRateParameter)
 			+ Math.abs(observationsDistance - pathDistance) * inverseRateParameter;
 	}
 

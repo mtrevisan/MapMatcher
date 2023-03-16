@@ -70,6 +70,13 @@ public class NearLineMergeGraph implements Graph{
 		return this;
 	}
 
+	@Override
+	public GeometryFactory getFactory(){
+		for(final Polyline polyline : tree.nodes())
+			return polyline.getFactory();
+		return null;
+	}
+
 	public Collection<Edge> addApproximateDirectEdge(final Point from, final Point to){
 		return addApproximateDirectEdge(null, from, to);
 	}
@@ -218,23 +225,6 @@ public class NearLineMergeGraph implements Graph{
 			if(polylines.contains(edge.getPolyline()))
 				edges.add(edge);
 		return edges;
-	}
-
-	@Override
-	public Node getClosestNode(final Point point){
-		if(tree == null)
-			throw new IllegalArgumentException("Tree is not defined, call .withTree() while constructing the graph");
-
-		Node closestNode = null;
-		double minimumDistance = Double.POSITIVE_INFINITY;
-		for(final Map.Entry<Point, Node> entry : nodeMap.entrySet()){
-			final double distance = point.distance(entry.getKey());
-			if(distance <= minimumDistance){
-				minimumDistance = distance;
-				closestNode = entry.getValue();
-			}
-		}
-		return closestNode;
 	}
 
 

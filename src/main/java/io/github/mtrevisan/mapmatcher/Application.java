@@ -35,8 +35,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionP
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.NoUTurnTransitionPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
@@ -121,13 +120,10 @@ public class Application{
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-//			.withPlugin(new ShortestPathTransitionPlugin(3.))
-			.withPlugin(new TopologicalTransitionPlugin())
-			.withPlugin(new NoUTurnTransitionPlugin())
+			.withPlugin(new ShortestPathTransitionPlugin(330.))
 			.withPlugin(new DirectionTransitionPlugin())
 			;
-//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
-//			.withPlugin(new NoUTurnPlugin());
+//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 //		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
 		final GeodeticDistanceCalculator distanceCalculator = new GeodeticDistanceCalculator();
@@ -138,7 +134,7 @@ public class Application{
 
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("path: [null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, 1.1]");
+System.out.println("true: [null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, 1.1]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
@@ -146,7 +142,7 @@ if(path != null)
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath, observations[0], observations[observations.length - 1]);
+		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 if(pathPolyline != null)
 	System.out.println("path polyline: " + pathPolyline);
 

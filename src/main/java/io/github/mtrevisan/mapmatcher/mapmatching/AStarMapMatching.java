@@ -35,6 +35,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.Transit
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
@@ -101,6 +102,8 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			seenNodes.put(edge, frontierNode);
 		}
 
+		final GeometryFactory factory = graph.getFactory();
+
 		int previousObservationIndex = i;
 		while(true){
 			final Point previousObservation = observations[previousObservationIndex];
@@ -117,8 +120,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 				for(final Edge toEdge : fromEdge.getOutEdges()){
 					final List<Node> pathFromTo = calculatePath(fromEdge, toEdge, graph, previousObservation, currentObservation);
-					final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathFromTo, fromEdge, toEdge,
-						previousObservation, currentObservation);
+					final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathFromTo, factory);
 
 					final double probability = fScores.get(fromEdge)[previousObservationIndex]
 						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, previousObservation, currentObservation,
@@ -173,12 +175,12 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 	private List<Node> calculatePath(final Edge fromEdge, final Edge toEdge, final Graph graph,
 		final Point previousObservation, final Point currentObservation){
-		final Node previousNode = graph.getClosestNode(fromEdge.getPolyline().onTrackClosestPoint(previousObservation));
+		final Node previousNode = fromEdge.getClosestNode(previousObservation);
 		final List<Node> pathFromTo;
 		if(fromEdge.equals(toEdge))
 			pathFromTo = Collections.singletonList(previousNode);
 		else{
-			final Node currentNode = graph.getClosestNode(toEdge.getPolyline().onTrackClosestPoint(currentObservation));
+			final Node currentNode = toEdge.getClosestNode(currentObservation);
 			pathFromTo = pathFinder.findPath(previousNode, currentNode, graph)
 				.simplePath();
 		}

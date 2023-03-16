@@ -42,6 +42,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -52,19 +53,6 @@ public class PathHelper{
 	public static final String SEGMENT_LEG_SEPARATOR = ".";
 
 	private PathHelper(){}
-
-
-	public static Edge[] extractPathAsEdges(final List<Node> path){
-		final int size = path.size();
-		final Edge[] connectedPath = new Edge[Math.max(size - 1, 0)];
-		for(int i = 1; i < size; i ++)
-			for(final Edge edge : path.get(i - 1).getOutEdges())
-				if(edge.getTo().equals(path.get(i))){
-					connectedPath[i - 1] = edge;
-					break;
-				}
-		return connectedPath;
-	}
 
 
 	public static Edge[] connectPath(final Edge[] path, final Graph graph, final EdgeWeightCalculator calculator){
@@ -112,41 +100,39 @@ public class PathHelper{
 		return (index < m? index: -1);
 	}
 
-	public static Polyline extractPathAsPolyline(final Edge[] connectedPath, final Point previousObservation, final Point currentObservation){
-		if(connectedPath.length == 0)
-			return null;
+	public static Polyline extractPathAsPolyline(final List<Node> path, final GeometryFactory factory){
+		if(path.isEmpty())
+			return factory.createEmptyPolyline();
+		if(path.size() == 1)
+			return factory.createPolyline(path.get(0).getPoint());
 
-		final Edge fromSegment = connectedPath[0];
-		final Edge toSegment = connectedPath[connectedPath.length - 1];
-		return extractPathAsPolyline(connectedPath, fromSegment, toSegment, previousObservation, currentObservation);
-	}
-
-	public static Polyline extractPathAsPolyline(final List<Node> path, final Edge fromSegment, final Edge toSegment,
-			final Point previousObservation, final Point currentObservation){
 		final Edge[] pathAsEdges = extractPathAsEdges(path);
-		return extractPathAsPolyline(pathAsEdges, fromSegment, toSegment, previousObservation, currentObservation);
+		return extractEdgesAsPolyline(pathAsEdges, factory);
 	}
 
-	public static Polyline extractPathAsPolyline(final Edge[] connectedPath, final Edge fromSegment, final Edge toSegment,
-			final Point previousObservation, final Point currentObservation){
-		final GeometryFactory factory = previousObservation.getFactory();
+	private static Edge[] extractPathAsEdges(final List<Node> path){
+		final int size = path.size();
+		final Edge[] connectedPath = new Edge[Math.max(size - 1, 0)];
+		for(int i = 1; i < size; i ++)
+			for(final Edge edge : path.get(i - 1).getOutEdges())
+				if(edge.getTo().equals(path.get(i))){
+					connectedPath[i - 1] = edge;
+					break;
+				}
+		return connectedPath;
+	}
+
+	public static Polyline extractEdgesAsPolyline(final Edge[] connectedPath, final GeometryFactory factory){
 		if(connectedPath.length == 0)
 			return factory.createEmptyPolyline();
 
-		//cut first segment
-		final Point[][] fromSegmentCut = fromSegment.getPolyline().cut(previousObservation);
-		//cut last segment
-		final Point[][] toSegmentCut = toSegment.getPolyline().cut(currentObservation);
-
 		//merge segments
-		int size = fromSegmentCut[1].length + toSegmentCut[0].length;
-		for(int i = 1; i < connectedPath.length - 1; i ++)
+		int size = 0;
+		for(int i = 0; i < connectedPath.length; i ++)
 			size += connectedPath[i].getPolyline().size();
 		final Point[] mergedPoints = new Point[size];
-		size = fromSegmentCut[1].length;
-		System.arraycopy(fromSegmentCut[1], 0, mergedPoints, 0, size);
-
-		for(int i = 1; i < connectedPath.length - 1; i ++){
+		size = 0;
+		for(int i = 0; i < connectedPath.length; i ++){
 			final Edge edge = connectedPath[i];
 			final Point[] points = edge.getPolyline().getPoints();
 			System.arraycopy(points, 0, mergedPoints, size, points.length);
@@ -154,9 +140,22 @@ public class PathHelper{
 			size += points.length;
 		}
 
-		System.arraycopy(toSegmentCut[0], 0, mergedPoints, size, toSegmentCut[0].length);
+		return factory.createPolyline(removeConsecutiveDuplicates(mergedPoints));
+	}
 
-		return factory.createPolyline(mergedPoints);
+	private static Point[] removeConsecutiveDuplicates(final Point[] input){
+		int distinctIndex = 0;
+		int numOfRemoved = 0;
+		for(int i = 1; i < input.length; i ++){
+			if(input[i].equals(input[distinctIndex]))
+				numOfRemoved ++;
+			else{
+				distinctIndex = i;
+				if(numOfRemoved > 0)
+					input[i - numOfRemoved] = input[i];
+			}
+		}
+		return (numOfRemoved > 0? Arrays.copyOfRange(input, 0, input.length - numOfRemoved): input);
 	}
 
 	public static boolean isSegmentsTheSame(final Edge fromSegment, final Edge toSegment){
@@ -289,7 +288,11 @@ public class PathHelper{
 			for(int i = 1; i < edgePoints.length; i ++){
 				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
 				graph.addApproximateDirectEdge(id, edgePoints[i - 1], edgePoints[i]);
-				//add reversed
+			}
+
+			//add reversed
+			for(int i = 1; i < edgePoints.length; i ++){
+				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
 				graph.addApproximateDirectEdge(id + REVERSED_EDGE_SUFFIX, edgePoints[i], edgePoints[i - 1]);
 			}
 

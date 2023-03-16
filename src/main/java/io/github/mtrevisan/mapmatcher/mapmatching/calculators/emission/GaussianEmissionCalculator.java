@@ -38,7 +38,7 @@ public class GaussianEmissionCalculator implements EmissionProbabilityCalculator
 	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
 
 	/**
-	 * 0.5 < tau0 < 1
+	 * 0 < tau0 < 1
 	 *
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */

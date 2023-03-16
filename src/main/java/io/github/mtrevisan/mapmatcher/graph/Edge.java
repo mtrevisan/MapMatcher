@@ -92,6 +92,10 @@ public class Edge{
 		return factory.createPolyline(point, to.getPoint());
 	}
 
+	public Node getClosestNode(final Point point){
+		return (from.getPoint().distance(point) < to.getPoint().distance(point)? from: to);
+	}
+
 	public double getWeight(){
 		return weight;
 	}
