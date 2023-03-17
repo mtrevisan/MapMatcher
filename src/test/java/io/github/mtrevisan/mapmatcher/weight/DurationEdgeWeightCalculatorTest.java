@@ -55,7 +55,7 @@ class DurationEdgeWeightCalculatorTest{
 			double expectedDuration = expectedDurations[i];
 			double maxSpeed = maxSpeeds[i];
 			GeodeticDurationCalculator edgeWeightCalculator = new GeodeticDurationCalculator();
-			final Edge edge = Edge.createDirectEdge(new Node("0", fromPoints), new Node("1", toPoints));
+			final Edge edge = Edge.createDirectEdge(Node.of("0", fromPoints), Node.of("1", toPoints));
 			edge.setWeight(maxSpeed);
 			double actualDistance = edgeWeightCalculator.calculateWeight(edge);
 
@@ -82,9 +82,7 @@ class DurationEdgeWeightCalculatorTest{
 			double expectedDistance = expectedDistances[i];
 			GeodeticDurationCalculator edgeWeightCalculator = new GeodeticDurationCalculator();
 
-			double actualDistance = edgeWeightCalculator.calculateWeight(
-				new Node("0", fromPoints),
-				new Node("1", toPoints));
+			double actualDistance = edgeWeightCalculator.calculateWeight(Node.of("0", fromPoints), Node.of("1", toPoints));
 
 			Assertions.assertEquals(expectedDistance, actualDistance, 0.05);
 		}

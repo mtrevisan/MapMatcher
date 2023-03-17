@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.StringJoiner;
 
 
 public class RealTest{
@@ -68,7 +69,7 @@ public class RealTest{
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(68.))
+			.withPlugin(new ShortestPathTransitionPlugin(68.4))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
@@ -94,8 +95,10 @@ observations = Arrays.copyOfRange(observations, 163, 172);
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 System.out.println(graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-if(path != null)
+if(path != null){
+	System.out.println("true: [null, null, 1.0-rev, 1.0, 13.0-rev, 24.2, 26.0-rev, 26.0, 26.0-rev]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+}
 
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new GeodeticDistanceCalculator());
 if(connectedPath.length > 0)
@@ -103,8 +106,14 @@ if(connectedPath.length > 0)
 
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
-if(pathPolyline != null)
-	System.out.println("path polyline: " + pathPolyline);
+if(pathPolyline != null){
+	final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
+	sj.add(pathPolyline.toString());
+	for(final GPSPoint point : filteredObservations)
+		if(point != null)
+			sj.add(point.toString());
+	System.out.println("path polyline: " + sj);
+}
 
 		if(path != null){
 			double averagePositioningError = 0.;

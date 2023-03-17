@@ -158,12 +158,18 @@ if(pathPolyline != null)
 System.out.println("average positioning error: " + averagePositioningError);
 		}
 
+		//!!! https://journals.sagepub.com/doi/pdf/10.1177/1550147718772541
+
 		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
 		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order
 		//HMM: `P(g_t−1, g_t | c^i_t−1, c^j) = P(c^j_t | c^i_t−1) · P(g_t−1 | c^i_t−1) · P(g_t | c^j_t)`
 		//The state transition probability `P(c^i_t | c^j_t-2, c^k_t-1) = β · e^(-k_t · β)`, where `β = 1/λ`, and λ is the mean of k_t, and
 		//	k_t is the difference between the great-circle distance from g_t-1 to g_t+1 and the route length from c^i_t-1 to c^j_t+1:
 		//	k_t = |sum(n=t-2..t-1, dist(g^i_n, g^j_n+1)) - sum(n=t-2..t-1, routeDist(c^i_n, c^j_n+1)) |
+		//P(g_t | c^i_t) = 1/(sqrt(2 * pi) * sigma_t) * e^(-0.5 * tau * rho * dist(g_t, c^i_t) / sigma_t) is the observation probability,
+		// sigma_t is the standard deviation of a gaussian random variable that corresponds to the average great-circle distance between g_t
+		//	and its candidate points, tau is a weight given on vehicle heading = nu + e^|alpha_road - alpha_gps| / e^(2/pi), rho is a weight
+		//	reflecting the effect of road including road level and driver's travel preference
 	}
 
 	//	public static void main(final String[] args){

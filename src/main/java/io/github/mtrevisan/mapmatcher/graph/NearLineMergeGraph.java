@@ -174,7 +174,7 @@ public class NearLineMergeGraph implements Graph{
 	private Collection<Node> getApproximateNode(final Point point){
 		final Collection<Node> closest = getNodesNear(point);
 		if(closest.isEmpty()){
-			final Node node = new Node(EMPTY, point);
+			final Node node = Node.of(EMPTY, point);
 			nodeMap.put(point, node);
 			closest.add(node);
 		}

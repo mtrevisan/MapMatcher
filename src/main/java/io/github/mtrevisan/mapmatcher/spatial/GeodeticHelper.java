@@ -29,6 +29,7 @@ import net.sf.geographiclib.GeodesicData;
 import net.sf.geographiclib.GeodesicMask;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 
@@ -54,6 +55,7 @@ public class GeodeticHelper{
 
 	private GeodeticHelper(){}
 
+
 	/**
 	 * Returns the orthodromic distance (using WGS84 reference system).
 	 *
@@ -62,10 +64,10 @@ public class GeodeticHelper{
 	 * @return	The orthodromic distance [m].
 	 */
 	public static double orthodromicDistance(final Point startPoint, final Point endPoint){
-		final GeodesicData result = REFERENCE_ELLIPSOID.Inverse(startPoint.getY(), startPoint.getX(),
-			endPoint.getY(), endPoint.getX(), GeodesicMask.DISTANCE);
-		return result.s12;
+		return REFERENCE_ELLIPSOID.Inverse(startPoint.getY(), startPoint.getX(), endPoint.getY(), endPoint.getX(), GeodesicMask.DISTANCE)
+			.s12;
 	}
+
 
 	/**
 	 * Returns the initial bearing (using WGS84 reference system) from North and clockwise.
@@ -75,10 +77,11 @@ public class GeodeticHelper{
 	 * @return	The initial bearing [°].
 	 */
 	public static double initialBearing(final Point startPoint, final Point endPoint){
-		final GeodesicData result = REFERENCE_ELLIPSOID.Inverse(startPoint.getY(), startPoint.getX(),
-			endPoint.getY(), endPoint.getX(), GeodesicMask.AZIMUTH);
-		return (result.azi1 < 0.? result.azi1 + 360.: result.azi1);
+		final double azimuth = initialAzimuth(startPoint.getY(), startPoint.getX(),
+			endPoint.getY(), endPoint.getX());
+		return (azimuth < 0.? azimuth + 360.: azimuth);
 	}
+
 
 	/**
 	 * Retrieve the destination, starting from the given point, heading and distance.
@@ -90,10 +93,10 @@ public class GeodeticHelper{
 	 */
 	public static Point destination(final Point startPoint, final double initialBearing, final double distance){
 		final double initialAzimuth = (initialBearing > 180.? initialBearing - 360.: initialBearing);
-		final GeodesicData result = REFERENCE_ELLIPSOID.Direct(startPoint.getY(), startPoint.getX(), initialAzimuth, distance,
-			GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+		final GeodesicData result = destination(startPoint.getY(), startPoint.getX(), initialAzimuth, distance);
 		return startPoint.factory.createPoint(result.lon2, result.lat2);
 	}
+
 
 	/**
 	 * Returns the closest point to a given point on a great circle.
@@ -132,7 +135,7 @@ public class GeodeticHelper{
 				//for very short distances this formula is less susceptible to rounding error (what is "very short"?)
 				final double aa = StrictMath.sin((phiA - phiP) / 2.);
 				final double bb = StrictMath.sin((lambdaA - lambdaP) / 2.);
-				distanceStartToPoint = 2. * StrictMath.asin(Math.sqrt(aa * aa + StrictMath.cos(phiA) * StrictMath.cos(phiP) * bb * bb));
+				distanceStartToPoint = 2. * StrictMath.asin(StrictMath.sqrt(aa * aa + StrictMath.cos(phiA) * StrictMath.cos(phiP) * bb * bb));
 			}
 
 			//[°]
@@ -184,6 +187,7 @@ public class GeodeticHelper{
 		return onTrackPoint;
 	}
 
+
 	/**
 	 * @param startPoint1	Start point of the first geodesic.
 	 * @param endPoint1	End point of the first geodesic.
@@ -207,10 +211,8 @@ public class GeodeticHelper{
 
 		boolean firstIteration = true;
 		while(true){
-			final double initialAzimuthAB = REFERENCE_ELLIPSOID.Inverse(latA, lonA, latB, lonB, GeodesicMask.AZIMUTH)
-				.azi1;
-			final double initialAzimuthCD = REFERENCE_ELLIPSOID.Inverse(latC, lonC, latD, lonD, GeodesicMask.AZIMUTH)
-				.azi1;
+			final double initialAzimuthAB = initialAzimuth(latA, lonA, latB, lonB);
+			final double initialAzimuthCD = initialAzimuth(latC, lonC, latD, lonD);
 			final GeodesicData inverseAC = REFERENCE_ELLIPSOID.Inverse(latA, lonA, latC, lonC,
 				GeodesicMask.AZIMUTH | GeodesicMask.DISTANCE);
 
@@ -228,19 +230,15 @@ public class GeodeticHelper{
 				/ (cosAC * StrictMath.cos(relativeAzimuthC) + StrictMath.sin(relativeAzimuthC) / StrictMath.tan(relativeAzimuthA)));
 			final double distanceCX = EARTH_EQUATORIAL_RADIUS * angleCX;
 
-			GeodesicData intersectionAB = REFERENCE_ELLIPSOID.Direct(latA, lonA, initialAzimuthAB, distanceAX,
-				GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
-			GeodesicData intersectionCD = REFERENCE_ELLIPSOID.Direct(latC, lonC, initialAzimuthCD, distanceCX,
-				GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+			GeodesicData intersectionAB = destination(latA, lonA, initialAzimuthAB, distanceAX);
+			GeodesicData intersectionCD = destination(latC, lonC, initialAzimuthCD, distanceCX);
 
 			if(firstIteration){
 				//avoid selecting almost antipodal intersection:
-				if(!isOnTrack(lonA, latA, lonB, latB, intersectionAB.lon2, intersectionAB.lat2))
-					intersectionAB = REFERENCE_ELLIPSOID.Direct(latA, lonA, initialAzimuthAB + 180., distanceAX,
-						GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
-				if(!isOnTrack(lonC, latC, lonD, latD, intersectionCD.lon2, intersectionCD.lat2))
-					intersectionCD = REFERENCE_ELLIPSOID.Direct(latC, lonC, initialAzimuthCD + 180., distanceCX,
-						GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+				if(!isOnTrack(latA, lonA, latB, lonB, intersectionAB.lat2, intersectionAB.lon2))
+					intersectionAB = destination(latA, lonA, initialAzimuthAB + 180., distanceAX);
+				if(!isOnTrack(latC, lonC, latD, lonD, intersectionCD.lat2, intersectionCD.lon2))
+					intersectionCD = destination(latC, lonC, initialAzimuthCD + 180., distanceCX);
 			}
 			firstIteration = false;
 
@@ -264,24 +262,29 @@ public class GeodeticHelper{
 		return intersection;
 	}
 
-	private static boolean isOnTrack(final double lon1, final double lat1, final double lon2, final double lat2,
-			double lonP, double latP){
+	private static GeodesicData destination(double lat, double lon, double initialAzimuth, double distance){
+		return REFERENCE_ELLIPSOID.Direct(lat, lon, initialAzimuth, distance,
+			GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+	}
+
+	private static boolean isOnTrack(final double lat1, final double lon1, final double lat2, final double lon2, double latP, double lonP){
 		boolean onTrack = true;
-		final double initialAzimuth1P = REFERENCE_ELLIPSOID.Inverse(lat1, lon1, latP, lonP, GeodesicMask.AZIMUTH)
-			.azi1;
-		final double initialAzimuth12 = REFERENCE_ELLIPSOID.Inverse(lat1, lon1, lat2, lon2, GeodesicMask.AZIMUTH)
-			.azi1;
+		final double initialAzimuth1P = initialAzimuth(lat1, lon1, latP, lonP);
+		final double initialAzimuth12 = initialAzimuth(lat1, lon1, lat2, lon2);
 		if(Math.abs(initialAzimuth1P - initialAzimuth12) > 90.)
 			onTrack = false;
 		else{
-			final double initialAzimuth2P = REFERENCE_ELLIPSOID.Inverse(lat2, lon2, latP, lonP, GeodesicMask.AZIMUTH)
-				.azi1;
-			final double initialAzimuth21 = REFERENCE_ELLIPSOID.Inverse(lat2, lon2, lat1, lon1, GeodesicMask.AZIMUTH)
-				.azi1;
+			final double initialAzimuth2P = initialAzimuth(lat2, lon2, latP, lonP);
+			final double initialAzimuth21 = initialAzimuth(lat2, lon2, lat1, lon1);
 			if(Math.abs(initialAzimuth2P - initialAzimuth21) > 90.)
 				onTrack = false;
 		}
 		return onTrack;
+	}
+
+	private static double initialAzimuth(final double lat1, final double lon1, final double lat2, final double lon2){
+		return REFERENCE_ELLIPSOID.Inverse(lat1, lon1, lat2, lon2, GeodesicMask.AZIMUTH)
+			.azi1;
 	}
 
 	private static Point limitIntersection(final Point startPoint1, final Point endPoint1, final Point startPoint2, final Point endPoint2,
@@ -298,6 +301,53 @@ public class GeodeticHelper{
 	private static Point limitIntersection(final Point startPoint, final Point endPoint, final Point point){
 		final Point intersection = onTrackClosestPoint(startPoint, endPoint, point);
 		return (intersection != null && orthodromicDistance(point, intersection) < ON_TRACK_POINT_PRECISION? point: null);
+	}
+
+
+	public static Point centroid(final Set<Point> points){
+		final Iterator<Point> itr = points.iterator();
+		final Point firstPoint = itr.next();
+		if(!itr.hasNext())
+			return firstPoint;
+
+		final Point secondPoint = itr.next();
+		if(!itr.hasNext()){
+			GeodesicData data = REFERENCE_ELLIPSOID.Inverse(firstPoint.getY(), firstPoint.getX(), secondPoint.getY(), secondPoint.getX(),
+				GeodesicMask.AZIMUTH | GeodesicMask.DISTANCE);
+			data = REFERENCE_ELLIPSOID.Direct(firstPoint.getY(), firstPoint.getX(), data.azi1, data.s12 / 2.,
+				GeodesicMask.LATITUDE | GeodesicMask.LONGITUDE);
+			return firstPoint.factory.createPoint(data.lon2, data.lat2);
+		}
+
+		//NOTE: on a spherical ellipsoid...
+		final double lat1 = Math.toRadians(firstPoint.getY());
+		final double lon1 = Math.toRadians(firstPoint.getX());
+		final double lat2 = Math.toRadians(secondPoint.getY());
+		final double lon2 = Math.toRadians(secondPoint.getX());
+		double x = StrictMath.cos(lat1) * StrictMath.cos(lon1) + StrictMath.cos(lat2) * StrictMath.cos(lon2);
+		double y = StrictMath.cos(lat1) * StrictMath.sin(lon1) + StrictMath.cos(lat2) * StrictMath.sin(lon2);
+		double z = StrictMath.sin(lat1) + StrictMath.sin(lat2);
+		while(itr.hasNext()){
+			final Point thirdPoint = itr.next();
+			final double lat3 = Math.toRadians(thirdPoint.getY());
+			final double lon3 = Math.toRadians(thirdPoint.getX());
+			x += StrictMath.cos(lat3) * StrictMath.cos(lon3);
+			y += StrictMath.cos(lat3) * StrictMath.sin(lon3);
+			z += StrictMath.sin(lat3);
+		}
+		final int size = points.size();
+		x /= size;
+		y /= size;
+		z /= size;
+		if(Math.abs(x) < 1.e-9 && Math.abs(y) < 1.e-9 && Math.abs(z) < 1.e-9){
+			//the centroid is the center of the ellipsoid
+			return null;
+		}
+
+		final double lon = Math.toDegrees(StrictMath.atan2(y, x));
+		final double hyp = Math.hypot(x, y);
+		final double lat = Math.toDegrees(Math.abs(hyp) >= Double.MIN_VALUE? StrictMath.atan2(z, hyp): (z > 0.? Math.PI: -Math.PI) / 2.);
+		return firstPoint.factory.createPoint(lat, lon);
 	}
 
 

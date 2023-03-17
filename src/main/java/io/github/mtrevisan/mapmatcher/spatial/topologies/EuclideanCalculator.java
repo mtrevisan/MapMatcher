@@ -42,7 +42,7 @@ public class EuclideanCalculator implements TopologyCalculator{
 	public double distance(final Point startPoint, final Point endPoint){
 		final double dx = startPoint.getX() - endPoint.getX();
 		final double dy = startPoint.getY() - endPoint.getY();
-		return Math.sqrt(dx * dx + dy * dy);
+		return Math.hypot(dx, dy);
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class EuclideanCalculator implements TopologyCalculator{
 		 */
 		final double s = ((startPoint.getY() - point.getY()) * (endPoint.getX() - startPoint.getX())
 			- (startPoint.getX() - point.getX()) * (endPoint.getY() - startPoint.getY())) / len2;
-		return Math.abs(s) * Math.sqrt(len2);
+		return Math.abs(s) * StrictMath.sqrt(len2);
 	}
 
 
@@ -149,8 +149,10 @@ public class EuclideanCalculator implements TopologyCalculator{
 	public double alongTrackDistance(final Point startPoint, final Point endPoint, final Point point){
 		final double dx21 = endPoint.getX() - startPoint.getX();
 		final double dy21 = endPoint.getY() - startPoint.getY();
-		return Math.abs(dx21 * (startPoint.getY() - point.getY()) - (startPoint.getX() - point.getX()) * dy21)
-			/ Math.sqrt(dx21 * dx21 + dy21 * dy21);
+		final double hyp = Math.hypot(dx21, dy21);
+		return (Math.abs(hyp) >= Double.MIN_VALUE
+			? Math.abs(dx21 * (startPoint.getY() - point.getY()) - (startPoint.getX() - point.getX()) * dy21) / hyp
+			: Double.NaN);
 	}
 
 

@@ -56,18 +56,18 @@ class ShortestPathPathfindingTestGraphs{
           * end - M
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		final Node nodeA = new Node("0", factory.createPoint(0., 0.));
-		final Node nodeB = new Node("1", factory.createPoint(1., 1.));
-		final Node nodeC = new Node("2", factory.createPoint(3., 1.));
-		final Node nodeD = new Node("3", factory.createPoint(2., 0.));
-		final Node nodeE = new Node("4", factory.createPoint(2., -1.));
-		final Node nodeF = new Node("5", factory.createPoint(6., -1.));
-		final Node nodeG = new Node("6", factory.createPoint(3., 1.));
-		final Node nodeH = new Node("7", factory.createPoint(4., 1.));
-		final Node nodeI = new Node("8", factory.createPoint(4., 3.));
-		final Node nodeJ = new Node("9", factory.createPoint(4., 2.));
-		final Node nodeK = new Node("10", factory.createPoint(6., 2.));
-		final Node nodeM = new Node("11", factory.createPoint(6., 3.));
+		final Node nodeA = Node.of("0", factory.createPoint(0., 0.));
+		final Node nodeB = Node.of("1", factory.createPoint(1., 1.));
+		final Node nodeC = Node.of("2", factory.createPoint(3., 1.));
+		final Node nodeD = Node.of("3", factory.createPoint(2., 0.));
+		final Node nodeE = Node.of("4", factory.createPoint(2., -1.));
+		final Node nodeF = Node.of("5", factory.createPoint(6., -1.));
+		final Node nodeG = Node.of("6", factory.createPoint(3., 1.));
+		final Node nodeH = Node.of("7", factory.createPoint(4., 1.));
+		final Node nodeI = Node.of("8", factory.createPoint(4., 3.));
+		final Node nodeJ = Node.of("9", factory.createPoint(4., 2.));
+		final Node nodeK = Node.of("10", factory.createPoint(6., 2.));
+		final Node nodeM = Node.of("11", factory.createPoint(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
@@ -110,18 +110,18 @@ class ShortestPathPathfindingTestGraphs{
           * end - M
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		final Node nodeA = new Node("0", factory.createPoint(0., 0.));
-		final Node nodeB = new Node("1", factory.createPoint(1., 1.));
-		final Node nodeC = new Node("2", factory.createPoint(3., 1.));
-		final Node nodeD = new Node("3", factory.createPoint(2., 0.));
-		final Node nodeE = new Node("4", factory.createPoint(2., -1.));
-		final Node nodeF = new Node("5", factory.createPoint(6., -1.));
-		final Node nodeG = new Node("6", factory.createPoint(3., 1.));
-		final Node nodeH = new Node("7", factory.createPoint(4., 1.));
-		final Node nodeI = new Node("8", factory.createPoint(4., 3.));
-		final Node nodeJ = new Node("9", factory.createPoint(4., 2.));
-		final Node nodeK = new Node("10", factory.createPoint(6., 2.));
-		final Node nodeM = new Node("11", factory.createPoint(6., 3.));
+		final Node nodeA = Node.of("0", factory.createPoint(0., 0.));
+		final Node nodeB = Node.of("1", factory.createPoint(1., 1.));
+		final Node nodeC = Node.of("2", factory.createPoint(3., 1.));
+		final Node nodeD = Node.of("3", factory.createPoint(2., 0.));
+		final Node nodeE = Node.of("4", factory.createPoint(2., -1.));
+		final Node nodeF = Node.of("5", factory.createPoint(6., -1.));
+		final Node nodeG = Node.of("6", factory.createPoint(3., 1.));
+		final Node nodeH = Node.of("7", factory.createPoint(4., 1.));
+		final Node nodeI = Node.of("8", factory.createPoint(4., 3.));
+		final Node nodeJ = Node.of("9", factory.createPoint(4., 2.));
+		final Node nodeK = Node.of("10", factory.createPoint(6., 2.));
+		final Node nodeM = Node.of("11", factory.createPoint(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
@@ -159,18 +159,18 @@ class ShortestPathPathfindingTestGraphs{
           * end - M
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		final Node nodeA = new Node("0", factory.createPoint(0., 0.));
-		final Node nodeB = new Node("1", factory.createPoint(1., 1.));
-		final Node nodeC = new Node("2", factory.createPoint(3., 1.));
-		final Node nodeD = new Node("3", factory.createPoint(2., 0.));
-		final Node nodeE = new Node("4", factory.createPoint(2., -1.));
-		final Node nodeF = new Node("5", factory.createPoint(6., -1.));
-		final Node nodeG = new Node("6", factory.createPoint(3., 1.));
-		final Node nodeH = new Node("7", factory.createPoint(4., 1.));
-		final Node nodeI = new Node("8", factory.createPoint(4., 3.));
-		final Node nodeJ = new Node("9", factory.createPoint(4., 2.));
-		final Node nodeK = new Node("10", factory.createPoint(6., 2.));
-		final Node nodeM = new Node("11", factory.createPoint(6., 3.));
+		final Node nodeA = Node.of("0", factory.createPoint(0., 0.));
+		final Node nodeB = Node.of("1", factory.createPoint(1., 1.));
+		final Node nodeC = Node.of("2", factory.createPoint(3., 1.));
+		final Node nodeD = Node.of("3", factory.createPoint(2., 0.));
+		final Node nodeE = Node.of("4", factory.createPoint(2., -1.));
+		final Node nodeF = Node.of("5", factory.createPoint(6., -1.));
+		final Node nodeG = Node.of("6", factory.createPoint(3., 1.));
+		final Node nodeH = Node.of("7", factory.createPoint(4., 1.));
+		final Node nodeI = Node.of("8", factory.createPoint(4., 3.));
+		final Node nodeJ = Node.of("9", factory.createPoint(4., 2.));
+		final Node nodeK = Node.of("10", factory.createPoint(6., 2.));
+		final Node nodeM = Node.of("11", factory.createPoint(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
@@ -214,18 +214,18 @@ class ShortestPathPathfindingTestGraphs{
           * end - M
         */
 		final GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		final Node nodeA = new Node("0", factory.createPoint(0., 0.));
-		final Node nodeB = new Node("1", factory.createPoint(1., 1.));
-		final Node nodeC = new Node("2", factory.createPoint(3., 1.));
-		final Node nodeD = new Node("3", factory.createPoint(2., 0.));
-		final Node nodeE = new Node("4", factory.createPoint(2., -1.));
-		final Node nodeF = new Node("5", factory.createPoint(6., -1.));
-		final Node nodeG = new Node("6", factory.createPoint(3., 1.));
-		final Node nodeH = new Node("7", factory.createPoint(4., 1.));
-		final Node nodeI = new Node("8", factory.createPoint(4., 3.));
-		final Node nodeJ = new Node("9", factory.createPoint(4., 2.));
-		final Node nodeK = new Node("10", factory.createPoint(6., 2.));
-		final Node nodeM = new Node("11", factory.createPoint(6., 3.));
+		final Node nodeA = Node.of("0", factory.createPoint(0., 0.));
+		final Node nodeB = Node.of("1", factory.createPoint(1., 1.));
+		final Node nodeC = Node.of("2", factory.createPoint(3., 1.));
+		final Node nodeD = Node.of("3", factory.createPoint(2., 0.));
+		final Node nodeE = Node.of("4", factory.createPoint(2., -1.));
+		final Node nodeF = Node.of("5", factory.createPoint(6., -1.));
+		final Node nodeG = Node.of("6", factory.createPoint(3., 1.));
+		final Node nodeH = Node.of("7", factory.createPoint(4., 1.));
+		final Node nodeI = Node.of("8", factory.createPoint(4., 3.));
+		final Node nodeJ = Node.of("9", factory.createPoint(4., 2.));
+		final Node nodeK = Node.of("10", factory.createPoint(6., 2.));
+		final Node nodeM = Node.of("11", factory.createPoint(6., 3.));
 
 		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());

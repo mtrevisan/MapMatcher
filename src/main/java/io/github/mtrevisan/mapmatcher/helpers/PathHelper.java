@@ -127,17 +127,13 @@ public class PathHelper{
 			return factory.createEmptyPolyline();
 
 		//merge segments
+		//NOTE: this assumes every node is associated to a single point!
+		final Point[] mergedPoints = new Point[connectedPath.length * 2];
 		int size = 0;
-		for(int i = 0; i < connectedPath.length; i ++)
-			size += connectedPath[i].getPolyline().size();
-		final Point[] mergedPoints = new Point[size];
-		size = 0;
 		for(int i = 0; i < connectedPath.length; i ++){
 			final Edge edge = connectedPath[i];
-			final Point[] points = edge.getPolyline().getPoints();
-			System.arraycopy(points, 0, mergedPoints, size, points.length);
-
-			size += points.length;
+			mergedPoints[size ++] = edge.getFrom().getPoint();
+			mergedPoints[size ++] = edge.getTo().getPoint();
 		}
 
 		return factory.createPolyline(removeConsecutiveDuplicates(mergedPoints));
@@ -194,7 +190,7 @@ public class PathHelper{
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
 	public static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point[] observations,
-		final double threshold){
+			final double threshold){
 		//collect max and min of X and Y:
 		double maxX = Double.NEGATIVE_INFINITY;
 		double minX = Double.POSITIVE_INFINITY;

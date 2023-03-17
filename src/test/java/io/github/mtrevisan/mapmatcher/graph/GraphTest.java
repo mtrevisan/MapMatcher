@@ -44,8 +44,8 @@ class GraphTest{
 	void should_connect_two_vertices_in_graph(){
 		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final NearLineMergeGraph graph = new NearLineMergeGraph(500.);
-		final Node from = new Node("0", factory.createPoint(22.22, 33.33));
-		final Node to = new Node("1", factory.createPoint(33.22, 44.33));
+		final Node from = Node.of("0", factory.createPoint(22.22, 33.33));
+		final Node to = Node.of("1", factory.createPoint(33.22, 44.33));
 
 		final Set<Edge> addedEdges = (Set<Edge>)graph.addApproximateDirectEdge(from.getPoint(), to.getPoint());
 
@@ -58,9 +58,9 @@ class GraphTest{
 	@Test
 	void should_return_the_edges_of_an_node(){
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		final Node node = new Node("0", factory.createPoint(1., 1.));
-		final Node firstNeighbor = new Node("1", factory.createPoint(1., 2.));
-		final Node secondNeighbor = new Node("2", factory.createPoint(1., 3.));
+		final Node node = Node.of("0", factory.createPoint(1., 1.));
+		final Node firstNeighbor = Node.of("1", factory.createPoint(1., 2.));
+		final Node secondNeighbor = Node.of("2", factory.createPoint(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(0.5);
 		graph.addApproximateDirectEdge(node.getPoint(), firstNeighbor.getPoint());
 		graph.addApproximateDirectEdge(node.getPoint(), secondNeighbor.getPoint());
@@ -79,9 +79,9 @@ class GraphTest{
 	@Test
 	void should_return_graph_vertices(){
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		final Node node = new Node("0", factory.createPoint(1., 1.));
-		final Node firstNeighbor = new Node("1", factory.createPoint(1., 2.));
-		final Node secondNeighbor = new Node("2", factory.createPoint(1., 3.));
+		final Node node = Node.of("0", factory.createPoint(1., 1.));
+		final Node firstNeighbor = Node.of("1", factory.createPoint(1., 2.));
+		final Node secondNeighbor = Node.of("2", factory.createPoint(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(0.5);
 		graph.addApproximateDirectEdge("01", node.getPoint(), firstNeighbor.getPoint());
 		graph.addApproximateDirectEdge("03", node.getPoint(), secondNeighbor.getPoint());
@@ -95,9 +95,9 @@ class GraphTest{
 	@Test
 	void should_return_graph_edges(){
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		final Node node = new Node("0", factory.createPoint(1., 1.));
-		final Node firstNeighbor = new Node("1", factory.createPoint(1., 2.));
-		final Node secondNeighbor = new Node("2", factory.createPoint(1., 3.));
+		final Node node = Node.of("0", factory.createPoint(1., 1.));
+		final Node firstNeighbor = Node.of("1", factory.createPoint(1., 2.));
+		final Node secondNeighbor = Node.of("2", factory.createPoint(1., 3.));
 		final NearLineMergeGraph graph = new NearLineMergeGraph(1.);
 		graph.addApproximateDirectEdge("01", node.getPoint(), firstNeighbor.getPoint());
 		graph.addApproximateDirectEdge("02", node.getPoint(), secondNeighbor.getPoint());
@@ -105,8 +105,8 @@ class GraphTest{
 		final Collection<Edge> result = new HashSet<>(graph.edges());
 
 		final Set<Edge> expected = new HashSet<>(List.of(
-			Edge.createDirectEdge(new Node("0", factory.createPoint(1., 1.25)), new Node("1", factory.createPoint(1., 1.25))),
-			Edge.createDirectEdge(new Node("0", factory.createPoint(1., 1.25)), new Node("2", factory.createPoint(1., 3.)))
+			Edge.createDirectEdge(Node.of("0", factory.createPoint(1., 1.25)), Node.of("1", factory.createPoint(1., 1.25))),
+			Edge.createDirectEdge(Node.of("0", factory.createPoint(1., 1.25)), Node.of("2", factory.createPoint(1., 3.)))
 		));
 		Assertions.assertEquals(expected, result);
 	}

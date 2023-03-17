@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -24,69 +24,28 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 
-public class Node{
+public class VirtualNode extends Node{
 
-	protected String id;
-
-	protected Point point;
-
-	private final Set<Edge> outEdges = new HashSet<>(0);
+	private Set<Point> points = new HashSet<>(0);
 
 
-	public static Node of(final String id, final Point point){
-		return new Node(id, point);
-	}
-
-	protected Node(){}
-
-	private Node(final String id, final Point point){
-		if(point == null)
-			throw new IllegalArgumentException("`point` cannot be null");
-
-		this.id = id;
-		this.point = point;
-	}
-
-	public String getID(){
-		return id;
-	}
-
-	public void setID(final String id){
-		if(id == null || id.length() == 0)
-			throw new IllegalArgumentException("`id` cannot be null or empty");
+	public VirtualNode(final String id){
+		super();
 
 		this.id = id;
 	}
 
-	public Collection<Edge> getOutEdges(){
-		return outEdges;
-	}
+	public void addPoint(final Point point){
+		points.add(point);
 
-	public Edge findOutEdges(final Node nodeTo){
-		for(final Edge edge : getOutEdges())
-			if(edge.getTo().equals(nodeTo))
-				return edge;
-		return null;
-	}
-
-	public void addOutEdge(final Edge edge){
-		outEdges.add(edge);
-	}
-
-	public Point getPoint(){
-		return point;
-	}
-
-	protected void setPoint(final Point point){
-		this.point = point;
+		super.point = GeodeticHelper.centroid(points);
 	}
 
 	@Override
@@ -96,18 +55,17 @@ public class Node{
 		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Node other = (Node)obj;
-		return Objects.equals(point, other.point);
+		return super.equals(obj);
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(point);
+		return super.hashCode();
 	}
 
 	@Override
 	public String toString(){
-		return "Node{id = " + id + ", point = " + point + "}";
+		return "VirtualNode{id = " + id + ", point = " + point + ", points " + points.size() + "}";
 	}
 
 }

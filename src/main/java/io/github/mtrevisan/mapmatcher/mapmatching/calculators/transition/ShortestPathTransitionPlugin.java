@@ -30,7 +30,6 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-//FIXME seems to not working...
 public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin{
 
 	/**
