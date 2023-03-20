@@ -134,7 +134,7 @@ public class Application{
 
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("true: [null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, 1.1]");
+System.out.println("true: [null, 0, 0, 0, 0, 1.0, 1.0, 1.1, null, 1.1]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
@@ -157,8 +157,6 @@ if(pathPolyline != null)
 			averagePositioningError /= windowSize;
 System.out.println("average positioning error: " + averagePositioningError);
 		}
-
-		//!!! https://journals.sagepub.com/doi/pdf/10.1177/1550147718772541
 
 		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
 		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order

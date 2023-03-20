@@ -191,6 +191,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		final Map<Edge, double[]> score = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
+		//calculate the initial probability:
 		Point currentObservation = observations[currentObservationIndex];
 		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
