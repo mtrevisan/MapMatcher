@@ -26,6 +26,8 @@ package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
+import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -34,10 +36,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 
 
@@ -66,27 +70,30 @@ public class NearLineMergeGraph implements Graph{
 		return this;
 	}
 
-	public Collection<Edge> addApproximateDirectEdge(final Polyline polyline){
-		return addApproximateDirectEdge(null, polyline);
+	@Override
+	public GeometryFactory getFactory(){
+		for(final Polyline polyline : tree.nodes())
+			return polyline.getFactory();
+		return null;
 	}
 
-	public Collection<Edge> addApproximateDirectEdge(final String id, final Polyline polyline){
+	public Collection<Edge> addApproximateDirectEdge(final Point from, final Point to){
+		return addApproximateDirectEdge(null, from, to);
+	}
+
+	public Collection<Edge> addApproximateDirectEdge(final String id, final Point from, final Point to){
+		if(from == null || to == null)
+			return Collections.emptyList();
+
 		final Collection<Edge> addedEdges = new HashSet<>(0);
-		if(polyline.isEmpty())
-			return addedEdges;
-
-		final Point[] points = polyline.getPoints();
-		//don't add lines with all points equal
-		if(points.length <= 1)
-			return addedEdges;
-
-		final Collection<Node> startNodes = connectNodes(points[0], polyline.getStartPoint());
-		final Collection<Node> endNodes = connectNodes(points[points.length - 1], polyline.getEndPoint());
+		final Collection<Node> startNodes = connectNodes(from);
+		final Collection<Node> endNodes = connectNodes(to);
 		final Set<Node> intersectionNodes = new HashSet<>(startNodes);
 		intersectionNodes.retainAll(endNodes);
+
 		for(final Node fromNode : startNodes)
 			for(final Node toNode : endNodes){
-				final Edge edge = Edge.createDirectEdge(fromNode, toNode, polyline);
+				final Edge edge = Edge.createDirectEdge(fromNode, toNode);
 				if(id != null){
 					edge.setID(id);
 
@@ -94,6 +101,8 @@ public class NearLineMergeGraph implements Graph{
 					fromNode.setID(nodeID + edge.getID() + "/from");
 					nodeID = (toNode.getID() != null && toNode.getID().length() > 0? toNode.getID() + ",": EMPTY);
 					toNode.setID(nodeID + edge.getID() + "/to");
+
+					LOGGER.debug("Create edge '{}' from '{}' to '{}'", edge.getID(), fromNode.getPoint(), toNode.getPoint());
 				}
 				if(!edges.contains(edge)){
 					fromNode.addOutEdge(edge);
@@ -101,18 +110,20 @@ public class NearLineMergeGraph implements Graph{
 
 					addedEdges.add(edge);
 
-					LOGGER.debug("Connect edge {} to node {} and {}", edge.getID(), fromNode.getID(), toNode.getID());
+					LOGGER.debug("Connect edge '{}' to node '{}' and '{}'", edge.getID(), fromNode.getID(), toNode.getID());
 				}
 			}
 		for(final Node intersectionNode1 : intersectionNodes)
 			for(final Node intersectionNode2 : intersectionNodes)
 				if(!intersectionNode1.equals(intersectionNode2)){
-					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2, polyline);
+					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2);
 					if(id != null){
 						edge.setID(id);
 
 						final String nodeID = (edge.getID() != null && edge.getID().length() > 0? edge.getID() + ",": EMPTY);
 						edge.setID(nodeID + edge.getID() + "/from-to");
+
+						LOGGER.debug("Create self edge '{}': point {}", edge.getID(), edge.getFrom().getPoint());
 					}
 					if(!edges.contains(edge)){
 						intersectionNode1.addOutEdge(edge);
@@ -121,11 +132,12 @@ public class NearLineMergeGraph implements Graph{
 
 						addedEdges.add(edge);
 
-						LOGGER.debug("Connect edge {} to intersection node {} and {}", edge.getID(), intersectionNode1.getID(), intersectionNode2.getID());
+						LOGGER.debug("Connect edge '{}' to intersection node '{}' and '{}'", edge.getID(), intersectionNode1.getID(), intersectionNode2.getID());
 					}
 				}
 
 		if(tree != null){
+			final Polyline polyline = from.getFactory().createPolyline(from, to);
 			final Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
 		}
@@ -133,8 +145,8 @@ public class NearLineMergeGraph implements Graph{
 		return addedEdges;
 	}
 
-	private Collection<Node> connectNodes(final Point origin, final Point newPoint){
-		final Collection<Node> nodes = getApproximateNode(origin);
+	private Collection<Node> connectNodes(final Point newPoint){
+		final Collection<Node> nodes = getApproximateNode(newPoint);
 		final Point virtualStartPoint = calculateVirtualPoint(nodes, newPoint);
 		for(final Node node : nodes)
 			node.setPoint(virtualStartPoint);
@@ -162,7 +174,7 @@ public class NearLineMergeGraph implements Graph{
 	private Collection<Node> getApproximateNode(final Point point){
 		final Collection<Node> closest = getNodesNear(point);
 		if(closest.isEmpty()){
-			final Node node = new Node(EMPTY, point);
+			final Node node = Node.of(EMPTY, point);
 			nodeMap.put(point, node);
 			closest.add(node);
 		}
@@ -177,21 +189,16 @@ public class NearLineMergeGraph implements Graph{
 		return closest;
 	}
 
-	/**
-	 * Returns the nodes that have been added to this graph.
-	 *
-	 * @return	The nodes.
-	 */
+	@Override
+	public boolean isEmpty(){
+		return nodeMap.isEmpty();
+	}
+
 	@Override
 	public Collection<Node> nodes(){
 		return nodeMap.values();
 	}
 
-	/**
-	 * Returns the edges that have been added to this graph.
-	 *
-	 * @return	The edges.
-	 */
 	@Override
 	public Collection<Edge> edges(){
 		return edges;
@@ -208,12 +215,9 @@ public class NearLineMergeGraph implements Graph{
 		if(tree == null)
 			throw new IllegalArgumentException("Tree is not defined, call .withTree() while constructing the graph");
 
-		final Point north = point.destination(0., threshold);
-		final Point east = point.destination(90., threshold);
-		final Point south = point.destination(180., threshold);
-		final Point west = point.destination(270., threshold);
-		final Envelope envelope = Envelope.ofEmpty();
-		envelope.expandToInclude(north, east, south, west);
+		final Point northEast = GeodeticHelper.destination(point, 45., threshold);
+		final Point southWest = GeodeticHelper.destination(point, 225., threshold);
+		final Envelope envelope = Envelope.of(northEast, southWest);
 		final List<Polyline> polylines = tree.query(envelope);
 
 		final List<Edge> edges = new ArrayList<>(0);
@@ -221,6 +225,32 @@ public class NearLineMergeGraph implements Graph{
 			if(polylines.contains(edge.getPolyline()))
 				edges.add(edge);
 		return edges;
+	}
+
+
+	@Override
+	public String toString(){
+		return graphAsString()
+			.toString();
+	}
+
+	@Override
+	public String toStringWithObservations(final GPSPoint[] observations){
+		final StringJoiner sj = graphAsString();
+		for(final GPSPoint observation : observations)
+			if(observation != null)
+				sj.add(observation.toString());
+		return sj.toString();
+	}
+
+	private StringJoiner graphAsString(){
+		final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
+		for(final Edge edge : edges){
+			final Point from = edge.getFrom().getPoint();
+			final Point to = edge.getTo().getPoint();
+			sj.add(from.getFactory().createPolyline(from, to).toString());
+		}
+		return sj;
 	}
 
 }

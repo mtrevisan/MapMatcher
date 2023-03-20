@@ -35,8 +35,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionP
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.NoUTurnTransitionPlugin;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
@@ -62,21 +61,6 @@ import java.util.Collection;
 public class Application{
 
 	public static void main(final String[] args){
-		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
-		// correct segment
-		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin())
-			.withPlugin(new NoUTurnTransitionPlugin())
-			.withPlugin(new DirectionTransitionPlugin());
-//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.)
-//			.withPlugin(new NoUTurnPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
-//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-//			new GeodeticDistanceCalculator());
-
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
@@ -97,11 +81,11 @@ public class Application{
 		final Polyline edge3 = factory.createPolyline(simplifier.simplify(node12_31_41, node42));
 		final Polyline edge4 = factory.createPolyline(simplifier.simplify(node32_51_61, node52));
 		final Polyline edge5 = factory.createPolyline(simplifier.simplify(node32_51_61, node62));
-		final Polyline[] polylines = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
+		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final HPRtree<Polyline> tree = new HPRtree<>();
-		for(final Polyline polyline : polylines){
-			final Envelope geoBoundingBox = polyline.getBoundingBox();
-			tree.insert(geoBoundingBox, polyline);
+		for(final Polyline edge : edges){
+			final Envelope geoBoundingBox = edge.getBoundingBox();
+			tree.insert(geoBoundingBox, edge);
 		}
 
 		ZonedDateTime timestamp = ZonedDateTime.now();
@@ -128,21 +112,64 @@ public class Application{
 		};
 		final GPSPoint[] observations = observations1;
 
-		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 100_000.);
-		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 1_000.);
+		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 1_000.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 5.);
 
-		final Point[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
+		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 900.);
+		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
+		// correct segment
+		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
+		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new ShortestPathTransitionPlugin(330.))
+			.withPlugin(new DirectionTransitionPlugin())
+			;
+//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
+		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+//		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
+		final GeodeticDistanceCalculator distanceCalculator = new GeodeticDistanceCalculator();
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+			distanceCalculator);
+//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
+//			distanceCalculator);
+
+System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
+System.out.println("true: [null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, 1.1]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new GeodeticDistanceCalculator());
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, distanceCalculator);
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Polyline pathPolyline = PathHelper.extractPathAsPolyline(connectedPath, observations[0], observations[observations.length - 1]);
+		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 if(pathPolyline != null)
 	System.out.println("path polyline: " + pathPolyline);
+
+		if(path != null){
+			double averagePositioningError = 0.;
+			int windowSize = 0;
+			for(int i = 0; i < filteredObservations.length; i ++)
+				if(filteredObservations[i] != null){
+					averagePositioningError += filteredObservations[i].distance(path[i].getPolyline());
+					windowSize ++;
+				}
+			averagePositioningError /= windowSize;
+System.out.println("average positioning error: " + averagePositioningError);
+		}
+
+		//!!! https://journals.sagepub.com/doi/pdf/10.1177/1550147718772541
+
+		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
+		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order
+		//HMM: `P(g_t−1, g_t | c^i_t−1, c^j) = P(c^j_t | c^i_t−1) · P(g_t−1 | c^i_t−1) · P(g_t | c^j_t)`
+		//The state transition probability `P(c^i_t | c^j_t-2, c^k_t-1) = β · e^(-k_t · β)`, where `β = 1/λ`, and λ is the mean of k_t, and
+		//	k_t is the difference between the great-circle distance from g_t-1 to g_t+1 and the route length from c^i_t-1 to c^j_t+1:
+		//	k_t = |sum(n=t-2..t-1, dist(g^i_n, g^j_n+1)) - sum(n=t-2..t-1, routeDist(c^i_n, c^j_n+1)) |
+		//P(g_t | c^i_t) = 1/(sqrt(2 * pi) * sigma_t) * e^(-0.5 * tau * rho * dist(g_t, c^i_t) / sigma_t) is the observation probability,
+		// sigma_t is the standard deviation of a gaussian random variable that corresponds to the average great-circle distance between g_t
+		//	and its candidate points, tau is a weight given on vehicle heading = nu + e^|alpha_road - alpha_gps| / e^(2/pi), rho is a weight
+		//	reflecting the effect of road including road level and driver's travel preference
 	}
 
 	//	public static void main(final String[] args){

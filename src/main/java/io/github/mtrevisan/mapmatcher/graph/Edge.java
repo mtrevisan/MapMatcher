@@ -35,37 +35,31 @@ import java.util.Objects;
 public class Edge{
 
 	private String id;
+
 	protected final Node from;
 	protected final Node to;
-	protected final Polyline polyline;
 
 	private double weight;
 
 
-	public static Edge createDirectEdge(final Node from, final Node to, final Polyline polyline){
-		return new Edge(from, to, polyline);
+	public static Edge createDirectEdge(final Node from, final Node to){
+		return new Edge(from, to);
 	}
 
 	public static Edge createSelfEdge(final Node node){
-		final Point point = node.getPoint();
-		final GeometryFactory factory = point.getFactory();
-		final Polyline polyline = factory.createPolyline(point, point);
-		return new Edge(node, node, polyline);
+		return new Edge(node, node);
 	}
 
-	private Edge(final Node from, final Node to, final Polyline polyline){
+	private Edge(final Node from, final Node to){
 		if(from == null)
 			throw new IllegalArgumentException("`from` node cannot be null");
 		if(to == null)
 			throw new IllegalArgumentException("`to` node cannot be null");
-		if(polyline == null)
-			throw new IllegalArgumentException("`geometry` cannot be null");
 
 		id = Objects.requireNonNullElse(from.getID(), "<null>")
 			+ "-" + Objects.requireNonNullElse(to.getID(), "<null>");
 		this.from = from;
 		this.to = to;
-		this.polyline = polyline;
 	}
 
 	public String getID(){
@@ -91,8 +85,15 @@ public class Edge{
 		return to.getOutEdges();
 	}
 
+	//FIXME reduce the computation of this polyline
 	public Polyline getPolyline(){
-		return polyline;
+		final Point point = from.getPoint();
+		final GeometryFactory factory = point.getFactory();
+		return factory.createPolyline(point, to.getPoint());
+	}
+
+	public Node getClosestNode(final Point point){
+		return (from.getPoint().distance(point) < to.getPoint().distance(point)? from: to);
 	}
 
 	public double getWeight(){
@@ -104,7 +105,7 @@ public class Edge{
 	}
 
 	public Edge reversed(){
-		return createDirectEdge(to, from, polyline.reverse());
+		return createDirectEdge(to, from);
 	}
 
 	@Override
@@ -114,8 +115,8 @@ public class Edge{
 		if(obj == null || getClass() != obj.getClass())
 			return false;
 
-		final Edge edge = (Edge)obj;
-		return (Objects.equals(from, edge.from) && Objects.equals(to, edge.to) && Objects.equals(weight, edge.weight));
+		final Edge other = (Edge)obj;
+		return (Objects.equals(from, other.from) && Objects.equals(to, other.to) && Objects.equals(weight, other.weight));
 	}
 
 	@Override

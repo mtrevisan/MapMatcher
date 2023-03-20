@@ -25,53 +25,47 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
-import java.util.List;
-
 
 public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 
-	private static final double PROBABILITY_SAME_EDGE = Math.exp(-0.5);
+	private static final double PROBABILITY_UNCONNECTED_EDGES = Double.POSITIVE_INFINITY;
+	private static final double PROBABILITY_SAME_POINT = 0.;
 
 
 	@Override
-	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation, final List<Node> path){
-		//direction from previous to current point on track
-		final Edge[] pathAsEdges = PathHelper.extractPathAsEdges(path);
-		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathAsEdges, fromSegment, toSegment,
-			previousObservation, currentObservation);
-		if(pathAsPolyline == null)
-			return PROBABILITY_SAME_EDGE;
+	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
+			final Polyline path){
+		final int size = path.size();
+		double logPr = PROBABILITY_UNCONNECTED_EDGES;
+		if(size == 1)
+			logPr = PROBABILITY_SAME_POINT;
+		else if(size > 1){
+			final Point previousOnTrackPoint = path.onTrackClosestPoint(previousObservation);
+			final Point currentOnTrackPoint = path.onTrackClosestPoint(currentObservation);
+			final TopologyCalculator calculator = previousObservation.getDistanceCalculator();
 
-		final Point previousOnTrackPoint = pathAsPolyline.onTrackClosestPoint(previousObservation);
-		final Point currentOnTrackPoint = pathAsPolyline.onTrackClosestPoint(currentObservation);
-		if(previousOnTrackPoint.equals(currentOnTrackPoint))
-			return PROBABILITY_SAME_EDGE;
+			final double onPathInitialBearing;
+			if(PathHelper.isGoingBackward(previousOnTrackPoint, currentOnTrackPoint, path))
+				onPathInitialBearing = calculator.initialBearing(currentOnTrackPoint, previousOnTrackPoint);
+			else
+				onPathInitialBearing = calculator.initialBearing(previousOnTrackPoint, currentOnTrackPoint);
 
+			//direction from previous to current observation
+			final double observationInitialBearing = calculator.initialBearing(previousObservation, currentObservation);
 
-		final TopologyCalculator calculator = previousObservation.getDistanceCalculator();
+			//angle difference
+			final double initialBearingDifference = Math.abs(observationInitialBearing - onPathInitialBearing);
 
-		final double onPathInitialBearing;
-		if(pathAsPolyline.alongTrackDistance(previousOnTrackPoint) <= pathAsPolyline.alongTrackDistance(currentOnTrackPoint))
-			onPathInitialBearing = calculator.initialBearing(previousOnTrackPoint, currentOnTrackPoint);
-		else
-			onPathInitialBearing = calculator.initialBearing(currentOnTrackPoint, previousOnTrackPoint);
+			logPr = InitialProbabilityCalculator.logPr(Math.abs(StrictMath.cos(Math.toRadians(initialBearingDifference))));
+		}
 
-		//direction from previous to current observation
-		final double observationInitialBearing = calculator.initialBearing(previousObservation, currentObservation);
-
-		//angle difference
-		final double initialBearingDifference = Math.abs(observationInitialBearing - onPathInitialBearing);
-
-		return InitialProbabilityCalculator.logPr(Math.abs(StrictMath.cos(Math.toRadians(initialBearingDifference))));
+		return logPr;
 	}
 
 }

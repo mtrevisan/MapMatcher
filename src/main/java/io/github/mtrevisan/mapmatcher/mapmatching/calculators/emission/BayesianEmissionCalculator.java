@@ -50,6 +50,7 @@ public class BayesianEmissionCalculator implements EmissionProbabilityCalculator
 		}
 
 		//step 3. Calculate Pr(r_j | p_i)
+		//step 4. Calculate sum(k=1..n of Pr(r_k | p_i))
 		double cumulativeProbability = 0.;
 		for(final Edge edge : edges){
 			final double probability = cumulativeDistance / emissionProbability.get(edge);
@@ -57,9 +58,10 @@ public class BayesianEmissionCalculator implements EmissionProbabilityCalculator
 			cumulativeProbability += probability;
 		}
 
-		//step 4. Calculate Pr(p_i | r_j)
+		//step 5. Calculate ln(Pr(p_i | r_j))
+		final double logCumulativeProbability = InitialProbabilityCalculator.logPr(cumulativeProbability);
 		for(final Edge edge : edges){
-			final double logProbability = InitialProbabilityCalculator.logPr(emissionProbability.get(edge) / cumulativeProbability);
+			final double logProbability = InitialProbabilityCalculator.logPr(emissionProbability.get(edge)) - logCumulativeProbability;
 			emissionProbability.put(edge, logProbability);
 		}
 	}
@@ -81,8 +83,7 @@ public class BayesianEmissionCalculator implements EmissionProbabilityCalculator
 	 * </p>
 	 */
 	@Override
-	public double emissionProbability(final Point observation, final Edge segment,
-			final Point previousObservation){
+	public double emissionProbability(final Point observation, final Edge segment, final Point previousObservation){
 		return emissionProbability.getOrDefault(segment, Double.POSITIVE_INFINITY);
 	}
 

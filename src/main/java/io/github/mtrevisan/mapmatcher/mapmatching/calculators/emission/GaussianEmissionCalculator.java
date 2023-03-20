@@ -27,14 +27,18 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.Collection;
 
 
 public class GaussianEmissionCalculator implements EmissionProbabilityCalculator{
 
+	private static final double K1 = 2. / StrictMath.PI;
+	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
+
 	/**
-	 * 0.5 < tau0 < 1
+	 * 0 < tau0 < 1
 	 *
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
@@ -63,26 +67,26 @@ public class GaussianEmissionCalculator implements EmissionProbabilityCalculator
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	@Override
-	public double emissionProbability(final Point observation, final Edge segment,
-			final Point previousObservation){
-		final double distance = observation.distance(segment.getPolyline());
+	public double emissionProbability(final Point observation, final Edge segment, final Point previousObservation){
+		final Polyline polyline = segment.getPolyline();
+		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;
 
 		//weight given on vehicle heading, which is related to the road direction angle and the trajectory direction angle
 		double tau = 1.;
 		if(previousObservation != null){
-			final Point previousObservationClosest = segment.getPolyline().onTrackClosestPoint(previousObservation);
-			final Point currentObservationClosest = segment.getPolyline().onTrackClosestPoint(observation);
+			final Point previousObservationClosest = polyline.onTrackClosestPoint(previousObservation);
+			final Point currentObservationClosest = polyline.onTrackClosestPoint(observation);
 			final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
 			final double angleGPS = previousObservation.initialBearing(observation);
-			tau = TAU0 + Math.exp(Math.toRadians(Math.abs(angleRoad - angleGPS)) - 2. / Math.PI);
+			tau = TAU0 + StrictMath.exp(StrictMath.toRadians(StrictMath.abs(angleRoad - angleGPS)) - K1);
 		}
 
 		//expansion of:
-		//final double probability = Math.exp(-0.5 * tau * tmp * tmp) / (Math.sqrt(2. * Math.PI) * observationStandardDeviation);
+		//final double probability = Math.exp(-0.5 * tau * tmp) / (StrictMath.sqrt(2. * Math.PI) * observationStandardDeviation);
 		//return InitialProbabilityCalculator.logPr(probability);
 		//in order to overcome overflow on exponential
-		return 0.5 * tau * tmp * tmp - InitialProbabilityCalculator.logPr(Math.sqrt(2. * Math.PI) * observationStandardDeviation);
+		return 0.5 * tau * tmp - InitialProbabilityCalculator.logPr(K2 * observationStandardDeviation);
 	}
 
 }

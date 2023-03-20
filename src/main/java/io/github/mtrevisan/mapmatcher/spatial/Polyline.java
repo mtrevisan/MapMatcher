@@ -138,48 +138,46 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		}
 	}
 
-	public Polyline[] cut(final Point point){
-		double xtd = -1.;
-		double minClosestPointDistance = Double.MAX_VALUE;
-		Point minClosestPoint = null;
-		int cutIndexEnd = -1;
+	public Point[][] cut(final Point point){
+		final double atdToPoint = alongTrackDistance(point);
+		double cumulativeDistance = 0.;
+		int pointBeforeOrOnIndex = 0;
+		boolean pointOnNode = false;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
-		for(int i = 1; xtd != 0. && i < points.length; i ++){
+		for(int i = 1; i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
 			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
-			xtd = point.distance(closestPoint);
-			if(xtd < minClosestPointDistance){
-				minClosestPointDistance = xtd;
-				minClosestPoint = closestPoint;
+			final double onTrackDistance = startPoint.distance(closestPoint);
+			cumulativeDistance += onTrackDistance;
 
-				cutIndexEnd = i;
+			if(cumulativeDistance <= atdToPoint){
+				pointBeforeOrOnIndex = i;
+				pointOnNode = (onTrackDistance == 0.);
 			}
 		}
 
-		final Point[] firstList = new Point[cutIndexEnd];
-		System.arraycopy(points, 0, firstList, 0, cutIndexEnd - 1);
-		firstList[cutIndexEnd - 1] = minClosestPoint;
-		final Point[] secondList = new Point[points.length - cutIndexEnd + 1];
-		secondList[0] = minClosestPoint;
-		System.arraycopy(points, cutIndexEnd, secondList, 1, points.length - cutIndexEnd);
-		return new Polyline[]{
-			point.factory.createPolyline(firstList),
-			point.factory.createPolyline(secondList)
+
+		final int beforeSize = pointBeforeOrOnIndex + 1;
+		final int afterSize = points.length - pointBeforeOrOnIndex - (pointOnNode? 0: 1);
+		final Point[] before = new Point[beforeSize];
+		final Point[] after = new Point[afterSize];
+		System.arraycopy(points, 0, before, 0, beforeSize);
+		System.arraycopy(points, pointBeforeOrOnIndex + (pointOnNode? 0: 1), after, 0, afterSize);
+		return new Point[][]{
+			before,
+			after
 		};
 	}
 
 
 	public Point onTrackClosestPoint(final Point point){
-		double xtd = -1.;
 		double minClosestPointDistance = Double.MAX_VALUE;
-		Point minClosestPoint = null;
+		Point minClosestPoint = points[0];
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
-		for(int i = 1; xtd != 0. && i < points.length; i ++){
-			final Point startPoint = points[i - 1];
-			final Point endPoint = points[i];
-			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
-			xtd = point.distance(closestPoint);
+		for(int i = 1; i < points.length; i ++){
+			final Point closestPoint = topologyCalculator.onTrackClosestPoint(points[i - 1], points[i], point);
+			final double xtd = point.distance(closestPoint);
 			if(xtd < minClosestPointDistance){
 				minClosestPointDistance = xtd;
 				minClosestPoint = closestPoint;
@@ -190,11 +188,11 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 	public double alongTrackDistance(final Point point){
 		double atd = 0.;
-		double xtd = -1.;
+		double xtd = 0.;
 		double minClosestPointDistance = Double.MAX_VALUE;
 		double cumulativeDistance = 0.;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
-		for(int i = 1; xtd != 0. && i < points.length; i ++){
+		for(int i = 1; i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
 			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);

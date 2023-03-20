@@ -42,7 +42,7 @@ public class EuclideanDistanceTestEdgeWeightCalculator implements EdgeWeightCalc
 		final var toPoints = to.getPoint();
 		final var deltaY = fromPoints.getY() - toPoints.getY();
 		final var deltaX = fromPoints.getX() - toPoints.getX();
-		return Math.sqrt(deltaY * deltaY + deltaX * deltaX);
+		return Math.hypot(deltaY, deltaX);
 	}
 
 }

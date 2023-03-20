@@ -33,7 +33,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionP
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TopologicalTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
@@ -55,7 +55,7 @@ class AStarMapMatchingTest{
 	void should_match_E0_E1_with_bayesian_emission_probability(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -107,7 +107,7 @@ class AStarMapMatchingTest{
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -159,7 +159,7 @@ class AStarMapMatchingTest{
 	void should_match_E3_E2_with_bayesian_emission_probability(){
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new TopologicalTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new GeodeticDistanceCalculator());
@@ -207,8 +207,9 @@ class AStarMapMatchingTest{
 		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
 		int e = 0;
 		for(final Polyline edge : edges){
-			graph.addApproximateDirectEdge(String.valueOf(e), edge);
-			graph.addApproximateDirectEdge(e + "-rev", edge.reverse());
+			graph.addApproximateDirectEdge(String.valueOf(e), edge.getStartPoint(), edge.getEndPoint());
+			final Polyline reverse = edge.reverse();
+			graph.addApproximateDirectEdge(e + "-rev", reverse.getStartPoint(), reverse.getEndPoint());
 
 			e ++;
 		}

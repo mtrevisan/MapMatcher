@@ -25,14 +25,9 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-
-import java.util.List;
 
 
 public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin{
@@ -43,13 +38,14 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	private static final double PROBABILITY_SAME_EDGE = 0.6;
+	private static final double PROBABILITY_UNCONNECTED_EDGES = 0.;
 
 
 	private final double inverseRateParameter;
 
 
-	public ShortestPathTransitionPlugin(final double inverseRateParameter){
-		this.inverseRateParameter = inverseRateParameter;
+	public ShortestPathTransitionPlugin(final double rateParameter){
+		inverseRateParameter = 1. / rateParameter;
 	}
 
 	/**
@@ -71,23 +67,24 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	@Override
-	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation, final List<Node> path){
-		final double observationsDistance = previousObservation.distance(currentObservation);
+	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
+			final Polyline path){
+		if(path.isEmpty())
+			return InitialProbabilityCalculator.logPr(PROBABILITY_UNCONNECTED_EDGES);
 
-		final Edge[] pathAsEdges = PathHelper.extractPathAsEdges(path);
-		final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathAsEdges, fromSegment, toSegment,
-			previousObservation, currentObservation);
-		final double pathDistance = (pathAsPolyline != null
-			? pathAsPolyline.alongTrackDistance(currentObservation) - pathAsPolyline.alongTrackDistance(previousObservation)
-			: observationsDistance);
+		final double observationsDistance = previousObservation.distance(currentObservation);
+		final Point previousOnTrackPoint = path.onTrackClosestPoint(previousObservation);
+		final Point currentOnTrackPoint = path.onTrackClosestPoint(currentObservation);
+		final double pathDistance = (previousOnTrackPoint.equals(currentOnTrackPoint)
+			? 0.
+			: path.alongTrackDistance(currentOnTrackPoint) - path.alongTrackDistance(previousOnTrackPoint));
 
 		//expansion of:
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
-		//return InitialProbabilityCalculator.logPr(path.isEmpty()? (1. - PROBABILITY_SAME_EDGE) * a: PROBABILITY_SAME_EDGE * a);
+		//return InitialProbabilityCalculator.logPr((sameSegment? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * a);
 		//in order to overcome overflow on exponential
-		return InitialProbabilityCalculator.logPr((pathAsPolyline == null || pathAsPolyline.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE) / inverseRateParameter)
-			- Math.abs(observationsDistance - pathDistance) / inverseRateParameter;
+		return InitialProbabilityCalculator.logPr((path.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE) * inverseRateParameter)
+			+ Math.abs(observationsDistance - pathDistance) * inverseRateParameter;
 	}
 
 }

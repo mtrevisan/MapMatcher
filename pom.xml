@@ -46,7 +46,7 @@
 		<javadoc.html.version>-html5</javadoc.html.version>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
-		<maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin -->
 		<maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
 

@@ -44,10 +44,10 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_path_consisting_of_vertices(){
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Node first = new Node("0", factory.createPoint(1., 2.));
-		Node second = new Node("1", factory.createPoint(2., 2.));
+		Node first = Node.of("0", factory.createPoint(1., 2.));
+		Node second = Node.of("1", factory.createPoint(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))
+			Edge.createDirectEdge(first, second)
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -68,10 +68,10 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_vertices_in_path(){
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		final Node first = new Node("0", factory.createPoint(1., 2.));
-		final Node second = new Node("1", factory.createPoint(2., 2.));
+		final Node first = Node.of("0", factory.createPoint(1., 2.));
+		final Node second = Node.of("1", factory.createPoint(2., 2.));
 		List<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))
+			Edge.createDirectEdge(first, second)
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -93,10 +93,7 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_the_number_of_visited_vertices(){
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
-		Set<Node> visitedVertices = new HashSet<>(Arrays.asList(
-			new Node("0", factory.createPoint(1., 1.)),
-			new Node("1", factory.createPoint(2., 2.))
-		));
+		Set<Node> visitedVertices = new HashSet<>(Arrays.asList(Node.of("0", factory.createPoint(1., 1.)), Node.of("1", factory.createPoint(2., 2.))));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(new ArrayList<>(), visitedVertices, visitedVertices);
 
 		int result = pathSummary.totalVisitedVertices();
@@ -107,10 +104,10 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_path_distance(){
 		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
-		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
+		final Node first = Node.of("0", factory.createPoint(121.058805, 14.552797));
+		final Node second = Node.of("1", factory.createPoint(120.994260, 14.593999));
 		ArrayList<Edge> path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()))
+			Edge.createDirectEdge(first, second)
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
@@ -122,9 +119,9 @@ class BidirectionalPathSummaryTest{
 	@Test
 	void should_return_path_duration(){
 		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		final Node first = new Node("0", factory.createPoint(121.058805, 14.552797));
-		final Node second = new Node("1", factory.createPoint(120.994260, 14.593999));
-		final Edge edge = Edge.createDirectEdge(first, second, factory.createPolyline(first.getPoint(), second.getPoint()));
+		final Node first = Node.of("0", factory.createPoint(121.058805, 14.552797));
+		final Node second = Node.of("1", factory.createPoint(120.994260, 14.593999));
+		final Edge edge = Edge.createDirectEdge(first, second);
 		edge.setWeight(50.);
 		ArrayList<Edge> path = new ArrayList<>(List.of(edge));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
@@ -144,10 +141,10 @@ class BidirectionalPathSummaryTest{
 
 
 		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		Node node1 = new Node("0", factory.createPoint(14.552797, 121.058805));
-		Node node2 = new Node("1", factory.createPoint(14.593999, 120.994260));
+		Node node1 = Node.of("0", factory.createPoint(14.552797, 121.058805));
+		Node node2 = Node.of("1", factory.createPoint(14.593999, 120.994260));
 		path = new ArrayList<>(List.of(
-			Edge.createDirectEdge(node1, node2, factory.createPolyline(node1.getPoint(), node2.getPoint()))
+			Edge.createDirectEdge(node1, node2)
 		));
 		pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 

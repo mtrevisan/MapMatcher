@@ -28,16 +28,20 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.FibonacciHeap;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +102,8 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			seenNodes.put(edge, frontierNode);
 		}
 
+		final GeometryFactory factory = graph.getFactory();
+
 		int previousObservationIndex = i;
 		while(true){
 			final Point previousObservation = observations[previousObservationIndex];
@@ -113,10 +119,12 @@ public class AStarMapMatching implements MapMatchingStrategy{
 				//TODO termination condition: i == m - 1 && currentEdge is best (?)
 
 				for(final Edge toEdge : fromEdge.getOutEdges()){
-					final List<Node> pathFromTo = pathFinder.findPath(fromEdge.getTo(), toEdge.getFrom(), graph).simplePath();
+					final List<Node> pathFromTo = calculatePath(fromEdge, toEdge, graph, previousObservation, currentObservation);
+					final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathFromTo, factory);
+
 					final double probability = fScores.get(fromEdge)[previousObservationIndex]
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, graph, previousObservation, currentObservation,
-						pathFromTo);
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, previousObservation, currentObservation,
+						pathAsPolyline);
 					if(probability < fScores.get(toEdge)[previousObservationIndex]){
 						fScores.get(toEdge)[i] = probability;
 
@@ -163,6 +171,20 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			}
 		}
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
+	}
+
+	private List<Node> calculatePath(final Edge fromEdge, final Edge toEdge, final Graph graph,
+		final Point previousObservation, final Point currentObservation){
+		final Node previousNode = fromEdge.getClosestNode(previousObservation);
+		final List<Node> pathFromTo;
+		if(fromEdge.equals(toEdge))
+			pathFromTo = Collections.singletonList(previousNode);
+		else{
+			final Node currentNode = toEdge.getClosestNode(currentObservation);
+			pathFromTo = pathFinder.findPath(previousNode, currentNode, graph)
+				.simplePath();
+		}
+		return pathFromTo;
 	}
 
 	private static int extractNextObservation(final Point[] observations, int index){

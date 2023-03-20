@@ -204,7 +204,7 @@ class HilbertCode{
 		checkLevel(level);
 		final int levelClamp = levelClamp(level);
 
-		index = index << (32 - 2 * levelClamp);
+		index <<= 32 - 2 * levelClamp;
 
 		final long i0 = deInterleave(index);
 		final long i1 = deInterleave(index >> 1);

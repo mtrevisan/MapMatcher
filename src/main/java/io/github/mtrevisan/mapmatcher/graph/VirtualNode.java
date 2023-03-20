@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,30 +22,50 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
+package io.github.mtrevisan.mapmatcher.graph;
 
-import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
+import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 
-public class NoUTurnTransitionPlugin implements TransitionProbabilityPlugin{
+public class VirtualNode extends Node{
+
+	private Set<Point> points = new HashSet<>(0);
+
+
+	public VirtualNode(final String id){
+		super();
+
+		this.id = id;
+	}
+
+	public void addPoint(final Point point){
+		points.add(point);
+
+		super.point = GeodeticHelper.centroid(points);
+	}
 
 	@Override
-	public double factor(final Edge fromSegment, final Edge toSegment, final Graph graph,
-			final Point previousObservation, final Point currentObservation, final List<Node> path){
-		//penalize u-turns: make then unreachable
-		boolean segmentsReversed = PathHelper.isSegmentsReversed(fromSegment, toSegment);
+	public boolean equals(final Object obj){
+		if(this == obj)
+			return true;
+		if(obj == null || getClass() != obj.getClass())
+			return false;
 
-		if(path != null && !fromSegment.equals(toSegment))
-			//disallow U-turn along multiple edges
-			segmentsReversed = PathHelper.hasMixedDirections(path, fromSegment, toSegment);
+		return super.equals(obj);
+	}
 
-		return (segmentsReversed? Double.POSITIVE_INFINITY: 0.);
+	@Override
+	public int hashCode(){
+		return super.hashCode();
+	}
+
+	@Override
+	public String toString(){
+		return "VirtualNode{id = " + id + ", point = " + point + ", points " + points.size() + "}";
 	}
 
 }

@@ -34,13 +34,23 @@ import java.util.Set;
 
 public class Node{
 
-	private String id;
-	private Point point;
+	protected String id;
+
+	protected Point point;
 
 	private final Set<Edge> outEdges = new HashSet<>(0);
 
 
-	public Node(final String id, final Point point){
+	public static Node of(final String id, final Point point){
+		return new Node(id, point);
+	}
+
+	protected Node(){}
+
+	private Node(final String id, final Point point){
+		if(point == null)
+			throw new IllegalArgumentException("`point` cannot be null");
+
 		this.id = id;
 		this.point = point;
 	}
@@ -75,7 +85,7 @@ public class Node{
 		return point;
 	}
 
-	public void setPoint(final Point point){
+	protected void setPoint(final Point point){
 		this.point = point;
 	}
 
