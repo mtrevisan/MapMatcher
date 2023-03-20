@@ -25,6 +25,7 @@
 package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 
 import java.util.List;
 
@@ -37,9 +38,7 @@ public interface PathSummary{
 
 	int totalVisitedVertices();
 
-	double totalDistance();
-
-	double totalDuration();
+	double totalDistance(DistanceCalculator distanceCalculator);
 
 	boolean isFound();
 

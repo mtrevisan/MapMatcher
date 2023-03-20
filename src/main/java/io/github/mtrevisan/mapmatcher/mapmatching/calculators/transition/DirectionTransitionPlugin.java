@@ -48,16 +48,16 @@ public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 		else if(size > 1){
 			final Point previousOnTrackPoint = path.onTrackClosestPoint(previousObservation);
 			final Point currentOnTrackPoint = path.onTrackClosestPoint(currentObservation);
-			final TopologyCalculator calculator = previousObservation.getDistanceCalculator();
+			final TopologyCalculator topologyCalculator = previousObservation.getDistanceCalculator();
 
 			final double onPathInitialBearing;
 			if(PathHelper.isGoingBackward(previousOnTrackPoint, currentOnTrackPoint, path))
-				onPathInitialBearing = calculator.initialBearing(currentOnTrackPoint, previousOnTrackPoint);
+				onPathInitialBearing = topologyCalculator.initialBearing(currentOnTrackPoint, previousOnTrackPoint);
 			else
-				onPathInitialBearing = calculator.initialBearing(previousOnTrackPoint, currentOnTrackPoint);
+				onPathInitialBearing = topologyCalculator.initialBearing(previousOnTrackPoint, currentOnTrackPoint);
 
 			//direction from previous to current observation
-			final double observationInitialBearing = calculator.initialBearing(previousObservation, currentObservation);
+			final double observationInitialBearing = topologyCalculator.initialBearing(previousObservation, currentObservation);
 
 			//angle difference
 			final double initialBearingDifference = Math.abs(observationInitialBearing - onPathInitialBearing);

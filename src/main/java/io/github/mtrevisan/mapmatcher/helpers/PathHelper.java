@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.helpers;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
+import io.github.mtrevisan.mapmatcher.graph.NearNodeMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.filters.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
@@ -44,13 +44,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class PathHelper{
 
 	public static final String REVERSED_EDGE_SUFFIX = "-rev";
-	public static final String SEGMENT_LEG_SEPARATOR = ".";
 
 	private PathHelper(){}
 
@@ -128,15 +129,16 @@ public class PathHelper{
 
 		//merge segments
 		//NOTE: this assumes every node is associated to a single point!
-		final Point[] mergedPoints = new Point[connectedPath.length * 2];
-		int size = 0;
+		final ArrayList<Point> mergedPoints = new ArrayList<>(connectedPath.length + 1);
 		for(int i = 0; i < connectedPath.length; i ++){
 			final Edge edge = connectedPath[i];
-			mergedPoints[size ++] = edge.getFrom().getPoint();
-			mergedPoints[size ++] = edge.getTo().getPoint();
+			final Point[] edgePathPoints = edge.getPath().getPoints();
+			mergedPoints.ensureCapacity(mergedPoints.size() + edgePathPoints.length + connectedPath.length - i);
+			for(final Point point : edgePathPoints)
+				mergedPoints.add(point);
 		}
 
-		return factory.createPolyline(removeConsecutiveDuplicates(mergedPoints));
+		return factory.createPolyline(removeConsecutiveDuplicates(mergedPoints.toArray(Point[]::new)));
 	}
 
 	private static Point[] removeConsecutiveDuplicates(final Point[] input){
@@ -191,35 +193,25 @@ public class PathHelper{
 	 */
 	public static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point[] observations,
 			final double threshold){
-		//collect max and min of X and Y:
-		double maxX = Double.NEGATIVE_INFINITY;
-		double minX = Double.POSITIVE_INFINITY;
-		double maxY = Double.NEGATIVE_INFINITY;
-		double minY = Double.POSITIVE_INFINITY;
-		for(final Point observation : observations){
-			final double x = observation.getX();
-			if(x > maxX)
-				maxX = x;
-			else if(x < minX)
-				minX = x;
+		final Set<Polyline> observedEdges = new HashSet<>(0);
+		for(int i = 0; i < observations.length; ){
+			final Point observation = observations[i];
 
-			final double y = observation.getY();
-			if(y > maxY)
-				maxY = y;
-			else if(y < minY)
-				minY = y;
+			//construct the envelope
+			final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
+			final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
+			final Envelope envelope = Envelope.of(northEast, southWest);
+
+			//skip observations inside current envelope
+			do{
+				i ++;
+			}while(i < observations.length && envelope.intersects(observations[i]));
+
+			//add observed edges to final set
+			observedEdges.addAll(tree.query(envelope));
 		}
 
-		//create an envelope around max and min:
-		final GeometryFactory factory = observations[0].getFactory();
-		final Point max = Point.of(factory, maxX, maxY);
-		final Point min = Point.of(factory, minX, minY);
-		final Point northEast = GeodeticHelper.destination(max, 45., threshold);
-		final Point southWest = GeodeticHelper.destination(min, 225., threshold);
-		final Envelope envelope = Envelope.of(northEast, southWest);
-
-		//query the tree
-		return tree.query(envelope);
+		return observedEdges;
 	}
 
 	public static GPSPoint[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations, final double threshold){
@@ -259,15 +251,12 @@ public class PathHelper{
 
 	//create id as `<segment>(.<leg>)?
 	public static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold)
+		final NearNodeMergeGraph graph = new NearNodeMergeGraph(threshold)
 			.withTree();
 		int e = 0;
 		for(final Polyline edge : edges){
-			final Point[] edgePoints = edge.getPoints();
-			for(int i = 1; i < edgePoints.length; i ++){
-				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
-				graph.addApproximateDirectEdge(id, edgePoints[i - 1], edgePoints[i]);
-			}
+			final String id = String.valueOf(e);
+			graph.addApproximateDirectEdge(id, edge);
 
 			e ++;
 		}
@@ -276,21 +265,14 @@ public class PathHelper{
 
 	//create id as `<segment>(.<leg>)?(-rev)?`
 	public static Graph extractBidirectionalGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold)
+		final NearNodeMergeGraph graph = new NearNodeMergeGraph(threshold)
 			.withTree();
 		int e = 0;
 		for(final Polyline edge : edges){
-			final Point[] edgePoints = edge.getPoints();
-			for(int i = 1; i < edgePoints.length; i ++){
-				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
-				graph.addApproximateDirectEdge(id, edgePoints[i - 1], edgePoints[i]);
-			}
-
+			final String id = String.valueOf(e);
+			graph.addApproximateDirectEdge(id, edge);
 			//add reversed
-			for(int i = 1; i < edgePoints.length; i ++){
-				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
-				graph.addApproximateDirectEdge(id + REVERSED_EDGE_SUFFIX, edgePoints[i], edgePoints[i - 1]);
-			}
+			graph.addApproximateDirectEdge(id + REVERSED_EDGE_SUFFIX, edge.reverse());
 
 			e ++;
 		}

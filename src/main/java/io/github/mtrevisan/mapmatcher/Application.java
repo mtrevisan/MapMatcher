@@ -37,7 +37,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformIni
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -61,7 +61,8 @@ import java.util.Collection;
 public class Application{
 
 	public static void main(final String[] args){
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -126,7 +127,7 @@ public class Application{
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 //		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
-		final GeodeticDistanceCalculator distanceCalculator = new GeodeticDistanceCalculator();
+		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			distanceCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
@@ -134,7 +135,7 @@ public class Application{
 
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("true: [null, 0, 0, 0, 0, 1.0, 1.0, 1.1, null, 1.1]");
+System.out.println("true: [null, 0, 0, 0, 0, 1, 1, 1, null, 1]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 
@@ -151,7 +152,7 @@ if(pathPolyline != null)
 			int windowSize = 0;
 			for(int i = 0; i < filteredObservations.length; i ++)
 				if(filteredObservations[i] != null){
-					averagePositioningError += filteredObservations[i].distance(path[i].getPolyline());
+					averagePositioningError += filteredObservations[i].distance(path[i].getPath());
 					windowSize ++;
 				}
 			averagePositioningError /= windowSize;

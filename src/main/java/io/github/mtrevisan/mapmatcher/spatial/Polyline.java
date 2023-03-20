@@ -113,6 +113,17 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		return (points != null && points[0].equals(points[points.length - 1]));
 	}
 
+//	public Polyline appendPoint(final Point point){
+//		final int oldSize = points.length;
+//		final Point[] newPoints = Arrays.copyOf(points, oldSize + 1);
+//		newPoints[oldSize] = point;
+//		return of(factory, newPoints);
+//	}
+
+//	public Polyline deleteLastPoint(){
+//		return points[0].factory.createPolyline(Arrays.copyOf(points, points.length - 1));
+//	}
+
 	public Polyline reverse(){
 		final Point[] reversedPoints = Arrays.copyOf(points, points.length);
 		reverse(reversedPoints);

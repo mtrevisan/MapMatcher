@@ -26,8 +26,7 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDurationCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,9 +35,6 @@ import java.util.stream.Collectors;
 
 
 public class SingleDirectionalPathSummary implements PathSummary{
-
-	private static final GeodeticDistanceCalculator DISTANCE_CALCULATOR = new GeodeticDistanceCalculator();
-	private static final GeodeticDurationCalculator DURATION_CALCULATOR = new GeodeticDurationCalculator();
 
 	private final List<Edge> path;
 	private final Set<Node> searchedVertices;
@@ -83,16 +79,9 @@ public class SingleDirectionalPathSummary implements PathSummary{
 	}
 
 	@Override
-	public double totalDistance(){
+	public double totalDistance(final DistanceCalculator distanceCalculator){
 		return path.stream()
-			.mapToDouble(DISTANCE_CALCULATOR::calculateWeight)
-			.sum();
-	}
-
-	@Override
-	public double totalDuration(){
-		return path.stream()
-			.mapToDouble(DURATION_CALCULATOR::calculateWeight)
+			.mapToDouble(edge -> distanceCalculator.calculateWeight(edge.getFrom().getPoint(), edge.getTo().getPoint()))
 			.sum();
 	}
 

@@ -185,8 +185,8 @@ out skel qt;
 		if(polylines.isEmpty())
 			return polylines;
 
-		final TopologyCalculator calculator = polylines.iterator().next().getDistanceCalculator();
-		final BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
+		final TopologyCalculator topologyCalculator = polylines.iterator().next().getDistanceCalculator();
+		final BentleyOttmann bentleyOttmann = new BentleyOttmann(topologyCalculator);
 		bentleyOttmann.addPolylines(polylines);
 		final Map<Polyline, BitSet> preservePointsOnPolylines = new HashMap<>(polylines.size());
 		bentleyOttmann.findIntersections((polyline1, polyline2, intersection) -> {

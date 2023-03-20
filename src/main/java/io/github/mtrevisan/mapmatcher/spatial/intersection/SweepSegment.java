@@ -40,27 +40,27 @@ class SweepSegment{
 
 	private double yIndex;
 
-	private final TopologyCalculator calculator;
+	private final TopologyCalculator topologyCalculator;
 
 
-	SweepSegment(final Point point, final TopologyCalculator calculator){
-		this.calculator = calculator;
+	SweepSegment(final Point point, final TopologyCalculator topologyCalculator){
+		this.topologyCalculator = topologyCalculator;
 
 		this.geometry = point;
 
-		this.event1 = new Event(point, this, Event.Type.POINT_LEFT, calculator);
-		this.event2 = new Event(point, this, Event.Type.POINT_RIGHT, calculator);
+		this.event1 = new Event(point, this, Event.Type.POINT_LEFT, topologyCalculator);
+		this.event2 = new Event(point, this, Event.Type.POINT_RIGHT, topologyCalculator);
 	}
 
-	SweepSegment(final Polyline polyline, final TopologyCalculator calculator){
-		this.calculator = calculator;
+	SweepSegment(final Polyline polyline, final TopologyCalculator topologyCalculator){
+		this.topologyCalculator = topologyCalculator;
 
 		this.geometry = polyline;
 
-		final Point leftmostPoint = calculator.leftmostPoint(polyline);
-		final Point rightPoint = calculator.rightmostPoint(polyline);
-		this.event1 = new Event(leftmostPoint, this, Event.Type.POINT_LEFT, calculator);
-		this.event2 = new Event(rightPoint, this, Event.Type.POINT_RIGHT, calculator);
+		final Point leftmostPoint = topologyCalculator.leftmostPoint(polyline);
+		final Point rightPoint = topologyCalculator.rightmostPoint(polyline);
+		this.event1 = new Event(leftmostPoint, this, Event.Type.POINT_LEFT, topologyCalculator);
+		this.event2 = new Event(rightPoint, this, Event.Type.POINT_RIGHT, topologyCalculator);
 
 		updateYIndex(getLeftEvent().point().getX());
 	}
@@ -91,12 +91,12 @@ class SweepSegment{
 	}
 
 	void updateYIndex(final double x){
-		final double y = calculator.calculateYIndex(getLeftEvent().point(), getRightEvent().point(), x);
+		final double y = topologyCalculator.calculateYIndex(getLeftEvent().point(), getRightEvent().point(), x);
 		this.setYIndex(y);
 	}
 
 	List<Point> intersection(final SweepSegment segment){
-		return calculator.intersection((Polyline)geometry, (Polyline)segment.geometry);
+		return topologyCalculator.intersection((Polyline)geometry, (Polyline)segment.geometry);
 	}
 
 	@Override

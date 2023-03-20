@@ -26,6 +26,7 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
@@ -103,7 +104,8 @@ class BidirectionalPathSummaryTest{
 
 	@Test
 	void should_return_path_distance(){
-		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
+		GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Node first = Node.of("0", factory.createPoint(121.058805, 14.552797));
 		final Node second = Node.of("1", factory.createPoint(120.994260, 14.593999));
 		ArrayList<Edge> path = new ArrayList<>(List.of(
@@ -111,24 +113,9 @@ class BidirectionalPathSummaryTest{
 		));
 		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
 
-		double result = pathSummary.totalDistance();
+		double result = pathSummary.totalDistance(new DistanceCalculator(topologyCalculator));
 
 		Assertions.assertEquals(8_316.3, result, 0.05);
-	}
-
-	@Test
-	void should_return_path_duration(){
-		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		final Node first = Node.of("0", factory.createPoint(121.058805, 14.552797));
-		final Node second = Node.of("1", factory.createPoint(120.994260, 14.593999));
-		final Edge edge = Edge.createDirectEdge(first, second);
-		edge.setWeight(50.);
-		ArrayList<Edge> path = new ArrayList<>(List.of(edge));
-		BidirectionalPathSummary pathSummary = BidirectionalPathSummary.ofPath(path, new HashSet<>(), new HashSet<>());
-
-		double result = pathSummary.totalDuration();
-
-		Assertions.assertEquals(10.0, result, 0.05);
 	}
 
 	@Test

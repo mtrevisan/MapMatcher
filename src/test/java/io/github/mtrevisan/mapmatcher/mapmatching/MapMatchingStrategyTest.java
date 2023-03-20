@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -42,7 +42,8 @@ class MapMatchingStrategyTest{
 
 	@Test
 	void should_connect_path(){
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -75,7 +76,7 @@ class MapMatchingStrategyTest{
 		}
 		final Edge[] path = new Edge[]{pathEdge0, pathEdge4};
 
-		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new GeodeticDistanceCalculator());
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new DistanceCalculator(topologyCalculator));
 
 		Assertions.assertArrayEquals(new Edge[]{pathEdge0, pathEdge2, pathEdge4}, connectedPath);
 	}

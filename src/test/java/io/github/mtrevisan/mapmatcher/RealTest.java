@@ -37,7 +37,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformIni
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -65,16 +65,18 @@ public class RealTest{
 
 
 	public static void main(String[] args) throws IOException{
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(68.4))
+			.withPlugin(new ShortestPathTransitionPlugin(192.6))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final DistanceCalculator edgeWeightCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			edgeWeightCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			new GeodeticDistanceCalculator());
 
@@ -90,21 +92,21 @@ public class RealTest{
 observations = Arrays.copyOfRange(observations, 163, 172);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
-		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 15.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 5.);
 
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 System.out.println(graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null){
-	System.out.println("true: [null, null, 1.0-rev, 1.0, 13.0-rev, 24.2, 26.0-rev, 26.0, 26.0-rev]");
+	System.out.println("true: [null, null, null, 0, 1, 3, 4, 4, 4]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 }
 
-		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new GeodeticDistanceCalculator());
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, edgeWeightCalculator);
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 if(pathPolyline != null){
 	final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
@@ -120,7 +122,7 @@ if(pathPolyline != null){
 			int windowSize = 0;
 			for(int i = 0; i < filteredObservations.length; i ++)
 				if(filteredObservations[i] != null){
-					averagePositioningError += filteredObservations[i].distance(path[i].getPolyline());
+					averagePositioningError += filteredObservations[i].distance(path[i].getPath());
 					windowSize ++;
 				}
 			averagePositioningError /= windowSize;

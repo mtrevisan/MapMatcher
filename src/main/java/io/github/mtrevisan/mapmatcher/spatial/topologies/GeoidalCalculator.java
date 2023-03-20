@@ -146,8 +146,8 @@ public class GeoidalCalculator implements TopologyCalculator{
 	@Override
 	public List<Point> intersection(final Polyline polyline1, final Polyline polyline2){
 		final GeometryFactory factory = polyline1.getFactory();
-		final TopologyCalculator calculator = polyline1.getDistanceCalculator();
-		final BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
+		final TopologyCalculator topologyCalculator = polyline1.getDistanceCalculator();
+		final BentleyOttmann bentleyOttmann = new BentleyOttmann(topologyCalculator);
 		final Point[] polyline1Points = polyline1.getPoints();
 		for(int i = 1; i < polyline1Points.length; i ++){
 			final Point startPoint = polyline1Points[i - 1];

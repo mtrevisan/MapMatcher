@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
+import io.github.mtrevisan.mapmatcher.graph.NearNodeMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.NodeCountCalculator;
@@ -69,7 +69,7 @@ class ShortestPathPathfindingTestGraphs{
 		final Node nodeK = Node.of("10", factory.createPoint(6., 2.));
 		final Node nodeM = Node.of("11", factory.createPoint(6., 3.));
 
-		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5);
+		final NearNodeMergeGraph gb = new NearNodeMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeC.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeB.getPoint());
@@ -123,7 +123,7 @@ class ShortestPathPathfindingTestGraphs{
 		final Node nodeK = Node.of("10", factory.createPoint(6., 2.));
 		final Node nodeM = Node.of("11", factory.createPoint(6., 3.));
 
-		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5);
+		final NearNodeMergeGraph gb = new NearNodeMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeC.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeB.getPoint());
@@ -172,7 +172,7 @@ class ShortestPathPathfindingTestGraphs{
 		final Node nodeK = Node.of("10", factory.createPoint(6., 2.));
 		final Node nodeM = Node.of("11", factory.createPoint(6., 3.));
 
-		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5);
+		final NearNodeMergeGraph gb = new NearNodeMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeC.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeB.getPoint());
@@ -227,7 +227,7 @@ class ShortestPathPathfindingTestGraphs{
 		final Node nodeK = Node.of("10", factory.createPoint(6., 2.));
 		final Node nodeM = Node.of("11", factory.createPoint(6., 3.));
 
-		final NearLineMergeGraph gb = new NearLineMergeGraph(0.5);
+		final NearNodeMergeGraph gb = new NearNodeMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeC.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeB.getPoint());

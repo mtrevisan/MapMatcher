@@ -35,7 +35,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -53,14 +53,15 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability_direct_graph(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -98,21 +99,22 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
-		final String expected = "[null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, null]";
+		final String expected = "[null, 0, 0, 0, 3, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_direct_graph(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -150,21 +152,22 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
-		final String expected = "[null, 0, 0, 0, 3, 1.0, 1.1, 1.1, null, null]";
+		final String expected = "[null, 0, 0, 0, 3, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_direct_graph(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -202,20 +205,21 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
 
-		final String expected = "[0, 0, 0, 0, 3, 1.0, 1.1, 1.1, 1.1, 1.1]";
+		final String expected = "[0, 0, 0, 0, 3, 1, 1, 1, 1, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability_direct_graph(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -257,14 +261,15 @@ class ViterbiMapMatchingTest{
 
 	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability_bidirectional_graph(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -302,21 +307,22 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
 
-		final String expected = "[null, 0, 0-rev, 0-rev, 3, 1.0-rev, 1.0-rev, 1.1, null, null]";
+		final String expected = "[null, 0, 0-rev, 0-rev, 3, 1, 1-rev, 1-rev, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_bidirectional_graph(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -354,21 +360,22 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
-		final String expected = "[null, 0, 0-rev, 0-rev, 3, 1.0, 4, 1.1, null, null]";
+		final String expected = "[null, 0, 0-rev, 0-rev, 3, 1, 1-rev, 1-rev, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -406,20 +413,21 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
 
-		final String expected = "[0-rev, 0, 0-rev, 0-rev, 3, 1.0, 4, 1.1-rev, 1.1-rev, 1.1]";
+		final String expected = "[0, 0, 0-rev, 0-rev, 3, 1, 1-rev, 1-rev, 1-rev, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability_bidirectional_graph(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);

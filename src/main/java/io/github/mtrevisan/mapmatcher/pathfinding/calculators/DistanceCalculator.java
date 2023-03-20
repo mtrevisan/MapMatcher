@@ -24,28 +24,25 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding.calculators;
 
-import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 
-public class GeodeticDurationCalculator extends GeodeticDistanceCalculator{
+public class DistanceCalculator implements EdgeWeightCalculator{
 
-	//[km/h]
-	private static final double MAX_ALLOWED_WEIGHT = 140.;
+	private final TopologyCalculator topologyCalculator;
 
 
-	@Override
-	public double calculateWeight(final Edge edge){
-		final var distance = super.calculateWeight(edge.getFrom(), edge.getTo());
-		//[s]
-		return distance * 60. / (edge.getWeight() * 1_000.);
+	public DistanceCalculator(final TopologyCalculator topologyCalculator){
+		this.topologyCalculator = topologyCalculator;
 	}
 
 	@Override
-	public double calculateWeight(final Node from, final Node to){
-		final var distance = super.calculateWeight(from, to);
-		//[s]
-		return distance * 60. / (MAX_ALLOWED_WEIGHT * 1_000.);
+	public double calculateWeight(final Point... points){
+		double weight = 0.;
+		for(int i = 1; i < points.length; i ++)
+			weight += topologyCalculator.distance(points[i - 1], points[i]);
+		return weight;
 	}
 
 }

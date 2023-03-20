@@ -84,7 +84,7 @@ public class AStarPathFinder implements PathFindingStrategy{
 				if(seenNodes.contains(toNode))
 					continue;
 
-				final var newScore = gScores.get(fromNode) + calculator.calculateWeight(edge);
+				final var newScore = gScores.get(fromNode) + heuristic(edge.getFrom(), edge.getTo());
 				if(newScore < gScores.getOrDefault(toNode, Double.POSITIVE_INFINITY)){
 					gScores.put(toNode, newScore);
 					predecessorTree.put(toNode, edge);
@@ -105,7 +105,7 @@ public class AStarPathFinder implements PathFindingStrategy{
 
 	/** Estimates the cost to reach the final node from given node (emissionProbability). */
 	private double heuristic(final Node from, final Node to){
-		return calculator.calculateWeight(from, to);
+		return calculator.calculateWeight(from.getPoint(), to.getPoint());
 	}
 
 }
