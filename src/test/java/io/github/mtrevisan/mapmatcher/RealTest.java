@@ -90,6 +90,7 @@ public class RealTest{
 
 		GPSPoint[] observations = extract("CA202RX", ";");
 observations = Arrays.copyOfRange(observations, 163, 172);
+observations = Arrays.copyOfRange(observations, 0, 6);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 5.);
@@ -98,7 +99,7 @@ observations = Arrays.copyOfRange(observations, 163, 172);
 System.out.println(graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null){
-	System.out.println("true: [null, null, null, 0, 1, 3, 4, 4, 4]");
+	System.out.println("true: [null, null, 11, 11, 8-rev, 6, 4, 4, 4]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 }
 
@@ -108,9 +109,10 @@ if(connectedPath.length > 0)
 
 		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
-if(pathPolyline != null){
+if(pathPolyline != null && !pathPolyline.isEmpty()){
 	final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
-	sj.add(pathPolyline.toString());
+	if(!pathPolyline.isEmpty())
+		sj.add(pathPolyline.toString());
 	for(final GPSPoint point : filteredObservations)
 		if(point != null)
 			sj.add(point.toString());

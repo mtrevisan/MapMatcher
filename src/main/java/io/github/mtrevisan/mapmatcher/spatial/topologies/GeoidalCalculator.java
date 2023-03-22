@@ -72,7 +72,7 @@ public class GeoidalCalculator implements TopologyCalculator{
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
 			final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
-			final double distance = Math.abs(GeodeticHelper.orthodromicDistance(nearestPoint, point));
+			final double distance = GeodeticHelper.orthodromicDistance(nearestPoint, point);
 			if(distance < minNearestPointDistance)
 				minNearestPointDistance = distance;
 		}

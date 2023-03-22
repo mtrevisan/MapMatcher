@@ -46,6 +46,7 @@ public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 		if(size == 1)
 			logPr = PROBABILITY_SAME_POINT;
 		else if(size > 1){
+			//FIXME something's not right, even if from and to are reversed, path is ok, so this calculation cannot be right
 			final Point previousOnTrackPoint = path.onTrackClosestPoint(previousObservation);
 			final Point currentOnTrackPoint = path.onTrackClosestPoint(currentObservation);
 			final TopologyCalculator topologyCalculator = previousObservation.getDistanceCalculator();
@@ -60,9 +61,9 @@ public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 			final double observationInitialBearing = topologyCalculator.initialBearing(previousObservation, currentObservation);
 
 			//angle difference
-			final double initialBearingDifference = Math.abs(observationInitialBearing - onPathInitialBearing);
+			final double angleDelta = Math.abs(observationInitialBearing - onPathInitialBearing);
 
-			logPr = InitialProbabilityCalculator.logPr(Math.abs(StrictMath.cos(Math.toRadians(initialBearingDifference))));
+			logPr = InitialProbabilityCalculator.logPr(Math.abs(StrictMath.cos(Math.toRadians(Math.min(360. - angleDelta, angleDelta)))));
 		}
 
 		return logPr;

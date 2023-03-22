@@ -77,9 +77,9 @@ public class PathHelper{
 						final List<Node> nodePath = pathFinder.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph)
 							.simplePath();
 						assert !nodePath.isEmpty();
-						for(int j = 1; j < nodePath.size(); j ++){
-							final Node fromNode = nodePath.get(j - 1);
-							final Node toNode = nodePath.get(j);
+						for(int i = 1; i < nodePath.size(); i ++){
+							final Node fromNode = nodePath.get(i - 1);
+							final Node toNode = nodePath.get(i);
 							final Edge edge = fromNode.findOutEdges(toNode);
 							assert edge != null;
 							connectedPath.add(edge);
@@ -132,10 +132,12 @@ public class PathHelper{
 		final ArrayList<Point> mergedPoints = new ArrayList<>(connectedPath.length + 1);
 		for(int i = 0; i < connectedPath.length; i ++){
 			final Edge edge = connectedPath[i];
-			final Point[] edgePathPoints = edge.getPath().getPoints();
-			mergedPoints.ensureCapacity(mergedPoints.size() + edgePathPoints.length + connectedPath.length - i);
-			for(final Point point : edgePathPoints)
-				mergedPoints.add(point);
+			if(edge != null){
+				final Point[] edgePathPoints = edge.getPath().getPoints();
+				mergedPoints.ensureCapacity(mergedPoints.size() + edgePathPoints.length + connectedPath.length - i);
+				for(final Point point : edgePathPoints)
+					mergedPoints.add(point);
+			}
 		}
 
 		return factory.createPolyline(removeConsecutiveDuplicates(mergedPoints.toArray(Point[]::new)));
@@ -217,32 +219,34 @@ public class PathHelper{
 	public static GPSPoint[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations, final double threshold){
 		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
 
-		//step 1. Use Kalman filter to smooth the coordinates
-		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
-		feasibleObservations[0] = observations[0];
-		for(int i = 1; i < observations.length; i ++){
-			kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
-				ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
-			final double[] position = kalmanFilter.getPosition();
-			feasibleObservations[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
-		}
-
-		//step 2. Retain all observation that are within a certain radius from an edge
-		for(int i = 0; i < feasibleObservations.length; i ++){
-			final GPSPoint observation = feasibleObservations[i];
-			final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
-			final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
-			final Envelope envelope = Envelope.of(northEast, southWest);
-
-			final List<Polyline> edges = tree.query(envelope);
-			double minDistance = Double.POSITIVE_INFINITY;
-			for(final Polyline edge : edges){
-				final double distance = observation.distance(edge);
-				if(distance < minDistance)
-					minDistance = distance;
+		if(observations.length > 0){
+			//step 1. Use Kalman filter to smooth the coordinates
+			final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
+			feasibleObservations[0] = observations[0];
+			for(int i = 1; i < observations.length; i ++){
+				kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
+					ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
+				final double[] position = kalmanFilter.getPosition();
+				feasibleObservations[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
 			}
-			if(edges.isEmpty() || minDistance > threshold)
-				feasibleObservations[i] = null;
+
+			//step 2. Retain all observation that are within a certain radius from an edge
+			for(int i = 0; i < feasibleObservations.length; i ++){
+				final GPSPoint observation = feasibleObservations[i];
+				final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
+				final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
+				final Envelope envelope = Envelope.of(northEast, southWest);
+
+				final List<Polyline> edges = tree.query(envelope);
+				double minDistance = Double.POSITIVE_INFINITY;
+				for(final Polyline edge : edges){
+					final double distance = observation.distance(edge);
+					if(distance < minDistance)
+						minDistance = distance;
+				}
+				if(edges.isEmpty() || minDistance > threshold)
+					feasibleObservations[i] = null;
+			}
 		}
 
 		return feasibleObservations;
