@@ -27,6 +27,8 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
+import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -76,7 +78,8 @@ class MapMatchingStrategyTest{
 		}
 		final Edge[] path = new Edge[]{pathEdge0, pathEdge4};
 
-		final Edge[] connectedPath = PathHelper.connectPath(path, graph, new DistanceCalculator(topologyCalculator));
+		final PathFindingStrategy pathFinder = new AStarPathFinder(new DistanceCalculator(topologyCalculator));
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
 
 		Assertions.assertArrayEquals(new Edge[]{pathEdge0, pathEdge2, pathEdge4}, connectedPath);
 	}

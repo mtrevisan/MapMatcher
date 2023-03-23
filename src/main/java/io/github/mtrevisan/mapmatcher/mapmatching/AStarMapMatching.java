@@ -181,8 +181,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			pathFromTo = Collections.singletonList(previousNode);
 		else{
 			final Node currentNode = toEdge.getClosestNode(currentObservation);
-			pathFromTo = pathFinder.findPath(previousNode, currentNode, graph)
-				.simplePath();
+			pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
 		}
 		return pathFromTo;
 	}

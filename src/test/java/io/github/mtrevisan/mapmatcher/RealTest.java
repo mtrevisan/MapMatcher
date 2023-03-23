@@ -37,6 +37,8 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformIni
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
@@ -103,7 +105,8 @@ if(path != null){
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 }
 
-		final Edge[] connectedPath = PathHelper.connectPath(path, graph, edgeWeightCalculator);
+		final PathFindingStrategy pathFinder = new AStarPathFinder(edgeWeightCalculator);
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
