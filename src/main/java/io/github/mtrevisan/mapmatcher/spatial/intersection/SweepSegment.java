@@ -44,6 +44,9 @@ class SweepSegment{
 
 
 	SweepSegment(final Point point, final TopologyCalculator topologyCalculator){
+		if(point == null)
+			throw new IllegalArgumentException("`point` cannot be null");
+
 		this.topologyCalculator = topologyCalculator;
 
 		this.geometry = point;
@@ -53,6 +56,9 @@ class SweepSegment{
 	}
 
 	SweepSegment(final Polyline polyline, final TopologyCalculator topologyCalculator){
+		if(polyline == null || polyline.isEmpty())
+			throw new IllegalArgumentException("`polyline` cannot be null or empty");
+
 		this.topologyCalculator = topologyCalculator;
 
 		this.geometry = polyline;

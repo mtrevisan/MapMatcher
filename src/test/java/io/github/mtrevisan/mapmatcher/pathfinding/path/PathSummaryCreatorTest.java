@@ -31,10 +31,7 @@ import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -47,13 +44,15 @@ class PathSummaryCreatorTest{
 		Node middle = Node.of("1", factory.createPoint(1., 2.));
 		Node end = Node.of("2", factory.createPoint(1., 3.));
 		Map<Node, Edge> predecessorTree = new LinkedHashMap<>(2);
-		predecessorTree.put(middle, Edge.createDirectEdge(start, middle));
-		predecessorTree.put(end, Edge.createDirectEdge(middle, end));
+		Edge edgeStartMiddle = Edge.createDirectEdge(start, middle);
+		predecessorTree.put(middle, edgeStartMiddle);
+		Edge edgeMiddleEnd = Edge.createDirectEdge(middle, end);
+		predecessorTree.put(end, edgeMiddleEnd);
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
-		List<Node> result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
+		Edge[] result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
 
-		Assertions.assertEquals(new ArrayList<>(Arrays.asList(start, middle, end)), result);
+		Assertions.assertArrayEquals(new Edge[]{edgeStartMiddle, edgeMiddleEnd}, result);
 	}
 
 	@Test
@@ -68,9 +67,9 @@ class PathSummaryCreatorTest{
 		predecessorTree.put(end, Edge.createDirectEdge(middle, end));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
-		List<Node> result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
+		Edge[] result = pathSummaryCreator.createUnidirectionalPath(start, end, predecessorTree);
 
-		Assertions.assertTrue(result.isEmpty());
+		Assertions.assertEquals(0, result.length);
 	}
 
 	@Test
@@ -86,9 +85,9 @@ class PathSummaryCreatorTest{
 		predecessorTreeEnd.put(middle, Edge.createDirectEdge(end, middle));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
-		List<Node> result = pathSummaryCreator.createBidirectionalPath(start, middle, end, predecessorTreeStart, predecessorTreeEnd);
+		Edge[] result = pathSummaryCreator.createBidirectionalPath(start, middle, end, predecessorTreeStart, predecessorTreeEnd);
 
-		Assertions.assertTrue(result.isEmpty());
+		Assertions.assertEquals(0, result.length);
 	}
 
 	@Test
@@ -104,9 +103,9 @@ class PathSummaryCreatorTest{
 		predecessorTreeEnd.put(middle, Edge.createDirectEdge(randomNode, middle));
 
 		PathSummaryCreator pathSummaryCreator = new PathSummaryCreator();
-		List<Node> result = pathSummaryCreator.createBidirectionalPath(start, middle, end, predecessorTreeStart, predecessorTreeEnd);
+		Edge[] result = pathSummaryCreator.createBidirectionalPath(start, middle, end, predecessorTreeStart, predecessorTreeEnd);
 
-		Assertions.assertTrue(result.isEmpty());
+		Assertions.assertEquals(0, result.length);
 	}
 
 }

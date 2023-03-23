@@ -27,9 +27,7 @@ package io.github.mtrevisan.mapmatcher.spatial.convexhull;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -414,35 +412,6 @@ class GrahamScanTest{
 
 		Polyline expected = factory.createPolyline(c, a);
 		Assertions.assertEquals(expected, convexHull);
-	}
-
-
-	@Test
-	void should_simplify_polyline(){
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-
-		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
-		simplifier.setDistanceTolerance(2_000.);
-		Polyline polyline = factory.createPolyline(simplifier.simplify(node12_31_41, node22, node23));
-
-		Assertions.assertEquals(2, polyline.size());
-	}
-
-	@Test
-	void should_not_simplify_polyline(){
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
-		Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
-		Point node23 = factory.createPoint(12.200627355552967, 45.732876303059044);
-
-		RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
-		simplifier.setDistanceTolerance(10.);
-		Polyline polyline = factory.createPolyline(simplifier.simplify(node12_31_41, node22, node23));
-
-		Assertions.assertEquals(3, polyline.size());
 	}
 
 

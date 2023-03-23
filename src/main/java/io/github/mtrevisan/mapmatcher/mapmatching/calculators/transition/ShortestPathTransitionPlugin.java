@@ -69,6 +69,23 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
+		if(fromSegment.equals(toSegment)){
+			final double observationsDistance = previousObservation.distance(currentObservation);
+			final Polyline segmentPath = fromSegment.getPath();
+			final Point previousOnTrackPoint = segmentPath.onTrackClosestPoint(previousObservation);
+			final Point currentOnTrackPoint = segmentPath.onTrackClosestPoint(currentObservation);
+			final double pathDistance = (previousOnTrackPoint.equals(currentOnTrackPoint)
+				? 0.
+				: segmentPath.alongTrackDistance(currentOnTrackPoint) - segmentPath.alongTrackDistance(previousOnTrackPoint));
+
+			//expansion of:
+			//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
+			//return InitialProbabilityCalculator.logPr((sameSegment? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * a);
+			//in order to overcome overflow on exponential
+			return InitialProbabilityCalculator.logPr(PROBABILITY_SAME_EDGE * inverseRateParameter)
+				+ Math.abs(observationsDistance - pathDistance) * inverseRateParameter;
+		}
+
 		if(path.isEmpty())
 			return InitialProbabilityCalculator.logPr(PROBABILITY_UNCONNECTED_EDGES);
 
@@ -83,7 +100,7 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
 		//return InitialProbabilityCalculator.logPr((sameSegment? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * a);
 		//in order to overcome overflow on exponential
-		return InitialProbabilityCalculator.logPr((path.isEmpty()? 1. - PROBABILITY_SAME_EDGE: PROBABILITY_SAME_EDGE) * inverseRateParameter)
+		return InitialProbabilityCalculator.logPr((1. - PROBABILITY_SAME_EDGE) * inverseRateParameter)
 			+ Math.abs(observationsDistance - pathDistance) * inverseRateParameter;
 	}
 

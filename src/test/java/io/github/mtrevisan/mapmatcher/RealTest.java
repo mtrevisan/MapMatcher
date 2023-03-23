@@ -72,7 +72,7 @@ public class RealTest{
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(192.6))
+			.withPlugin(new ShortestPathTransitionPlugin(194.))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
@@ -82,7 +82,8 @@ public class RealTest{
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			new GeodeticDistanceCalculator());
 
-		Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
+//		Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
+		Polyline[] roads = extractPolylines("it.highways.wkt")
 			.toArray(Polyline[]::new);
 		final HPRtree<Polyline> tree = new HPRtree<>();
 		for(final Polyline road : roads){
@@ -92,16 +93,16 @@ public class RealTest{
 
 		GPSPoint[] observations = extract("CA202RX", ";");
 observations = Arrays.copyOfRange(observations, 163, 172);
-observations = Arrays.copyOfRange(observations, 0, 6);
+observations = Arrays.copyOfRange(observations, 0, 7);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
-		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 5.);
+		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
 
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 System.out.println(graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null){
-	System.out.println("true: [null, null, 11, 11, 8-rev, 6, 4, 4, 4]");
+	System.out.println("true: [null, null, 9, 9, 3, 21, 21, 1]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 }
 
@@ -126,7 +127,7 @@ if(pathPolyline != null && !pathPolyline.isEmpty()){
 			double averagePositioningError = 0.;
 			int windowSize = 0;
 			for(int i = 0; i < filteredObservations.length; i ++)
-				if(filteredObservations[i] != null){
+				if(filteredObservations[i] != null && path[i] != null){
 					averagePositioningError += filteredObservations[i].distance(path[i].getPath());
 					windowSize ++;
 				}

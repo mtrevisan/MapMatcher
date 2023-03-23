@@ -24,14 +24,13 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
+import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
-
-import java.util.List;
 
 
 public interface PathFindingStrategy{
 
-	List<Node> findPath(Node start, Node target, Graph graph);
+	Edge[] findPath(Node start, Node target, Graph graph);
 
 }

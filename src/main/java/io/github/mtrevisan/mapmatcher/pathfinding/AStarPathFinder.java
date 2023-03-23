@@ -31,10 +31,8 @@ import io.github.mtrevisan.mapmatcher.helpers.FibonacciHeap;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummaryCreator;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 
 /**
@@ -52,10 +50,10 @@ public class AStarPathFinder implements PathFindingStrategy{
 	}
 
 	@Override
-	public List<Node> findPath(final Node start, final Node end, final Graph graph){
+	public Edge[] findPath(final Node start, final Node end, final Graph graph){
 		if(start.equals(end))
-			//early exit (return the node itself)
-			return Collections.singletonList(start);
+			//early exit
+			return new Edge[0];
 
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
 		final var predecessorTree = new HashMap<Node, Edge>();

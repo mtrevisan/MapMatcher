@@ -49,6 +49,9 @@ public class Event implements Comparable<Event>{
 
 
 	Event(final Point point, final SweepSegment segment, final Type type, final TopologyCalculator topologyCalculator){
+		if(point == null)
+			throw new IllegalArgumentException("`point` cannot be null");
+
 		this.topologyCalculator = topologyCalculator;
 
 		this.point = point;

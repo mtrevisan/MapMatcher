@@ -190,9 +190,15 @@ public class NearNodeMergeGraph implements Graph{
 
 	public Collection<Node> getNodesNear(final Point point){
 		final Set<Node> closest = new HashSet<>(0);
-		for(final Map.Entry<Point, Node> entry : nodeMap.entrySet())
-			if(point.distance(entry.getKey()) <= threshold)
-				closest.add(entry.getValue());
+		if(threshold > 0.)
+			for(final Map.Entry<Point, Node> entry : nodeMap.entrySet()){
+				if(point.distance(entry.getKey()) <= threshold)
+					closest.add(entry.getValue());
+			}
+		else
+			for(final Map.Entry<Point, Node> entry : nodeMap.entrySet())
+				if(threshold == 0. && point.equals(entry.getKey()))
+					closest.add(entry.getValue());
 		return closest;
 	}
 

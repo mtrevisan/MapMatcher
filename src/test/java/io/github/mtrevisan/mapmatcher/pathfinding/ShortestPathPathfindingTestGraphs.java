@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
+import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearNodeMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
@@ -33,8 +34,7 @@ import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 
 class ShortestPathPathfindingTestGraphs{
@@ -72,12 +72,12 @@ class ShortestPathPathfindingTestGraphs{
 		final NearNodeMergeGraph gb = new NearNodeMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeC.getPoint());
-		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeB.getPoint());
+		Collection<Edge> edgeAB = gb.addApproximateDirectEdge(nodeA.getPoint(), nodeB.getPoint());
 		gb.addApproximateDirectEdge(nodeB.getPoint(), nodeG.getPoint());
-		gb.addApproximateDirectEdge(nodeB.getPoint(), nodeI.getPoint());
+		Collection<Edge> edgeBI = gb.addApproximateDirectEdge(nodeB.getPoint(), nodeI.getPoint());
 		gb.addApproximateDirectEdge(nodeG.getPoint(), nodeH.getPoint());
 		gb.addApproximateDirectEdge(nodeH.getPoint(), nodeI.getPoint());
-		gb.addApproximateDirectEdge(nodeI.getPoint(), nodeM.getPoint());
+		Collection<Edge> edgeIM = gb.addApproximateDirectEdge(nodeI.getPoint(), nodeM.getPoint());
 		gb.addApproximateDirectEdge(nodeD.getPoint(), nodeJ.getPoint());
 		gb.addApproximateDirectEdge(nodeC.getPoint(), nodeD.getPoint());
 		gb.addApproximateDirectEdge(nodeC.getPoint(), nodeE.getPoint());
@@ -89,7 +89,7 @@ class ShortestPathPathfindingTestGraphs{
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getPoint())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getPoint())).get(0);
-		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(Arrays.asList(nodeA, nodeB, nodeI, nodeM)),
+		return new TestGraphSummary(gb, startNode, endNode, new Edge[]{edgeAB.iterator().next(), edgeBI.iterator().next(), edgeIM.iterator().next()},
 			new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
@@ -139,7 +139,7 @@ class ShortestPathPathfindingTestGraphs{
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getPoint())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getPoint())).get(0);
-		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(), new EuclideanDistanceTestEdgeWeightCalculator());
+		return new TestGraphSummary(gb, startNode, endNode, new Edge[0], new EuclideanDistanceTestEdgeWeightCalculator());
 	}
 
 	static TestGraphSummary nodeCountTestGraphConnected(){
@@ -175,12 +175,12 @@ class ShortestPathPathfindingTestGraphs{
 		final NearNodeMergeGraph gb = new NearNodeMergeGraph(0.5);
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeD.getPoint());
 		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeC.getPoint());
-		gb.addApproximateDirectEdge(nodeA.getPoint(), nodeB.getPoint());
+		Collection<Edge> edgeAB = gb.addApproximateDirectEdge(nodeA.getPoint(), nodeB.getPoint());
 		gb.addApproximateDirectEdge(nodeB.getPoint(), nodeG.getPoint());
-		gb.addApproximateDirectEdge(nodeB.getPoint(), nodeI.getPoint());
+		Collection<Edge> edgeBI = gb.addApproximateDirectEdge(nodeB.getPoint(), nodeI.getPoint());
 		gb.addApproximateDirectEdge(nodeG.getPoint(), nodeH.getPoint());
 		gb.addApproximateDirectEdge(nodeH.getPoint(), nodeI.getPoint());
-		gb.addApproximateDirectEdge(nodeI.getPoint(), nodeM.getPoint());
+		Collection<Edge> edgeIM = gb.addApproximateDirectEdge(nodeI.getPoint(), nodeM.getPoint());
 		gb.addApproximateDirectEdge(nodeD.getPoint(), nodeJ.getPoint());
 		gb.addApproximateDirectEdge(nodeC.getPoint(), nodeD.getPoint());
 		gb.addApproximateDirectEdge(nodeC.getPoint(), nodeE.getPoint());
@@ -193,7 +193,7 @@ class ShortestPathPathfindingTestGraphs{
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getPoint())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getPoint())).get(0);
-		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(Arrays.asList(nodeA, nodeB, nodeI, nodeM)),
+		return new TestGraphSummary(gb, startNode, endNode, new Edge[]{edgeAB.iterator().next(), edgeBI.iterator().next(), edgeIM.iterator().next()},
 			new NodeCountCalculator());
 	}
 
@@ -243,7 +243,7 @@ class ShortestPathPathfindingTestGraphs{
 
 		final Node startNode = new ArrayList<>(gb.getNodesNear(nodeA.getPoint())).get(0);
 		final Node endNode = new ArrayList<>(gb.getNodesNear(nodeM.getPoint())).get(0);
-		return new TestGraphSummary(gb, startNode, endNode, new ArrayList<>(), new NodeCountCalculator());
+		return new TestGraphSummary(gb, startNode, endNode, new Edge[0], new NodeCountCalculator());
 	}
 
 
@@ -252,11 +252,11 @@ class ShortestPathPathfindingTestGraphs{
 		private final Graph graph;
 		private final Node start;
 		private final Node end;
-		private final List<Node> shortestPath;
+		private final Edge[] shortestPath;
 		private final EdgeWeightCalculator calculator;
 
 
-		TestGraphSummary(final Graph graph, final Node start, final Node end, final List<Node> shortestPath,
+		TestGraphSummary(final Graph graph, final Node start, final Node end, final Edge[] shortestPath,
 				final EdgeWeightCalculator calculator){
 			this.graph = graph;
 			this.start = start;
@@ -277,7 +277,7 @@ class ShortestPathPathfindingTestGraphs{
 			return end;
 		}
 
-		final List<Node> getShortestPath(){
+		final Edge[] getShortestPath(){
 			return shortestPath;
 		}
 

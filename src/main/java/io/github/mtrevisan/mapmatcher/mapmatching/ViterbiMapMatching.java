@@ -26,7 +26,6 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
@@ -39,9 +38,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -231,8 +228,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-					final List<Node> pathFromTo = calculatePath(fromEdge, toEdge, graph, previousObservation, currentObservation);
-					final Polyline pathAsPolyline = PathHelper.extractPathAsPolyline(pathFromTo, factory);
+					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph,
+						previousObservation, currentObservation, pathFinder);
 
 					final double probability = (score.containsKey(fromEdge)? score.get(fromEdge)[previousObservationIndex]: 0.)
 						//calculate the state transition probability matrix
@@ -270,19 +267,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			}
 		}
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
-	}
-
-	private List<Node> calculatePath(final Edge fromEdge, final Edge toEdge, final Graph graph,
-			final Point previousObservation, final Point currentObservation){
-		final Node previousNode = fromEdge.getClosestNode(previousObservation);
-		final List<Node> pathFromTo;
-		if(fromEdge.equals(toEdge))
-			pathFromTo = Collections.singletonList(previousNode);
-		else{
-			final Node currentNode = toEdge.getClosestNode(currentObservation);
-			pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
-		}
-		return pathFromTo;
 	}
 
 	private static int extractNextObservation(final Point[] observations, int index){

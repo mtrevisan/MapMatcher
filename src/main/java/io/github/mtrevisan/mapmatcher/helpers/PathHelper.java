@@ -71,15 +71,9 @@ public class PathHelper{
 						connectedPath.add(path[currentIndex]);
 					else{
 						//add path from `path[index]` to `path[i]`
-						final List<Node> nodePath = pathFinder.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph);
-						assert !nodePath.isEmpty();
-						for(int i = 1; i < nodePath.size(); i ++){
-							final Node fromNode = nodePath.get(i - 1);
-							final Node toNode = nodePath.get(i);
-							final Edge edge = fromNode.findOutEdges(toNode);
-							assert edge != null;
-							connectedPath.add(edge);
-						}
+						final Edge[] edgePath = pathFinder.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph);
+						for(int i = 0; i < edgePath.length; i ++)
+							connectedPath.add(edgePath[i]);
 						connectedPath.add(path[currentIndex]);
 					}
 				}
@@ -97,46 +91,48 @@ public class PathHelper{
 		return (index < m? index: -1);
 	}
 
-	public static Polyline extractPathAsPolyline(final List<Node> path, final GeometryFactory factory){
-		if(path.isEmpty())
-			return factory.createEmptyPolyline();
-		if(path.size() == 1)
-			return factory.createPolyline(path.get(0).getPoint());
+	public static Polyline calculatePathAsPolyline(final Edge fromEdge, final Edge toEdge, final Graph graph,
+			final Point previousObservation, final Point currentObservation, final PathFindingStrategy pathFinder){
+		if(fromEdge.equals(toEdge))
+			return graph.getFactory().createEmptyPolyline();
 
-		final Edge[] pathAsEdges = extractPathAsEdges(path);
-		return extractEdgesAsPolyline(pathAsEdges, factory);
-	}
+		final Node previousNode = fromEdge.getClosestNode(previousObservation);
+		final Node currentNode = toEdge.getClosestNode(currentObservation);
+		final Edge[] pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
 
-	private static Edge[] extractPathAsEdges(final List<Node> path){
-		final int size = path.size();
-		final Edge[] connectedPath = new Edge[Math.max(size - 1, 0)];
-		for(int i = 1; i < size; i ++)
-			for(final Edge edge : path.get(i - 1).getOutEdges())
-				if(edge.getTo().equals(path.get(i))){
-					connectedPath[i - 1] = edge;
-					break;
-				}
-		return connectedPath;
+		Polyline polylineFromTo = extractEdgesAsPolyline(pathFromTo, graph.getFactory());
+		if(!polylineFromTo.isEmpty()){
+			//prepend previousNode path start
+			Point[][] fromCut = fromEdge.getPath().cut(previousNode.getPoint());
+			polylineFromTo = polylineFromTo.prepend(fromCut[1]);
+			//append currentNode to path end
+			fromCut = fromEdge.getPath().cut(currentNode.getPoint());
+			polylineFromTo = polylineFromTo.append(fromCut[0]);
+		}
+
+		return polylineFromTo;
 	}
 
 	public static Polyline extractEdgesAsPolyline(final Edge[] connectedPath, final GeometryFactory factory){
 		if(connectedPath.length == 0)
 			return factory.createEmptyPolyline();
 
+		int size = 1;
+		for(final Edge edge : connectedPath)
+			size += edge.getPath().size() - 1;
+		final Point[] mergedPoints = new Point[size];
+
 		//merge segments
-		//NOTE: this assumes every node is associated to a single point!
-		final ArrayList<Point> mergedPoints = new ArrayList<>(connectedPath.length + 1);
+		size = 0;
 		for(int i = 0; i < connectedPath.length; i ++){
-			final Edge edge = connectedPath[i];
-			if(edge != null){
-				final Point[] edgePathPoints = edge.getPath().getPoints();
-				mergedPoints.ensureCapacity(mergedPoints.size() + edgePathPoints.length + connectedPath.length - i);
-				for(final Point point : edgePathPoints)
-					mergedPoints.add(point);
-			}
+			final Point[] edgePoints = connectedPath[i].getPath()
+				.getPoints();
+			final int copyLength = (i < connectedPath.length - 1? edgePoints.length - 1: edgePoints.length);
+			System.arraycopy(edgePoints, 0, mergedPoints, size, copyLength);
+			size += edgePoints.length - 1;
 		}
 
-		return factory.createPolyline(removeConsecutiveDuplicates(mergedPoints.toArray(Point[]::new)));
+		return factory.createPolyline(mergedPoints);
 	}
 
 	private static Point[] removeConsecutiveDuplicates(final Point[] input){

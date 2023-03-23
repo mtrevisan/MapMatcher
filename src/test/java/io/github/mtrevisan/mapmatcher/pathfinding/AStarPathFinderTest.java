@@ -24,11 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
-import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.graph.Edge;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 
 class AStarPathFinderTest{
@@ -38,9 +36,9 @@ class AStarPathFinderTest{
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.euclideanDistanceTestGraphConnected();
 		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
-		List<Node> path = pathfinder.findPath(testGraph.getStart(), testGraph.getStart(), testGraph.getGraph());
+		Edge[] path = pathfinder.findPath(testGraph.getStart(), testGraph.getStart(), testGraph.getGraph());
 
-		Assertions.assertEquals(1, path.size());
+		Assertions.assertEquals(0, path.length);
 	}
 
 	@Test
@@ -48,9 +46,9 @@ class AStarPathFinderTest{
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.euclideanDistanceTestGraphConnected();
 		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
-		List<Node> path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
+		Edge[] path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
 
-		Assertions.assertEquals(testGraph.getShortestPath(), path);
+		Assertions.assertArrayEquals(testGraph.getShortestPath(), path);
 	}
 
 	@Test
@@ -58,9 +56,9 @@ class AStarPathFinderTest{
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.euclideanDistanceTestGraphDisconnected();
 		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
-		List<Node> path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
+		Edge[] path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
 
-		Assertions.assertEquals(testGraph.getShortestPath(), path);
+		Assertions.assertArrayEquals(testGraph.getShortestPath(), path);
 	}
 
 	@Test
@@ -68,9 +66,9 @@ class AStarPathFinderTest{
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.nodeCountTestGraphConnected();
 		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
-		List<Node> path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
+		Edge[] path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
 
-		Assertions.assertEquals(testGraph.getShortestPath(), path);
+		Assertions.assertArrayEquals(testGraph.getShortestPath(), path);
 	}
 
 	@Test
@@ -78,9 +76,9 @@ class AStarPathFinderTest{
 		ShortestPathPathfindingTestGraphs.TestGraphSummary testGraph = ShortestPathPathfindingTestGraphs.nodeCountTestGraphDisconnected();
 		PathFindingStrategy pathfinder = new AStarPathFinder(testGraph.getCalculator());
 
-		List<Node> path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
+		Edge[] path = pathfinder.findPath(testGraph.getStart(), testGraph.getEnd(), testGraph.getGraph());
 
-		Assertions.assertEquals(testGraph.getShortestPath(), path);
+		Assertions.assertArrayEquals(testGraph.getShortestPath(), path);
 	}
 
 }
