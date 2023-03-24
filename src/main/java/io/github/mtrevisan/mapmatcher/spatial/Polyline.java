@@ -161,6 +161,10 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 			pointBeforeOrOnIndex = i - 1;
 			pointOnNode = (cumulativeDistance == atdToPoint);
 		}
+		if(cumulativeDistance == atdToPoint){
+			pointBeforeOrOnIndex ++;
+			pointOnNode = true;
+		}
 
 
 		final int beforeSize = pointBeforeOrOnIndex + 1;

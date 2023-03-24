@@ -82,8 +82,7 @@ public class RealTest{
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			new GeodeticDistanceCalculator());
 
-//		Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
-		Polyline[] roads = extractPolylines("it.highways.wkt")
+		Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
 			.toArray(Polyline[]::new);
 		final HPRtree<Polyline> tree = new HPRtree<>();
 		for(final Polyline road : roads){
@@ -93,7 +92,6 @@ public class RealTest{
 
 		GPSPoint[] observations = extract("CA202RX", ";");
 observations = Arrays.copyOfRange(observations, 163, 172);
-observations = Arrays.copyOfRange(observations, 0, 7);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
@@ -102,7 +100,7 @@ observations = Arrays.copyOfRange(observations, 0, 7);
 System.out.println(graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null){
-	System.out.println("true: [null, null, 9, 9, 3, 21, 21, 1]");
+	System.out.println("true: [null, null, 12, 12, 7, 5, 0, 0, 0]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 }
 

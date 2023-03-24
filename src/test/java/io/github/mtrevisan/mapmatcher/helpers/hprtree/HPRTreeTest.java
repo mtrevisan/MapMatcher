@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 
 class HPRTreeTest{
@@ -198,21 +197,20 @@ out skel qt;
 			for(final Point point : polyline.getPoints())
 				if(intersectionPoints.contains(point))
 					cutpoints.add(point);
+
 			if(cutpoints.isEmpty())
 				splitPolylines.add(polyline);
 			else{
 				//split
-				final Stack<Polyline> splits = new Stack<>();
-				splits.push(polyline);
 				for(final Point cutpoint : cutpoints){
-					final Polyline pop = splits.pop();
-					final Point[][] pls = pop.cut(cutpoint);
-					splits.push(FACTORY.createPolyline(pls[0]));
-					if(pls[1].length > 0)
-						splits.push(FACTORY.createPolyline(pls[1]));
+					final Point[][] pls = polyline.cut(cutpoint);
+					if(pls[0].length > 1){
+						splitPolylines.add(FACTORY.createPolyline(pls[0]));
+						polyline = FACTORY.createPolyline(pls[1]);
+					}
 				}
-				//add splits
-				splitPolylines.addAll(splits);
+				if(polyline.getPoints().length > 1)
+					splitPolylines.add(polyline);
 			}
 		}
 
