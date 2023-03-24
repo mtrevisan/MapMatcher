@@ -52,6 +52,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.StringJoiner;
 
 
 /**
@@ -124,8 +125,7 @@ public class Application{
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new ShortestPathTransitionPlugin(330.))
-			.withPlugin(new DirectionTransitionPlugin())
-			;
+			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 //		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
@@ -137,9 +137,12 @@ public class Application{
 
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("true: [null, 0, 0, 0, 0, 1, 1, 1, null, 1]");
-if(path != null)
+if(path != null){
+	System.out.println("true: [null, 0, 0, 0, 0, 1, 1, 1, null, 1]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+}
+else
+	System.out.println("path is NULL");
 
 		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
@@ -147,14 +150,21 @@ if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
 		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
-if(pathPolyline != null)
-	System.out.println("path polyline: " + pathPolyline);
+if(pathPolyline != null && !pathPolyline.isEmpty()){
+	final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
+	if(!pathPolyline.isEmpty())
+		sj.add(pathPolyline.toString());
+	for(final GPSPoint point : filteredObservations)
+		if(point != null)
+			sj.add(point.toString());
+	System.out.println("path polyline: " + sj);
+}
 
 		if(path != null){
 			double averagePositioningError = 0.;
 			int windowSize = 0;
 			for(int i = 0; i < filteredObservations.length; i ++)
-				if(filteredObservations[i] != null){
+				if(filteredObservations[i] != null && path[i] != null){
 					averagePositioningError += filteredObservations[i].distance(path[i].getPath());
 					windowSize ++;
 				}

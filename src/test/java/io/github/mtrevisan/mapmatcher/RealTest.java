@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -61,12 +61,18 @@ import java.util.List;
 import java.util.StringJoiner;
 
 
+/**
+ * https://github.com/Nalhin/Navigation/blob/main/backend/libraries/pathfinder/
+ *
+ * https://github.com/coderodde/GraphSearchPal/blob/master/src/main/java/net/coderodde/gsp/model/support/AStarPathFinder.java
+ * https://github.com/valhalla/valhalla/blob/master/docs/meili/algorithms.md
+ */
 public class RealTest{
 
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
 
-	public static void main(String[] args) throws IOException{
+	public static void main(final String[] args) throws IOException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct segment
@@ -76,11 +82,12 @@ public class RealTest{
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
-		final DistanceCalculator edgeWeightCalculator = new DistanceCalculator(topologyCalculator);
+//		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
+		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			edgeWeightCalculator);
+			distanceCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-//			new GeodeticDistanceCalculator());
+//			distanceCalculator);
 
 		Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
 			.toArray(Polyline[]::new);
@@ -92,12 +99,14 @@ public class RealTest{
 
 		GPSPoint[] observations = extract("CA202RX", ";");
 //observations = Arrays.copyOfRange(observations, 163, 172);
+//observations = Arrays.copyOfRange(observations, 0, 184);
+observations = Arrays.copyOfRange(observations, 400, 500);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
 
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
-System.out.println(graph.toStringWithObservations(filteredObservations));
+System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 if(path != null){
 	System.out.println("true: [null, null, 12, 12, 7, 5, 0, 0, 0]");
@@ -106,7 +115,7 @@ if(path != null){
 else
 	System.out.println("path is NULL");
 
-		final PathFindingStrategy pathFinder = new AStarPathFinder(edgeWeightCalculator);
+		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
@@ -134,6 +143,17 @@ if(pathPolyline != null && !pathPolyline.isEmpty()){
 			averagePositioningError /= windowSize;
 System.out.println("average positioning error: " + averagePositioningError);
 		}
+
+		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
+		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order
+		//HMM: `P(g_t−1, g_t | c^i_t−1, c^j) = P(c^j_t | c^i_t−1) · P(g_t−1 | c^i_t−1) · P(g_t | c^j_t)`
+		//The state transition probability `P(c^i_t | c^j_t-2, c^k_t-1) = β · e^(-k_t · β)`, where `β = 1/λ`, and λ is the mean of k_t, and
+		//	k_t is the difference between the great-circle distance from g_t-1 to g_t+1 and the route length from c^i_t-1 to c^j_t+1:
+		//	k_t = |sum(n=t-2..t-1, dist(g^i_n, g^j_n+1)) - sum(n=t-2..t-1, routeDist(c^i_n, c^j_n+1)) |
+		//P(g_t | c^i_t) = 1/(sqrt(2 * pi) * sigma_t) * e^(-0.5 * tau * rho * dist(g_t, c^i_t) / sigma_t) is the observation probability,
+		// sigma_t is the standard deviation of a gaussian random variable that corresponds to the average great-circle distance between g_t
+		//	and its candidate points, tau is a weight given on vehicle heading = nu + e^|alpha_road - alpha_gps| / e^(2/pi), rho is a weight
+		//	reflecting the effect of road including road level and driver's travel preference
 	}
 
 
