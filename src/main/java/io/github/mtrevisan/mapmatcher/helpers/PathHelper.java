@@ -26,13 +26,11 @@ package io.github.mtrevisan.mapmatcher.helpers;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
+import io.github.mtrevisan.mapmatcher.graph.NearNodeMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.filters.GPSPositionSpeedFilter;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
-import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
@@ -44,18 +42,19 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class PathHelper{
 
 	public static final String REVERSED_EDGE_SUFFIX = "-rev";
-	public static final String SEGMENT_LEG_SEPARATOR = ".";
 
 	private PathHelper(){}
 
 
-	public static Edge[] connectPath(final Edge[] path, final Graph graph, final EdgeWeightCalculator calculator){
+	public static Edge[] connectPath(final Edge[] path, final Graph graph, final PathFindingStrategy pathFinder){
 		final int size = (path != null? path.length: 0);
 		final List<Edge> connectedPath = new ArrayList<>(size);
 		if(size > 0){
@@ -72,17 +71,9 @@ public class PathHelper{
 						connectedPath.add(path[currentIndex]);
 					else{
 						//add path from `path[index]` to `path[i]`
-						final PathFindingStrategy pathFinder = new AStarPathFinder(calculator);
-						final List<Node> nodePath = pathFinder.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph)
-							.simplePath();
-						assert !nodePath.isEmpty();
-						for(int j = 1; j < nodePath.size(); j ++){
-							final Node fromNode = nodePath.get(j - 1);
-							final Node toNode = nodePath.get(j);
-							final Edge edge = fromNode.findOutEdges(toNode);
-							assert edge != null;
-							connectedPath.add(edge);
-						}
+						final Edge[] edgePath = pathFinder.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph);
+						for(int i = 0; i < edgePath.length; i ++)
+							connectedPath.add(edgePath[i]);
 						connectedPath.add(path[currentIndex]);
 					}
 				}
@@ -100,43 +91,48 @@ public class PathHelper{
 		return (index < m? index: -1);
 	}
 
-	public static Polyline extractPathAsPolyline(final List<Node> path, final GeometryFactory factory){
-		if(path.isEmpty())
-			return factory.createEmptyPolyline();
-		if(path.size() == 1)
-			return factory.createPolyline(path.get(0).getPoint());
+	public static Polyline calculatePathAsPolyline(final Edge fromEdge, final Edge toEdge, final Graph graph,
+			final Point previousObservation, final Point currentObservation, final PathFindingStrategy pathFinder){
+		if(fromEdge.equals(toEdge))
+			return graph.getFactory().createEmptyPolyline();
 
-		final Edge[] pathAsEdges = extractPathAsEdges(path);
-		return extractEdgesAsPolyline(pathAsEdges, factory);
-	}
+		final Node previousNode = fromEdge.getClosestNode(previousObservation);
+		final Node currentNode = toEdge.getClosestNode(currentObservation);
+		final Edge[] pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
 
-	private static Edge[] extractPathAsEdges(final List<Node> path){
-		final int size = path.size();
-		final Edge[] connectedPath = new Edge[Math.max(size - 1, 0)];
-		for(int i = 1; i < size; i ++)
-			for(final Edge edge : path.get(i - 1).getOutEdges())
-				if(edge.getTo().equals(path.get(i))){
-					connectedPath[i - 1] = edge;
-					break;
-				}
-		return connectedPath;
+		Polyline polylineFromTo = extractEdgesAsPolyline(pathFromTo, graph.getFactory());
+		if(!polylineFromTo.isEmpty()){
+			//prepend previousNode path start
+			Point[][] fromCut = fromEdge.getPath().cut(previousNode.getPoint());
+			polylineFromTo = polylineFromTo.prepend(fromCut[1]);
+			//append currentNode to path end
+			fromCut = fromEdge.getPath().cut(currentNode.getPoint());
+			polylineFromTo = polylineFromTo.append(fromCut[0]);
+		}
+
+		return polylineFromTo;
 	}
 
 	public static Polyline extractEdgesAsPolyline(final Edge[] connectedPath, final GeometryFactory factory){
 		if(connectedPath.length == 0)
 			return factory.createEmptyPolyline();
 
+		int size = 1;
+		for(final Edge edge : connectedPath)
+			size += edge.getPath().size() - 1;
+		final Point[] mergedPoints = new Point[size];
+
 		//merge segments
-		//NOTE: this assumes every node is associated to a single point!
-		final Point[] mergedPoints = new Point[connectedPath.length * 2];
-		int size = 0;
+		size = 0;
 		for(int i = 0; i < connectedPath.length; i ++){
-			final Edge edge = connectedPath[i];
-			mergedPoints[size ++] = edge.getFrom().getPoint();
-			mergedPoints[size ++] = edge.getTo().getPoint();
+			final Point[] edgePoints = connectedPath[i].getPath()
+				.getPoints();
+			final int copyLength = (i < connectedPath.length - 1? edgePoints.length - 1: edgePoints.length);
+			System.arraycopy(edgePoints, 0, mergedPoints, size, copyLength);
+			size += edgePoints.length - 1;
 		}
 
-		return factory.createPolyline(removeConsecutiveDuplicates(mergedPoints));
+		return factory.createPolyline(mergedPoints);
 	}
 
 	private static Point[] removeConsecutiveDuplicates(final Point[] input){
@@ -191,66 +187,69 @@ public class PathHelper{
 	 */
 	public static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point[] observations,
 			final double threshold){
-		//collect max and min of X and Y:
-		double maxX = Double.NEGATIVE_INFINITY;
-		double minX = Double.POSITIVE_INFINITY;
-		double maxY = Double.NEGATIVE_INFINITY;
-		double minY = Double.POSITIVE_INFINITY;
-		for(final Point observation : observations){
-			final double x = observation.getX();
-			if(x > maxX)
-				maxX = x;
-			else if(x < minX)
-				minX = x;
+		final Set<Polyline> observedEdges = new HashSet<>(0);
+		for(int i = 0; i < observations.length; ){
+			final Point observation = observations[i];
+			if(observation == null){
+				i ++;
+				continue;
+			}
 
-			final double y = observation.getY();
-			if(y > maxY)
-				maxY = y;
-			else if(y < minY)
-				minY = y;
+			//construct the envelope
+			final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
+			final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
+			final Envelope envelope = Envelope.of(northEast, southWest);
+
+			//skip observations inside current envelope
+			do{
+				i ++;
+			}while(i < observations.length && observations[i] != null && envelope.intersects(observations[i]));
+
+			//add observed edges to final set
+			observedEdges.addAll(tree.query(envelope));
 		}
 
-		//create an envelope around max and min:
-		final GeometryFactory factory = observations[0].getFactory();
-		final Point max = Point.of(factory, maxX, maxY);
-		final Point min = Point.of(factory, minX, minY);
-		final Point northEast = GeodeticHelper.destination(max, 45., threshold);
-		final Point southWest = GeodeticHelper.destination(min, 225., threshold);
-		final Envelope envelope = Envelope.of(northEast, southWest);
-
-		//query the tree
-		return tree.query(envelope);
+		return observedEdges;
 	}
 
 	public static GPSPoint[] extractObservations(final HPRtree<Polyline> tree, final GPSPoint[] observations, final double threshold){
 		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
 
-		//step 1. Use Kalman filter to smooth the coordinates
-		final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
-		feasibleObservations[0] = observations[0];
-		for(int i = 1; i < observations.length; i ++){
-			kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
-				ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
-			final double[] position = kalmanFilter.getPosition();
-			feasibleObservations[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
-		}
+		if(observations.length > 0){
+			//step 1. Use Kalman filter to smooth the coordinates
+			final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
+			feasibleObservations[0] = observations[0];
+			for(int i = 1; i < observations.length; i ++){
+				final GPSPoint observation = observations[i];
+				if(observation == null)
+					continue;
 
-		//step 2. Retain all observation that are within a certain radius from an edge
-		for(int i = 0; i < feasibleObservations.length; i ++){
-			final GPSPoint observation = feasibleObservations[i];
-			final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
-			final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
-			final Envelope envelope = Envelope.of(northEast, southWest);
-
-			final List<Polyline> edges = tree.query(envelope);
-			double minDistance = Double.POSITIVE_INFINITY;
-			for(final Polyline edge : edges){
-				final double distance = observation.distance(edge);
-				if(distance < minDistance)
-					minDistance = distance;
+				kalmanFilter.updatePosition(observation.getY(), observation.getX(),
+					ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observation.getTimestamp()));
+				final double[] position = kalmanFilter.getPosition();
+				feasibleObservations[i] = GPSPoint.of(position[1], position[0], observation.getTimestamp());
 			}
-			if(edges.isEmpty() || minDistance > threshold)
-				feasibleObservations[i] = null;
+
+			//step 2. Retain all observation that are within a certain radius from an edge
+			for(int i = 0; i < feasibleObservations.length; i ++){
+				final GPSPoint observation = feasibleObservations[i];
+				if(observation == null)
+					continue;
+
+				final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
+				final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
+				final Envelope envelope = Envelope.of(northEast, southWest);
+
+				final List<Polyline> edges = tree.query(envelope);
+				double minDistance = Double.POSITIVE_INFINITY;
+				for(final Polyline edge : edges){
+					final double distance = observation.distance(edge);
+					if(distance < minDistance)
+						minDistance = distance;
+				}
+				if(edges.isEmpty() || minDistance > threshold)
+					feasibleObservations[i] = null;
+			}
 		}
 
 		return feasibleObservations;
@@ -259,15 +258,12 @@ public class PathHelper{
 
 	//create id as `<segment>(.<leg>)?
 	public static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold)
+		final NearNodeMergeGraph graph = new NearNodeMergeGraph(threshold)
 			.withTree();
 		int e = 0;
 		for(final Polyline edge : edges){
-			final Point[] edgePoints = edge.getPoints();
-			for(int i = 1; i < edgePoints.length; i ++){
-				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
-				graph.addApproximateDirectEdge(id, edgePoints[i - 1], edgePoints[i]);
-			}
+			final String id = String.valueOf(e);
+			graph.addApproximateDirectEdge(id, edge);
 
 			e ++;
 		}
@@ -276,21 +272,14 @@ public class PathHelper{
 
 	//create id as `<segment>(.<leg>)?(-rev)?`
 	public static Graph extractBidirectionalGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold)
+		final NearNodeMergeGraph graph = new NearNodeMergeGraph(threshold)
 			.withTree();
 		int e = 0;
 		for(final Polyline edge : edges){
-			final Point[] edgePoints = edge.getPoints();
-			for(int i = 1; i < edgePoints.length; i ++){
-				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
-				graph.addApproximateDirectEdge(id, edgePoints[i - 1], edgePoints[i]);
-			}
-
+			final String id = String.valueOf(e);
+			graph.addApproximateDirectEdge(id, edge);
 			//add reversed
-			for(int i = 1; i < edgePoints.length; i ++){
-				final String id = (edgePoints.length > 2? e + PathHelper.SEGMENT_LEG_SEPARATOR + (i - 1): String.valueOf(e));
-				graph.addApproximateDirectEdge(id + REVERSED_EDGE_SUFFIX, edgePoints[i], edgePoints[i - 1]);
-			}
+			graph.addApproximateDirectEdge(id + REVERSED_EDGE_SUFFIX, edge.reverse());
 
 			e ++;
 		}

@@ -45,9 +45,9 @@ import java.util.StringJoiner;
 import java.util.TreeMap;
 
 
-public class NearLineMergeGraph implements Graph{
+public class NearNodeMergeGraph implements Graph{
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(NearLineMergeGraph.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(NearNodeMergeGraph.class);
 
 	private static final String EMPTY = "";
 
@@ -60,11 +60,11 @@ public class NearLineMergeGraph implements Graph{
 	private HPRtree<Polyline> tree;
 
 
-	public NearLineMergeGraph(final double threshold){
+	public NearNodeMergeGraph(final double threshold){
 		this.threshold = threshold;
 	}
 
-	public NearLineMergeGraph withTree(){
+	public NearNodeMergeGraph withTree(){
 		tree = new HPRtree<>();
 
 		return this;
@@ -78,22 +78,30 @@ public class NearLineMergeGraph implements Graph{
 	}
 
 	public Collection<Edge> addApproximateDirectEdge(final Point from, final Point to){
-		return addApproximateDirectEdge(null, from, to);
+		return addApproximateDirectEdge(null, from.getFactory().createPolyline(from, to));
+	}
+
+	public Collection<Edge> addApproximateDirectEdge(final Polyline path){
+		return addApproximateDirectEdge(null, path);
 	}
 
 	public Collection<Edge> addApproximateDirectEdge(final String id, final Point from, final Point to){
-		if(from == null || to == null)
+		return addApproximateDirectEdge(id, from.getFactory().createPolyline(from, to));
+	}
+
+	public Collection<Edge> addApproximateDirectEdge(final String id, final Polyline path){
+		if(path == null || path.size() < 2)
 			return Collections.emptyList();
 
 		final Collection<Edge> addedEdges = new HashSet<>(0);
-		final Collection<Node> startNodes = connectNodes(from);
-		final Collection<Node> endNodes = connectNodes(to);
+		final Collection<Node> startNodes = connectNodes(path.getStartPoint());
+		final Collection<Node> endNodes = connectNodes(path.getEndPoint());
 		final Set<Node> intersectionNodes = new HashSet<>(startNodes);
 		intersectionNodes.retainAll(endNodes);
 
 		for(final Node fromNode : startNodes)
 			for(final Node toNode : endNodes){
-				final Edge edge = Edge.createDirectEdge(fromNode, toNode);
+				final Edge edge = Edge.createDirectEdge(fromNode, toNode, path);
 				if(id != null){
 					edge.setID(id);
 
@@ -116,7 +124,7 @@ public class NearLineMergeGraph implements Graph{
 		for(final Node intersectionNode1 : intersectionNodes)
 			for(final Node intersectionNode2 : intersectionNodes)
 				if(!intersectionNode1.equals(intersectionNode2)){
-					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2);
+					final Edge edge = Edge.createDirectEdge(intersectionNode1, intersectionNode2, path);
 					if(id != null){
 						edge.setID(id);
 
@@ -137,9 +145,8 @@ public class NearLineMergeGraph implements Graph{
 				}
 
 		if(tree != null){
-			final Polyline polyline = from.getFactory().createPolyline(from, to);
-			final Envelope geoBoundingBox = polyline.getBoundingBox();
-			tree.insert(geoBoundingBox, polyline);
+			final Envelope geoBoundingBox = path.getBoundingBox();
+			tree.insert(geoBoundingBox, path);
 		}
 
 		return addedEdges;
@@ -183,9 +190,15 @@ public class NearLineMergeGraph implements Graph{
 
 	public Collection<Node> getNodesNear(final Point point){
 		final Set<Node> closest = new HashSet<>(0);
-		for(final Map.Entry<Point, Node> entry : nodeMap.entrySet())
-			if(point.distance(entry.getKey()) <= threshold)
-				closest.add(entry.getValue());
+		if(threshold > 0.)
+			for(final Map.Entry<Point, Node> entry : nodeMap.entrySet()){
+				if(point.distance(entry.getKey()) <= threshold)
+					closest.add(entry.getValue());
+			}
+		else
+			for(final Map.Entry<Point, Node> entry : nodeMap.entrySet())
+				if(threshold == 0. && point.equals(entry.getKey()))
+					closest.add(entry.getValue());
 		return closest;
 	}
 
@@ -222,7 +235,7 @@ public class NearLineMergeGraph implements Graph{
 
 		final List<Edge> edges = new ArrayList<>(0);
 		for(final Edge edge : this.edges)
-			if(polylines.contains(edge.getPolyline()))
+			if(polylines.contains(edge.getPath()))
 				edges.add(edge);
 		return edges;
 	}
@@ -245,11 +258,8 @@ public class NearLineMergeGraph implements Graph{
 
 	private StringJoiner graphAsString(){
 		final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
-		for(final Edge edge : edges){
-			final Point from = edge.getFrom().getPoint();
-			final Point to = edge.getTo().getPoint();
-			sj.add(from.getFactory().createPolyline(from, to).toString());
-		}
+		for(final Edge edge : edges)
+			sj.add(edge.getPath().toString());
 		return sj;
 	}
 

@@ -68,7 +68,7 @@ public class GaussianEmissionCalculator implements EmissionProbabilityCalculator
 	 */
 	@Override
 	public double emissionProbability(final Point observation, final Edge segment, final Point previousObservation){
-		final Polyline polyline = segment.getPolyline();
+		final Polyline polyline = segment.getPath();
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;
 
@@ -77,9 +77,12 @@ public class GaussianEmissionCalculator implements EmissionProbabilityCalculator
 		if(previousObservation != null){
 			final Point previousObservationClosest = polyline.onTrackClosestPoint(previousObservation);
 			final Point currentObservationClosest = polyline.onTrackClosestPoint(observation);
-			final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
-			final double angleGPS = previousObservation.initialBearing(observation);
-			tau = TAU0 + StrictMath.exp(StrictMath.toRadians(StrictMath.abs(angleRoad - angleGPS)) - K1);
+			if(!previousObservationClosest.equals(currentObservationClosest)){
+				final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
+				final double angleGPS = previousObservation.initialBearing(observation);
+				final double angleDelta = StrictMath.abs(angleRoad - angleGPS);
+				tau = TAU0 + StrictMath.exp(StrictMath.toRadians(Math.min(360. - angleDelta, angleDelta)) - K1);
+			}
 		}
 
 		//expansion of:

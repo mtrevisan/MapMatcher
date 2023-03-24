@@ -27,7 +27,8 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 import io.github.mtrevisan.mapmatcher.TestPathHelper;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
-import io.github.mtrevisan.mapmatcher.graph.NearLineMergeGraph;
+import io.github.mtrevisan.mapmatcher.graph.NearNodeMergeGraph;
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
@@ -35,7 +36,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -53,14 +54,15 @@ class AStarMapMatchingTest{
 	//FIXME
 //	@Test
 	void should_match_E0_E1_with_bayesian_emission_probability(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -104,15 +106,16 @@ class AStarMapMatchingTest{
 	//FIXME
 //	@Test
 	void should_match_E0_E1_with_gaussian_emission_probability(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -157,14 +160,15 @@ class AStarMapMatchingTest{
 	//FIXME
 //	@Test
 	void should_match_E3_E2_with_bayesian_emission_probability(){
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new GeodeticDistanceCalculator());
+			new DistanceCalculator(topologyCalculator));
 
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -204,12 +208,12 @@ class AStarMapMatchingTest{
 
 
 	private static Graph extractGraph(final Collection<Polyline> edges, final double threshold){
-		final NearLineMergeGraph graph = new NearLineMergeGraph(threshold);
+		final NearNodeMergeGraph graph = new NearNodeMergeGraph(threshold);
 		int e = 0;
 		for(final Polyline edge : edges){
 			graph.addApproximateDirectEdge(String.valueOf(e), edge.getStartPoint(), edge.getEndPoint());
 			final Polyline reverse = edge.reverse();
-			graph.addApproximateDirectEdge(e + "-rev", reverse.getStartPoint(), reverse.getEndPoint());
+			graph.addApproximateDirectEdge(e + PathHelper.REVERSED_EDGE_SUFFIX, reverse.getStartPoint(), reverse.getEndPoint());
 
 			e ++;
 		}

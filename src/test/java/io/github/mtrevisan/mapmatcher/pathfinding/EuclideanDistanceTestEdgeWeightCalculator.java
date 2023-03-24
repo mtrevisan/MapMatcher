@@ -24,24 +24,23 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding;
 
-import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 
 public class EuclideanDistanceTestEdgeWeightCalculator implements EdgeWeightCalculator{
 
 	@Override
-	public double calculateWeight(final Edge edge){
-		return calculateWeight(edge.getFrom(), edge.getTo());
+	public double calculateWeight(final Point... points){
+		double weight = 0.;
+		for(int i = 1; i < points.length; i ++)
+			weight += calculateWeight(points[i - 1], points[i]);
+		return weight;
 	}
 
-	@Override
-	public double calculateWeight(final Node from, final Node to){
-		final var fromPoints = from.getPoint();
-		final var toPoints = to.getPoint();
-		final var deltaY = fromPoints.getY() - toPoints.getY();
-		final var deltaX = fromPoints.getX() - toPoints.getX();
+	private static double calculateWeight(final Point fromPoint, final Point toPoint){
+		final double deltaY = fromPoint.getY() - toPoint.getY();
+		final double deltaX = fromPoint.getX() - toPoint.getX();
 		return Math.hypot(deltaY, deltaX);
 	}
 

@@ -24,14 +24,11 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding.calculators;
 
-import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 
 public interface EdgeWeightCalculator{
 
-	double calculateWeight(Edge edge);
-
-	double calculateWeight(Node start, Node end);
+	double calculateWeight(Point... points);
 
 }

@@ -28,11 +28,9 @@ import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.intersection.BentleyOttmann;
 import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,14 +41,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 
@@ -185,36 +182,44 @@ out skel qt;
 		if(polylines.isEmpty())
 			return polylines;
 
-		final TopologyCalculator calculator = polylines.iterator().next().getDistanceCalculator();
-		final BentleyOttmann bentleyOttmann = new BentleyOttmann(calculator);
-		bentleyOttmann.addPolylines(polylines);
-		final Map<Polyline, BitSet> preservePointsOnPolylines = new HashMap<>(polylines.size());
-		bentleyOttmann.findIntersections((polyline1, polyline2, intersection) -> {
-			final Polyline p1 = (Polyline)polyline1;
-			final Polyline p2 = (Polyline)polyline2;
-			final Set<Point> intersectionPoint = new HashSet<>(Arrays.asList(p1.getPoints()));
-			intersectionPoint.retainAll(new HashSet<>(Arrays.asList(p2.getPoints())));
-			if(intersectionPoint.size() == 1){
-				intersection = intersectionPoint.iterator().next();
+		//collect intersection points
+		final Set<Point> points = new HashSet<>(polylines.size() * 2);
+		final Set<Point> intersectionPoints = new HashSet<>();
+		for(final Polyline polyline : polylines)
+			for(final Point point : polyline.getPoints())
+				if(!points.add(point))
+					intersectionPoints.add(point);
 
-				int index = p1.indexOf(intersection);
-				if(index > 0 && index < p1.size() - 1)
-					preservePointsOnPolylines.computeIfAbsent(p1, k -> new BitSet(p1.size()))
-						.set(index, true);
+		//split polylines
+		final List<Polyline> splitPolylines = new ArrayList<>(polylines.size());
+		for(Polyline polyline : polylines){
+			final Queue<Point> cutpoints = new PriorityQueue<>(Comparator.comparingDouble(polyline::alongTrackDistance));
+			for(final Point point : polyline.getPoints())
+				if(intersectionPoints.contains(point))
+					cutpoints.add(point);
 
-				index = p2.indexOf(intersection);
-				if(index > 0 && index < p2.size() - 1)
-					preservePointsOnPolylines.computeIfAbsent(p2, k -> new BitSet(p2.size()))
-						.set(index, true);
+			if(cutpoints.isEmpty())
+				splitPolylines.add(polyline);
+			else{
+				//split
+				for(final Point cutpoint : cutpoints){
+					final Point[][] pls = polyline.cut(cutpoint);
+					if(pls[0].length > 1){
+						splitPolylines.add(FACTORY.createPolyline(pls[0]));
+						polyline = FACTORY.createPolyline(pls[1]);
+					}
+				}
+				if(polyline.getPoints().length > 1)
+					splitPolylines.add(polyline);
 			}
-		});
+		}
+
 
 		final RamerDouglasPeuckerSimplifier simplifier = new RamerDouglasPeuckerSimplifier();
 		simplifier.setDistanceTolerance(tolerance);
-		final List<Polyline> reducedPolylines = new ArrayList<>(polylines.size());
-		for(final Polyline polyline : polylines){
-			final BitSet preservePoints = preservePointsOnPolylines.getOrDefault(polyline, new BitSet(polyline.size()));
-			final Point[] reducedPoints = simplifier.simplify(preservePoints, polyline.getPoints());
+		final List<Polyline> reducedPolylines = new ArrayList<>(splitPolylines.size());
+		for(final Polyline polyline : splitPolylines){
+			final Point[] reducedPoints = simplifier.simplify(polyline.getPoints());
 			reducedPolylines.add(FACTORY.createPolyline(reducedPoints));
 		}
 		return reducedPolylines;
@@ -250,7 +255,7 @@ out skel qt;
 			factory.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(2167, roads.size());
+		Assertions.assertEquals(2391, roads.size());
 	}
 
 	@Test

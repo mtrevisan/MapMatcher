@@ -36,7 +36,7 @@ class TopologyCalculatorTest{
 
 	@Test
 	void should_calculate_approximate_distance_between_points_close_to_expected_distance(){
-		final TopologyCalculator calculator = new GeoidalCalculator();
+		final TopologyCalculator topologyCalculator = new GeoidalCalculator();
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final Point[] points = new Point[]{
 			factory.createPoint(121.058805, 14.552797),
@@ -55,7 +55,7 @@ class TopologyCalculatorTest{
 		for(int i = 0; i < expectedDistances.length; i ++){
 			Point startPoint = points[i << 1];
 			Point endPoint = points[(i << 1) + 1];
-			double actualDistance = calculator.distance(startPoint, endPoint);
+			double actualDistance = topologyCalculator.distance(startPoint, endPoint);
 
 			Assertions.assertEquals(expectedDistances[i], actualDistance, 0.05);
 		}

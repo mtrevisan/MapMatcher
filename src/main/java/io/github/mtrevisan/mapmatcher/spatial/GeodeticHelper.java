@@ -346,7 +346,9 @@ public class GeodeticHelper{
 
 		final double lon = Math.toDegrees(StrictMath.atan2(y, x));
 		final double hyp = Math.hypot(x, y);
-		final double lat = Math.toDegrees(Math.abs(hyp) >= Double.MIN_VALUE? StrictMath.atan2(z, hyp): (z > 0.? Math.PI: -Math.PI) / 2.);
+		final double lat = Math.toDegrees(Math.abs(hyp) >= Double.MIN_VALUE
+			? StrictMath.atan2(z, hyp)
+			: (z > 0.? Math.PI: -Math.PI) / 2.);
 		return firstPoint.factory.createPoint(lat, lon);
 	}
 

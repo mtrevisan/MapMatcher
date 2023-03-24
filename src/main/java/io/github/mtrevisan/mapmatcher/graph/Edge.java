@@ -38,28 +38,38 @@ public class Edge{
 
 	protected final Node from;
 	protected final Node to;
-
-	private double weight;
+	protected final Polyline path;
 
 
 	public static Edge createDirectEdge(final Node from, final Node to){
-		return new Edge(from, to);
+		final GeometryFactory factory = from.getPoint().getFactory();
+		return new Edge(from, to, factory.createPolyline(from.getPoint(), to.getPoint()));
+	}
+
+	public static Edge createDirectEdge(final Node from, final Node to, final Polyline path){
+		return new Edge(from, to, path);
 	}
 
 	public static Edge createSelfEdge(final Node node){
-		return new Edge(node, node);
+		final Point point = node.getPoint();
+		final GeometryFactory factory = point.getFactory();
+		return new Edge(node, node, factory.createPolyline(point, point));
 	}
 
-	private Edge(final Node from, final Node to){
+	private Edge(final Node from, final Node to, final Polyline path){
 		if(from == null)
 			throw new IllegalArgumentException("`from` node cannot be null");
 		if(to == null)
 			throw new IllegalArgumentException("`to` node cannot be null");
+		if(path == null || path.isEmpty())
+			throw new IllegalArgumentException("`path` node cannot be null or empty");
 
 		id = Objects.requireNonNullElse(from.getID(), "<null>")
-			+ "-" + Objects.requireNonNullElse(to.getID(), "<null>");
+			+ "-"
+			+ Objects.requireNonNullElse(to.getID(), "<null>");
 		this.from = from;
 		this.to = to;
+		this.path = path;
 	}
 
 	public String getID(){
@@ -85,27 +95,16 @@ public class Edge{
 		return to.getOutEdges();
 	}
 
-	//FIXME reduce the computation of this polyline
-	public Polyline getPolyline(){
-		final Point point = from.getPoint();
-		final GeometryFactory factory = point.getFactory();
-		return factory.createPolyline(point, to.getPoint());
+	public Polyline getPath(){
+		return path;
 	}
 
 	public Node getClosestNode(final Point point){
 		return (from.getPoint().distance(point) < to.getPoint().distance(point)? from: to);
 	}
 
-	public double getWeight(){
-		return weight;
-	}
-
-	public void setWeight(final double weight){
-		this.weight = weight;
-	}
-
 	public Edge reversed(){
-		return createDirectEdge(to, from);
+		return createDirectEdge(to, from, path.reverse());
 	}
 
 	@Override
@@ -116,17 +115,21 @@ public class Edge{
 			return false;
 
 		final Edge other = (Edge)obj;
-		return (Objects.equals(from, other.from) && Objects.equals(to, other.to) && Objects.equals(weight, other.weight));
+		return (Objects.equals(from, other.from)
+			&& Objects.equals(to, other.to)
+			&& Objects.equals(path, other.path));
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(from, to, weight);
+		return Objects.hash(from, to, path);
 	}
 
 	@Override
 	public String toString(){
-		return "Edge{id = " + id + ", from = " + from + ", to = " + to + ", weight = " + weight + "}";
+		return "Edge{id = " + id + ", from = " + from + ", to = " + to
+			+ (path.size() > 1? ", path = " + path: "")
+			+ "}";
 	}
 
 }

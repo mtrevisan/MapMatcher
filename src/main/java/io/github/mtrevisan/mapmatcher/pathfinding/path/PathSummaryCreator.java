@@ -26,6 +26,7 @@ package io.github.mtrevisan.mapmatcher.pathfinding.path;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.spatial.ArrayHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,38 +37,56 @@ import java.util.Objects;
 
 public class PathSummaryCreator{
 
-	public PathSummary createUnidirectionalPath(final Node start, final Node end,
+	public Edge[] createUnidirectionalPath(final Node start, final Node end,
 			final Map<Node, Edge> predecessorTree){
-		final var fromEndToStart = reconstructPathFromPredecessorTree(end, start, predecessorTree);
+		final Edge[] fromEndToStart = reconstructPathFromPredecessorTree(end, start, predecessorTree);
 
-		Collections.reverse(fromEndToStart);
+		ArrayHelper.reverse(fromEndToStart);
 
-		return SingleDirectionalPathSummary.ofPath(fromEndToStart, predecessorTree.keySet());
+		return fromEndToStart;
 	}
 
-	public PathSummary createBidirectionalPath(final Node start, final Node middle, final Node end,
+	public Edge[] createBidirectionalPath(final Node start, final Node middle, final Node end,
 			final Map<Node, Edge> predecessorTreeStart, final Map<Node, Edge> predecessorTreeEnd){
-		final var fromMidToStart = reconstructPathFromPredecessorTree(middle, start, predecessorTreeStart);
-		Collections.reverse(fromMidToStart);
+		final Edge[] fromMidToStart = reconstructPathFromPredecessorTree(middle, start, predecessorTreeStart);
+		final Edge[] fromEndToMid = reconstructPathFromPredecessorTree(middle, end, predecessorTreeEnd);
 
-		final var fromEndToMid = reconstructPathFromPredecessorTree(middle, end, predecessorTreeEnd);
+		if((start != middle && fromMidToStart.length == 0) || (end != middle && fromEndToMid.length == 0))
+			return new Edge[0];
 
-		if((start != middle && fromMidToStart.isEmpty()) || (end != middle && fromEndToMid.isEmpty()))
-			return BidirectionalPathSummary.ofPath(Collections.emptyList(), predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
-
-		fromMidToStart.addAll(fromEndToMid.stream().map(Edge::reversed).toList());
-		return BidirectionalPathSummary.ofPath(fromMidToStart, predecessorTreeStart.keySet(), predecessorTreeEnd.keySet());
+		final Edge[] fromStartToEnd = new Edge[fromMidToStart.length + fromEndToMid.length];
+		int size = 0;
+		for(int i = fromMidToStart.length - 1; i >= 0; i --)
+			fromStartToEnd[size ++] = fromMidToStart[i];
+		for(int i = fromEndToMid.length - 1; i >= 0; i --)
+			fromStartToEnd[size ++] = fromEndToMid[i];
+		return fromStartToEnd;
 	}
 
-	private List<Edge> reconstructPathFromPredecessorTree(final Node from, final Node to, final Map<Node, Edge> predecessorTree){
-		final var result = new ArrayList<Edge>();
+	private Edge[] reconstructPathFromPredecessorTree(final Node from, final Node to, final Map<Node, Edge> predecessorTree){
+		final List<Edge> result = new ArrayList<>(0);
 		var currentNode = from;
 		while(predecessorTree.containsKey(currentNode) && !Objects.equals(currentNode, to)){
-			final var edge = predecessorTree.get(currentNode);
+			final Edge edge = predecessorTree.get(currentNode);
 			result.add(edge);
 			currentNode = edge.getFrom();
 		}
-		return (Objects.equals(currentNode, to)? result: Collections.emptyList());
+		return (Objects.equals(currentNode, to)? result.toArray(Edge[]::new): new Edge[0]);
+	}
+
+
+	public static List<Node> simplePath(final List<Edge> path){
+		if(path.isEmpty())
+			return Collections.emptyList();
+
+		final List<Node> withoutLast = new ArrayList<>(path.size() + 1);
+		for(final Edge edge : path)
+			withoutLast.add(edge.getFrom());
+		final Node nodeTo = path.get(path.size() - 1).getTo();
+		final Node lastNode = withoutLast.get(withoutLast.size() - 1);
+		if(!lastNode.equals(nodeTo))
+			withoutLast.add(nodeTo);
+		return withoutLast;
 	}
 
 }

@@ -37,7 +37,9 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformIni
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.calculators.GeodeticDistanceCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
+import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -50,6 +52,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.StringJoiner;
 
 
 /**
@@ -61,7 +64,8 @@ import java.util.Collection;
 public class Application{
 
 	public static void main(final String[] args){
-		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
 		final Point node12_31_41 = factory.createPoint(12.238140517207398, 45.65897415921759);
 		final Point node22 = factory.createPoint(12.242949896905884, 45.69828882177029);
@@ -121,12 +125,11 @@ public class Application{
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new ShortestPathTransitionPlugin(330.))
-			.withPlugin(new DirectionTransitionPlugin())
-			;
+			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 //		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
-		final GeodeticDistanceCalculator distanceCalculator = new GeodeticDistanceCalculator();
+		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			distanceCalculator);
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
@@ -134,31 +137,40 @@ public class Application{
 
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("true: [null, 0, 0, 0, 3, 1.0, 1.0, 1.1, null, 1.1]");
-if(path != null)
+if(path != null){
+	System.out.println("true: [null, 0, 0, 0, 0, 1, 1, 1, null, 1]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+}
+else
+	System.out.println("path is NULL");
 
-		final Edge[] connectedPath = PathHelper.connectPath(path, graph, distanceCalculator);
+		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
 		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
-if(pathPolyline != null)
-	System.out.println("path polyline: " + pathPolyline);
+if(pathPolyline != null && !pathPolyline.isEmpty()){
+	final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
+	if(!pathPolyline.isEmpty())
+		sj.add(pathPolyline.toString());
+	for(final GPSPoint point : filteredObservations)
+		if(point != null)
+			sj.add(point.toString());
+	System.out.println("path polyline: " + sj);
+}
 
 		if(path != null){
 			double averagePositioningError = 0.;
 			int windowSize = 0;
 			for(int i = 0; i < filteredObservations.length; i ++)
-				if(filteredObservations[i] != null){
-					averagePositioningError += filteredObservations[i].distance(path[i].getPolyline());
+				if(filteredObservations[i] != null && path[i] != null){
+					averagePositioningError += filteredObservations[i].distance(path[i].getPath());
 					windowSize ++;
 				}
 			averagePositioningError /= windowSize;
 System.out.println("average positioning error: " + averagePositioningError);
 		}
-
-		//!!! https://journals.sagepub.com/doi/pdf/10.1177/1550147718772541
 
 		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
 		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order

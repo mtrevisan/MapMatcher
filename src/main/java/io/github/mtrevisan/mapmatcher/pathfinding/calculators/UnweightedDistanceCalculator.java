@@ -24,19 +24,13 @@
  */
 package io.github.mtrevisan.mapmatcher.pathfinding.calculators;
 
-import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.graph.Node;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 
 public class UnweightedDistanceCalculator implements EdgeWeightCalculator{
 
 	@Override
-	public double calculateWeight(final Edge edge){
-		return 0.;
-	}
-
-	@Override
-	public double calculateWeight(final Node from, final Node to){
+	public double calculateWeight(final Point... points){
 		return 0.;
 	}
 

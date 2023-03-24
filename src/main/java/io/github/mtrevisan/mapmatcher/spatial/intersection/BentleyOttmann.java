@@ -56,16 +56,16 @@ public class BentleyOttmann{
 	private final SweepLineTreeSet sweepLine = new SweepLineTreeSet();
 	private final List<Point> intersections = new ArrayList<>();
 
-	private final TopologyCalculator calculator;
+	private final TopologyCalculator topologyCalculator;
 
 
-	public BentleyOttmann(final TopologyCalculator calculator){
-		this.calculator = calculator;
+	public BentleyOttmann(final TopologyCalculator topologyCalculator){
+		this.topologyCalculator = topologyCalculator;
 	}
 
 	public void addPoints(final Collection<Point> points){
 		for(final Point point : points){
-			final SweepSegment ss = new SweepSegment(point, calculator);
+			final SweepSegment ss = new SweepSegment(point, topologyCalculator);
 			eventQueue.add(ss.getLeftEvent());
 			eventQueue.add(ss.getRightEvent());
 		}
@@ -77,7 +77,7 @@ public class BentleyOttmann{
 	}
 
 	public void addPolyline(final Polyline polyline){
-		final SweepSegment ss = new SweepSegment(polyline, calculator);
+		final SweepSegment ss = new SweepSegment(polyline, topologyCalculator);
 		eventQueue.add(ss.getLeftEvent());
 		eventQueue.add(ss.getRightEvent());
 	}
@@ -131,7 +131,7 @@ public class BentleyOttmann{
 			final List<Point> points = segment1.intersection(segment2);
 			for(final Point point : points)
 				if(point.getX() > event.point().getX())
-					eventQueue.add(new Event(point, segment1, segment2, calculator));
+					eventQueue.add(new Event(point, segment1, segment2, topologyCalculator));
 		}
 	}
 
@@ -140,7 +140,7 @@ public class BentleyOttmann{
 			final List<Point> points = segment1.intersection(segment2);
 			for(final Point point : points)
 				if(point.getX() > event.point().getX()){
-					final Event e = new Event(point, segment1, segment2, calculator);
+					final Event e = new Event(point, segment1, segment2, topologyCalculator);
 					if(!eventQueue.contains(e))
 						eventQueue.add(e);
 				}

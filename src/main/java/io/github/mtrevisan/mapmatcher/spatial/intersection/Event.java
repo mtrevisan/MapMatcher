@@ -45,11 +45,14 @@ public class Event implements Comparable<Event>{
 	private final Point point;
 	private final List<SweepSegment> segments = new ArrayList<>();
 
-	private final TopologyCalculator calculator;
+	private final TopologyCalculator topologyCalculator;
 
 
-	Event(final Point point, final SweepSegment segment, final Type type, final TopologyCalculator calculator){
-		this.calculator = calculator;
+	Event(final Point point, final SweepSegment segment, final Type type, final TopologyCalculator topologyCalculator){
+		if(point == null)
+			throw new IllegalArgumentException("`point` cannot be null");
+
+		this.topologyCalculator = topologyCalculator;
 
 		this.point = point;
 		this.type = type;
@@ -57,8 +60,8 @@ public class Event implements Comparable<Event>{
 		segments.add(segment);
 	}
 
-	Event(final Point point, final SweepSegment segment1, final SweepSegment segment2, final TopologyCalculator calculator){
-		this(point, segment1, Type.INTERSECTION, calculator);
+	Event(final Point point, final SweepSegment segment1, final SweepSegment segment2, final TopologyCalculator topologyCalculator){
+		this(point, segment1, Type.INTERSECTION, topologyCalculator);
 
 		segments.add(segment2);
 
@@ -90,7 +93,7 @@ public class Event implements Comparable<Event>{
 
 	@Override
 	public int compareTo(final Event event){
-		return calculator.compare(point(), event.point());
+		return topologyCalculator.compare(point(), event.point());
 	}
 
 	@Override

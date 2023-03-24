@@ -44,7 +44,7 @@ public class BayesianEmissionCalculator implements EmissionProbabilityCalculator
 		//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
 		double cumulativeDistance = 0.;
 		for(final Edge edge : edges){
-			final double distance = observation.distance(edge.getPolyline());
+			final double distance = observation.distance(edge.getPath());
 			emissionProbability.put(edge, distance);
 			cumulativeDistance += distance;
 		}

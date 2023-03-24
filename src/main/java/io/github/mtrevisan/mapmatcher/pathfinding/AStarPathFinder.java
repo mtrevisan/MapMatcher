@@ -29,9 +29,7 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.FibonacciHeap;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
-import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummary;
 import io.github.mtrevisan.mapmatcher.pathfinding.path.PathSummaryCreator;
-import io.github.mtrevisan.mapmatcher.pathfinding.path.SingleDirectionalPathSummary;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,10 +50,10 @@ public class AStarPathFinder implements PathFindingStrategy{
 	}
 
 	@Override
-	public PathSummary findPath(final Node start, final Node end, final Graph graph){
+	public Edge[] findPath(final Node start, final Node end, final Graph graph){
 		if(start.equals(end))
-			//early exit (return the node itself)
-			return SingleDirectionalPathSummary.ofNode(start);
+			//early exit
+			return new Edge[0];
 
 		//the node immediately preceding a given node on the cheapest path from start to the given node currently known
 		final var predecessorTree = new HashMap<Node, Edge>();
@@ -84,7 +82,7 @@ public class AStarPathFinder implements PathFindingStrategy{
 				if(seenNodes.contains(toNode))
 					continue;
 
-				final var newScore = gScores.get(fromNode) + calculator.calculateWeight(edge);
+				final var newScore = gScores.get(fromNode) + heuristic(edge.getFrom(), edge.getTo());
 				if(newScore < gScores.getOrDefault(toNode, Double.POSITIVE_INFINITY)){
 					gScores.put(toNode, newScore);
 					predecessorTree.put(toNode, edge);
@@ -105,7 +103,7 @@ public class AStarPathFinder implements PathFindingStrategy{
 
 	/** Estimates the cost to reach the final node from given node (emissionProbability). */
 	private double heuristic(final Node from, final Node to){
-		return calculator.calculateWeight(from, to);
+		return calculator.calculateWeight(from.getPoint(), to.getPoint());
 	}
 
 }

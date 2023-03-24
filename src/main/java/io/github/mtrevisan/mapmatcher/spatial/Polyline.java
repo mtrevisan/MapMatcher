@@ -113,48 +113,57 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		return (points != null && points[0].equals(points[points.length - 1]));
 	}
 
+	public Polyline prepend(final Point... points){
+		final int oldSize = points.length;
+		final Point[] newPoints = Arrays.copyOf(points, oldSize + this.points.length);
+		System.arraycopy(this.points, 0, newPoints, oldSize, this.points.length);
+		return of(factory, newPoints);
+	}
+
+	public Polyline append(final Point... points){
+		final int oldSize = this.points.length;
+		final Point[] newPoints = Arrays.copyOf(this.points, oldSize + points.length);
+		System.arraycopy(points, 0, newPoints, oldSize, points.length);
+		return of(factory, newPoints);
+	}
+
+//	public Polyline appendPoint(final Point point){
+//		final int oldSize = points.length;
+//		final Point[] newPoints = Arrays.copyOf(points, oldSize + 1);
+//		newPoints[oldSize] = point;
+//		return of(factory, newPoints);
+//	}
+
+//	public Polyline deleteLastPoint(){
+//		return points[0].factory.createPolyline(Arrays.copyOf(points, points.length - 1));
+//	}
+
 	public Polyline reverse(){
 		final Point[] reversedPoints = Arrays.copyOf(points, points.length);
-		reverse(reversedPoints);
+		ArrayHelper.reverse(reversedPoints);
 		return of(factory, reversedPoints);
 	}
 
-	/**
-	 * Reverses the order of the given array.
-	 *
-	 * @param array	The array to reverse in place.
-	 */
-	private static void reverse(final Point[] array){
-		int i = 0;
-		int j = array.length - 1;
-		Point tmp;
-		while(j > i){
-			tmp = array[j];
-			array[j] = array[i];
-			array[i] = tmp;
-
-			j --;
-			i ++;
-		}
-	}
-
 	public Point[][] cut(final Point point){
+		if(points.length < 2)
+			return new Point[][]{points, new Point[0]};
+
 		final double atdToPoint = alongTrackDistance(point);
 		double cumulativeDistance = 0.;
-		int pointBeforeOrOnIndex = 0;
+		int pointBeforeOrOnIndex = (atdToPoint == 0.? 0: -1);
 		boolean pointOnNode = false;
-		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
 		for(int i = 1; i < points.length; i ++){
-			final Point startPoint = points[i - 1];
-			final Point endPoint = points[i];
-			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
-			final double onTrackDistance = startPoint.distance(closestPoint);
+			final double onTrackDistance = points[i - 1].distance(points[i]);
 			cumulativeDistance += onTrackDistance;
+			if(cumulativeDistance > atdToPoint)
+				break;
 
-			if(cumulativeDistance <= atdToPoint){
-				pointBeforeOrOnIndex = i;
-				pointOnNode = (onTrackDistance == 0.);
-			}
+			pointBeforeOrOnIndex = i - 1;
+			pointOnNode = (cumulativeDistance == atdToPoint);
+		}
+		if(cumulativeDistance == atdToPoint){
+			pointBeforeOrOnIndex ++;
+			pointOnNode = true;
 		}
 
 
@@ -178,7 +187,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		for(int i = 1; i < points.length; i ++){
 			final Point closestPoint = topologyCalculator.onTrackClosestPoint(points[i - 1], points[i], point);
 			final double xtd = point.distance(closestPoint);
-			if(xtd < minClosestPointDistance){
+			if(xtd <= minClosestPointDistance){
 				minClosestPointDistance = xtd;
 				minClosestPoint = closestPoint;
 			}
@@ -187,28 +196,20 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	}
 
 	public double alongTrackDistance(final Point point){
-		double atd = 0.;
-		double xtd = 0.;
-		double minClosestPointDistance = Double.MAX_VALUE;
 		double cumulativeDistance = 0.;
+		double minClosestPointDistance = Double.MAX_VALUE;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
 		for(int i = 1; i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
 			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
-
-			final double onTrackDistance = startPoint.distance(closestPoint);
-			cumulativeDistance += onTrackDistance;
-
-			xtd = point.distance(closestPoint);
-			if(xtd < minClosestPointDistance){
+			final double xtd = point.distance(closestPoint);
+			if(xtd <= minClosestPointDistance){
 				minClosestPointDistance = xtd;
-
-				atd += cumulativeDistance;
-				cumulativeDistance = 0.;
+				cumulativeDistance += startPoint.distance(endPoint);
 			}
 		}
-		return (xtd >= 0.? atd: -1.);
+		return cumulativeDistance;
 	}
 
 
