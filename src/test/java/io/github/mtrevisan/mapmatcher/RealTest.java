@@ -78,7 +78,7 @@ public class RealTest{
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(194.))
+			.withPlugin(new ShortestPathTransitionPlugin(70.4))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
@@ -98,9 +98,10 @@ public class RealTest{
 		}
 
 		GPSPoint[] observations = extract("CA202RX", ";");
-//observations = Arrays.copyOfRange(observations, 163, 172);
-//observations = Arrays.copyOfRange(observations, 0, 184);
-observations = Arrays.copyOfRange(observations, 400, 500);
+//FIXME if the observations went from 172 to 182, than then path will become a mess...
+//observations = Arrays.copyOfRange(observations, 172, 182);
+observations = Arrays.copyOfRange(observations, 175, 177);
+//observations = Arrays.copyOfRange(observations, 400, 500);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
@@ -108,10 +109,9 @@ observations = Arrays.copyOfRange(observations, 400, 500);
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-if(path != null){
-	System.out.println("true: [null, null, 12, 12, 7, 5, 0, 0, 0]");
+System.out.println("true: [..., 48, 48, 41, 44, 2, 2, 2, 2, 5, 5, 5, 5, 35, 35, 35, 35]");
+if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
-}
 else
 	System.out.println("path is NULL");
 

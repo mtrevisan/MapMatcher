@@ -117,8 +117,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 				//TODO termination condition: i == m - 1 && currentEdge is best (?)
 
 				for(final Edge toEdge : fromEdge.getOutEdges()){
-					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph,
-						previousObservation, currentObservation, pathFinder);
+					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 
 					final double probability = fScores.get(fromEdge)[previousObservationIndex]
 						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, previousObservation, currentObservation,

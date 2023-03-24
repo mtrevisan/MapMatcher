@@ -92,21 +92,24 @@ public class PathHelper{
 	}
 
 	public static Polyline calculatePathAsPolyline(final Edge fromEdge, final Edge toEdge, final Graph graph,
-			final Point previousObservation, final Point currentObservation, final PathFindingStrategy pathFinder){
+			final PathFindingStrategy pathFinder){
 		if(fromEdge.equals(toEdge))
 			return graph.getFactory().createEmptyPolyline();
 
-		final Node previousNode = fromEdge.getClosestNode(previousObservation);
-		final Node currentNode = toEdge.getClosestNode(currentObservation);
+		//NOTE: not the closest but `fromEdge.getTo()/toEdge.getFrom()`, in order to avoid wrong connection from `fromEdge.getFrom()` to
+		// `currentNode` that does not pass through `fromEdge.getTo()` and `toEdge.getFrom()`
+		final Node previousNode = fromEdge.getTo();
+		final Node currentNode = toEdge.getFrom();
 		final Edge[] pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
 
 		Polyline polylineFromTo = extractEdgesAsPolyline(pathFromTo, graph.getFactory());
 		if(!polylineFromTo.isEmpty()){
 			//prepend previousNode path start
-			Point[][] fromCut = fromEdge.getPath().cut(previousNode.getPoint());
+			final Polyline fromEdgePath = fromEdge.getPath();
+			Point[][] fromCut = fromEdgePath.cut(previousNode.getPoint());
 			polylineFromTo = polylineFromTo.prepend(fromCut[1]);
 			//append currentNode to path end
-			fromCut = fromEdge.getPath().cut(currentNode.getPoint());
+			fromCut = fromEdgePath.cut(currentNode.getPoint());
 			polylineFromTo = polylineFromTo.append(fromCut[0]);
 		}
 

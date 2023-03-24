@@ -37,6 +37,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -184,7 +185,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			return null;
 
 		final Collection<Edge> graphEdges = graph.edges();
-		final Map<Edge, double[]> score = new HashMap<>();
+		final Map<Edge, Map<Integer, Double>> score = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
 		//calculate the initial probability:
@@ -197,8 +198,9 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		final int n = graphEdges.size();
 		final int m = observations.length;
 		for(final Edge edge : graphEdgesNearCurrentObservation){
-			score.computeIfAbsent(edge, k -> new double[m])[currentObservationIndex] = initialProbabilityCalculator.initialProbability(edge)
+			final double probability = initialProbabilityCalculator.initialProbability(edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, null);
+			score.computeIfAbsent(edge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
 			path.computeIfAbsent(edge, k -> new Edge[m])[currentObservationIndex] = edge;
 		}
 
@@ -207,6 +209,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		while(true){
 			final Point previousObservation = observations[previousObservationIndex];
 			currentObservationIndex = extractNextObservation(observations, previousObservationIndex + 1);
+if(currentObservationIndex == observations.length - 1)
+	System.out.println();
 			if(currentObservationIndex < 0)
 				break;
 
@@ -225,18 +229,19 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph,
-						previousObservation, currentObservation, pathFinder);
+					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 
-					final double probability = (score.containsKey(fromEdge)? score.get(fromEdge)[previousObservationIndex]: 0.)
+					double probability = score.getOrDefault(fromEdge, Collections.emptyMap())
+							.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY)
 						//calculate the state transition probability matrix
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, previousObservation, currentObservation,
-						pathAsPolyline);
-					if(probability <= minProbability){
+						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge,
+							previousObservation, currentObservation, pathAsPolyline);
+					if(/*Double.isFinite(probability) &&*/ probability <= minProbability){
 						//record minimum probability
 						minProbability = probability;
-						score.computeIfAbsent(toEdge, k -> new double[m])[currentObservationIndex] = probability
-							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
+						probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
+						if(Double.isFinite(probability))
+							score.computeIfAbsent(toEdge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,
@@ -253,16 +258,31 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			previousObservationIndex = currentObservationIndex;
 		}
 
+//previousObservationIndex=180;
 		minProbability = Double.POSITIVE_INFINITY;
 		Edge minProbabilityEdge = null;
-		for(final Edge edge : graphEdges){
-			final double[] fScore = score.get(edge);
-			final double edgeScore = (fScore != null? fScore[previousObservationIndex]: 0.);
-			if(edgeScore > 0. && edgeScore < minProbability){
+//		for(final Edge edge : graphEdges){
+		for(final Edge edge : path.keySet()){
+//			//TODO find the index for which the score is less than +Inf?
+//			int index = -1;
+//			for(int i = previousObservationIndex; i >= 0; i --)
+//				if(fScore[previousObservationIndex] < Double.POSITIVE_INFINITY){
+//					index = i;
+//					break;
+//				}
+//			if(index < 0)
+//				continue;
+//
+//			final double edgeScore = fScore[index];
+
+			final double edgeScore = score.getOrDefault(edge, Collections.emptyMap())
+				.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY);
+			if(edgeScore <= minProbability){
 				minProbability = edgeScore;
 				minProbabilityEdge = edge;
 			}
 		}
+		//TODO from all the paths with the same minProbability, choose the one with the least edges
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
 	}
 

@@ -35,6 +35,8 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
+import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -111,8 +113,8 @@ class ViterbiMapMatchingTest{
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
-		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			new DistanceCalculator(topologyCalculator));
+		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
+		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator, distanceCalculator);
 
 		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
@@ -152,8 +154,16 @@ class ViterbiMapMatchingTest{
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
 
+		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
+		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
+		if(connectedPath.length > 0)
+			System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
+
+		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
+
 		final String expected = "[null, 0, 0, 0, 3, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
+		Assertions.assertEquals("LINESTRING (12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044)", pathPolyline.toString());
 	}
 
 	@Test
