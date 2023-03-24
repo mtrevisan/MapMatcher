@@ -190,6 +190,10 @@ public class PathHelper{
 		final Set<Polyline> observedEdges = new HashSet<>(0);
 		for(int i = 0; i < observations.length; ){
 			final Point observation = observations[i];
+			if(observation == null){
+				i ++;
+				continue;
+			}
 
 			//construct the envelope
 			final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
@@ -199,7 +203,7 @@ public class PathHelper{
 			//skip observations inside current envelope
 			do{
 				i ++;
-			}while(i < observations.length && envelope.intersects(observations[i]));
+			}while(i < observations.length && observations[i] != null && envelope.intersects(observations[i]));
 
 			//add observed edges to final set
 			observedEdges.addAll(tree.query(envelope));
@@ -216,15 +220,22 @@ public class PathHelper{
 			final GPSPositionSpeedFilter kalmanFilter = new GPSPositionSpeedFilter(3., 5.);
 			feasibleObservations[0] = observations[0];
 			for(int i = 1; i < observations.length; i ++){
-				kalmanFilter.updatePosition(observations[i].getY(), observations[i].getX(),
-					ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observations[i].getTimestamp()));
+				final GPSPoint observation = observations[i];
+				if(observation == null)
+					continue;
+
+				kalmanFilter.updatePosition(observation.getY(), observation.getX(),
+					ChronoUnit.SECONDS.between(observations[i - 1].getTimestamp(), observation.getTimestamp()));
 				final double[] position = kalmanFilter.getPosition();
-				feasibleObservations[i] = GPSPoint.of(position[1], position[0], observations[i].getTimestamp());
+				feasibleObservations[i] = GPSPoint.of(position[1], position[0], observation.getTimestamp());
 			}
 
 			//step 2. Retain all observation that are within a certain radius from an edge
 			for(int i = 0; i < feasibleObservations.length; i ++){
 				final GPSPoint observation = feasibleObservations[i];
+				if(observation == null)
+					continue;
+
 				final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
 				final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
 				final Envelope envelope = Envelope.of(northEast, southWest);

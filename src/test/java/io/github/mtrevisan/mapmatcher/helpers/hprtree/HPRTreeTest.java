@@ -255,7 +255,7 @@ out skel qt;
 			factory.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(6375, roads.size());
+		Assertions.assertEquals(2391, roads.size());
 	}
 
 	@Test

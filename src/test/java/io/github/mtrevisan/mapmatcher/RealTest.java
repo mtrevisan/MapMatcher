@@ -91,7 +91,7 @@ public class RealTest{
 		}
 
 		GPSPoint[] observations = extract("CA202RX", ";");
-observations = Arrays.copyOfRange(observations, 163, 172);
+//observations = Arrays.copyOfRange(observations, 163, 172);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
@@ -103,6 +103,8 @@ if(path != null){
 	System.out.println("true: [null, null, 12, 12, 7, 5, 0, 0, 0]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 }
+else
+	System.out.println("path is NULL");
 
 		final PathFindingStrategy pathFinder = new AStarPathFinder(edgeWeightCalculator);
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);

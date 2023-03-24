@@ -200,10 +200,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		for(final Edge edge : graphEdgesNearCurrentObservation){
 			score.computeIfAbsent(edge, k -> new double[m])[currentObservationIndex] = initialProbabilityCalculator.initialProbability(edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, null);
-			path.computeIfAbsent(edge, k -> new Edge[n])[currentObservationIndex] = edge;
+			path.computeIfAbsent(edge, k -> new Edge[m])[currentObservationIndex] = edge;
 		}
-
-		final GeometryFactory factory = graph.getFactory();
 
 		double minProbability;
 		int previousObservationIndex = currentObservationIndex;
