@@ -105,12 +105,9 @@ public class PathHelper{
 		Polyline polylineFromTo = extractEdgesAsPolyline(pathFromTo, graph.getFactory());
 		if(!polylineFromTo.isEmpty()){
 			//prepend previousNode path start
-			final Polyline fromEdgePath = fromEdge.getPath();
-			Point[][] fromCut = fromEdgePath.cut(previousNode.getPoint());
-			polylineFromTo = polylineFromTo.prepend(fromCut[1]);
+			polylineFromTo = polylineFromTo.prepend(fromEdge.getPath().getPoints());
 			//append currentNode to path end
-			fromCut = fromEdgePath.cut(currentNode.getPoint());
-			polylineFromTo = polylineFromTo.append(fromCut[0]);
+			polylineFromTo = polylineFromTo.append(toEdge.getPath().getPoints());
 		}
 
 		return polylineFromTo;

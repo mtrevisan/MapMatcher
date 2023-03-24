@@ -109,7 +109,7 @@ observations = Arrays.copyOfRange(observations, 175, 177);
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("true: [..., 48, 48, 41, 44, 2, 2, 2, 2, 5, 5, 5, 5, 35, 35, 35, 35]");
+System.out.println("true: [5, 16]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 else

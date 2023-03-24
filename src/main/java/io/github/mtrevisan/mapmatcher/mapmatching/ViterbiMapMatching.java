@@ -209,8 +209,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		while(true){
 			final Point previousObservation = observations[previousObservationIndex];
 			currentObservationIndex = extractNextObservation(observations, previousObservationIndex + 1);
-if(currentObservationIndex == observations.length - 1)
-	System.out.println();
 			if(currentObservationIndex < 0)
 				break;
 
