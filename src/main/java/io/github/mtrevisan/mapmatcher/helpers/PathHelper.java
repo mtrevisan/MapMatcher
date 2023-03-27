@@ -180,6 +180,13 @@ public class PathHelper{
 	}
 
 
+	public static int extractNextObservation(final Point[] observations, int index){
+		final int m = observations.length;
+		while(index < m && observations[index] == null)
+			index ++;
+		return (index < m? index: -1);
+	}
+
 	/**
 	 * Extract a set of candidate road links within a certain distance to all observation.
 	 * <p>
@@ -197,12 +204,9 @@ public class PathHelper{
 	public static Collection<Polyline> extractObservedEdges(final HPRtree<Polyline> tree, final Point[] observations,
 			final double threshold){
 		final Set<Polyline> observedEdges = new HashSet<>(0);
-		for(int i = 0; i < observations.length; ){
-			final Point observation = observations[i];
-			if(observation == null){
-				i ++;
-				continue;
-			}
+		int currentObservationIndex = PathHelper.extractNextObservation(observations, 0);
+		while(currentObservationIndex >= 0){
+			final Point observation = observations[currentObservationIndex];
 
 			//construct the envelope
 			final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
@@ -211,8 +215,8 @@ public class PathHelper{
 
 			//skip observations inside current envelope
 			do{
-				i ++;
-			}while(i < observations.length && observations[i] != null && envelope.intersects(observations[i]));
+				currentObservationIndex = PathHelper.extractNextObservation(observations, currentObservationIndex + 1);
+			}while(currentObservationIndex >= 0 && envelope.intersects(observations[currentObservationIndex]));
 
 			//add observed edges to final set
 			observedEdges.addAll(tree.query(envelope));

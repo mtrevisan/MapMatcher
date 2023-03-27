@@ -71,7 +71,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 	@Override
 	public Edge[] findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
-		int i = extractNextObservation(observations, 0);
+		int i = PathHelper.extractNextObservation(observations, 0);
 		if(i < 0)
 			//no observations: cannot calculate path
 			return null;
@@ -105,7 +105,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		int previousObservationIndex = i;
 		while(true){
 			final Point previousObservation = observations[previousObservationIndex];
-			i = extractNextObservation(observations, previousObservationIndex + 1);
+			i = PathHelper.extractNextObservation(observations, previousObservationIndex + 1);
 			if(i < 0)
 				break;
 
@@ -168,13 +168,6 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			}
 		}
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
-	}
-
-	private static int extractNextObservation(final Point[] observations, int index){
-		final int m = observations.length;
-		while(index < m && observations[index] == null)
-			index ++;
-		return (index < m? index: -1);
 	}
 
 	/**

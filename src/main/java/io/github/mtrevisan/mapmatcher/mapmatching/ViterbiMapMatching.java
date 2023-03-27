@@ -179,7 +179,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			//no graph: cannot calculate path
 			return null;
 
-		int currentObservationIndex = extractNextObservation(observations, 0);
+		int currentObservationIndex = PathHelper.extractNextObservation(observations, 0);
 		if(currentObservationIndex < 0)
 			//no observations: cannot calculate path
 			return null;
@@ -208,7 +208,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		int previousObservationIndex = currentObservationIndex;
 		while(true){
 			final Point previousObservation = observations[previousObservationIndex];
-			currentObservationIndex = extractNextObservation(observations, previousObservationIndex + 1);
+			currentObservationIndex = PathHelper.extractNextObservation(observations, previousObservationIndex + 1);
 			if(currentObservationIndex < 0)
 				break;
 
@@ -227,6 +227,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
+if(fromEdge.getID().equals("7") && toEdge.getID().equals("8"))
+	System.out.println();
 					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 
 					double probability = score.getOrDefault(fromEdge, Collections.emptyMap())
@@ -282,13 +284,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		}
 		//TODO from all the paths with the same minProbability, choose the one with the least edges
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
-	}
-
-	private static int extractNextObservation(final Point[] observations, int index){
-		final int m = observations.length;
-		while(index < m && observations[index] == null)
-			index ++;
-		return (index < m? index: -1);
 	}
 
 }

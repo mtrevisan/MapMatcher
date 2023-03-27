@@ -99,7 +99,12 @@ public class RealTest{
 
 		GPSPoint[] observations = extract("CA202RX", ";");
 //observations = Arrays.copyOfRange(observations, 172, 182);
+
 //FIXME if the observations went from 176 to 182, than then path will become a mess...
+//https://www1.pub.informatik.uni-wuerzburg.de/pub/haunert/pdf/HaunertBudig2012.pdf
+//test/resources/ijgi-11-00538-v2.pdf
+
+//observations = Arrays.copyOfRange(observations, 176, 182);
 observations = Arrays.copyOfRange(observations, 176, 182);
 //observations = Arrays.copyOfRange(observations, 400, 500);
 
