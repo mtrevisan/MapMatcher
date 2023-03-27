@@ -154,8 +154,8 @@ public class GeodeticHelper{
 			//calculate Along-Track Distance [rad]
 			double atd;
 			if(firstIteration){
-				final double a = StrictMath.sin((Math.PI / 2. + angleAP) / 2.);
-				final double b = StrictMath.sin((Math.PI / 2. - angleAP) / 2.);
+				final double a = StrictMath.sin((Math.PI + angleAP * 2.) / 4.);
+				final double b = StrictMath.sin((Math.PI - angleAP * 2.) / 4.);
 				final double c = StrictMath.tan((distanceStartToPoint - xtd) / 2.);
 				atd = 2. * EARTH_EQUATORIAL_RADIUS * StrictMath.atan((a / b) * c);
 			}

@@ -78,7 +78,7 @@ public class RealTest{
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(70.4))
+			.withPlugin(new ShortestPathTransitionPlugin(150.))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
@@ -98,9 +98,9 @@ public class RealTest{
 		}
 
 		GPSPoint[] observations = extract("CA202RX", ";");
-//FIXME if the observations went from 172 to 182, than then path will become a mess...
 //observations = Arrays.copyOfRange(observations, 172, 182);
-observations = Arrays.copyOfRange(observations, 175, 177);
+//FIXME if the observations went from 176 to 182, than then path will become a mess...
+observations = Arrays.copyOfRange(observations, 176, 182);
 //observations = Arrays.copyOfRange(observations, 400, 500);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);

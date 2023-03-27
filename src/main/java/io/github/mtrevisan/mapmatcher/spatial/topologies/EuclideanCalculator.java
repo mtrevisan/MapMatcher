@@ -123,7 +123,7 @@ public class EuclideanCalculator implements TopologyCalculator{
 		final double uy = startPoint.getY() - point.getY();
 		final double vu = vx * ux + vy * uy;
 		final double vv = vx * vx + vy * vy;
-		final double t = - vu / vv;
+		final double t = -vu / vv;
 		if(t >= 0 && t <= 1){
 			final GeometryFactory factory = startPoint.getFactory();
 			return vectorToSegment(t, factory.createPoint(0., 0.), startPoint, endPoint);

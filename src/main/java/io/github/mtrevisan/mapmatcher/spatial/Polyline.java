@@ -191,19 +191,30 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	}
 
 	public double alongTrackDistance(final Point point){
-		double cumulativeDistance = 0.;
 		double minClosestPointDistance = Double.MAX_VALUE;
+		//on or before
+		int minClosestPointIndex = 0;
+		Point minClosestPoint = points[0];
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
 		for(int i = 1; i < points.length; i ++){
-			final Point startPoint = points[i - 1];
-			final Point endPoint = points[i];
-			final Point closestPoint = topologyCalculator.onTrackClosestPoint(startPoint, endPoint, point);
+			final Point closestPoint = topologyCalculator.onTrackClosestPoint(points[i - 1], points[i], point);
 			final double xtd = point.distance(closestPoint);
 			if(xtd <= minClosestPointDistance){
 				minClosestPointDistance = xtd;
-				cumulativeDistance += startPoint.distance(endPoint);
+				minClosestPointIndex = i - 1;
+				minClosestPoint = closestPoint;
 			}
 		}
+
+		double cumulativeDistance = 0.;
+		for(int i = 1; i <= minClosestPointIndex; i ++)
+			cumulativeDistance += points[i - 1].distance(points[i]);
+		if(minClosestPointIndex < points.length - 1){
+			final Point startPoint = points[minClosestPointIndex];
+			if(!startPoint.equals(minClosestPoint))
+				cumulativeDistance += startPoint.distance(minClosestPoint);
+		}
+
 		return cumulativeDistance;
 	}
 
