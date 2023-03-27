@@ -104,14 +104,21 @@ public class RealTest{
 //https://www1.pub.informatik.uni-wuerzburg.de/pub/haunert/pdf/HaunertBudig2012.pdf
 //test/resources/ijgi-11-00538-v2.pdf
 
-//observations = Arrays.copyOfRange(observations, 176, 182);
-observations = Arrays.copyOfRange(observations, 170, 185);
+observations = Arrays.copyOfRange(observations, 176, 182);
+//observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 400, 500);
 
 		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
 
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
+		//estimated noise
+		final Point[] observationNoises = new Point[filteredObservations.length];
+		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
+		for(int i = 0; i < filteredObservations.length; i ++)
+			if(filteredObservations[i] != null)
+				observationNoises[i] = factory.createPoint(Math.abs(filteredObservations[i].getX() - observations[i].getX()),
+					Math.abs(filteredObservations[i].getY() - observations[i].getY()));
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 System.out.println("true: [5, 16]");
@@ -125,7 +132,6 @@ else
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final List<Polyline> pathPolylines = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 if(!pathPolylines.isEmpty()){
 	final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
