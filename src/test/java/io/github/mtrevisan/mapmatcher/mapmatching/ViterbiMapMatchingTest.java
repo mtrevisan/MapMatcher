@@ -156,8 +156,6 @@ class ViterbiMapMatchingTest{
 
 		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
-		if(connectedPath.length > 0)
-			System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
 		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 

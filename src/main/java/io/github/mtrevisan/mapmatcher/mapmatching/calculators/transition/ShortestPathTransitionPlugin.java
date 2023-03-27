@@ -69,8 +69,6 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
-if(fromSegment.getID().equals("8") && toSegment.getID().equals("16"))
-	System.out.println();
 		if(fromSegment.equals(toSegment)){
 			final double observationsDistance = previousObservation.distance(currentObservation);
 			final Polyline segmentPath = fromSegment.getPath();

@@ -115,24 +115,19 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 	public Polyline prepend(final Point... points){
 		final int oldSize = points.length;
-		final Point[] newPoints = Arrays.copyOf(points, oldSize + this.points.length);
-		System.arraycopy(this.points, 0, newPoints, oldSize, this.points.length);
+		final int skip = (this.points[0].equals(points[oldSize - 1])? 1: 0);
+		final Point[] newPoints = Arrays.copyOf(points, oldSize + this.points.length - skip);
+		System.arraycopy(this.points, skip, newPoints, oldSize, this.points.length - skip);
 		return of(factory, newPoints);
 	}
 
 	public Polyline append(final Point... points){
 		final int oldSize = this.points.length;
-		final Point[] newPoints = Arrays.copyOf(this.points, oldSize + points.length);
-		System.arraycopy(points, 0, newPoints, oldSize, points.length);
+		final int skip = (this.points[this.points.length - 1].equals(points[0])? 1: 0);
+		final Point[] newPoints = Arrays.copyOf(this.points, oldSize + points.length - skip);
+		System.arraycopy(points, skip, newPoints, oldSize, points.length - skip);
 		return of(factory, newPoints);
 	}
-
-//	public Polyline appendPoint(final Point point){
-//		final int oldSize = points.length;
-//		final Point[] newPoints = Arrays.copyOf(points, oldSize + 1);
-//		newPoints[oldSize] = point;
-//		return of(factory, newPoints);
-//	}
 
 //	public Polyline deleteLastPoint(){
 //		return points[0].factory.createPolyline(Arrays.copyOf(points, points.length - 1));

@@ -93,8 +93,9 @@ public class PathHelper{
 
 	public static Polyline calculatePathAsPolyline(final Edge fromEdge, final Edge toEdge, final Graph graph,
 			final PathFindingStrategy pathFinder){
+		final GeometryFactory factory = graph.getFactory();
 		if(fromEdge.equals(toEdge))
-			return graph.getFactory().createEmptyPolyline();
+			return factory.createEmptyPolyline();
 
 		//NOTE: not the closest but `fromEdge.getTo()/toEdge.getFrom()`, in order to avoid wrong connection from `fromEdge.getFrom()` to
 		// `currentNode` that does not pass through `fromEdge.getTo()` and `toEdge.getFrom()`
@@ -102,12 +103,20 @@ public class PathHelper{
 		final Node currentNode = toEdge.getFrom();
 		final Edge[] pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
 
-		Polyline polylineFromTo = extractEdgesAsPolyline(pathFromTo, graph.getFactory());
-		if(!polylineFromTo.isEmpty()){
-			//prepend previousNode path start
-			polylineFromTo = polylineFromTo.prepend(fromEdge.getPath().getPoints());
-			//append currentNode to path end
-			polylineFromTo = polylineFromTo.append(toEdge.getPath().getPoints());
+		Polyline polylineFromTo;
+		final Point[] fromPath = fromEdge.getPath().getPoints();
+		final Point[] toPath = toEdge.getPath().getPoints();
+		if(previousNode.equals(currentNode)){
+			final Point[] points = Arrays.copyOf(fromPath, fromPath.length + toPath.length);
+			System.arraycopy(toPath, 0, points, fromPath.length, toPath.length);
+			polylineFromTo = factory.createPolyline(removeConsecutiveDuplicates(points));
+		}
+		else{
+			polylineFromTo = extractEdgesAsPolyline(pathFromTo, factory);
+			if(!polylineFromTo.isEmpty())
+				//prepend previousNode path start, append currentNode to path end
+				polylineFromTo = polylineFromTo.prepend(fromPath)
+					.append(toPath);
 		}
 
 		return polylineFromTo;
@@ -137,17 +146,17 @@ public class PathHelper{
 
 	private static Point[] removeConsecutiveDuplicates(final Point[] input){
 		int distinctIndex = 0;
-		int numOfRemoved = 0;
+		int removedCount = 0;
 		for(int i = 1; i < input.length; i ++){
 			if(input[i].equals(input[distinctIndex]))
-				numOfRemoved ++;
+				removedCount ++;
 			else{
 				distinctIndex = i;
-				if(numOfRemoved > 0)
-					input[i - numOfRemoved] = input[i];
+				if(removedCount > 0)
+					input[i - removedCount] = input[i];
 			}
 		}
-		return (numOfRemoved > 0? Arrays.copyOfRange(input, 0, input.length - numOfRemoved): input);
+		return (removedCount > 0? Arrays.copyOfRange(input, 0, input.length - removedCount): input);
 	}
 
 	public static boolean isSegmentsTheSame(final Edge fromSegment, final Edge toSegment){
