@@ -52,6 +52,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.StringJoiner;
 
 
@@ -149,10 +150,10 @@ else
 if(connectedPath.length > 0)
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
 
-		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
-if(pathPolyline != null && !pathPolyline.isEmpty()){
+		final List<Polyline> pathPolylines = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
+if(!pathPolylines.isEmpty()){
 	final StringJoiner sj = new StringJoiner(", ", "GEOMETRYCOLLECTION (", ")");
-	if(!pathPolyline.isEmpty())
+	for(final Polyline pathPolyline : pathPolylines)
 		sj.add(pathPolyline.toString());
 	for(final GPSPoint point : filteredObservations)
 		if(point != null)

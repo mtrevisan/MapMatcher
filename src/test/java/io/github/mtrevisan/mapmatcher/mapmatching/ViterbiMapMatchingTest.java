@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Test;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 
 class ViterbiMapMatchingTest{
@@ -149,7 +150,7 @@ class ViterbiMapMatchingTest{
 
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
-		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
+		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
@@ -157,11 +158,12 @@ class ViterbiMapMatchingTest{
 		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
 
-		final Polyline pathPolyline = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
+		final List<Polyline> pathPolylines = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 
-		final String expected = "[null, 0, 0, 0, 3, 1, 1, 1, null, null]";
+		final String expected = "[null, 0, 0-rev, 0-rev, 3-rev, 1, 1-rev, 1-rev, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
-		Assertions.assertEquals("LINESTRING (12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044)", pathPolyline.toString());
+		Assertions.assertEquals("LINESTRING (12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.238140517207398 45.65897415921759, 12.159747628109386 45.66132709541773, 12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.238140517207398 45.65897415921759, 12.25545428412434 45.61054896081151)", pathPolylines.get(0).toString());
+		Assertions.assertEquals("LINESTRING (12.25545428412434 45.61054896081151, 12.238140517207398 45.65897415921759, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044, 12.200627355552967 45.732876303059044, 12.242949896905884 45.69828882177029, 12.238140517207398 45.65897415921759)", pathPolylines.get(1).toString());
 	}
 
 	@Test

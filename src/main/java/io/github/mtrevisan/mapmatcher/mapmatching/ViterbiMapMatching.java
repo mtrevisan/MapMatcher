@@ -33,6 +33,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.Transit
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
@@ -221,6 +222,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 			//calculate the emission probability matrix
 			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
+
+			final GeometryFactory factory = graph.getFactory();
 
 			final Map<Edge, Edge[]> newPath = new HashMap<>(n);
 			for(final Edge toEdge : graphEdgesNearCurrentObservation){
