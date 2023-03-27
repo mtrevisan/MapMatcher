@@ -113,12 +113,12 @@ observations = Arrays.copyOfRange(observations, 176, 182);
 
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 		//estimated noise
-		final Point[] observationNoises = new Point[filteredObservations.length];
+		final double[] observationNoises = new double[filteredObservations.length];
 		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		for(int i = 0; i < filteredObservations.length; i ++)
 			if(filteredObservations[i] != null)
-				observationNoises[i] = factory.createPoint(Math.abs(filteredObservations[i].getX() - observations[i].getX()),
-					Math.abs(filteredObservations[i].getY() - observations[i].getY()));
+				observationNoises[i] = StrictMath.hypot(filteredObservations[i].getX() - observations[i].getX(),
+					filteredObservations[i].getY() - observations[i].getY());
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 System.out.println("true: [5, 16]");
