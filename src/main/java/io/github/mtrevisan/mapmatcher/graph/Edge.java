@@ -39,11 +39,19 @@ public class Edge{
 	protected final Node from;
 	protected final Node to;
 	protected final Polyline path;
+	protected boolean offRoad;
 
 
 	public static Edge createDirectEdge(final Node from, final Node to){
 		final GeometryFactory factory = from.getPoint().getFactory();
 		return new Edge(from, to, factory.createPolyline(from.getPoint(), to.getPoint()));
+	}
+
+	public static Edge createDirectOffRoadEdge(final Node from, final Node to){
+		final GeometryFactory factory = from.getPoint().getFactory();
+		final Edge edge = new Edge(from, to, factory.createPolyline(from.getPoint(), to.getPoint()));
+		edge.offRoad = true;
+		return edge;
 	}
 
 	public static Edge createDirectEdge(final Node from, final Node to, final Polyline path){
@@ -105,6 +113,10 @@ public class Edge{
 
 	public Edge reversed(){
 		return createDirectEdge(to, from, path.reverse());
+	}
+
+	public boolean isOffRoad(){
+		return offRoad;
 	}
 
 	@Override

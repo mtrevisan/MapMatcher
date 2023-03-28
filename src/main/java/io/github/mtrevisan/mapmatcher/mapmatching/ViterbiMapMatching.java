@@ -26,6 +26,7 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
@@ -37,9 +38,11 @@ import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -192,10 +195,17 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		//calculate the initial probability:
 		Point currentObservation = observations[currentObservationIndex];
 		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
+		//TODO consider emission probability for off-road segments...
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		Collection<Edge> graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
 			? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
 			: graphEdges);
+
+		final boolean offRoad = transitionProbabilityCalculator.isOffRoad();
+		if(offRoad)
+			//augment graphEdgesNearCurrentObservation with an edge between a candidate from an edge and currentObservation
+			graphEdgesNearCurrentObservation = calculateOffRoadEdges(graphEdgesNearCurrentObservation, observations, currentObservationIndex);
+
 		final int n = graphEdges.size();
 		final int m = observations.length;
 		for(final Edge edge : graphEdgesNearCurrentObservation){
@@ -215,10 +225,13 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 			currentObservation = observations[currentObservationIndex];
 			//select the road links near the GPS points withing a certain distance
-			Collection<Edge> graphEdgesNearPreviousObservation = graphEdgesNearCurrentObservation;
+			final Collection<Edge> graphEdgesNearPreviousObservation = graphEdgesNearCurrentObservation;
 			graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
 				? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
 				: graphEdges);
+			if(offRoad)
+				//augment graphEdgesNearCurrentObservation with an edge between a candidate from an edge and currentObservation
+				graphEdgesNearCurrentObservation = calculateOffRoadEdges(graphEdgesNearCurrentObservation, observations, currentObservationIndex);
 
 			//calculate the emission probability matrix
 			emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
@@ -230,8 +243,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-if(fromEdge.getID().equals("7") && toEdge.getID().equals("8"))
-	System.out.println();
 					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 
 					double probability = score.getOrDefault(fromEdge, Collections.emptyMap())
@@ -287,6 +298,20 @@ if(fromEdge.getID().equals("7") && toEdge.getID().equals("8"))
 		}
 		//TODO from all the paths with the same minProbability, choose the one with the least edges
 		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
+	}
+
+	private static List<Edge> calculateOffRoadEdges(final Collection<Edge> candidateEdges, final Point[] observations,
+			final int observationIndex){
+		final Node observationNode = Node.of(String.valueOf(observationIndex), observations[observationIndex]);
+		final List<Edge> augmentedEdges = new ArrayList<>(candidateEdges.size() * 3);
+		augmentedEdges.addAll(candidateEdges);
+		for(final Edge candidateEdge : candidateEdges){
+			final Point candidatePoint = candidateEdge.getPath().onTrackClosestPoint(observations[observationIndex]);
+			final Node candidateNode = Node.of("obs" + observationIndex + "[" + candidateEdge.getID() + "]", candidatePoint);
+			augmentedEdges.add(Edge.createDirectOffRoadEdge(candidateNode, observationNode));
+			augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, candidateNode));
+		}
+		return augmentedEdges;
 	}
 
 }

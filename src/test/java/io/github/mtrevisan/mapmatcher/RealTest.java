@@ -78,7 +78,8 @@ public class RealTest{
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(150.))
+			.withPlugin(new ShortestPathTransitionPlugin(90.)
+				.withOffRoad())
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
@@ -89,7 +90,7 @@ public class RealTest{
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			distanceCalculator);
 
-		Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
+		final Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
 			.toArray(Polyline[]::new);
 		final HPRtree<Polyline> tree = new HPRtree<>();
 		for(final Polyline road : roads){
@@ -104,11 +105,12 @@ public class RealTest{
 //https://www1.pub.informatik.uni-wuerzburg.de/pub/haunert/pdf/HaunertBudig2012.pdf
 //test/resources/ijgi-11-00538-v2.pdf
 
-observations = Arrays.copyOfRange(observations, 176, 182);
+//observations = Arrays.copyOfRange(observations, 176, 182);
+observations = Arrays.copyOfRange(observations, 160, 169);
 //observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 400, 500);
 
-		Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
+		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
 
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
@@ -119,6 +121,7 @@ observations = Arrays.copyOfRange(observations, 176, 182);
 			if(filteredObservations[i] != null)
 				observationNoises[i] = StrictMath.hypot(filteredObservations[i].getX() - observations[i].getX(),
 					filteredObservations[i].getY() - observations[i].getY());
+System.out.println("observation noises: " + Arrays.toString(observationNoises));
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
 System.out.println("true: [5, 16]");

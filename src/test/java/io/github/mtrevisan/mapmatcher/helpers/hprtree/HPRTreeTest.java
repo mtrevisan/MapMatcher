@@ -203,7 +203,7 @@ out skel qt;
 			else{
 				//split
 				for(final Point cutpoint : cutpoints){
-					final Point[][] pls = polyline.cut(cutpoint);
+					final Point[][] pls = polyline.cutOnNode(cutpoint);
 					if(pls[0].length > 1){
 						splitPolylines.add(FACTORY.createPolyline(pls[0]));
 						polyline = FACTORY.createPolyline(pls[1]);

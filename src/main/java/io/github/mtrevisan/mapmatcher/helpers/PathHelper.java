@@ -58,11 +58,11 @@ public class PathHelper{
 		final int size = (path != null? path.length: 0);
 		final List<Edge> connectedPath = new ArrayList<>(size);
 		if(size > 0){
-			int previousIndex = extractNextNonNullEdge(path, 0);
+			int previousIndex = nextNonNullEdge(path, 0);
 			if(previousIndex >= 0)
 				connectedPath.add(path[previousIndex]);
 			while(true){
-				final int currentIndex = extractNextNonNullEdge(path, previousIndex + 1);
+				final int currentIndex = nextNonNullEdge(path, previousIndex + 1);
 				if(currentIndex < 0)
 					break;
 
@@ -74,7 +74,8 @@ public class PathHelper{
 						final Edge[] edgePath = pathFinder.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph);
 						for(int i = 0; i < edgePath.length; i ++)
 							connectedPath.add(edgePath[i]);
-						connectedPath.add(null);
+						if(edgePath.length == 0)
+							connectedPath.add(null);
 						connectedPath.add(path[currentIndex]);
 					}
 				}
@@ -85,7 +86,7 @@ public class PathHelper{
 		return connectedPath.toArray(Edge[]::new);
 	}
 
-	private static int extractNextNonNullEdge(final Edge[] path, int index){
+	private static int nextNonNullEdge(final Edge[] path, int index){
 		final int m = path.length;
 		while(index < m && path[index] == null)
 			index ++;
@@ -110,7 +111,7 @@ public class PathHelper{
 		if(previousNode.equals(currentNode)){
 			final Point[] points = Arrays.copyOf(fromPath, fromPath.length + toPath.length);
 			System.arraycopy(toPath, 0, points, fromPath.length, toPath.length);
-			polylineFromTo = factory.createPolyline(removeConsecutiveDuplicates(points));
+			polylineFromTo = factory.createPolyline(points);
 		}
 		else{
 			final List<Polyline> polylines = extractEdgesAsPolyline(pathFromTo, factory);
@@ -147,21 +148,6 @@ public class PathHelper{
 				result.add(factory.createPolyline(mergedPoints.toArray(Point[]::new)));
 		}
 		return result;
-	}
-
-	private static Point[] removeConsecutiveDuplicates(final Point[] input){
-		int distinctIndex = 0;
-		int removedCount = 0;
-		for(int i = 1; i < input.length; i ++){
-			if(input[i].equals(input[distinctIndex]))
-				removedCount ++;
-			else{
-				distinctIndex = i;
-				if(removedCount > 0)
-					input[i - removedCount] = input[i];
-			}
-		}
-		return (removedCount > 0? Arrays.copyOfRange(input, 0, input.length - removedCount): input);
 	}
 
 	public static boolean isSegmentsTheSame(final Edge fromSegment, final Edge toSegment){

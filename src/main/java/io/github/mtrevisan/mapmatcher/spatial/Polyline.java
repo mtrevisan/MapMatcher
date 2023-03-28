@@ -39,6 +39,10 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 	private static final String SPACE = " ";
 
+	private enum CutType{
+		HARD, SOFT
+	}
+
 
 	private final Point[] points;
 
@@ -51,9 +55,24 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		super(factory);
 
 		if(points != null)
-			this.points = points;
+			this.points = removeConsecutiveDuplicates(points);
 		else
 			this.points = new Point[0];
+	}
+
+	private static Point[] removeConsecutiveDuplicates(final Point[] input){
+		int distinctIndex = 0;
+		int removedCount = 0;
+		for(int i = 1; i < input.length; i ++){
+			if(input[i].equals(input[distinctIndex]))
+				removedCount ++;
+			else{
+				distinctIndex = i;
+				if(removedCount > 0)
+					input[i - removedCount] = input[i];
+			}
+		}
+		return (removedCount > 0? Arrays.copyOfRange(input, 0, input.length - removedCount): input);
 	}
 
 	public boolean isEmpty() {
@@ -129,45 +148,64 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		return of(factory, newPoints);
 	}
 
-//	public Polyline deleteLastPoint(){
-//		return points[0].factory.createPolyline(Arrays.copyOf(points, points.length - 1));
-//	}
-
 	public Polyline reverse(){
 		final Point[] reversedPoints = Arrays.copyOf(points, points.length);
 		ArrayHelper.reverse(reversedPoints);
 		return of(factory, reversedPoints);
 	}
 
-	public Point[][] cut(final Point point){
+	/**
+	 * Cut the polyline on the closest node on polyline.
+	 *
+	 * @param point	The cut point.
+	 * @return	An array of polyline {@link Point}s, the first before the cut, the second after the cut. The polylines have the cut point
+	 * 	in common.
+	 */
+	public Point[][] cutOnNode(final Point point){
+		return cut(point, CutType.SOFT);
+	}
+
+	/**
+	 * Cut the polyline exactly on the closest point on polyline, possibly creating a new node.
+	 *
+	 * @param point	The cut point.
+	 * @return	An array of polyline {@link Point}s, the first before the cut, the second after the cut. The polylines have the cut point
+	 * 	in common.
+	 */
+	public Point[][] cutHard(final Point point){
+		return cut(point, CutType.HARD);
+	}
+
+	private Point[][] cut(final Point point, final CutType cutType){
 		if(points.length < 2)
 			return new Point[][]{points, new Point[0]};
 
-		final double atdToPoint = alongTrackDistance(point);
+		final Point onTrackClosestPoint = onTrackClosestPoint(point);
+		final double atdToPoint = alongTrackDistance(onTrackClosestPoint);
 		double cumulativeDistance = 0.;
-		int pointBeforeOrOnIndex = (atdToPoint == 0.? 0: -1);
-		boolean pointOnNode = false;
+		int cutPointBeforeOrOnIndex = 0;
 		for(int i = 1; i < points.length; i ++){
 			final double onTrackDistance = points[i - 1].distance(points[i]);
 			cumulativeDistance += onTrackDistance;
 			if(cumulativeDistance > atdToPoint)
 				break;
 
-			pointBeforeOrOnIndex = i - 1;
-			pointOnNode = (cumulativeDistance == atdToPoint);
+			cutPointBeforeOrOnIndex = i;
 		}
-		if(cumulativeDistance == atdToPoint){
-			pointBeforeOrOnIndex ++;
-			pointOnNode = true;
-		}
+		final boolean cutPointOnNode = (cumulativeDistance == atdToPoint);
 
 
-		final int beforeSize = pointBeforeOrOnIndex + 1;
-		final int afterSize = points.length - pointBeforeOrOnIndex - (pointOnNode? 0: 1);
-		final Point[] before = new Point[beforeSize];
-		final Point[] after = new Point[afterSize];
+		final int beforeSize = cutPointBeforeOrOnIndex + 1;
+		final int afterSize = points.length - cutPointBeforeOrOnIndex - (cutPointOnNode? 0: 1);
+		final int hardCutSize = (cutType == CutType.HARD? 1: 0);
+		final Point[] before = new Point[beforeSize + hardCutSize];
+		final Point[] after = new Point[afterSize + hardCutSize];
 		System.arraycopy(points, 0, before, 0, beforeSize);
-		System.arraycopy(points, pointBeforeOrOnIndex + (pointOnNode? 0: 1), after, 0, afterSize);
+		System.arraycopy(points, cutPointBeforeOrOnIndex + (cutPointOnNode? 0: 1), after, hardCutSize, afterSize);
+		if(cutType == CutType.HARD){
+			before[beforeSize] = onTrackClosestPoint;
+			after[0] = onTrackClosestPoint;
+		}
 		return new Point[][]{
 			before,
 			after

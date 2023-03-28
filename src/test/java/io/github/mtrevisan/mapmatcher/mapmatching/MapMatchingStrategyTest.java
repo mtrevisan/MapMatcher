@@ -81,7 +81,7 @@ class MapMatchingStrategyTest{
 		final PathFindingStrategy pathFinder = new AStarPathFinder(new DistanceCalculator(topologyCalculator));
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
 
-		Assertions.assertArrayEquals(new Edge[]{pathEdge0, pathEdge2, null, pathEdge4}, connectedPath);
+		Assertions.assertArrayEquals(new Edge[]{pathEdge0, pathEdge2, pathEdge4}, connectedPath);
 	}
 
 }

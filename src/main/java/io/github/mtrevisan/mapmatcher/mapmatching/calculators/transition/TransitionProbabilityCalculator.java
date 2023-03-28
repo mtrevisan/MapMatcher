@@ -51,4 +51,11 @@ public class TransitionProbabilityCalculator{
 		return factor;
 	}
 
+	public boolean isOffRoad(){
+		for(final TransitionProbabilityPlugin plugin : plugins)
+			if(plugin instanceof ShortestPathTransitionPlugin spt)
+				return spt.isOffRoad();
+		return false;
+	}
+
 }
