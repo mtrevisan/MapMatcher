@@ -30,10 +30,10 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import java.util.Collection;
 
 
-public interface EmissionProbabilityCalculator{
+public abstract class EmissionProbabilityCalculator{
 
-	void updateEmissionProbability(Point observation, Collection<Edge> edges);
+	public void updateEmissionProbability(final Point observation, final Collection<Edge> edges){}
 
-	double emissionProbability(Point observation, Edge segment, Point previousObservation);
+	abstract public double emissionProbability(Point observation, Edge segment, Point previousObservation);
 
 }

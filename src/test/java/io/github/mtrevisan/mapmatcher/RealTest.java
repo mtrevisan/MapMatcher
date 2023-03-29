@@ -103,6 +103,7 @@ public class RealTest{
 
 //FIXME if the observations went from 176 to 182, than then path will become a mess...
 //https://www1.pub.informatik.uni-wuerzburg.de/pub/haunert/pdf/HaunertBudig2012.pdf
+//https://kops.uni-konstanz.de/server/api/core/bitstreams/324b2478-0f44-496a-a276-4463237646f8/content
 //test/resources/ijgi-11-00538-v2.pdf
 
 //observations = Arrays.copyOfRange(observations, 176, 182);
@@ -124,7 +125,7 @@ observations = Arrays.copyOfRange(observations, 160, 169);
 System.out.println("observation noises: " + Arrays.toString(observationNoises));
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
-System.out.println("true: [5, 16]");
+System.out.println("true: [null, null, null, null, null, 11, 11, 6, 4]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 else

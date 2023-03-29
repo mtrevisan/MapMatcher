@@ -30,16 +30,10 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import java.util.Collection;
 
 
-public interface InitialProbabilityCalculator{
+public abstract class InitialProbabilityCalculator{
 
-	void calculateInitialProbability(Point observation, Collection<Edge> segments);
+	public void calculateInitialProbability(final Point observation, final Collection<Edge> segments){}
 
-	double initialProbability(Edge segment);
-
-
-
-	static double logPr(final double probability){
-		return -StrictMath.log(probability);
-	}
+	public abstract double initialProbability(Edge segment);
 
 }

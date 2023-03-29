@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.ProbabilityHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class BayesianEmissionCalculator implements EmissionProbabilityCalculator{
+public class BayesianEmissionCalculator extends EmissionProbabilityCalculator{
 
 	private final Map<Edge, Double> emissionProbability = new HashMap<>();
 
@@ -59,9 +59,9 @@ public class BayesianEmissionCalculator implements EmissionProbabilityCalculator
 		}
 
 		//step 5. Calculate ln(Pr(p_i | r_j))
-		final double logCumulativeProbability = InitialProbabilityCalculator.logPr(cumulativeProbability);
+		final double logCumulativeProbability = ProbabilityHelper.logPr(cumulativeProbability);
 		for(final Edge edge : edges){
-			final double logProbability = InitialProbabilityCalculator.logPr(emissionProbability.get(edge)) - logCumulativeProbability;
+			final double logProbability = ProbabilityHelper.logPr(emissionProbability.get(edge)) - logCumulativeProbability;
 			emissionProbability.put(edge, logProbability);
 		}
 	}

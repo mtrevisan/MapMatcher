@@ -25,14 +25,12 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.ProbabilityHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
-import java.util.Collection;
 
-
-public class GaussianEmissionCalculator implements EmissionProbabilityCalculator{
+public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 
 	private static final double K1 = 2. / StrictMath.PI;
 	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
@@ -52,9 +50,6 @@ public class GaussianEmissionCalculator implements EmissionProbabilityCalculator
 		this.observationStandardDeviation = observationStandardDeviation;
 	}
 
-
-	@Override
-	public void updateEmissionProbability(final Point observation, final Collection<Edge> edges){}
 
 	/**
 	 * Calculate emission probability
@@ -87,9 +82,9 @@ public class GaussianEmissionCalculator implements EmissionProbabilityCalculator
 
 		//expansion of:
 		//final double probability = Math.exp(-0.5 * tau * tmp) / (StrictMath.sqrt(2. * Math.PI) * observationStandardDeviation);
-		//return InitialProbabilityCalculator.logPr(probability);
+		//return ProbabilityHelper.logPr(probability);
 		//in order to overcome overflow on exponential
-		return 0.5 * tau * tmp - InitialProbabilityCalculator.logPr(K2 * observationStandardDeviation);
+		return 0.5 * tau * tmp - ProbabilityHelper.logPr(K2 * observationStandardDeviation);
 	}
 
 }

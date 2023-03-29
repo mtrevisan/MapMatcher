@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.ProbabilityHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
@@ -33,13 +33,13 @@ import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 
-	private static final double PROBABILITY_SAME_POINT = 0.;
+	private static final double LOG_PR_SAME_EDGE = 0.;
 
 
 	@Override
 	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
-		double logPr = PROBABILITY_SAME_POINT;
+		double logPr = LOG_PR_SAME_EDGE;
 		final Point previousOnSegmentPoint = fromSegment.getPath().onTrackClosestPoint(previousObservation);
 		final Point currentOnSegmentPoint = toSegment.getPath().onTrackClosestPoint(currentObservation);
 		if(!previousOnSegmentPoint.equals(currentOnSegmentPoint)){
@@ -51,7 +51,7 @@ public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 			final double observationInitialBearing = topologyCalculator.initialBearing(previousObservation, currentObservation);
 
 			final double angleDelta = Math.abs(observationInitialBearing - onPathInitialBearing);
-			logPr = InitialProbabilityCalculator.logPr(Math.abs(StrictMath.cos(Math.toRadians(Math.min(360. - angleDelta, angleDelta)))));
+			logPr = ProbabilityHelper.logPr(Math.abs(StrictMath.cos(Math.toRadians(Math.min(360. - angleDelta, angleDelta)))));
 		}
 		return logPr;
 	}
