@@ -31,6 +31,6 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 public interface TransitionProbabilityPlugin{
 
-	double factor(Edge fromSegment, Edge toSegment, Point previousObservation, Point currentObservation, Polyline path);
+	double factor(Edge fromEdge, Edge toEdge, Point previousObservation, Point currentObservation, Polyline path);
 
 }

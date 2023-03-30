@@ -37,11 +37,11 @@ public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 
 
 	@Override
-	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
+	public double factor(final Edge fromEdge, final Edge toEdge, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
 		double logPr = LOG_PR_SAME_EDGE;
-		final Point previousOnSegmentPoint = fromSegment.getPath().onTrackClosestPoint(previousObservation);
-		final Point currentOnSegmentPoint = toSegment.getPath().onTrackClosestPoint(currentObservation);
+		final Point previousOnSegmentPoint = fromEdge.getPath().onTrackClosestPoint(previousObservation);
+		final Point currentOnSegmentPoint = toEdge.getPath().onTrackClosestPoint(currentObservation);
 		if(!previousOnSegmentPoint.equals(currentOnSegmentPoint)){
 			//direction from previous to current projection on the segments
 			final TopologyCalculator topologyCalculator = currentObservation.getDistanceCalculator();

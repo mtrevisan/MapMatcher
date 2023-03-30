@@ -83,16 +83,14 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	 * @see <a href="https://www1.pub.informatik.uni-wuerzburg.de/pub/haunert/pdf/HaunertBudig2012.pdf">An algorithm for Map Matching given incomplete road data</a>
 	 */
 	@Override
-	public double factor(final Edge fromSegment, final Edge toSegment, final Point previousObservation, final Point currentObservation,
-			Polyline path){
-if(fromSegment.isOffRoad() && toSegment.isOffRoad())
-	System.out.println();
-		final double logPrOffRoadFactor = calculateOffRoadFactor(fromSegment, toSegment);
+	public double factor(final Edge fromEdge, final Edge toEdge, final Point previousObservation, final Point currentObservation,
+			final Polyline path){
+		final double logPrOffRoadFactor = calculateOffRoadFactor(fromEdge, toEdge);
 
-		if(fromSegment.equals(toSegment))
+		if(fromEdge.equals(toEdge))
 			return LOG_PR_SAME_EDGE
 				+ logPrOffRoadFactor
-				+ calculateLogPr(previousObservation, currentObservation, fromSegment.getPath());
+				+ calculateLogPr(previousObservation, currentObservation, fromEdge.getPath());
 
 		if(path.isEmpty())
 			return LOG_PR_UNCONNECTED_EDGES;
@@ -102,14 +100,14 @@ if(fromSegment.isOffRoad() && toSegment.isOffRoad())
 			+ calculateLogPr(previousObservation, currentObservation, path);
 	}
 
-	private static double calculateOffRoadFactor(final Edge fromSegment, final Edge toSegment){
+	private static double calculateOffRoadFactor(final Edge fromEdge, final Edge toEdge){
 		double logPrOffRoadFactor;
-		if(!fromSegment.isOffRoad())
-			//`offRoadFactor = 1 / (phi + 1)` or `phi / (phi + 1)`, whether `toSegment` is off-road or not
-			logPrOffRoadFactor = (toSegment.isOffRoad()? 0.: LOG_PR_PHI) - LOG_PR_PHI_1;
+		if(!fromEdge.isOffRoad())
+			//`offRoadFactor = 1 / (phi + 1)` or `phi / (phi + 1)`, whether `toEdge` is off-road or not
+			logPrOffRoadFactor = (toEdge.isOffRoad()? 0.: LOG_PR_PHI) - LOG_PR_PHI_1;
 		else
-			//`offRoadFactor = 1 / (psi + 1)` or `psi / (psi + 1)`, whether `toSegment` is off-road or not
-			logPrOffRoadFactor = (toSegment.isOffRoad()? 0.: LOG_PR_PSI) - LOG_PR_PSI_1;
+			//`offRoadFactor = 1 / (psi + 1)` or `psi / (psi + 1)`, whether `toEdge` is off-road or not
+			logPrOffRoadFactor = (toEdge.isOffRoad()? 0.: LOG_PR_PSI) - LOG_PR_PSI_1;
 		return logPrOffRoadFactor;
 	}
 

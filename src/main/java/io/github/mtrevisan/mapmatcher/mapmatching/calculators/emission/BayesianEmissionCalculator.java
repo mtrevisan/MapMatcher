@@ -38,34 +38,6 @@ public class BayesianEmissionCalculator extends EmissionProbabilityCalculator{
 	private final Map<Edge, Double> emissionProbability = new HashMap<>();
 
 
-	@Override
-	public void updateEmissionProbability(final Point observation, final Collection<Edge> edges){
-		//step 1. Calculate dist(p_i, r_j)
-		//step 2. Calculate sum(k=1..n of dist(p_i, r_k))
-		double cumulativeDistance = 0.;
-		for(final Edge edge : edges){
-			final double distance = observation.distance(edge.getPath());
-			emissionProbability.put(edge, distance);
-			cumulativeDistance += distance;
-		}
-
-		//step 3. Calculate Pr(r_j | p_i)
-		//step 4. Calculate sum(k=1..n of Pr(r_k | p_i))
-		double cumulativeProbability = 0.;
-		for(final Edge edge : edges){
-			final double probability = cumulativeDistance / emissionProbability.get(edge);
-			emissionProbability.put(edge, probability);
-			cumulativeProbability += probability;
-		}
-
-		//step 5. Calculate ln(Pr(p_i | r_j))
-		final double logCumulativeProbability = ProbabilityHelper.logPr(cumulativeProbability);
-		for(final Edge edge : edges){
-			final double logProbability = ProbabilityHelper.logPr(emissionProbability.get(edge)) - logCumulativeProbability;
-			emissionProbability.put(edge, logProbability);
-		}
-	}
-
 	/**
 	 * Calculate emission probability
 	 * <p>
@@ -79,9 +51,39 @@ public class BayesianEmissionCalculator extends EmissionProbabilityCalculator{
 	 * proportion, first it's computed the probability of the perpendicular distance from GPS point <code>o_i</code> to the segment
 	 * <code>r_j<code> over the summation of the distances from <code>o_i</code> to all the candidate segments, and then use reciprocal
 	 * relation of the probability based on distances to approximate observation probability.
-	 * This leads to: <code>Pr(r_j | o_i) = 1 / (δ(o_i, r_j) / sum(k=1..n of δ(o_i, r_k)))</code>
+	 * This leads to: <code>Pr(r_j | o_i) = (1 / δ(o_i, r_j)) / sum(k=1..n of 1 / δ(o_i, r_k))</code> and
 	 * </p>
+	 *
+	 * @see <a href="https://www.mdpi.com/2220-9964/6/11/327">Enhanced map-matching algorithm with a hidden markov model for mobile phone positioning</a>
 	 */
+	@Override
+	public void updateEmissionProbability(final Point observation, final Collection<Edge> edges){
+		//step 1. Calculate 1 / dist(o_i, r_j)
+		//step 2. Calculate sum(k=1..n of 1 / dist(o_i, r_k))
+		double cumulative = 0.;
+		for(final Edge edge : edges){
+			final double distance = 1. / observation.distance(edge.getPath());
+			emissionProbability.put(edge, distance);
+			cumulative += distance;
+		}
+
+		//step 3. Calculate Pr(r_j | o_i)
+		//step 4. Calculate sum(k=1..n of Pr(r_k | o_i))
+		double cumulativeProbability = 0.;
+		for(final Edge edge : edges){
+			final double probability = emissionProbability.get(edge) / cumulative;
+			emissionProbability.put(edge, probability);
+			cumulativeProbability += probability;
+		}
+
+		//step 5. Calculate -ln(Pr(o_i | r_j))
+		final double logPrCumulativeProbability = ProbabilityHelper.logPr(cumulativeProbability);
+		for(final Edge edge : edges){
+			final double logProbability = ProbabilityHelper.logPr(emissionProbability.get(edge)) - logPrCumulativeProbability;
+			emissionProbability.put(edge, logProbability);
+		}
+	}
+
 	@Override
 	public double emissionProbability(final Point observation, final Edge segment, final Point previousObservation){
 		return emissionProbability.getOrDefault(segment, Double.POSITIVE_INFINITY);

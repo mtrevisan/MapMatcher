@@ -29,6 +29,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 
@@ -43,11 +44,12 @@ public class TransitionProbabilityCalculator{
 		return this;
 	}
 
-	public final double transitionProbability(final Edge fromSegment, final Edge toSegment,
+	public final double transitionProbability(final Edge fromEdge, final Edge toEdge,
 			final Point previousObservation, final Point currentObservation, final Polyline path){
 		double factor = 0.;
-		for(final TransitionProbabilityPlugin plugin : plugins)
-			factor += plugin.factor(fromSegment, toSegment, previousObservation, currentObservation, path);
+		final Iterator<TransitionProbabilityPlugin> itr = plugins.iterator();
+		while(itr.hasNext() && Double.isFinite(factor))
+			factor += itr.next().factor(fromEdge, toEdge, previousObservation, currentObservation, path);
 		return factor;
 	}
 

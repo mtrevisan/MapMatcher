@@ -150,17 +150,17 @@ public class PathHelper{
 		return result;
 	}
 
-	public static boolean isSegmentsTheSame(final Edge fromSegment, final Edge toSegment){
-		return fromSegment.equals(toSegment);
+	public static boolean isEdgesTheSame(final Edge fromEdge, final Edge toEdge){
+		return fromEdge.equals(toEdge);
 	}
 
-	public static boolean isSegmentsTheSameOrReversed(final Edge fromSegment, final Edge toSegment){
-		return (fromSegment.equals(toSegment) || isSegmentsReversed(fromSegment, toSegment));
+	public static boolean isEdgesTheSameOrReversed(final Edge fromEdge, final Edge toEdge){
+		return (fromEdge.equals(toEdge) || isEdgesReversed(fromEdge, toEdge));
 	}
 
-	public static boolean isSegmentsReversed(final Edge fromSegment, final Edge toSegment){
-		return (fromSegment.getFrom().getPoint().equals(toSegment.getTo().getPoint())
-			&& fromSegment.getTo().getPoint().equals(toSegment.getFrom().getPoint()));
+	public static boolean isEdgesReversed(final Edge fromEdge, final Edge toEdge){
+		return (fromEdge.getFrom().getPoint().equals(toEdge.getTo().getPoint())
+			&& fromEdge.getTo().getPoint().equals(toEdge.getFrom().getPoint()));
 	}
 
 	public static boolean isGoingBackward(final Point previousObservation, final Point currentObservation, final Polyline polyline){

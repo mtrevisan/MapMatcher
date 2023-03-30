@@ -86,7 +86,8 @@ public class RealTest{
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 				distanceCalculator)
-			.withOffRoad();
+			.withOffRoad()
+			;
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			distanceCalculator);
 

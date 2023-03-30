@@ -251,8 +251,10 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
+if(fromEdge.getID().equals("11") && toEdge.getID().equals("6-obs6[12]"))
+	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
-					if(offRoad && path.isEmpty())
+					if(offRoad && pathAsPolyline.isEmpty())
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);
 
 					double probability = score.getOrDefault(fromEdge, Collections.emptyMap())
@@ -342,22 +344,18 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		return augmentedEdges;
 	}
 
-	private static Polyline calculateOffRoadPath(final Edge fromSegment, final Edge toSegment, Polyline path){
-		if(fromSegment.isOffRoad()){
-			final Point candidatePoint = toSegment.getPath().onTrackClosestPoint(fromSegment.getFrom().getPoint());
-			if(candidatePoint.equals(fromSegment.getTo().getPoint())){
-				final Point[][] cut = toSegment.getPath().cutHard(candidatePoint);
-				path = fromSegment.getPath()
-					.append(cut[1]);
-			}
+	private static Polyline calculateOffRoadPath(final Edge fromEdge, final Edge toEdge, Polyline path){
+		if(fromEdge.isOffRoad()){
+			final Point candidatePoint = toEdge.getPath().onTrackClosestPoint(fromEdge.getTo().getPoint());
+			final Point[][] cut = toEdge.getPath().cutHard(candidatePoint);
+			path = fromEdge.getPath()
+				.append(cut[1]);
 		}
-		else if(toSegment.isOffRoad()){
-			final Point candidatePoint = fromSegment.getPath().onTrackClosestPoint(toSegment.getTo().getPoint());
-			if(candidatePoint.equals(toSegment.getFrom().getPoint())){
-				final Point[][] cut = fromSegment.getPath().cutHard(candidatePoint);
-				path = toSegment.getPath()
-					.prepend(cut[0]);
-			}
+		else if(toEdge.isOffRoad()){
+			final Point candidatePoint = fromEdge.getPath().onTrackClosestPoint(toEdge.getTo().getPoint());
+			final Point[][] cut = fromEdge.getPath().cutHard(candidatePoint);
+			path = toEdge.getPath()
+				.prepend(cut[0]);
 		}
 		return path;
 	}
