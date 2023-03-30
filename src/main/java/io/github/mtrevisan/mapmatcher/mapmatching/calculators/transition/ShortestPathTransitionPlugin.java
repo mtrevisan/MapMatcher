@@ -54,8 +54,6 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	private final double inverseRateParameter;
 	private final double logPrInverseRateParameter;
 
-	private boolean offRoad;
-
 
 	/**
 	 * @param rateParameter	The <code>β</code> parameter of an exponential probability distribution.
@@ -63,16 +61,6 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	public ShortestPathTransitionPlugin(final double rateParameter){
 		inverseRateParameter = 1. / rateParameter;
 		logPrInverseRateParameter = ProbabilityHelper.logPr(inverseRateParameter);
-	}
-
-	public ShortestPathTransitionPlugin withOffRoad(){
-		offRoad = true;
-
-		return this;
-	}
-
-	public boolean isOffRoad(){
-		return offRoad;
 	}
 
 	/**
@@ -99,15 +87,12 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 			Polyline path){
 if(fromSegment.isOffRoad() && toSegment.isOffRoad())
 	System.out.println();
-		final double logPrOffRoadFactor = (offRoad? calculateOffRoadFactor(fromSegment, toSegment): 0.);
+		final double logPrOffRoadFactor = calculateOffRoadFactor(fromSegment, toSegment);
 
 		if(fromSegment.equals(toSegment))
 			return LOG_PR_SAME_EDGE
 				+ logPrOffRoadFactor
 				+ calculateLogPr(previousObservation, currentObservation, fromSegment.getPath());
-
-		if(offRoad && path.isEmpty())
-			path = calculateOffRoadPath(fromSegment, toSegment, path);
 
 		if(path.isEmpty())
 			return LOG_PR_UNCONNECTED_EDGES;
@@ -142,26 +127,6 @@ if(fromSegment.isOffRoad() && toSegment.isOffRoad())
 		//in order to overcome overflow on exponential
 		return logPrInverseRateParameter
 			+ Math.abs(observationsDistance - pathDistance) * inverseRateParameter;
-	}
-
-	private static Polyline calculateOffRoadPath(final Edge fromSegment, final Edge toSegment, Polyline path){
-		if(fromSegment.isOffRoad()){
-			final Point candidatePoint = toSegment.getPath().onTrackClosestPoint(fromSegment.getFrom().getPoint());
-			if(candidatePoint.equals(fromSegment.getTo().getPoint())){
-				final Point[][] cut = toSegment.getPath().cutHard(candidatePoint);
-				path = fromSegment.getPath()
-					.append(cut[1]);
-			}
-		}
-		else if(toSegment.isOffRoad()){
-			final Point candidatePoint = fromSegment.getPath().onTrackClosestPoint(toSegment.getTo().getPoint());
-			if(candidatePoint.equals(toSegment.getFrom().getPoint())){
-				final Point[][] cut = fromSegment.getPath().cutHard(candidatePoint);
-				path = toSegment.getPath()
-					.prepend(cut[0]);
-			}
-		}
-		return path;
 	}
 
 }

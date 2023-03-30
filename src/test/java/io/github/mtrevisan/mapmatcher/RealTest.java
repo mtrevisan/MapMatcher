@@ -78,15 +78,15 @@ public class RealTest{
 		// correct segment
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(90.)
-				.withOffRoad())
+			.withPlugin(new ShortestPathTransitionPlugin(90.))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
 //		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-			distanceCalculator);
+				distanceCalculator)
+			.withOffRoad();
 //		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 //			distanceCalculator);
 

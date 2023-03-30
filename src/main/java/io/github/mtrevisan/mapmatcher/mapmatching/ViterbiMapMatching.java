@@ -66,6 +66,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 	private final EmissionProbabilityCalculator emissionProbabilityCalculator;
 
 	private final PathFindingStrategy pathFinder;
+	private boolean offRoad;
 
 
 	public ViterbiMapMatching(final InitialProbabilityCalculator initialProbabilityCalculator,
@@ -77,6 +78,12 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		this.emissionProbabilityCalculator = emissionProbabilityCalculator;
 
 		pathFinder = new AStarPathFinder(edgeWeightCalculator);
+	}
+
+	public ViterbiMapMatching withOffRoad(){
+		offRoad = true;
+
+		return this;
 	}
 
 	/*static class Label{
@@ -200,7 +207,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		Collection<Edge> graphEdgesNearCurrentObservation = (graph.canHaveEdgesNear() && edgesNearObservationThreshold > 0.
 			? graph.getEdgesNear(currentObservation, edgesNearObservationThreshold)
 			: graphEdges);
-		final boolean offRoad = transitionProbabilityCalculator.isOffRoad();
 		if(offRoad)
 			//augment graphEdgesNearCurrentObservation with an edge between a candidate from an edge and currentObservation
 			graphEdgesNearCurrentObservation = calculateOffRoadEdges(graphEdgesNearCurrentObservation, observations, -1, currentObservationIndex);
@@ -245,7 +251,9 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
+					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
+					if(offRoad && path.isEmpty())
+						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);
 
 					double probability = score.getOrDefault(fromEdge, Collections.emptyMap())
 							.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY)
@@ -332,6 +340,26 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode));
 		}
 		return augmentedEdges;
+	}
+
+	private static Polyline calculateOffRoadPath(final Edge fromSegment, final Edge toSegment, Polyline path){
+		if(fromSegment.isOffRoad()){
+			final Point candidatePoint = toSegment.getPath().onTrackClosestPoint(fromSegment.getFrom().getPoint());
+			if(candidatePoint.equals(fromSegment.getTo().getPoint())){
+				final Point[][] cut = toSegment.getPath().cutHard(candidatePoint);
+				path = fromSegment.getPath()
+					.append(cut[1]);
+			}
+		}
+		else if(toSegment.isOffRoad()){
+			final Point candidatePoint = fromSegment.getPath().onTrackClosestPoint(toSegment.getTo().getPoint());
+			if(candidatePoint.equals(toSegment.getFrom().getPoint())){
+				final Point[][] cut = fromSegment.getPath().cutHard(candidatePoint);
+				path = toSegment.getPath()
+					.prepend(cut[0]);
+			}
+		}
+		return path;
 	}
 
 }
