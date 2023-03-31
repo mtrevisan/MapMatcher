@@ -85,18 +85,11 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	@Override
 	public double factor(final Edge fromEdge, final Edge toEdge, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
-		final double logPrOffRoadFactor = calculateOffRoadFactor(fromEdge, toEdge);
-
-		if(fromEdge.equals(toEdge))
-			return LOG_PR_SAME_EDGE
-				+ logPrOffRoadFactor
-				+ calculateLogPr(previousObservation, currentObservation, fromEdge.getPath());
-
 		if(path.isEmpty())
 			return LOG_PR_UNCONNECTED_EDGES;
 
-		return LOG_PR_DIFFERENT_EDGE
-			+ logPrOffRoadFactor
+		return (fromEdge.equals(toEdge)? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE)
+			+ calculateOffRoadFactor(fromEdge, toEdge)
 			+ calculateLogPr(previousObservation, currentObservation, path);
 	}
 

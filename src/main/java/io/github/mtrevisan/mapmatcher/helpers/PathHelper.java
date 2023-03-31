@@ -97,7 +97,7 @@ public class PathHelper{
 			final PathFindingStrategy pathFinder){
 		final GeometryFactory factory = graph.getFactory();
 		if(fromEdge.equals(toEdge))
-			return factory.createEmptyPolyline();
+			return fromEdge.getPath();
 
 		//NOTE: not the closest but `fromEdge.getTo()/toEdge.getFrom()`, in order to avoid wrong connection from `fromEdge.getFrom()` to
 		// `currentNode` that does not pass through `fromEdge.getTo()` and `toEdge.getFrom()`
