@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -189,7 +190,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 	}*/
 
 	@Override
-	public Edge[] findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
+	public Collection<Edge[]> findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
 		if(graph.isEmpty())
 			//no graph: cannot calculate path
 			return null;
@@ -251,21 +252,23 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-if(fromEdge.getID().equals("11") && toEdge.getID().equals("6-obs6[12]"))
-	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);
 
 					double probability = score.getOrDefault(fromEdge, Collections.emptyMap())
-							.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY)
-						//calculate the state transition probability matrix
-						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge,
+						.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY);
+					if(Double.isFinite(probability))
+						probability += transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge,
 							previousObservation, currentObservation, pathAsPolyline);
+
 					if(/*Double.isFinite(probability) &&*/ probability <= minProbability){
 						//record minimum probability
 						minProbability = probability;
+if(!Double.isFinite(probability + emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation)))
+	System.out.println();
 						probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
+
 						if(Double.isFinite(probability))
 							score.computeIfAbsent(toEdge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
 
@@ -284,32 +287,22 @@ if(fromEdge.getID().equals("11") && toEdge.getID().equals("6-obs6[12]"))
 			previousObservationIndex = currentObservationIndex;
 		}
 
-//previousObservationIndex=180;
 		minProbability = Double.POSITIVE_INFINITY;
-		Edge minProbabilityEdge = null;
-//		for(final Edge edge : graphEdges){
+		final Collection<Edge[]> minProbabilityPaths = new HashSet<>(0);
 		for(final Edge edge : path.keySet()){
-//			//TODO find the index for which the score is less than +Inf?
-//			int index = -1;
-//			for(int i = previousObservationIndex; i >= 0; i --)
-//				if(fScore[previousObservationIndex] < Double.POSITIVE_INFINITY){
-//					index = i;
-//					break;
-//				}
-//			if(index < 0)
-//				continue;
-//
-//			final double edgeScore = fScore[index];
-
 			final double edgeScore = score.getOrDefault(edge, Collections.emptyMap())
 				.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY);
-			if(edgeScore <= minProbability){
-				minProbability = edgeScore;
-				minProbabilityEdge = edge;
-			}
+//			if(Double.isFinite(edgeScore)){
+				if(edgeScore < minProbability){
+					minProbability = edgeScore;
+					minProbabilityPaths.clear();
+					minProbabilityPaths.add(path.get(edge));
+				}
+				else if(edgeScore == minProbability)
+					minProbabilityPaths.add(path.get(edge));
+//			}
 		}
-		//TODO from all the paths with the same minProbability, choose the one with the least edges
-		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
+		return minProbabilityPaths;
 	}
 
 	private static List<Edge> calculateOffRoadEdges(final Collection<Edge> candidateEdges, final Point[] observations,

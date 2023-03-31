@@ -32,6 +32,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
@@ -81,15 +82,12 @@ public class RealTest{
 			.withPlugin(new ShortestPathTransitionPlugin(90.))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
-		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
-//		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 				distanceCalculator)
 			.withOffRoad()
 			;
-//		final MapMatchingStrategy strategy = new AStarMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
-//			distanceCalculator);
 
 		final Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
 			.toArray(Polyline[]::new);
@@ -125,7 +123,9 @@ observations = Arrays.copyOfRange(observations, 160, 169);
 					filteredObservations[i].getY() - observations[i].getY());
 System.out.println("observation noises: " + Arrays.toString(observationNoises));
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 400.);
+
+		final Edge[] path = (paths.size() > 0? paths.iterator().next(): null);
 System.out.println("true: [null, null, null, null, null, 11, 11, 6, 4]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));

@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+@Deprecated
 public class BayesianEmissionCalculator extends EmissionProbabilityCalculator{
 
 	private final Map<Edge, Double> emissionProbability = new HashMap<>();
@@ -62,8 +63,14 @@ public class BayesianEmissionCalculator extends EmissionProbabilityCalculator{
 		//step 2. Calculate sum(k=1..n of 1 / dist(o_i, r_k))
 		double cumulative = 0.;
 		for(final Edge edge : edges){
-			final double distance = 1. / observation.distance(edge.getPath());
-			emissionProbability.put(edge, distance);
+			double distance = observation.distance(edge.getPath());
+			//NOTE: if the projection point is on the extension line of the section, the distance from the trajectory point to the nearest
+			// point of the segment is calculated (see "A self-adjusting online map matching method")
+			if(distance < Double.MIN_VALUE)
+				distance = edge.getPath().onTrackClosestNode(observation).distance(observation);
+			assert (distance >= Double.MIN_VALUE) : "Cannot use bayesian emission calculator because one of the distances is zero";
+
+			emissionProbability.put(edge, 1. / distance);
 			cumulative += distance;
 		}
 

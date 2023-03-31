@@ -32,6 +32,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
@@ -128,8 +129,7 @@ public class Application{
 			.withPlugin(new ShortestPathTransitionPlugin(330.))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
-		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
-//		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(10.);
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			distanceCalculator);
@@ -137,7 +137,9 @@ public class Application{
 //			distanceCalculator);
 
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 400.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 400.);
+		System.out.println("paths: " + paths.size());
+		final Edge[] path = paths.iterator().next();
 if(path != null){
 	System.out.println("true: [null, 0, 0, 0, 0, 1, 1, 1, null, 1]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));

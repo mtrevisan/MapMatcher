@@ -41,6 +41,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -70,7 +71,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	}
 
 	@Override
-	public Edge[] findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
+	public Collection<Edge[]> findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
 		int i = PathHelper.extractNextObservation(observations, 0);
 		if(i < 0)
 			//no observations: cannot calculate path
@@ -80,7 +81,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 
 		final int n = graphEdges.size();
 		final int m = observations.length;
-		final Map<Edge, double[]> fScores = new HashMap<>();
+		final Map<Edge, double[]> score = new HashMap<>();
 		final Map<Edge, Edge[]> path = new HashMap<>();
 
 		//set of discovered nodes that may need to be (re-)expanded
@@ -93,7 +94,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		for(final Edge edge : graphEdges){
 			final double probability = initialProbabilityCalculator.initialProbability(edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, (i > 0? observations[i - 1]: null));
-			fScores.computeIfAbsent(edge, k -> new double[m])[i] = probability;
+			score.computeIfAbsent(edge, k -> new double[m])[i] = probability;
 			path.computeIfAbsent(edge, k -> new Edge[n])[i] = edge;
 
 			final FibonacciHeap.Node<Edge> frontierNode = frontier.add(edge, probability);
@@ -119,11 +120,11 @@ public class AStarMapMatching implements MapMatchingStrategy{
 				for(final Edge toEdge : fromEdge.getOutEdges()){
 					final Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 
-					final double probability = fScores.get(fromEdge)[previousObservationIndex]
+					final double probability = score.get(fromEdge)[previousObservationIndex]
 						+ transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge, previousObservation, currentObservation,
 						pathAsPolyline);
-					if(probability < fScores.get(toEdge)[previousObservationIndex]){
-						fScores.get(toEdge)[i] = probability;
+					if(probability < score.get(toEdge)[previousObservationIndex]){
+						score.get(toEdge)[i] = probability;
 
 						final double newProbability = probability
 							+ emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, (i > 0? observations[i - 1]: null));
@@ -159,15 +160,20 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		}
 
 		double minProbability = Double.POSITIVE_INFINITY;
-		Edge minProbabilityEdge = null;
-		for(final Edge edge : graphEdges){
-			final double[] fScore = fScores.get(edge);
-			if(fScore != null && fScore[previousObservationIndex] < minProbability){
-				minProbability = fScore[previousObservationIndex];
-				minProbabilityEdge = edge;
+		final Collection<Edge[]> minProbabilityPaths = new HashSet<>(0);
+		for(final Edge edge : path.keySet()){
+			final double[] fScore = score.get(edge);
+			if(fScore != null){
+				if(fScore[previousObservationIndex] == minProbability)
+					minProbabilityPaths.add(path.get(edge));
+				else if(fScore[previousObservationIndex] < minProbability){
+					minProbability = fScore[previousObservationIndex];
+					minProbabilityPaths.clear();
+					minProbabilityPaths.add(path.get(edge));
+				}
 			}
 		}
-		return (minProbabilityEdge != null? path.get(minProbabilityEdge): null);
+		return minProbabilityPaths;
 	}
 
 	/**

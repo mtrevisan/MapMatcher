@@ -28,9 +28,11 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
+import java.util.Collection;
+
 
 public interface MapMatchingStrategy{
 
-	Edge[] findPath(Graph graph, Point[] observations, double edgesNearObservationThreshold);
+	Collection<Edge[]> findPath(Graph graph, Point[] observations, double edgesNearObservationThreshold);
 
 }

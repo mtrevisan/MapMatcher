@@ -60,7 +60,7 @@ class ViterbiMapMatchingTest{
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new DistanceCalculator(topologyCalculator));
 
@@ -100,8 +100,10 @@ class ViterbiMapMatchingTest{
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 6_700.);
+		Assertions.assertEquals(1, paths.size());
 
+		final Edge[] path = paths.iterator().next();
 		final String expected = "[null, 0, 0, 0, 3, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
@@ -153,8 +155,10 @@ class ViterbiMapMatchingTest{
 		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 6_700.);
+		Assertions.assertEquals(1, paths.size());
 
+		final Edge[] path = paths.iterator().next();
 		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
 
@@ -212,8 +216,10 @@ class ViterbiMapMatchingTest{
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_400.);
+		Assertions.assertEquals(1, paths.size());
 
+		final Edge[] path = paths.iterator().next();
 		final String expected = "[0, 0, 0, 0, 3, 1, 1, 1, 1, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
@@ -224,7 +230,7 @@ class ViterbiMapMatchingTest{
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new DistanceCalculator(topologyCalculator));
 
@@ -261,9 +267,11 @@ class ViterbiMapMatchingTest{
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_100.);
+		Assertions.assertEquals(1, paths.size());
 
-		final String expected = "[null, null, 3, 2, 2, 2, 2]";
+		final Edge[] path = paths.iterator().next();
+		final String expected = "[null, null, 3, 3, 2, 2, 2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -274,7 +282,7 @@ class ViterbiMapMatchingTest{
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new DistanceCalculator(topologyCalculator));
 
@@ -314,9 +322,11 @@ class ViterbiMapMatchingTest{
 		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_100.);
+		Assertions.assertEquals(1, paths.size());
 
-		final String expected = "[null, 0, 0, 0-rev, 3-rev, 1, 1-rev, 1-rev, null, null]";
+		final Edge[] path = paths.iterator().next();
+		final String expected = "[null, 0, 0-rev, 0-rev, 3-rev, 1, 1-rev, 1-rev, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -367,8 +377,10 @@ class ViterbiMapMatchingTest{
 		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 6_700.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 6_700.);
+		Assertions.assertEquals(1, paths.size());
 
+		final Edge[] path = paths.iterator().next();
 		final String expected = "[null, 0, 0-rev, 0-rev, 3-rev, 1, 1-rev, 1-rev, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
@@ -420,8 +432,10 @@ class ViterbiMapMatchingTest{
 		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_400.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_400.);
+		Assertions.assertEquals(1, paths.size());
 
+		final Edge[] path = paths.iterator().next();
 		final String expected = "[0, 0, 0-rev, 0-rev, 3-rev, 1, 1-rev, 1-rev, 1-rev, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
@@ -432,7 +446,7 @@ class ViterbiMapMatchingTest{
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin());
-		final EmissionProbabilityCalculator emissionCalculator = new BayesianEmissionCalculator();
+		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 			new DistanceCalculator(topologyCalculator));
 
@@ -469,9 +483,11 @@ class ViterbiMapMatchingTest{
 		final Graph graph = PathHelper.extractBidirectionalGraph(observedEdges, 50.);
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
-		final Edge[] path = strategy.findPath(graph, filteredObservations, 8_100.);
+		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_100.);
+		Assertions.assertEquals(1, paths.size());
 
-		final String expected = "[null, null, 3-rev, 2, 2, 2-rev, 2-rev]";
+		final Edge[] path = paths.iterator().next();
+		final String expected = "[null, null, 3, 3, 2-rev, 2, 2-rev]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
