@@ -265,10 +265,7 @@ if(fromEdge.getID().equals("11") && toEdge.getID().equals("6-obs6[12]"))
 					if(/*Double.isFinite(probability) &&*/ probability <= minProbability){
 						//record minimum probability
 						minProbability = probability;
-						if(offRoad && toEdge.isOffRoad())
-							probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
-						else
-							probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
+						probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 						if(Double.isFinite(probability))
 							score.computeIfAbsent(toEdge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
 
