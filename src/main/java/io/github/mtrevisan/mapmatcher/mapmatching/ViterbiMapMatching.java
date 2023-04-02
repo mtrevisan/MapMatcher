@@ -210,7 +210,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			: graphEdges);
 		if(offRoad)
 			//augment graphEdgesNearCurrentObservation with an edge between a candidate from an edge and currentObservation
-			graphEdgesNearCurrentObservation = calculateOffRoadEdges(graphEdgesNearCurrentObservation, observations, -1, currentObservationIndex);
+			graphEdgesNearCurrentObservation = calculateOffRoadEdges(graphEdgesNearCurrentObservation, observations,
+				-1, currentObservationIndex);
 
 		//calculate the initial probability:
 		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdgesNearCurrentObservation);
@@ -316,9 +317,7 @@ if(!Double.isFinite(probability + emissionProbabilityCalculator.emissionProbabil
 			final Point previousObservation = observations[previousObservationIndex];
 			final Node offRoadPreviousNode = Node.of(NODE_ID_OBSERVATION_PREFIX + previousObservationIndex, previousObservation);
 			final Node offRoadCurrentNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
-			//NOTE: add both directions
 			augmentedEdges.add(Edge.createDirectOffRoadEdge(offRoadPreviousNode, offRoadCurrentNode));
-			augmentedEdges.add(Edge.createDirectOffRoadEdge(offRoadCurrentNode, offRoadPreviousNode));
 		}
 
 		final Node observationNode = Node.of(String.valueOf(currentObservationIndex), currentObservation);
@@ -327,9 +326,7 @@ if(!Double.isFinite(probability + emissionProbabilityCalculator.emissionProbabil
 			final Point projectedPoint = candidateEdge.getPath().onTrackClosestPoint(currentObservation);
 			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
 				+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint);
-			//NOTE: add both directions
 			augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode));
-			augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode));
 		}
 		return augmentedEdges;
 	}
