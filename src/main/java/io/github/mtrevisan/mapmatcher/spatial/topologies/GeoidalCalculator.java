@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.topologies;
 
-import io.github.mtrevisan.mapmatcher.helpers.MathHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -39,9 +38,6 @@ import java.util.List;
  * @see <a href="https://github.com/grumlimited/geocalc/blob/master/src/main/java/com/grum/geocalc/EarthCalc.java">EarthCalc</a>
  */
 public class GeoidalCalculator implements TopologyCalculator{
-
-	private static final double EPSILON = 1.e-9;
-
 
 	/**
 	 * Calculate orthodromic distance, (azimuth) bearing and final bearing between two points using inverse Vincenty formula.
@@ -118,29 +114,6 @@ public class GeoidalCalculator implements TopologyCalculator{
 			if(leftmostPoint == null || compare(leftmostPoint, point) == 1)
 				leftmostPoint = point;
 		return leftmostPoint;
-	}
-
-	@Override
-	public double calculateYIndex(final Point pointLeft, final Point pointRight, final double x){
-		final double x1 = pointLeft.getX();
-		final double y1 = pointLeft.getY();
-		final double x2 = pointRight.getX();
-		final double y2 = pointRight.getY();
-		//equation of line passing through two points
-		return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
-	}
-
-	@Override
-	public int compare(final Point point1, final Point point2){
-		final double p1x = point1.getX();
-		final double p1y = point1.getY();
-		final double p2x = point2.getX();
-		final double p2y = point2.getY();
-		if(p1x > p2x || MathHelper.nearlyEqual(p1x, p2x, EPSILON) && p1y > p2y)
-			return 1;
-		if(p1x < p2x || MathHelper.nearlyEqual(p1x, p2x, EPSILON) && p1y < p2y)
-			return -1;
-		return 0;
 	}
 
 	@Override

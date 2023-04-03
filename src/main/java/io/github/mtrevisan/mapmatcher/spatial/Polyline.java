@@ -169,33 +169,41 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		return cut(point, CutType.HARD);
 	}
 
+	//FIXME ugliness...
 	private Point[][] cut(final Point point, final CutType cutType){
 		if(points.length < 2)
 			return new Point[][]{points, new Point[0]};
 
-		final Point onTrackClosestPoint = onTrackClosestPoint(point);
+		final int hardCutSize = (cutType == CutType.HARD? 1: 0);
+		final Point onTrackClosestPoint = (hardCutSize == 1
+			? onTrackClosestPoint(point)
+			: onTrackClosestNode(point));
 		final double atdToPoint = alongTrackDistance(onTrackClosestPoint);
+		boolean cutPointOnNode = (atdToPoint == 0.);
 		double cumulativeDistance = 0.;
 		int cutPointBeforeOrOnIndex = 0;
-		for(int i = 1; i < points.length; i ++){
+		for(int i = 1; !cutPointOnNode && i < points.length; i ++){
 			final double onTrackDistance = points[i - 1].distance(points[i]);
 			cumulativeDistance += onTrackDistance;
 			if(cumulativeDistance > atdToPoint)
 				break;
 
 			cutPointBeforeOrOnIndex = i;
+
+			if(cumulativeDistance == atdToPoint){
+				cutPointBeforeOrOnIndex ++;
+				cutPointOnNode = true;
+			}
 		}
-		final boolean cutPointOnNode = (cumulativeDistance == atdToPoint);
 
 
 		final int beforeSize = cutPointBeforeOrOnIndex + 1;
 		final int afterSize = points.length - cutPointBeforeOrOnIndex - (cutPointOnNode? 0: 1);
-		final int hardCutSize = (cutType == CutType.HARD? 1: 0);
 		final Point[] before = new Point[beforeSize + hardCutSize];
 		final Point[] after = new Point[afterSize + hardCutSize];
 		System.arraycopy(points, 0, before, 0, beforeSize);
 		System.arraycopy(points, cutPointBeforeOrOnIndex + (cutPointOnNode? 0: 1), after, hardCutSize, afterSize);
-		if(cutType == CutType.HARD){
+		if(hardCutSize == 1){
 			before[beforeSize] = onTrackClosestPoint;
 			after[0] = onTrackClosestPoint;
 		}
@@ -238,9 +246,8 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 			}
 		}
 		final double distancePointToCurrent = point.distance(points[minClosestPointIndex]);
-		minClosestPointIndex = (distancePointToCurrent < point.distance(points[minClosestPointIndex + 1])
-			? minClosestPointIndex
-			: minClosestPointIndex + 1);
+		if(minClosestPointIndex < points.length - 2 && point.distance(points[minClosestPointIndex + 1]) < distancePointToCurrent)
+			minClosestPointIndex = minClosestPointIndex + 1;
 		if(minClosestPointIndex > 0 && point.distance(points[minClosestPointIndex - 1]) < distancePointToCurrent)
 			minClosestPointIndex = minClosestPointIndex - 1;
 		return points[minClosestPointIndex];
@@ -250,7 +257,6 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		double minClosestPointDistance = Double.MAX_VALUE;
 		//on or before
 		int minClosestPointIndex = 0;
-		Point minClosestPoint = points[0];
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
 		for(int i = 1; i < points.length; i ++){
 			final Point closestPoint = topologyCalculator.onTrackClosestPoint(points[i - 1], points[i], point);
@@ -258,19 +264,12 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 			if(xtd <= minClosestPointDistance){
 				minClosestPointDistance = xtd;
 				minClosestPointIndex = i - 1;
-				minClosestPoint = closestPoint;
 			}
 		}
 
 		double cumulativeDistance = 0.;
 		for(int i = 1; i <= minClosestPointIndex; i ++)
 			cumulativeDistance += points[i - 1].distance(points[i]);
-		if(minClosestPointIndex < points.length - 1){
-			final Point startPoint = points[minClosestPointIndex];
-			if(!startPoint.equals(minClosestPoint))
-				cumulativeDistance += startPoint.distance(minClosestPoint);
-		}
-
 		return cumulativeDistance;
 	}
 
@@ -294,6 +293,13 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	@Override
 	public String toString(){
 		final StringJoiner sj = new StringJoiner(", ", "LINESTRING (", ")");
+		for(final Point point : points)
+			sj.add(point != null? point.getX() + SPACE + point.getY(): "<null>");
+		return sj.toString();
+	}
+
+	public String toSimpleString(){
+		final StringJoiner sj = new StringJoiner(", ");
 		for(final Point point : points)
 			sj.add(point != null? point.getX() + SPACE + point.getY(): "<null>");
 		return sj.toString();

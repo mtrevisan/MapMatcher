@@ -72,6 +72,12 @@ public class RealTest{
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
 
+	//true-positive-rate = true-positive / (true-positive + false-negative)
+	//true-negative-rate = true-negative / (true-negative + false-positive)
+	//positive-predictive-value = true-positive / (true-positive + false-positive)
+	//false-omission-rate = false-negative / (false-negative + true-negative)
+	//f1-score = 2 * true-positive / (2 * true-positive + false-positive + false-negative)
+	//overall-accuracy = (true-positive + true-negative) / (true-positive + true-negative + false-negative + false-positive)
 	public static void main(final String[] args) throws IOException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
@@ -186,11 +192,8 @@ System.out.println("average positioning error: " + averagePositioningError);
 	}
 
 	private static Polyline parsePolyline(final String line){
-		if(!(line.startsWith("LINESTRING (") || line.startsWith("LINESTRING(")) && !line.endsWith(")"))
-			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
-
 		List<Point> points = new ArrayList<>(0);
-		int startIndex = line.indexOf('(') + 1;
+		int startIndex = 0;
 		while(true){
 			int separatorIndex = line.indexOf(" ", startIndex + 1);
 			if(separatorIndex < 0)
@@ -198,7 +201,7 @@ System.out.println("average positioning error: " + averagePositioningError);
 
 			int endIndex = line.indexOf(", ", separatorIndex + 1);
 			if(endIndex < 0)
-				endIndex = line.indexOf(')', separatorIndex + 1);
+				endIndex = line.length();
 			points.add(FACTORY.createPoint(
 				Double.parseDouble(line.substring(startIndex, separatorIndex)),
 				Double.parseDouble(line.substring(separatorIndex + 1, endIndex))

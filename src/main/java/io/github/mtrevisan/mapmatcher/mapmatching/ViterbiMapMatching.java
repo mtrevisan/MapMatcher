@@ -51,14 +51,14 @@ import java.util.Map;
  * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
  * @see <a href="https://journals.sagepub.com/doi/pdf/10.1177/1550147718772541">Log-Viterbi algorithm applied on second-order hidden Markov model for human activity recognition</a>
  * @see <a href="https://aclanthology.org/P99-1023.pdf">A second–order Hidden Markov Model for part–of–speech tagging</a>
- *
- * http://www.mit.edu/~jaillet/general/map_matching_itsc2012-final.pdf
- * https://www.researchgate.net/publication/320721676_Enhanced_Map-Matching_Algorithm_with_a_Hidden_Markov_Model_for_Mobile_Phone_Positioning
+ * @see <a href="http://www.mit.edu/~jaillet/general/map_matching_itsc2012-final.pdf">Online map-matching based on Hidden Markov model for real-time traffic sensing applications</a>
+ * @see <a href="https://www.researchgate.net/publication/320721676_Enhanced_Map-Matching_Algorithm_with_a_Hidden_Markov_Model_for_Mobile_Phone_Positioning">Enhanced map-matching algorithm with a Hidden Markov Model for mobile phone positioning</a>
  */
 public class ViterbiMapMatching implements MapMatchingStrategy{
 
 	private static final String NODE_ID_OBSERVATION_PREFIX = "obs";
-	private static final String NODE_ID_PROJECTED_ONTO_EDGE = "|";
+	private static final String NODE_ID_EDGE_INFIX_START = "[";
+	private static final String NODE_ID_EDGE_INFIX_END = "]";
 
 
 	private final InitialProbabilityCalculator initialProbabilityCalculator;
@@ -262,7 +262,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 						probability += transitionProbabilityCalculator.transitionProbability(fromEdge, toEdge,
 							previousObservation, currentObservation, pathAsPolyline);
 
-					if(/*Double.isFinite(probability) &&*/ probability <= minProbability){
+					if(Double.isFinite(probability) && probability <= minProbability){
 						//record minimum probability
 						minProbability = probability;
 						probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
@@ -290,7 +290,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		for(final Edge edge : path.keySet()){
 			final double edgeScore = score.getOrDefault(edge, Collections.emptyMap())
 				.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY);
-//			if(Double.isFinite(edgeScore)){
+			if(Double.isFinite(edgeScore)){
 				if(edgeScore < minProbability){
 					minProbability = edgeScore;
 					minProbabilityPaths.clear();
@@ -298,7 +298,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				}
 				else if(edgeScore == minProbability)
 					minProbabilityPaths.add(path.get(edge));
-//			}
+			}
 		}
 		return minProbabilityPaths;
 	}
@@ -323,7 +323,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			//add edge between current observation and projection on candidate edge
 			final Point projectedPoint = candidateEdge.getPath().onTrackClosestPoint(currentObservation);
 			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
-				+ NODE_ID_PROJECTED_ONTO_EDGE + candidateEdge.getID(), projectedPoint);
+				+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint);
 			augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode));
 			augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode));
 		}

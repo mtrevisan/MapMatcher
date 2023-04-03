@@ -111,11 +111,8 @@ out skel qt;
 	}
 
 	private static Polyline parsePolyline(final String line){
-		if(!(line.startsWith("LINESTRING (") || line.startsWith("LINESTRING(")) && !line.endsWith(")"))
-			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
-
 		List<Point> points = new ArrayList<>(0);
-		int startIndex = line.indexOf('(') + 1;
+		int startIndex = 0;
 		while(true){
 			int separatorIndex = line.indexOf(" ", startIndex + 1);
 			if(separatorIndex < 0)
@@ -123,7 +120,7 @@ out skel qt;
 
 			int endIndex = line.indexOf(", ", separatorIndex + 1);
 			if(endIndex < 0)
-				endIndex = line.indexOf(')', separatorIndex + 1);
+				endIndex = line.length();
 			points.add(FACTORY.createPoint(
 				Double.parseDouble(line.substring(startIndex, separatorIndex)),
 				Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
@@ -149,14 +146,10 @@ out skel qt;
 	}
 
 	private static Point parsePoint(final String line){
-		if(!(line.startsWith("POINT (") || line.startsWith("POINT(")) && !line.endsWith(")"))
-			throw new IllegalArgumentException("Unrecognized element, cannot parse line: " + line);
-
-		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		int startIndex = line.indexOf('(') + 1;
+		int startIndex = 0;
 		int separatorIndex = line.indexOf(" ", startIndex + 1);
-		int endIndex = line.indexOf(')', separatorIndex + 1);
-		return factory.createPoint(
+		int endIndex = line.length();
+		return FACTORY.createPoint(
 			Double.parseDouble(line.substring(startIndex, separatorIndex)),
 			Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
 		);
@@ -228,14 +221,14 @@ out skel qt;
 	private static void writePoints(final Collection<Point> points, final File outputFile) throws IOException{
 		try(final BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))){
 			for(final Point point : points)
-				writer.write(point.toString() + "\r\n");
+				writer.write(point.toSimpleString() + "\r\n");
 		}
 	}
 
 	private static void writePolylines(final Collection<Polyline> polylines, final File outputFile) throws IOException{
 		try(final BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))){
 			for(final Polyline polyline : polylines)
-				writer.write(polyline.toString() + "\r\n");
+				writer.write(polyline.toSimpleString() + "\r\n");
 		}
 	}
 
@@ -249,13 +242,12 @@ out skel qt;
 			tree.insert(geoBoundingBox, polyline);
 		}
 
-		GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		List<Polyline> roads = tree.query(Envelope.of(
-			factory.createPoint(9.01670, 45.60973),
-			factory.createPoint(9.40355, 45.33115)
+			FACTORY.createPoint(9.01670, 45.60973),
+			FACTORY.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(2391, roads.size());
+		Assertions.assertEquals(2327, roads.size());
 	}
 
 	@Test

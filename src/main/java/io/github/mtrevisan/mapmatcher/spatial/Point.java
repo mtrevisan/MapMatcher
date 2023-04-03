@@ -123,6 +123,12 @@ public class Point extends Geometry implements Comparable<Point>, Serializable{
 		return sj.toString();
 	}
 
+	public String toSimpleString(){
+		final StringJoiner sj = new StringJoiner(", ");
+		sj.add(x + SPACE + y);
+		return sj.toString();
+	}
+
 	@Override
 	public int compareTo(final Point other){
 		if(x < other.x)
