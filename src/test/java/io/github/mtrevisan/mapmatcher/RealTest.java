@@ -110,10 +110,13 @@ public class RealTest{
 //https://kops.uni-konstanz.de/server/api/core/bitstreams/324b2478-0f44-496a-a276-4463237646f8/content
 //test/resources/ijgi-11-00538-v2.pdf
 
+//observations = Arrays.copyOfRange(observations, 0, 169);
 //observations = Arrays.copyOfRange(observations, 176, 182);
+//FIXME two separated paths instead of one connecting the observations...
+observations = Arrays.copyOfRange(observations, 180, 182);
 //observations = Arrays.copyOfRange(observations, 160, 169);
 //observations = Arrays.copyOfRange(observations, 170, 185);
-observations = Arrays.copyOfRange(observations, 400, 500);
+//observations = Arrays.copyOfRange(observations, 400, 500);
 
 		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
@@ -131,7 +134,7 @@ System.out.println("graph & observations: " + graph.toStringWithObservations(fil
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 400.);
 
 		final Edge[] path = (paths.size() > 0? paths.iterator().next(): null);
-System.out.println("true: [null, null, null, null, null, obs5-obs5|11, 11, 6, 4]");
+System.out.println("true: [null, null, null, null, null, obs5-obs5[11], 11, 6, 4]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 else

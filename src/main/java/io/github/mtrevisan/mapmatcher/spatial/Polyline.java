@@ -190,10 +190,8 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 			cutPointBeforeOrOnIndex = i;
 
-			if(cumulativeDistance == atdToPoint){
-				cutPointBeforeOrOnIndex ++;
+			if(cumulativeDistance == atdToPoint)
 				cutPointOnNode = true;
-			}
 		}
 
 
@@ -234,6 +232,10 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	}
 
 	public Point onTrackClosestNode(final Point point){
+		return points[onTrackClosestNodeIndex(point)];
+	}
+
+	public int onTrackClosestNodeIndex(final Point point){
 		double minClosestPointDistance = Double.MAX_VALUE;
 		int minClosestPointIndex = 0;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
@@ -250,26 +252,33 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 			minClosestPointIndex = minClosestPointIndex + 1;
 		if(minClosestPointIndex > 0 && point.distance(points[minClosestPointIndex - 1]) < distancePointToCurrent)
 			minClosestPointIndex = minClosestPointIndex - 1;
-		return points[minClosestPointIndex];
+		return minClosestPointIndex;
 	}
 
 	public double alongTrackDistance(final Point point){
-		double minClosestPointDistance = Double.MAX_VALUE;
-		//on or before
-		int minClosestPointIndex = 0;
-		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
-		for(int i = 1; i < points.length; i ++){
-			final Point closestPoint = topologyCalculator.onTrackClosestPoint(points[i - 1], points[i], point);
-			final double xtd = point.distance(closestPoint);
-			if(xtd <= minClosestPointDistance){
-				minClosestPointDistance = xtd;
-				minClosestPointIndex = i - 1;
+		double cumulativeDistance = Double.NaN;
+		if(points.length > 0){
+			double minClosestPointDistance = Double.MAX_VALUE;
+			//on or before
+			int minClosestPointIndex = 0;
+			Point minClosestPoint = points[0];
+			final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
+			for(int i = 1; i < points.length; i ++){
+				final Point closestPoint = topologyCalculator.onTrackClosestPoint(points[i - 1], points[i], point);
+				final double xtd = point.distance(closestPoint);
+				if(xtd <= minClosestPointDistance){
+					minClosestPointDistance = xtd;
+					minClosestPointIndex = i - 1;
+					minClosestPoint = closestPoint;
+				}
 			}
-		}
 
-		double cumulativeDistance = 0.;
-		for(int i = 1; i <= minClosestPointIndex; i ++)
-			cumulativeDistance += points[i - 1].distance(points[i]);
+			cumulativeDistance = 0.;
+			for(int i = 1; i <= minClosestPointIndex; i ++)
+				cumulativeDistance += points[i - 1].distance(points[i]);
+			if(minClosestPointIndex >= 0)
+				cumulativeDistance += points[minClosestPointIndex].distance(minClosestPoint);
+		}
 		return cumulativeDistance;
 	}
 

@@ -28,32 +28,21 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.ProbabilityHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 
 public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 
-	private static final double LOG_PR_SAME_EDGE = 0.;
+	private static final double PROBABILITY_SAME_EDGE = 0.9;
+	private static final double LOG_PR_SAME_EDGE = ProbabilityHelper.logPr(PROBABILITY_SAME_EDGE);
+	private static final double LOG_PR_DIFFERENT_EDGE = ProbabilityHelper.logPr(1. - PROBABILITY_SAME_EDGE);
 
 
 	@Override
 	public double factor(final Edge fromEdge, final Edge toEdge, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
-		double logPr = LOG_PR_SAME_EDGE;
-		final Point previousOnSegmentPoint = fromEdge.getPath().onTrackClosestPoint(previousObservation);
-		final Point currentOnSegmentPoint = toEdge.getPath().onTrackClosestPoint(currentObservation);
-		if(!previousOnSegmentPoint.equals(currentOnSegmentPoint)){
-			//direction from previous to current projection on the segments
-			final TopologyCalculator topologyCalculator = currentObservation.getDistanceCalculator();
-			final double onPathInitialBearing = topologyCalculator.initialBearing(previousOnSegmentPoint, currentOnSegmentPoint);
-
-			//direction from previous to current observation
-			final double observationInitialBearing = topologyCalculator.initialBearing(previousObservation, currentObservation);
-
-			final double angleDelta = Math.abs(observationInitialBearing - onPathInitialBearing);
-			logPr = ProbabilityHelper.logPr(Math.abs(StrictMath.cos(Math.toRadians(Math.min(360. - angleDelta, angleDelta)))));
-		}
-		return logPr;
+		final double previousATD = path.alongTrackDistance(previousObservation);
+		final double currentATD = path.alongTrackDistance(currentObservation);
+		return (previousATD <= currentATD? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE);
 	}
 
 }

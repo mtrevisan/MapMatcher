@@ -77,9 +77,12 @@ public class PathHelper{
 							connectedPath.add(null);
 						connectedPath.add(path[currentIndex]);
 					}
-					else
+					else{
+						if(!path[previousIndex].getTo().equals(path[currentIndex].getFrom()))
+							connectedPath.add(null);
 						//connect off-road edges
 						connectedPath.add(path[currentIndex]);
+					}
 				}
 
 				previousIndex = currentIndex;

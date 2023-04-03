@@ -315,7 +315,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			final Node offRoadPreviousNode = Node.of(NODE_ID_OBSERVATION_PREFIX + previousObservationIndex, previousObservation);
 			final Node offRoadCurrentNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
 			augmentedEdges.add(Edge.createDirectOffRoadEdge(offRoadPreviousNode, offRoadCurrentNode));
-			augmentedEdges.add(Edge.createDirectOffRoadEdge(offRoadCurrentNode, offRoadPreviousNode));
 		}
 
 		final Node observationNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
@@ -324,8 +323,12 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			final Point projectedPoint = candidateEdge.getPath().onTrackClosestPoint(currentObservation);
 			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
 				+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint);
-			augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode));
-			augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode));
+			//NOTE: avoid connecting to an edge in the opposite direction
+			if(!candidateEdge.getTo().equals(projectedNode))
+				augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode));
+			//NOTE: avoid connecting to an edge in the opposite direction
+			if(previousObservationIndex >= 0 && !candidateEdge.getFrom().equals(projectedNode))
+				augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode));
 		}
 		return augmentedEdges;
 	}

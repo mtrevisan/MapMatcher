@@ -50,6 +50,7 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	//constants from an edge outside the graph
 //	private static final double PSI = 1.5;
 	private static final double PSI = 2.3;
+//	private static final double PSI = 3.9;
 	private static final double LOG_PR_PSI = ProbabilityHelper.logPr(PSI);
 	private static final double LOG_PR_PSI_1 = ProbabilityHelper.logPr(PSI + 1.);
 

@@ -163,9 +163,9 @@ class ViterbiMapMatchingTest{
 
 		final List<Polyline> pathPolylines = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 
-		final String expected = "[null, 0, 0-rev, 0-rev, 3-rev, 1, 1-rev, 1-rev, null, null]";
+		final String expected = "[null, 0, 0, 0, 3, 1, 1-rev, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
-		Assertions.assertEquals("LINESTRING (12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.25545428412434 45.61054896081151, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044, 12.242949896905884 45.69828882177029, 12.238140517207398 45.65897415921759)", pathPolylines.get(0).toString());
+		Assertions.assertEquals("LINESTRING (12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.25545428412434 45.61054896081151, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044, 12.242949896905884 45.69828882177029, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044)", pathPolylines.get(0).toString());
 	}
 
 	@Test
@@ -325,7 +325,7 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(1, paths.size());
 
 		final Edge[] path = paths.iterator().next();
-		final String expected = "[null, 0, 0-rev, 0-rev, 3-rev, 1, 1-rev, 1-rev, null, null]";
+		final String expected = "[null, 0, 0, 0, 3, 1, 1-rev, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -380,7 +380,7 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(1, paths.size());
 
 		final Edge[] path = paths.iterator().next();
-		final String expected = "[null, 0, 0-rev, 0-rev, 3-rev, 1, 1-rev, 1-rev, null, null]";
+		final String expected = "[null, 0, 0, 0, 3, 1, 1-rev, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -435,7 +435,7 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(1, paths.size());
 
 		final Edge[] path = paths.iterator().next();
-		final String expected = "[0, 0, 0-rev, 0-rev, 3-rev, 1, 1-rev, 1-rev, 1-rev, 1]";
+		final String expected = "[0, 0, 0, 0, 3, 1, 1-rev, 1, 1, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -486,7 +486,7 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(1, paths.size());
 
 		final Edge[] path = paths.iterator().next();
-		final String expected = "[null, null, 3, 3, 2-rev, 2, 2-rev]";
+		final String expected = "[null, null, 3-rev, 3-rev, 2, 2, 2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
