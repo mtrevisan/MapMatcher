@@ -42,11 +42,15 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	private static final double LOG_PR_DIFFERENT_EDGE = ProbabilityHelper.logPr(1. - PROBABILITY_SAME_EDGE);
 	private static final double LOG_PR_UNCONNECTED_EDGES = ProbabilityHelper.logPr(0.);
 
-	private static final double PHI = 10.;
-	private static final double PSI = 1.5;
+	//constants from an edge of the graph
+//	private static final double PHI = 10.;
+	private static final double PHI = 6.;
 	private static final double LOG_PR_PHI = ProbabilityHelper.logPr(PHI);
-	private static final double LOG_PR_PSI = ProbabilityHelper.logPr(PSI);
 	private static final double LOG_PR_PHI_1 = ProbabilityHelper.logPr(PHI + 1.);
+	//constants from an edge outside the graph
+//	private static final double PSI = 1.5;
+	private static final double PSI = 2.3;
+	private static final double LOG_PR_PSI = ProbabilityHelper.logPr(PSI);
 	private static final double LOG_PR_PSI_1 = ProbabilityHelper.logPr(PSI + 1.);
 
 

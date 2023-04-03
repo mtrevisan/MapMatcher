@@ -70,13 +70,6 @@ public class Node{
 		return outEdges;
 	}
 
-	public Edge findOutEdges(final Node nodeTo){
-		for(final Edge edge : getOutEdges())
-			if(edge.getTo().equals(nodeTo))
-				return edge;
-		return null;
-	}
-
 	public void addOutEdge(final Edge edge){
 		outEdges.add(edge);
 	}

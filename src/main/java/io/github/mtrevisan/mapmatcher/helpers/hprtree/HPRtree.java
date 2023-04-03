@@ -340,12 +340,12 @@ public class HPRtree<T>{
 		//TODO https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf
 		//	find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
 		//	delete the item (remove the item from node `L`)
-		//	if `L` underflows
+		//	if `L` underflow
 		//		borrow some entries from `s` cooperating siblings
 		//	if all the siblings are ready to underflow, merge `s+1` to `s` nodes; then adjust the resulting nodes
 		//		adjust MBR and LHV in parent levels: form a set `S` that contains `L` and its cooperating siblings (if underflow has
 		// 	occurred); then invoke `AdjustTree(s)`
-		return false;
+		throw new UnsupportedOperationException();
 	}
 
 

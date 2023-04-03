@@ -29,7 +29,6 @@ import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearNodeMergeGraph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;

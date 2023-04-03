@@ -30,7 +30,6 @@ import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;

@@ -30,7 +30,6 @@ import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.BayesianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
@@ -80,14 +79,14 @@ public class RealTest{
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new ShortestPathTransitionPlugin(90.))
+//			.withPlugin(new ShortestPathTransitionPlugin(1.5))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 				distanceCalculator)
-			.withOffRoad()
-			;
+			.withOffRoad();
 
 		final Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
 			.toArray(Polyline[]::new);
@@ -106,9 +105,9 @@ public class RealTest{
 //test/resources/ijgi-11-00538-v2.pdf
 
 //observations = Arrays.copyOfRange(observations, 176, 182);
-observations = Arrays.copyOfRange(observations, 160, 169);
+//observations = Arrays.copyOfRange(observations, 160, 169);
 //observations = Arrays.copyOfRange(observations, 170, 185);
-//observations = Arrays.copyOfRange(observations, 400, 500);
+observations = Arrays.copyOfRange(observations, 400, 500);
 
 		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
@@ -126,7 +125,7 @@ System.out.println("graph & observations: " + graph.toStringWithObservations(fil
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 400.);
 
 		final Edge[] path = (paths.size() > 0? paths.iterator().next(): null);
-System.out.println("true: [null, null, null, null, null, 11, 11, 6, 4]");
+System.out.println("true: [null, null, null, null, null, obs5-obs5|11, 11, 6, 4]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 else
@@ -152,7 +151,7 @@ if(!pathPolylines.isEmpty()){
 			double averagePositioningError = 0.;
 			int windowSize = 0;
 			for(int i = 0; i < filteredObservations.length; i ++)
-				if(filteredObservations[i] != null && path[i] != null){
+				if(filteredObservations[i] != null && path[i] != null && !path[i].isOffRoad()){
 					averagePositioningError += filteredObservations[i].distance(path[i].getPath());
 					windowSize ++;
 				}

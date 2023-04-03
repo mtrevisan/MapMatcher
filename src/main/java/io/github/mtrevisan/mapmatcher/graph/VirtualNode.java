@@ -33,7 +33,7 @@ import java.util.Set;
 
 public class VirtualNode extends Node{
 
-	private Set<Point> points = new HashSet<>(0);
+	private final Set<Point> points = new HashSet<>(0);
 
 
 	public VirtualNode(final String id){
@@ -46,21 +46,6 @@ public class VirtualNode extends Node{
 		points.add(point);
 
 		super.point = GeodeticHelper.centroid(points);
-	}
-
-	@Override
-	public boolean equals(final Object obj){
-		if(this == obj)
-			return true;
-		if(obj == null || getClass() != obj.getClass())
-			return false;
-
-		return super.equals(obj);
-	}
-
-	@Override
-	public int hashCode(){
-		return super.hashCode();
 	}
 
 	@Override

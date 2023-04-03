@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
-import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.Collection;
@@ -39,6 +38,7 @@ public class Edge{
 	protected final Node from;
 	protected final Node to;
 	protected final Polyline path;
+
 	protected boolean offRoad;
 
 
@@ -56,12 +56,6 @@ public class Edge{
 
 	public static Edge createDirectEdge(final Node from, final Node to, final Polyline path){
 		return new Edge(from, to, path);
-	}
-
-	public static Edge createSelfEdge(final Node node){
-		final Point point = node.getPoint();
-		final GeometryFactory factory = point.getFactory();
-		return new Edge(node, node, factory.createPolyline(point, point));
 	}
 
 	private Edge(final Node from, final Node to, final Polyline path){
@@ -105,10 +99,6 @@ public class Edge{
 
 	public Polyline getPath(){
 		return path;
-	}
-
-	public Node getClosestNode(final Point point){
-		return (from.getPoint().distance(point) < to.getPoint().distance(point)? from: to);
 	}
 
 	public Edge reversed(){

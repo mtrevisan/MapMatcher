@@ -185,15 +185,6 @@ public class Envelope implements Comparable<Envelope>{
 		return (isNull()? 0: maxY - minY);
 	}
 
-	/**
-	 * Gets the area of this envelope.
-	 *
-	 * @return	The area of the envelope (0 if the envelope is null).
-	 */
-	public double getArea(){
-		return getWidth() * getHeight();
-	}
-
 
 	/**
 	 * Enlarges this <code>Envelope</code> so that it contains the given {@link Point}.

@@ -56,7 +56,7 @@ public class PathHelper{
 
 	public static Edge[] connectPath(final Edge[] path, final Graph graph, final PathFindingStrategy pathFinder){
 		final int size = (path != null? path.length: 0);
-		final List<Edge> connectedPath = new ArrayList<>(size);
+		final ArrayList<Edge> connectedPath = new ArrayList<>(size);
 		if(size > 0){
 			int previousIndex = nextNonNullEdge(path, 0);
 			if(previousIndex >= 0)
@@ -69,15 +69,17 @@ public class PathHelper{
 				if(!path[previousIndex].equals(path[currentIndex])){
 					if(path[previousIndex].getOutEdges().contains(path[currentIndex]))
 						connectedPath.add(path[currentIndex]);
-					else{
+					else if(!path[previousIndex].isOffRoad() && !path[currentIndex].isOffRoad()){
 						//add path from `path[index]` to `path[i]`
 						final Edge[] edgePath = pathFinder.findPath(path[previousIndex].getTo(), path[currentIndex].getFrom(), graph);
-						for(int i = 0; i < edgePath.length; i ++)
-							connectedPath.add(edgePath[i]);
+						connectedPath.addAll(Arrays.asList(edgePath));
 						if(edgePath.length == 0)
 							connectedPath.add(null);
 						connectedPath.add(path[currentIndex]);
 					}
+					else
+						//connect off-road edges
+						connectedPath.add(path[currentIndex]);
 				}
 
 				previousIndex = currentIndex;
@@ -131,8 +133,7 @@ public class PathHelper{
 		if(connectedPath.length > 0){
 			//merge segments
 			final List<Point> mergedPoints = new ArrayList<>();
-			for(int i = 0; i < connectedPath.length; i ++){
-				final Edge edge = connectedPath[i];
+			for(final Edge edge : connectedPath){
 				if(edge == null){
 					result.add(factory.createPolyline(mergedPoints.toArray(Point[]::new)));
 					mergedPoints.clear();
@@ -141,33 +142,12 @@ public class PathHelper{
 
 				final Point[] edgePoints = edge.getPath()
 					.getPoints();
-				for(final Point point : edgePoints)
-					mergedPoints.add(point);
+				mergedPoints.addAll(Arrays.asList(edgePoints));
 			}
 			if(!mergedPoints.isEmpty())
 				result.add(factory.createPolyline(mergedPoints.toArray(Point[]::new)));
 		}
 		return result;
-	}
-
-	public static boolean isEdgesTheSame(final Edge fromEdge, final Edge toEdge){
-		return fromEdge.equals(toEdge);
-	}
-
-	public static boolean isEdgesTheSameOrReversed(final Edge fromEdge, final Edge toEdge){
-		return (fromEdge.equals(toEdge) || isEdgesReversed(fromEdge, toEdge));
-	}
-
-	public static boolean isEdgesReversed(final Edge fromEdge, final Edge toEdge){
-		return (fromEdge.getFrom().getPoint().equals(toEdge.getTo().getPoint())
-			&& fromEdge.getTo().getPoint().equals(toEdge.getFrom().getPoint()));
-	}
-
-	public static boolean isGoingBackward(final Point previousObservation, final Point currentObservation, final Polyline polyline){
-		//calculate Along-Track Distance
-		final double previousATD = polyline.alongTrackDistance(previousObservation);
-		final double currentATD = polyline.alongTrackDistance(currentObservation);
-		return (currentATD < previousATD);
 	}
 
 

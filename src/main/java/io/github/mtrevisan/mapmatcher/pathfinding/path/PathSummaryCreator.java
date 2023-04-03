@@ -29,7 +29,6 @@ import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.spatial.ArrayHelper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -72,21 +71,6 @@ public class PathSummaryCreator{
 			currentNode = edge.getFrom();
 		}
 		return (Objects.equals(currentNode, to)? result.toArray(Edge[]::new): new Edge[0]);
-	}
-
-
-	public static List<Node> simplePath(final List<Edge> path){
-		if(path.isEmpty())
-			return Collections.emptyList();
-
-		final List<Node> withoutLast = new ArrayList<>(path.size() + 1);
-		for(final Edge edge : path)
-			withoutLast.add(edge.getFrom());
-		final Node nodeTo = path.get(path.size() - 1).getTo();
-		final Node lastNode = withoutLast.get(withoutLast.size() - 1);
-		if(!lastNode.equals(nodeTo))
-			withoutLast.add(nodeTo);
-		return withoutLast;
 	}
 
 }

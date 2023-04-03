@@ -58,8 +58,7 @@ import java.util.Map;
 public class ViterbiMapMatching implements MapMatchingStrategy{
 
 	private static final String NODE_ID_OBSERVATION_PREFIX = "obs";
-	private static final String NODE_ID_EDGE_INFIX_START = "[";
-	private static final String NODE_ID_EDGE_INFIX_END = "]";
+	private static final String NODE_ID_PROJECTED_ONTO_EDGE = "|";
 
 
 	private final InitialProbabilityCalculator initialProbabilityCalculator;
@@ -266,8 +265,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 					if(/*Double.isFinite(probability) &&*/ probability <= minProbability){
 						//record minimum probability
 						minProbability = probability;
-if(!Double.isFinite(probability + emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation)))
-	System.out.println();
 						probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 
 						if(Double.isFinite(probability))
@@ -318,15 +315,17 @@ if(!Double.isFinite(probability + emissionProbabilityCalculator.emissionProbabil
 			final Node offRoadPreviousNode = Node.of(NODE_ID_OBSERVATION_PREFIX + previousObservationIndex, previousObservation);
 			final Node offRoadCurrentNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
 			augmentedEdges.add(Edge.createDirectOffRoadEdge(offRoadPreviousNode, offRoadCurrentNode));
+			augmentedEdges.add(Edge.createDirectOffRoadEdge(offRoadCurrentNode, offRoadPreviousNode));
 		}
 
-		final Node observationNode = Node.of(String.valueOf(currentObservationIndex), currentObservation);
+		final Node observationNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
 		for(final Edge candidateEdge : candidateEdges){
 			//add edge between current observation and projection on candidate edge
 			final Point projectedPoint = candidateEdge.getPath().onTrackClosestPoint(currentObservation);
 			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
-				+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint);
+				+ NODE_ID_PROJECTED_ONTO_EDGE + candidateEdge.getID(), projectedPoint);
 			augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode));
+			augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode));
 		}
 		return augmentedEdges;
 	}

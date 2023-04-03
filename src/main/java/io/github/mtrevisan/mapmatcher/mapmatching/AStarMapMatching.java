@@ -34,7 +34,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.Transit
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
@@ -100,8 +99,6 @@ public class AStarMapMatching implements MapMatchingStrategy{
 			final FibonacciHeap.Node<Edge> frontierNode = frontier.add(edge, probability);
 			seenNodes.put(edge, frontierNode);
 		}
-
-		final GeometryFactory factory = graph.getFactory();
 
 		int previousObservationIndex = i;
 		while(true){
