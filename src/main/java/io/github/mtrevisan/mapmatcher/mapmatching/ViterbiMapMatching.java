@@ -320,28 +320,30 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
 				+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint);
 			//NOTE: avoid connecting to an edge in the opposite direction
-			if(!candidateEdge.getTo().equals(projectedNode))
-				augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode));
-			//NOTE: avoid connecting to an edge in the opposite direction
-			if(previousObservationIndex >= 0 && !candidateEdge.getFrom().equals(projectedNode))
-				augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode));
+//			if(!candidateEdge.getTo().equals(projectedNode))
+				augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode)
+					.withToProjected(candidateEdge));
+			if(previousObservationIndex >= 0 /*&& !candidateEdge.getFrom().equals(projectedNode)*/)
+				augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode)
+					.withFromProjected(candidateEdge));
 		}
 		return augmentedEdges;
 	}
 
 	private static Polyline calculateOffRoadPath(final Edge fromEdge, final Edge toEdge, Polyline path){
-		if(fromEdge.isOffRoad()){
-			final Point candidatePoint = toEdge.getPath().onTrackClosestPoint(fromEdge.getTo().getPoint());
-			final Point[][] cut = toEdge.getPath().cutHard(candidatePoint);
+		if(fromEdge.isOffRoad() && !toEdge.isOffRoad() && toEdge.equals(fromEdge.getToProjected())){
+			final Point[][] cut = toEdge.getPath().cutHard(fromEdge.getTo().getPoint());
 			path = fromEdge.getPath()
 				.append(cut[1]);
 		}
-		else if(toEdge.isOffRoad()){
-			final Point candidatePoint = fromEdge.getPath().onTrackClosestPoint(toEdge.getTo().getPoint());
-			final Point[][] cut = fromEdge.getPath().cutHard(candidatePoint);
+		else if(!fromEdge.isOffRoad() && toEdge.isOffRoad() && fromEdge.equals(toEdge.getFromProjected())){
+			final Point[][] cut = fromEdge.getPath().cutHard(toEdge.getTo().getPoint());
 			path = toEdge.getPath()
 				.prepend(cut[0]);
 		}
+		else if(fromEdge.isOffRoad() && toEdge.isOffRoad() && fromEdge.getTo().equals(toEdge.getFrom()))
+			path = fromEdge.getPath()
+				.append(toEdge.getPath());
 		return path;
 	}
 

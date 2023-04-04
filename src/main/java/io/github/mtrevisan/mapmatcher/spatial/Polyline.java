@@ -125,12 +125,20 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		return (points != null && points[0].equals(points[points.length - 1]));
 	}
 
+	public Polyline prepend(final Polyline polyline){
+		return prepend(polyline.points);
+	}
+
 	public Polyline prepend(final Point... points){
 		final int oldSize = points.length;
 		final int skip = (this.points[0].equals(points[oldSize - 1])? 1: 0);
 		final Point[] newPoints = Arrays.copyOf(points, oldSize + this.points.length - skip);
 		System.arraycopy(this.points, skip, newPoints, oldSize, this.points.length - skip);
 		return of(factory, newPoints);
+	}
+
+	public Polyline append(final Polyline polyline){
+		return append(polyline.points);
 	}
 
 	public Polyline append(final Point... points){

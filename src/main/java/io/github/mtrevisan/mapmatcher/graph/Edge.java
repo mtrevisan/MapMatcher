@@ -33,6 +33,9 @@ import java.util.Objects;
 
 public class Edge{
 
+	private static final String EMPTY_STRING = "";
+
+
 	private String id;
 
 	protected final Node from;
@@ -40,6 +43,8 @@ public class Edge{
 	protected final Polyline path;
 
 	protected boolean offRoad;
+	protected Edge fromProjected;
+	protected Edge toProjected;
 
 
 	public static Edge createDirectEdge(final Node from, final Node to){
@@ -109,6 +114,32 @@ public class Edge{
 		return offRoad;
 	}
 
+	public Edge getFromProjected(){
+		return fromProjected;
+	}
+
+	public Edge withFromProjected(final Edge fromProjected){
+		if(fromProjected == null)
+			throw new IllegalArgumentException("From-edge cannot be null");
+
+		this.fromProjected = fromProjected;
+
+		return this;
+	}
+
+	public Edge getToProjected(){
+		return toProjected;
+	}
+
+	public Edge withToProjected(final Edge toProjected){
+		if(toProjected == null)
+			throw new IllegalArgumentException("To-edge cannot be null");
+
+		this.toProjected = toProjected;
+
+		return this;
+	}
+
 	@Override
 	public boolean equals(final Object obj){
 		if(this == obj)
@@ -130,7 +161,7 @@ public class Edge{
 	@Override
 	public String toString(){
 		return "Edge{id = " + id + ", from = " + from + ", to = " + to
-			+ (path.size() > 1? ", path = " + path: "")
+			+ (path.size() > 1? ", path = " + path: EMPTY_STRING)
 			+ "}";
 	}
 

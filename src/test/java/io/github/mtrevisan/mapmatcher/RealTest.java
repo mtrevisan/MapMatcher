@@ -111,9 +111,8 @@ public class RealTest{
 //test/resources/ijgi-11-00538-v2.pdf
 
 //observations = Arrays.copyOfRange(observations, 0, 169);
-//observations = Arrays.copyOfRange(observations, 176, 182);
-//FIXME two separated paths instead of one connecting the observations...
-observations = Arrays.copyOfRange(observations, 180, 182);
+observations = Arrays.copyOfRange(observations, 176, 182);
+//observations = Arrays.copyOfRange(observations, 180, 182);
 //observations = Arrays.copyOfRange(observations, 160, 169);
 //observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 400, 500);
@@ -134,7 +133,7 @@ System.out.println("graph & observations: " + graph.toStringWithObservations(fil
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 400.);
 
 		final Edge[] path = (paths.size() > 0? paths.iterator().next(): null);
-System.out.println("true: [null, null, null, null, null, obs5-obs5[11], 11, 6, 4]");
+System.out.println("true: [obs0-obs0[13], obs1[4]-obs1, obs1-obs2, obs2-obs3, obs3-obs4, obs4-obs5]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 else
