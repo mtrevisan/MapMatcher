@@ -40,10 +40,11 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 
 /**
@@ -285,20 +286,15 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			previousObservationIndex = currentObservationIndex;
 		}
 
-		minProbability = Double.POSITIVE_INFINITY;
-		final Collection<Edge[]> minProbabilityPaths = new HashSet<>(0);
-		for(final Edge edge : path.keySet()){
-			final double edgeScore = score.getOrDefault(edge, Collections.emptyMap())
-				.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY);
-			if(Double.isFinite(edgeScore)){
-				if(edgeScore < minProbability){
-					minProbability = edgeScore;
-					minProbabilityPaths.clear();
-					minProbabilityPaths.add(path.get(edge));
-				}
-				else if(edgeScore == minProbability)
-					minProbabilityPaths.add(path.get(edge));
-			}
+		final Collection<Edge[]> minProbabilityPaths = new ArrayList<>(0);
+		final int sortIndex = previousObservationIndex;
+		final Function<Edge, Double> sortScore = edge -> score.getOrDefault(edge,
+			Collections.emptyMap()).getOrDefault(sortIndex, Double.POSITIVE_INFINITY);
+		path.entrySet().removeIf(edgeEntry -> Double.isInfinite(sortScore.apply(edgeEntry.getKey())));
+		while(!path.isEmpty()){
+			final Edge minimumEdge = Collections.min(path.entrySet(), Comparator.comparingDouble(entry -> sortScore.apply(entry.getKey())))
+				.getKey();
+			minProbabilityPaths.add(path.remove(minimumEdge));
 		}
 		return minProbabilityPaths;
 	}

@@ -100,7 +100,7 @@ class ViterbiMapMatchingTest{
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 6_700.);
-		Assertions.assertEquals(1, paths.size());
+		Assertions.assertEquals(2, paths.size());
 
 		final Edge[] path = paths.iterator().next();
 		final String expected = "[null, 0, 0, 0, 3, 1, 1, 1, null, null]";
@@ -155,7 +155,7 @@ class ViterbiMapMatchingTest{
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 6_700.);
-		Assertions.assertEquals(1, paths.size());
+		Assertions.assertEquals(4, paths.size());
 
 		final Edge[] path = paths.iterator().next();
 		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
@@ -267,7 +267,7 @@ class ViterbiMapMatchingTest{
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_100.);
-		Assertions.assertEquals(1, paths.size());
+		Assertions.assertEquals(3, paths.size());
 
 		final Edge[] path = paths.iterator().next();
 		final String expected = "[null, null, 3, 3, 2, 2, 2]";
@@ -322,7 +322,7 @@ class ViterbiMapMatchingTest{
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_100.);
-		Assertions.assertEquals(1, paths.size());
+		Assertions.assertEquals(10, paths.size());
 
 		final Edge[] path = paths.iterator().next();
 		final String expected = "[null, 0, 0, 0, 3, 1, 1-rev, 1, null, null]";
@@ -377,7 +377,7 @@ class ViterbiMapMatchingTest{
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 6_700.);
-		Assertions.assertEquals(1, paths.size());
+		Assertions.assertEquals(4, paths.size());
 
 		final Edge[] path = paths.iterator().next();
 		final String expected = "[null, 0, 0, 0, 3, 1, 1-rev, 1, null, null]";
@@ -432,7 +432,7 @@ class ViterbiMapMatchingTest{
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 2_000.);
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_400.);
-		Assertions.assertEquals(1, paths.size());
+		Assertions.assertEquals(2, paths.size());
 
 		final Edge[] path = paths.iterator().next();
 		final String expected = "[0, 0, 0, 0, 3, 1, 1-rev, 1, 1, 1]";
@@ -483,7 +483,7 @@ class ViterbiMapMatchingTest{
 
 		final Point[] filteredObservations = TestPathHelper.extractObservations(edges, observations, 400.);
 		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 8_100.);
-		Assertions.assertEquals(1, paths.size());
+		Assertions.assertEquals(6, paths.size());
 
 		final Edge[] path = paths.iterator().next();
 		final String expected = "[null, null, 3-rev, 3-rev, 2, 2, 2]";
