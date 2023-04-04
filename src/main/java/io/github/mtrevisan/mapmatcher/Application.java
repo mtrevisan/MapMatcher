@@ -53,6 +53,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 
@@ -136,9 +137,9 @@ public class Application{
 //			distanceCalculator);
 
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
-		final Collection<Edge[]> paths = strategy.findPath(graph, filteredObservations, 400.);
+		final Collection<Map.Entry<Double, Edge[]>> paths = strategy.findPath(graph, filteredObservations, 400.);
 		System.out.println("paths: " + paths.size());
-		final Edge[] path = paths.iterator().next();
+		final Edge[] path = paths.iterator().next().getValue();
 if(path != null){
 	System.out.println("true: [null, 0, 0, 0, 0, 1, 1, 1, null, 1]");
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));

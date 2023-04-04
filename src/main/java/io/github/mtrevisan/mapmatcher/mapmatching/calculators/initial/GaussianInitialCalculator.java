@@ -27,23 +27,33 @@ package io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.ProbabilityHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
-
-import java.util.Collection;
-
-
-public class UniformInitialCalculator extends InitialProbabilityCalculator{
-
-	private double initialProbability;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-	@Override
-	public void calculateInitialProbability(final Point observation, final Collection<Edge> segments){
-		initialProbability = ProbabilityHelper.logPr(1. / segments.size());
+public class GaussianInitialCalculator extends InitialProbabilityCalculator{
+
+	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
+
+
+	private final double observationStandardDeviation;
+
+
+	public GaussianInitialCalculator(final double observationStandardDeviation){
+		this.observationStandardDeviation = observationStandardDeviation;
 	}
+
 
 	@Override
 	public double initialProbability(final Point observation, final Edge segment){
-		return initialProbability;
+		final Polyline polyline = segment.getPath();
+		final double distance = observation.distance(polyline);
+		final double tmp = distance / observationStandardDeviation;
+
+		//expansion of:
+		//final double probability = Math.exp(-0.5 * tmp) / (StrictMath.sqrt(2. * Math.PI) * observationStandardDeviation);
+		//return ProbabilityHelper.logPr(probability);
+		//in order to overcome overflow on exponential
+		return 0.5 * tmp - ProbabilityHelper.logPr(K2 * observationStandardDeviation);
 	}
 
 }

@@ -46,6 +46,7 @@ import org.junit.jupiter.api.Assertions;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 
 class AStarMapMatchingTest{
@@ -96,10 +97,10 @@ class AStarMapMatchingTest{
 		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractGraph(observedEdges, 1_000.);
 
-		final Collection<Edge[]> paths = strategy.findPath(graph, observations, 8_350.);
+		final Collection<Map.Entry<Double, Edge[]>> paths = strategy.findPath(graph, observations, 8_350.);
 		Assertions.assertEquals(1, paths.size());
 
-		final Edge[] path = paths.iterator().next();
+		final Edge[] path = paths.iterator().next().getValue();
 		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
@@ -151,10 +152,10 @@ class AStarMapMatchingTest{
 		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractGraph(observedEdges, 1_000.);
 
-		final Collection<Edge[]> paths = strategy.findPath(graph, observations, 8_350.);
+		final Collection<Map.Entry<Double, Edge[]>> paths = strategy.findPath(graph, observations, 8_350.);
 		Assertions.assertEquals(1, paths.size());
 
-		final Edge[] path = paths.iterator().next();
+		final Edge[] path = paths.iterator().next().getValue();
 		final String expected = "[E0, E0, E0, E0, E0, E1, E1, E1, E1, E1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}
@@ -203,10 +204,10 @@ class AStarMapMatchingTest{
 		final Collection<Polyline> observedEdges = TestPathHelper.extractObservedEdges(edges, observations, 100_000.);
 		final Graph graph = extractGraph(observedEdges, 1_000.);
 
-		final Collection<Edge[]> paths = strategy.findPath(graph, observations, 8_350.);
+		final Collection<Map.Entry<Double, Edge[]>> paths = strategy.findPath(graph, observations, 8_350.);
 		Assertions.assertEquals(1, paths.size());
 
-		final Edge[] path = paths.iterator().next();
+		final Edge[] path = paths.iterator().next().getValue();
 		final String expected = "[E3, E3, E3, E2, E2, E2, E2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(Edge::getID).toArray()));
 	}

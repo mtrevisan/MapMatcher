@@ -37,6 +37,7 @@ import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculat
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -70,7 +71,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 	}
 
 	@Override
-	public Collection<Edge[]> findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
+	public Collection<Map.Entry<Double, Edge[]>> findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
 		int i = PathHelper.extractNextObservation(observations, 0);
 		if(i < 0)
 			//no observations: cannot calculate path
@@ -91,7 +92,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		for(final Edge edge : graphEdges){
-			final double probability = initialProbabilityCalculator.initialProbability(edge)
+			final double probability = initialProbabilityCalculator.initialProbability(currentObservation, edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, (i > 0? observations[i - 1]: null));
 			score.computeIfAbsent(edge, k -> new double[m])[i] = probability;
 			path.computeIfAbsent(edge, k -> new Edge[n])[i] = edge;
@@ -157,16 +158,16 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		}
 
 		double minProbability = Double.POSITIVE_INFINITY;
-		final Collection<Edge[]> minProbabilityPaths = new HashSet<>(0);
+		final Collection<Map.Entry<Double, Edge[]>> minProbabilityPaths = new HashSet<>(0);
 		for(final Edge edge : path.keySet()){
 			final double[] fScore = score.get(edge);
 			if(fScore != null){
 				if(fScore[previousObservationIndex] == minProbability)
-					minProbabilityPaths.add(path.get(edge));
+					minProbabilityPaths.add(new AbstractMap.SimpleEntry<>(minProbability, path.get(edge)));
 				else if(fScore[previousObservationIndex] < minProbability){
 					minProbability = fScore[previousObservationIndex];
 					minProbabilityPaths.clear();
-					minProbabilityPaths.add(path.get(edge));
+					minProbabilityPaths.add(new AbstractMap.SimpleEntry<>(minProbability, path.get(edge)));
 				}
 			}
 		}

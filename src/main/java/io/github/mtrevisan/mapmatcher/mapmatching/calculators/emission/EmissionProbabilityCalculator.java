@@ -32,7 +32,7 @@ import java.util.Collection;
 
 public abstract class EmissionProbabilityCalculator{
 
-	public void updateEmissionProbability(final Point observation, final Collection<Edge> edges){}
+	public void updateEmissionProbability(Point observation, Collection<Edge> edges){}
 
 	abstract public double emissionProbability(Point observation, Edge segment, Point previousObservation);
 

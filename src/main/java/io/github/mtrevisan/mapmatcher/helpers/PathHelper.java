@@ -153,8 +153,6 @@ public class PathHelper{
 						else{
 							final Edge currentFromProjected = currentEdge.getFromProjected();
 							final Edge[] edgePath = pathFinder.findPath(previousToProjected.getFrom(), currentFromProjected.getTo(), graph);
-
-//							connectedPath.add(previousEdge);
 							if(edgePath.length == 0)
 								connectedPath.add(null);
 							else{

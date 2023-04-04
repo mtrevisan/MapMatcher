@@ -37,6 +37,7 @@ import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculat
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -190,7 +191,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 	}*/
 
 	@Override
-	public Collection<Edge[]> findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
+	public Collection<Map.Entry<Double, Edge[]>> findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
 		if(graph.isEmpty())
 			//no graph: cannot calculate path
 			return null;
@@ -220,7 +221,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		final int n = graphEdges.size();
 		final int m = observations.length;
 		for(final Edge edge : graphEdgesNearCurrentObservation){
-			final double probability = initialProbabilityCalculator.initialProbability(edge)
+			final double probability = initialProbabilityCalculator.initialProbability(currentObservation, edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, null);
 			score.computeIfAbsent(edge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
 			path.computeIfAbsent(edge, k -> new Edge[m])[currentObservationIndex] = edge;
@@ -253,6 +254,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
+if(fromEdge.getID().equals("13") && toEdge.getID().equals("4"))
+	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);
@@ -268,8 +271,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 						minProbability = probability;
 						probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 
-						if(Double.isFinite(probability))
-							score.computeIfAbsent(toEdge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
+						score.computeIfAbsent(toEdge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,
@@ -286,7 +288,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			previousObservationIndex = currentObservationIndex;
 		}
 
-		final Collection<Edge[]> minProbabilityPaths = new ArrayList<>(0);
+		final Collection<Map.Entry<Double, Edge[]>> minProbabilityPaths = new ArrayList<>(0);
 		final int sortIndex = previousObservationIndex;
 		final Function<Edge, Double> sortScore = edge -> score.getOrDefault(edge,
 			Collections.emptyMap()).getOrDefault(sortIndex, Double.POSITIVE_INFINITY);
@@ -294,7 +296,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		while(!path.isEmpty()){
 			final Edge minimumEdge = Collections.min(path.entrySet(), Comparator.comparingDouble(entry -> sortScore.apply(entry.getKey())))
 				.getKey();
-			minProbabilityPaths.add(path.remove(minimumEdge));
+			final double minimumProbability = sortScore.apply(minimumEdge);
+			minProbabilityPaths.add(new AbstractMap.SimpleEntry<>(minimumProbability, path.remove(minimumEdge)));
 		}
 		return minProbabilityPaths;
 	}

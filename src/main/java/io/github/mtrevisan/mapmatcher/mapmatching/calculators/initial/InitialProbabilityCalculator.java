@@ -32,8 +32,8 @@ import java.util.Collection;
 
 public abstract class InitialProbabilityCalculator{
 
-	public void calculateInitialProbability(final Point observation, final Collection<Edge> segments){}
+	public void calculateInitialProbability(Point observation, Collection<Edge> segments){}
 
-	public abstract double initialProbability(Edge segment);
+	public abstract double initialProbability(Point observation, Edge segment);
 
 }
