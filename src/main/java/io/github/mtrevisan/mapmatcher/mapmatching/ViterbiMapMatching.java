@@ -254,8 +254,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				minProbability = Double.POSITIVE_INFINITY;
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-if(fromEdge.getID().equals("13") && toEdge.getID().equals("4"))
-	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);

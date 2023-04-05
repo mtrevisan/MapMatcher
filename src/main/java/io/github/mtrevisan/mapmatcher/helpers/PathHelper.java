@@ -115,46 +115,37 @@ public class PathHelper{
 					break;
 
 				final Edge currentEdge = path[currentIndex];
+				//FIXME pyramid of doom
 				if(!previousEdge.equals(currentEdge)){
 					if(previousEdge.getOutEdges().contains(currentEdge))
 						connectedPath.add(currentEdge);
-					else if(!previousEdge.isOffRoad() && !currentEdge.isOffRoad()){
-						//add path from `path[index]` to `path[i]`
-						final Edge[] edgePath = pathFinder.findPath(previousEdge.getTo(), currentEdge.getFrom(), graph);
-						connectedPath.addAll(Arrays.asList(edgePath));
-						if(edgePath.length == 0)
-							connectedPath.add(null);
-						connectedPath.add(currentEdge);
-					}
-					else if(previousEdge.isOffRoad() && !currentEdge.isOffRoad()){
-						//FIXME add path from previousEdge.to[projected onto edge] to currentEdge.from
-						//add path from `path[index]` to `path[i]`
-						final Edge[] edgePath = pathFinder.findPath(previousEdge.getTo(), currentEdge.getFrom(), graph);
-						connectedPath.addAll(Arrays.asList(edgePath));
-						if(edgePath.length == 0)
-							connectedPath.add(null);
-						connectedPath.add(currentEdge);
-					}
-					else if(!previousEdge.isOffRoad() && currentEdge.isOffRoad()){
-						//FIXME add path from previousEdge.to to currentEdge.from[projected onto edge]
-						//add path from `path[index]` to `path[i]`
-						final Edge[] edgePath = pathFinder.findPath(previousEdge.getTo(), currentEdge.getFrom(), graph);
-						connectedPath.addAll(Arrays.asList(edgePath));
-						if(edgePath.length == 0)
-							connectedPath.add(null);
-						connectedPath.add(currentEdge);
-					}
-					else if(previousEdge.isOffRoad() && currentEdge.isOffRoad()){
+					else{
 						//add path from previousEdge.to[projected onto edge] to currentEdge.from[projected onto edge]
 						final Edge previousToProjected = previousEdge.getToProjected();
-						if(previousToProjected == null)
-							//connect off-road edges
+						if(previousToProjected == null){
+							final Edge[] edgePath = pathFinder.findPath(previousEdge.getTo(), currentEdge.getFrom(), graph);
+							if(edgePath.length > 0)
+								connectedPath.addAll(Arrays.asList(edgePath));
+							else if(!previousEdge.getTo().equals(currentEdge.getFrom()))
+								connectedPath.add(null);
 							connectedPath.add(currentEdge);
+						}
 						else{
 							final Edge currentFromProjected = currentEdge.getFromProjected();
-							final Edge[] edgePath = pathFinder.findPath(previousToProjected.getFrom(), currentFromProjected.getTo(), graph);
-							if(edgePath.length == 0)
+							final Edge[] edgePath = (currentFromProjected != null
+								? pathFinder.findPath(previousToProjected.getFrom(), currentFromProjected.getTo(), graph)
+								: null);
+							if(edgePath == null || edgePath.length == 0)
 								connectedPath.add(null);
+							else if(edgePath.length == 1){
+								final Edge edge = edgePath[0];
+								final Point[] previousCut = edge.getPath().cutHard(previousEdge.getTo().getPoint())[1];
+								final Point[] currentCut = factory.createPolyline(previousCut).cutHard(currentEdge.getFrom().getPoint())[0];
+								connectedPath.add(Edge.createDirectEdge(
+									Node.of(edge.getID() + "b", currentCut[0]),
+									Node.of(edge.getID() + "e", currentCut[currentCut.length - 1]),
+									factory.createPolyline(currentCut)));
+							}
 							else{
 								final Edge firstEdge = edgePath[0];
 								final Edge lastEdge = edgePath[edgePath.length - 1];
@@ -164,8 +155,8 @@ public class PathHelper{
 									Node.of(firstEdge.getID() + "b", previousCut[0]),
 									Node.of(firstEdge.getID() + "e", previousCut[previousCut.length - 1]),
 									factory.createPolyline(previousCut)));
-								for(int i = 1; i < edgePath.length - 1; i ++)
-									connectedPath.add(edgePath[i]);
+								if(edgePath.length > 2)
+									connectedPath.addAll(Arrays.asList(edgePath).subList(1, edgePath.length - 1));
 								connectedPath.add(Edge.createDirectEdge(
 									Node.of(lastEdge.getID() + "b", currentCut[0]),
 									Node.of(lastEdge.getID() + "e", currentCut[currentCut.length - 1]),
@@ -173,12 +164,6 @@ public class PathHelper{
 							}
 							connectedPath.add(currentEdge);
 						}
-					}
-					else{
-						if(!previousEdge.getTo().equals(currentEdge.getFrom()) && !previousEdge.equals(currentEdge.getFromProjected()))
-							connectedPath.add(null);
-						//connect off-road edges
-						connectedPath.add(currentEdge);
 					}
 				}
 
@@ -206,24 +191,28 @@ public class PathHelper{
 		// `currentNode` that does not pass through `fromEdge.getTo()` and `toEdge.getFrom()`
 		final Node previousNode = fromEdge.getTo();
 		final Node currentNode = toEdge.getFrom();
-		final Edge[] pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
 
 		Polyline polylineFromTo;
-		final Point[] fromPath = fromEdge.getPath().getPoints();
-		final Point[] toPath = toEdge.getPath().getPoints();
 		if(previousNode.equals(currentNode)){
+			final Point[] fromPath = fromEdge.getPath().getPoints();
+			final Point[] toPath = toEdge.getPath().getPoints();
 			final Point[] points = Arrays.copyOf(fromPath, fromPath.length + toPath.length);
 			System.arraycopy(toPath, 0, points, fromPath.length, toPath.length);
 			polylineFromTo = factory.createPolyline(points);
 		}
 		else{
+			final Edge[] pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
 			final List<Polyline> polylines = extractEdgesAsPolyline(pathFromTo, factory);
 			if(polylines.isEmpty())
 				polylineFromTo = factory.createEmptyPolyline();
-			else
+			else{
 				//prepend previousNode path start, append currentNode to path end
-				polylineFromTo = polylines.get(0).prepend(fromPath)
+				final Point[] fromPath = fromEdge.getPath().getPoints();
+				final Point[] toPath = toEdge.getPath().getPoints();
+				polylineFromTo = polylines.get(0)
+					.prepend(fromPath)
 					.append(toPath);
+			}
 		}
 
 		return polylineFromTo;
@@ -244,6 +233,7 @@ public class PathHelper{
 				continue;
 			}
 
+			//FIXME pyramid of doom
 			if(i < connectedPath.length - 1){
 				final Edge toEdge = connectedPath[i + 1];
 				if(toEdge != null && fromEdge.isOffRoad() && !toEdge.isOffRoad() && toEdge.equals(fromEdge.getToProjected())){
