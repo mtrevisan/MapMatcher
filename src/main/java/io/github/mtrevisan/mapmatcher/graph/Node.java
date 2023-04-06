@@ -70,8 +70,10 @@ public class Node{
 		return outEdges;
 	}
 
-	public void addOutEdge(final Edge edge){
+	public Node addOutEdge(final Edge edge){
 		outEdges.add(edge);
+
+		return this;
 	}
 
 	public Point getPoint(){
