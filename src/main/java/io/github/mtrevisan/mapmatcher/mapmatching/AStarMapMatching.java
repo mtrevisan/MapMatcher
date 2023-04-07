@@ -89,7 +89,7 @@ public class AStarMapMatching implements MapMatchingStrategy{
 		final Map<Edge, FibonacciHeap.Node<Edge>> seenNodes = new HashMap<>(n);
 
 		Point currentObservation = observations[i];
-		initialProbabilityCalculator.calculateInitialProbability(currentObservation, graphEdges);
+		initialProbabilityCalculator.calculateInitialProbability(graphEdges);
 		emissionProbabilityCalculator.updateEmissionProbability(currentObservation, graphEdges);
 		for(final Edge edge : graphEdges){
 			final double probability = initialProbabilityCalculator.initialProbability(currentObservation, edge)

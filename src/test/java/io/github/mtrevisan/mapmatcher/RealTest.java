@@ -73,12 +73,13 @@ public class RealTest{
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
 
-	//true-positive-rate = true-positive / (true-positive + false-negative)
+	//true-positive-rate = true-positive / (true-positive + false-negative) = recall
 	//true-negative-rate = true-negative / (true-negative + false-positive)
-	//positive-predictive-value = true-positive / (true-positive + false-positive)
+	//positive-predictive-value = true-positive / (true-positive + false-positive) = precision
 	//false-omission-rate = false-negative / (false-negative + true-negative)
-	//f1-score = 2 * true-positive / (2 * true-positive + false-positive + false-negative)
+	//f1-score (harmonic mean of precision and recall) = 2 * true-positive / (2 * true-positive + false-positive + false-negative) = 2 * precision * recall / (precision + recall)
 	//overall-accuracy = (true-positive + true-negative) / (true-positive + true-negative + false-negative + false-positive)
+	//accuracy = true-positive / number-of-states
 	public static void main(final String[] args) throws IOException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
@@ -106,13 +107,13 @@ public class RealTest{
 		}
 
 		GPSPoint[] observations = extract("CA202RX", ";");
-//observations = Arrays.copyOfRange(observations, 172, 182);
 
 //https://www1.pub.informatik.uni-wuerzburg.de/pub/haunert/pdf/HaunertBudig2012.pdf
 //https://kops.uni-konstanz.de/server/api/core/bitstreams/324b2478-0f44-496a-a276-4463237646f8/content
 //test/resources/ijgi-11-00538-v2.pdf
 
-observations = Arrays.copyOfRange(observations, 172, 182);
+//observations = Arrays.copyOfRange(observations, 172, 182);
+observations = Arrays.copyOfRange(observations, 176, 179);
 //observations = Arrays.copyOfRange(observations, 0, 172);
 //observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 400, 500);
