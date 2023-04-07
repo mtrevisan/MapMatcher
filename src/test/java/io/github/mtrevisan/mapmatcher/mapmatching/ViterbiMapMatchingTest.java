@@ -33,6 +33,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianE
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
@@ -55,7 +56,7 @@ import java.util.Map;
 class ViterbiMapMatchingTest{
 
 	@Test
-	void should_match_E0_E1_with_bayesian_emission_probability_direct_graph(){
+	void should_match_E0_E3_E1_with_bayesian_emission_probability_direct_graph(){
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
@@ -109,11 +110,12 @@ class ViterbiMapMatchingTest{
 	}
 
 	@Test
-	void should_match_E0_E1_with_gaussian_emission_probability_direct_graph(){
+	void should_match_E0_E3_E1_with_gaussian_emission_probability_direct_graph(){
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new ShortestPathTransitionPlugin(261.2))
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
@@ -159,18 +161,21 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(4, paths.size());
 
 		final Edge[] path = paths.iterator().next().getValue();
+
+		Assertions.assertEquals(261.2, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
+
 		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
 
 		final List<Polyline> pathPolylines = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 
-		final String expected = "[null, 0, 0, 0, 3, 1, 1-rev, 1, null, null]";
+		final String expected = "[null, 0, 0, 0, 3-rev, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
-		Assertions.assertEquals("LINESTRING (12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.25545428412434 45.61054896081151, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044, 12.242949896905884 45.69828882177029, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044)", pathPolylines.get(0).toString());
+		Assertions.assertEquals("LINESTRING (12.159747628109386 45.66132709541773, 12.238140517207398 45.65897415921759, 12.25545428412434 45.61054896081151, 12.238140517207398 45.65897415921759, 12.242949896905884 45.69828882177029, 12.200627355552967 45.732876303059044)", pathPolylines.get(0).toString());
 	}
 
 	@Test
-	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_direct_graph(){
+	void should_match_E0_E3_E1_with_gaussian_emission_probability_and_all_observations_direct_graph(){
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
@@ -225,10 +230,11 @@ class ViterbiMapMatchingTest{
 	}
 
 	@Test
-	void should_match_E3_E2_with_bayesian_emission_probability_direct_graph(){
+	void should_match_E2_with_bayesian_emission_probability_direct_graph(){
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new ShortestPathTransitionPlugin(607.4))
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
@@ -271,16 +277,20 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(3, paths.size());
 
 		final Edge[] path = paths.iterator().next().getValue();
-		final String expected = "[null, null, 3, 3, 2, 2, 2]";
+
+		Assertions.assertEquals(607.4, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
+
+		final String expected = "[null, null, 2, 2, 2, 2, 2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 
 	@Test
-	void should_match_E0_E1_with_bayesian_emission_probability_bidirectional_graph(){
+	void should_match_E0_E3_E1_with_bayesian_emission_probability_bidirectional_graph(){
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new ShortestPathTransitionPlugin(261.2))
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
@@ -326,16 +336,20 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(10, paths.size());
 
 		final Edge[] path = paths.iterator().next().getValue();
-		final String expected = "[null, 0, 0, 0, 3, 1, 1-rev, 1, null, null]";
+
+		Assertions.assertEquals(261.2, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
+
+		final String expected = "[null, 0, 0, 0, 3-rev, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
-	void should_match_E0_E1_with_gaussian_emission_probability_bidirectional_graph(){
+	void should_match_E0_E3_E1_with_gaussian_emission_probability_bidirectional_graph(){
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new ShortestPathTransitionPlugin(261.2))
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
@@ -381,16 +395,20 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(4, paths.size());
 
 		final Edge[] path = paths.iterator().next().getValue();
-		final String expected = "[null, 0, 0, 0, 3, 1, 1-rev, 1, null, null]";
+
+		Assertions.assertEquals(261.2, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
+
+		final String expected = "[null, 0, 0, 0, 3-rev, 1, 1, 1, null, null]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
 	@Test
-	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph(){
+	void should_match_E0_E3_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph(){
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new ShortestPathTransitionPlugin(600.8))
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
@@ -436,7 +454,10 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(2, paths.size());
 
 		final Edge[] path = paths.iterator().next().getValue();
-		final String expected = "[0, 0, 0, 0, 3, 1, 1-rev, 1, 1, 1]";
+
+		Assertions.assertEquals(600.8, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
+
+		final String expected = "[0, 0, 0, 0, 3-rev, 1, 1, 1-rev, 1, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -445,6 +466,7 @@ class ViterbiMapMatchingTest{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
+			.withPlugin(new ShortestPathTransitionPlugin(280.7))
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(5.);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
@@ -487,6 +509,9 @@ class ViterbiMapMatchingTest{
 		Assertions.assertEquals(6, paths.size());
 
 		final Edge[] path = paths.iterator().next().getValue();
+
+		Assertions.assertEquals(280.7, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
+
 		final String expected = "[null, null, 3-rev, 3-rev, 2, 2, 2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}

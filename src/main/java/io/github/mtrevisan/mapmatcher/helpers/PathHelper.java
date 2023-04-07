@@ -54,54 +54,24 @@ public class PathHelper{
 	private PathHelper(){}
 
 
-	@Deprecated
-	public static Edge[] connectPath2(final Edge[] path, final Graph graph, final PathFindingStrategy pathFinder){
-		final int size = (path != null? path.length: 0);
-		final ArrayList<Edge> connectedPath = new ArrayList<>(size);
-		if(size > 0){
-			int previousIndex = nextNonNullEdge(path, 0);
-			Edge previousEdge = (previousIndex >= 0? path[previousIndex]: null);
-			if(previousEdge != null)
-				connectedPath.add(previousEdge);
-			while(previousEdge != null){
-				final int currentIndex = nextNonNullEdge(path, previousIndex + 1);
-				if(currentIndex < 0)
-					break;
+	public static double averagePositioningError(final Edge[] path, final Point[] observations){
+		if(path == null)
+			throw new IllegalArgumentException("Path must be non-null");
+		if(observations == null)
+			throw new IllegalArgumentException("Observations must be non-null");
+		if(path.length != observations.length)
+			throw new IllegalArgumentException("Length of path must match length of observations");
 
-				final Edge currentEdge = path[currentIndex];
-				if(!previousEdge.equals(currentEdge)){
-					if(previousEdge.getOutEdges().contains(currentEdge))
-						connectedPath.add(currentEdge);
-					else{
-						final Node origin = previousEdge.getTo();
-						final Node target = currentEdge.getFrom();
-						if(!previousEdge.isOffRoad() && !currentEdge.isOffRoad()){
-							//add path from `path[index]` to `path[i]`
-							final Edge[] edgePath = pathFinder.findPath(origin, target, graph);
-							connectedPath.addAll(Arrays.asList(edgePath));
-							if(edgePath.length == 0)
-								connectedPath.add(null);
-							connectedPath.add(currentEdge);
-						}
-						else{
-							final String previousToID = previousEdge.getID();
-							final String currentFromID = target.getID();
-							if(!origin.equals(target)
-								&& !currentFromID.endsWith("[" + previousToID + "]"))
-								connectedPath.add(null);
-							//connect off-road edges
-							connectedPath.add(currentEdge);
-						}
-					}
-				}
-
-				previousIndex = currentIndex;
-				previousEdge = currentEdge;
+		double averagePositioningError = 0.;
+		int windowSize = 0;
+		for(int i = 0; i < observations.length; i ++)
+			if(observations[i] != null && path[i] != null && !path[i].isOffRoad()){
+				averagePositioningError += observations[i].distance(path[i].getPath());
+				windowSize ++;
 			}
-		}
-
-		return connectedPath.toArray(Edge[]::new);
+		return averagePositioningError / windowSize;
 	}
+
 
 	public static Edge[] connectPath(final Edge[] path, final Graph graph, final PathFindingStrategy pathFinder){
 		final int size = (path != null? path.length: 0);
@@ -129,9 +99,9 @@ public class PathHelper{
 
 					Edge connectionToRoadEdge = null;
 					if(previousEdge.isOffRoad()){
-						final Edge previousToProjected = (previousEdge.getToProjected().getFrom().getID().equals(previousEdge.getFrom().getID())
-							? previousEdge
-							: previousEdge.getToProjected());
+						Edge previousToProjected = previousEdge.getToProjected();
+						if(previousToProjected != null && previousToProjected.getFrom().getID().equals(previousEdge.getFrom().getID()))
+							previousToProjected = currentEdge;
 						if(previousToProjected != null){
 							final Point[] cutTo = previousToProjected.getPath().cutHard(previousEdge.getTo().getPoint())[1];
 							final Node connectionToRoadNodeStart = Node.of(previousEdge.getTo().getID(), cutTo[0]);
@@ -149,9 +119,9 @@ public class PathHelper{
 
 					Edge connectionFromRoadEdge = null;
 					if(currentEdge != null && currentEdge.isOffRoad()){
-						final Edge currentFromProjected = (currentEdge.getFromProjected().getTo().getID().equals(previousEdge.getTo().getID())
-							? previousEdge
-							: currentEdge.getFromProjected());
+						Edge currentFromProjected = currentEdge.getFromProjected();
+						if(currentFromProjected != null && currentFromProjected.getTo().getID().equals(previousEdge.getTo().getID()))
+							currentFromProjected = previousEdge;
 						if(currentFromProjected != null){
 							final Point[] cutFrom = currentFromProjected.getPath().cutHard(currentEdge.getFrom().getPoint())[0];
 							final Node connectionFromRoadNodeStart = currentFromProjected.getFrom();
@@ -199,81 +169,6 @@ public class PathHelper{
 
 				if(previousEdge != null)
 					connectedPath.add(previousEdge);
-			}
-		}
-		return connectedPath.toArray(Edge[]::new);
-	}
-
-	public static Edge[] connectPath3(final Edge[] path, final Graph graph, final PathFindingStrategy pathFinder){
-		final int size = (path != null? path.length: 0);
-		final ArrayList<Edge> connectedPath = new ArrayList<>(size);
-		if(size > 0){
-			final GeometryFactory factory = graph.getFactory();
-
-			int previousIndex = nextNonNullEdge(path, 0);
-			Edge previousEdge = (previousIndex >= 0? path[previousIndex]: null);
-			if(previousEdge != null)
-				connectedPath.add(previousEdge);
-			while(previousEdge != null){
-				final int currentIndex = nextNonNullEdge(path, previousIndex + 1);
-				if(currentIndex < 0)
-					break;
-
-				final Edge currentEdge = path[currentIndex];
-				//FIXME pyramid of doom
-				if(!previousEdge.equals(currentEdge)){
-					if(previousEdge.getOutEdges().contains(currentEdge))
-						connectedPath.add(currentEdge);
-					else{
-						//add path from previousEdge.to[projected onto edge] to currentEdge.from[projected onto edge]
-						final Edge previousToProjected = previousEdge.getToProjected();
-						if(previousToProjected == null){
-							final Edge[] edgePath = pathFinder.findPath(previousEdge.getTo(), currentEdge.getFrom(), graph);
-							if(edgePath.length > 0)
-								connectedPath.addAll(Arrays.asList(edgePath));
-							else if(!previousEdge.getTo().equals(currentEdge.getFrom()))
-								connectedPath.add(null);
-							connectedPath.add(currentEdge);
-						}
-						else{
-							final Edge currentFromProjected = currentEdge.getFromProjected();
-							final Edge[] edgePath = (currentFromProjected != null
-								? pathFinder.findPath(previousToProjected.getFrom(), currentFromProjected.getTo(), graph)
-								: null);
-							if(edgePath == null || edgePath.length == 0)
-								connectedPath.add(null);
-							else if(edgePath.length == 1){
-								final Edge edge = edgePath[0];
-								final Point[] previousCut = edge.getPath().cutHard(previousEdge.getTo().getPoint())[1];
-								final Point[] currentCut = factory.createPolyline(previousCut).cutHard(currentEdge.getFrom().getPoint())[0];
-								connectedPath.add(Edge.createDirectEdge(
-									Node.of(edge.getID() + "b", currentCut[0]),
-									Node.of(edge.getID() + "e", currentCut[currentCut.length - 1]),
-									factory.createPolyline(currentCut)));
-							}
-							else{
-								final Edge firstEdge = edgePath[0];
-								final Edge lastEdge = edgePath[edgePath.length - 1];
-								final Point[] previousCut = firstEdge.getPath().cutHard(previousEdge.getTo().getPoint())[1];
-								final Point[] currentCut = lastEdge.getPath().cutHard(currentEdge.getFrom().getPoint())[0];
-								connectedPath.add(Edge.createDirectEdge(
-									Node.of(firstEdge.getID() + "b", previousCut[0]),
-									Node.of(firstEdge.getID() + "e", previousCut[previousCut.length - 1]),
-									factory.createPolyline(previousCut)));
-								if(edgePath.length > 2)
-									connectedPath.addAll(Arrays.asList(edgePath).subList(1, edgePath.length - 1));
-								connectedPath.add(Edge.createDirectEdge(
-									Node.of(lastEdge.getID() + "b", currentCut[0]),
-									Node.of(lastEdge.getID() + "e", currentCut[currentCut.length - 1]),
-									factory.createPolyline(currentCut)));
-							}
-							connectedPath.add(currentEdge);
-						}
-					}
-				}
-
-				previousIndex = currentIndex;
-				previousEdge = currentEdge;
 			}
 		}
 		return connectedPath.toArray(Edge[]::new);

@@ -112,8 +112,8 @@ public class RealTest{
 //https://kops.uni-konstanz.de/server/api/core/bitstreams/324b2478-0f44-496a-a276-4463237646f8/content
 //test/resources/ijgi-11-00538-v2.pdf
 
-//observations = Arrays.copyOfRange(observations, 172, 182);
-observations = Arrays.copyOfRange(observations, 176, 179);
+observations = Arrays.copyOfRange(observations, 172, 182);
+//observations = Arrays.copyOfRange(observations, 176, 179);
 //observations = Arrays.copyOfRange(observations, 0, 172);
 //observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 400, 500);
@@ -156,17 +156,7 @@ if(!pathPolylines.isEmpty()){
 	System.out.println("path polyline: " + sj);
 }
 
-		if(path != null){
-			double averagePositioningError = 0.;
-			int windowSize = 0;
-			for(int i = 0; i < filteredObservations.length; i ++)
-				if(filteredObservations[i] != null && path[i] != null && !path[i].isOffRoad()){
-					averagePositioningError += filteredObservations[i].distance(path[i].getPath());
-					windowSize ++;
-				}
-			averagePositioningError /= windowSize;
-System.out.println("average positioning error: " + averagePositioningError);
-		}
+System.out.println("average positioning error: " + PathHelper.averagePositioningError(path, filteredObservations));
 
 		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
 		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order
