@@ -225,9 +225,19 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	//https://github.com/dyn4j/dyn4j/blob/master/src/main/java/org/dyn4j/collision/narrowphase/Gjk.java
 	//https://www.researchgate.net/publication/224108603_A_Fast_Geometric_Algorithm_for_Finding_the_Minimum_Distance_Between_Two_Convex_Hulls
 	public Point onTrackClosestPoint(final Point point){
-		final int minClosestPointIndex = closestPointIndex(point);
+		double minClosestPointDistance = Double.MAX_VALUE;
+		Point minClosestPoint = null;
+		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
+		for(int i = 1; i < points.length; i ++){
+			final Point closestPoint = topologyCalculator.onTrackClosestPoint(points[i - 1], points[i], point);
+			final double xtd = point.distance(closestPoint);
+			if(xtd <= minClosestPointDistance){
+				minClosestPointDistance = xtd;
+				minClosestPoint = closestPoint;
+			}
+		}
 
-		return points[minClosestPointIndex];
+		return minClosestPoint;
 	}
 
 	public Point onTrackClosestNode(final Point point){
@@ -235,29 +245,24 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	}
 
 	public int onTrackClosestNodeIndex(final Point point){
-		int minClosestPointIndex = closestPointIndex(point);
-
-		final double distancePointToCurrent = point.distance(points[minClosestPointIndex]);
-		if(minClosestPointIndex < points.length - 2 && point.distance(points[minClosestPointIndex + 1]) < distancePointToCurrent)
-			minClosestPointIndex = minClosestPointIndex + 1;
-		if(minClosestPointIndex > 0 && point.distance(points[minClosestPointIndex - 1]) < distancePointToCurrent)
-			minClosestPointIndex = minClosestPointIndex - 1;
-		return minClosestPointIndex;
-	}
-
-	private int closestPointIndex(final Point point){
-		double minClosestPointDistance = Double.MAX_VALUE;
-		int minClosestPointIndex = 0;
+		double minClosestNodeDistance = Double.MAX_VALUE;
+		int minClosestNodeIndex = 0;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
 		for(int i = 1; i < points.length; i ++){
 			final Point closestPoint = topologyCalculator.onTrackClosestPoint(points[i - 1], points[i], point);
 			final double xtd = point.distance(closestPoint);
-			if(xtd <= minClosestPointDistance){
-				minClosestPointDistance = xtd;
-				minClosestPointIndex = i;
+			if(xtd <= minClosestNodeDistance){
+				minClosestNodeDistance = xtd;
+				minClosestNodeIndex = i;
 			}
 		}
-		return minClosestPointIndex;
+
+		final double distanceNodeToCurrent = point.distance(points[minClosestNodeIndex]);
+		if(minClosestNodeIndex < points.length - 2 && point.distance(points[minClosestNodeIndex + 1]) < distanceNodeToCurrent)
+			minClosestNodeIndex = minClosestNodeIndex + 1;
+		if(minClosestNodeIndex > 0 && point.distance(points[minClosestNodeIndex - 1]) < distanceNodeToCurrent)
+			minClosestNodeIndex = minClosestNodeIndex - 1;
+		return minClosestNodeIndex;
 	}
 
 	public double alongTrackDistance(final Point point){

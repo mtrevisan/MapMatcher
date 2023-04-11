@@ -48,8 +48,8 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	private static final double LOG_PR_PHI = ProbabilityHelper.logPr(PHI);
 	private static final double LOG_PR_NOT_PHI = ProbabilityHelper.logPr(1. - PHI);
 	//constants from an edge outside the graph
-//	private static final double PSI = 0.6;
-	private static final double PSI = 0.88;
+//	private static final double PSI = 0.1;
+	private static final double PSI = 0.012;
 	private static final double LOG_PR_PSI = ProbabilityHelper.logPr(PSI);
 	private static final double LOG_PR_NOT_PSI = ProbabilityHelper.logPr(1. - PSI);
 
@@ -91,8 +91,8 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 			final Polyline path){
 		if(path.isEmpty())
 			return LOG_PR_UNCONNECTED_EDGES;
-if(fromEdge.getID().contains("35"))
-	System.out.println();
+//if(fromEdge.getID().equals("12") && toEdge.getID().equals("27"))
+//	System.out.println();
 
 		return (fromEdge.equals(toEdge)? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE)
 			+ calculateOffRoadFactor(fromEdge, toEdge)
