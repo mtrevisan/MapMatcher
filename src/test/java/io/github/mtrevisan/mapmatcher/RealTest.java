@@ -88,7 +88,7 @@ public class RealTest{
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new GaussianInitialCalculator(observationStandardDeviation);
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(90.))
+			.withPlugin(new ShortestPathTransitionPlugin(12.))
 //			.withPlugin(new ShortestPathTransitionPlugin(1.5))
 			.withPlugin(new DirectionTransitionPlugin());
 //		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);

@@ -43,16 +43,15 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	private static final double LOG_PR_UNCONNECTED_EDGES = ProbabilityHelper.logPr(0.);
 
 	//constants from an edge of the graph
-	private static final double PHI = 10.;
-//	private static final double PHI = 6.;
+	private static final double PHI = 0.9;
+//	private static final double PHI = 0.85;
 	private static final double LOG_PR_PHI = ProbabilityHelper.logPr(PHI);
-	private static final double LOG_PR_PHI_1 = ProbabilityHelper.logPr(PHI + 1.);
+	private static final double LOG_PR_NOT_PHI = ProbabilityHelper.logPr(1. - PHI);
 	//constants from an edge outside the graph
-//	private static final double PSI = 1.5;
-//	private static final double PSI = 7.5;
-	private static final double PSI = 90.;
+//	private static final double PSI = 0.6;
+	private static final double PSI = 0.88;
 	private static final double LOG_PR_PSI = ProbabilityHelper.logPr(PSI);
-	private static final double LOG_PR_PSI_1 = ProbabilityHelper.logPr(PSI + 1.);
+	private static final double LOG_PR_NOT_PSI = ProbabilityHelper.logPr(1. - PSI);
 
 
 	/** The <code>γ</code> parameter of an exponential probability distribution (<code>γ = 1 / β</code>). */
@@ -92,6 +91,8 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 			final Polyline path){
 		if(path.isEmpty())
 			return LOG_PR_UNCONNECTED_EDGES;
+if(fromEdge.getID().contains("35"))
+	System.out.println();
 
 		return (fromEdge.equals(toEdge)? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE)
 			+ calculateOffRoadFactor(fromEdge, toEdge)
@@ -101,11 +102,11 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	private static double calculateOffRoadFactor(final Edge fromEdge, final Edge toEdge){
 		double logPrOffRoadFactor;
 		if(!fromEdge.isOffRoad())
-			//`offRoadFactor = 1 / (phi + 1)` or `phi / (phi + 1)`, whether `toEdge` is off-road or not
-			logPrOffRoadFactor = (toEdge.isOffRoad()? 0.: LOG_PR_PHI) - LOG_PR_PHI_1;
+			//`offRoadFactor = φ` or `1 - φ`, whether `toEdge` is off-road or not
+			logPrOffRoadFactor = (toEdge.isOffRoad()? LOG_PR_PHI: LOG_PR_NOT_PHI);
 		else
-			//`offRoadFactor = 1 / (psi + 1)` or `psi / (psi + 1)`, whether `toEdge` is off-road or not
-			logPrOffRoadFactor = (toEdge.isOffRoad()? 0.: LOG_PR_PSI) - LOG_PR_PSI_1;
+			//`offRoadFactor = ψ` or `1 - ψ`, whether `toEdge` is off-road or not
+			logPrOffRoadFactor = (toEdge.isOffRoad()? LOG_PR_PSI: LOG_PR_NOT_PSI);
 		return logPrOffRoadFactor;
 	}
 
