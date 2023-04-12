@@ -278,9 +278,9 @@ class ViterbiMapMatchingTest{
 
 		final Edge[] path = paths.iterator().next().getValue();
 
-		Assertions.assertEquals(607.4, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
+		Assertions.assertEquals(651.7, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
 
-		final String expected = "[null, null, 2, 2, 2, 2, 2]";
+		final String expected = "[null, null, 0, 0, 2, 2, 2]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 
@@ -457,7 +457,7 @@ class ViterbiMapMatchingTest{
 
 		Assertions.assertEquals(600.8, PathHelper.averagePositioningError(path, filteredObservations), 0.1);
 
-		final String expected = "[0, 0, 0, 0, 3-rev, 1, 1, 1-rev, 1, 1]";
+		final String expected = "[0, 0, 0, 0, 3-rev, 1, 1, 1, 1, 1]";
 		Assertions.assertEquals(expected, Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 	}
 

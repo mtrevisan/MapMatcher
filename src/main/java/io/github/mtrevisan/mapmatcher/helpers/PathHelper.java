@@ -142,7 +142,6 @@ public class PathHelper{
 					}
 
 
-//obs2[35]-29/from,35/to
 					if(previousEdge != null)
 						connectedPath.add(previousEdge);
 

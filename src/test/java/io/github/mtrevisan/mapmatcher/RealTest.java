@@ -113,6 +113,7 @@ public class RealTest{
 //test/resources/ijgi-11-00538-v2.pdf
 
 observations = Arrays.copyOfRange(observations, 172, 182);
+//observations = Arrays.copyOfRange(observations, 172, 174);
 //observations = Arrays.copyOfRange(observations, 176, 179);
 //observations = Arrays.copyOfRange(observations, 0, 172);
 //observations = Arrays.copyOfRange(observations, 170, 185);

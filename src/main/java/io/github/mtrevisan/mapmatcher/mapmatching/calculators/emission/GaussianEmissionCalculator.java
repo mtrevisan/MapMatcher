@@ -63,6 +63,11 @@ public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 	 */
 	@Override
 	public double emissionProbability(final Point observation, final Edge segment, final Point previousObservation){
+		if(segment.isOffRoad() && (segment.getFrom().getPoint().equals(observation) || segment.getTo().getPoint().equals(observation)))
+			//FIXME return what? not zero surely, but what?;
+			return 30.;
+//			return 100.;
+
 		final Polyline polyline = segment.getPath();
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;

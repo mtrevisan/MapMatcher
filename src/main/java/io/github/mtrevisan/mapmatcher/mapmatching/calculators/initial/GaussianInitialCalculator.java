@@ -45,6 +45,11 @@ public class GaussianInitialCalculator extends InitialProbabilityCalculator{
 
 	@Override
 	public double initialProbability(final Point observation, final Edge segment){
+		if(segment.isOffRoad() && (segment.getFrom().getPoint().equals(observation) || segment.getTo().getPoint().equals(observation)))
+			//FIXME return what? not zero surely, but what?;
+			return 30.;
+//			return 100.;
+
 		final Polyline polyline = segment.getPath();
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;

@@ -55,6 +55,8 @@ import java.util.function.Function;
  * @see <a href="https://aclanthology.org/P99-1023.pdf">A second–order Hidden Markov Model for part–of–speech tagging</a>
  * @see <a href="http://www.mit.edu/~jaillet/general/map_matching_itsc2012-final.pdf">Online map-matching based on Hidden Markov model for real-time traffic sensing applications</a>
  * @see <a href="https://www.researchgate.net/publication/320721676_Enhanced_Map-Matching_Algorithm_with_a_Hidden_Markov_Model_for_Mobile_Phone_Positioning">Enhanced map-matching algorithm with a Hidden Markov Model for mobile phone positioning</a>
+ *
+ * @see <a href="https://github.com/bmwcarit/barefoot">Barefoot</a>
  */
 public class ViterbiMapMatching implements MapMatchingStrategy{
 
@@ -306,6 +308,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		augmentedEdges.addAll(candidateEdges);
 
 		final Point currentObservation = observations[currentObservationIndex];
+
 		final Node offRoadCurrentNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
 		if(previousObservationIndex >= 0){
 			//add edge between previous and current observation
@@ -314,6 +317,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			final Edge offRoadEdge = Edge.createDirectOffRoadEdge(offRoadPreviousNode, offRoadCurrentNode);
 			augmentedEdges.add(offRoadEdge);
 		}
+
 		final int nextToCurrentIndex = PathHelper.extractNextObservation(observations, currentObservationIndex + 1);
 		if(nextToCurrentIndex >= 0){
 			//add edge between current and next observation
@@ -325,21 +329,22 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			offRoadCurrentNode.addOutEdge(offRoadNextEdge);
 		}
 
-		final Node observationNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
-		for(final Edge candidateEdge : candidateEdges){
-			//add edge between current observation and projection on candidate edge
-			final Point projectedPoint = candidateEdge.getPath().onTrackClosestPoint(currentObservation);
-			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
-					+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint)
-				.addOutEdge(candidateEdge);
-			//NOTE: avoid connecting to an edge in the opposite direction
-//			if(!candidateEdge.getTo().equals(projectedNode))
-				augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode)
-					.withToProjected(candidateEdge));
-			if(previousObservationIndex >= 0 /*&& !candidateEdge.getFrom().equals(projectedNode)*/)
-				augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode)
-					.withFromProjected(candidateEdge));
-		}
+//		final Node observationNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
+//		for(final Edge candidateEdge : candidateEdges){
+//			//add edge between current observation and projection on candidate edge
+//			final Point projectedPoint = candidateEdge.getPath().onTrackClosestPoint(currentObservation);
+//			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
+//					+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint)
+//				.addOutEdge(candidateEdge);
+//			//NOTE: avoid connecting to an edge in the opposite direction
+////			if(!candidateEdge.getTo().equals(projectedNode))
+//				augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode)
+//					.withToProjected(candidateEdge));
+//			if(previousObservationIndex >= 0 /*&& !candidateEdge.getFrom().equals(projectedNode)*/)
+//				augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode)
+//					.withFromProjected(candidateEdge));
+//		}
+
 		return augmentedEdges;
 	}
 
