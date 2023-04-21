@@ -123,7 +123,7 @@ public class Application{
 
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 900.);
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
-		// correct segment
+		// correct edge
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new ShortestPathTransitionPlugin(330.))

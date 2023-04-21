@@ -45,12 +45,12 @@ public class BayesianEmissionCalculator extends EmissionProbabilityCalculator{
 	 * With the Bayesian rule: <code>Pr(o_i | r_j) = Pr(r_j | o_i) ⋅ Pr(o_i) / sum(k=1..n of Pr(r_k | o_i) ⋅ Pr(o_i))</code>, where
 	 * <code>i=1..m, j=1..n</code> presume that <code>Pr(o_i)</code> follows a uniform distribution, therefore:
 	 * <code>Pr(o_i | r_j) = Pr(r_j | o_i) / sum(k=1..n of Pr(r_k | o_i))</code>
-	 * <code>Pr(r_j | o_i)</code> is the probability that is the correct segment out of the candidate segments given that measured location
+	 * <code>Pr(r_j | o_i)</code> is the probability that is the correct edge out of the candidate edges given that measured location
 	 * is <code>o_i</code>.
-	 * It's computed by assuming that, for most of the GPS points, the closer a segment is to the observed point, the higher the
-	 * probabilities that it is the correct segment. Considering the relationship of distance and observation probability as an inverse
-	 * proportion, first it's computed the probability of the perpendicular distance from GPS point <code>o_i</code> to the segment
-	 * <code>r_j<code> over the summation of the distances from <code>o_i</code> to all the candidate segments, and then use reciprocal
+	 * It's computed by assuming that, for most of the GPS points, the closer a edge is to the observed point, the higher the
+	 * probabilities that it is the correct edge. Considering the relationship of distance and observation probability as an inverse
+	 * proportion, first it's computed the probability of the perpendicular distance from GPS point <code>o_i</code> to the edge
+	 * <code>r_j<code> over the summation of the distances from <code>o_i</code> to all the candidate edges, and then use reciprocal
 	 * relation of the probability based on distances to approximate observation probability.
 	 * This leads to: <code>Pr(r_j | o_i) = (1 / δ(o_i, r_j)) / sum(k=1..n of 1 / δ(o_i, r_k))</code> and
 	 * </p>
@@ -65,7 +65,7 @@ public class BayesianEmissionCalculator extends EmissionProbabilityCalculator{
 		for(final Edge edge : edges){
 			double distance = observation.distance(edge.getPath());
 			//NOTE: if the projection point is on the extension line of the section, the distance from the trajectory point to the nearest
-			// point of the segment is calculated (see "A self-adjusting online map matching method")
+			// point of the edge is calculated (see "A self-adjusting online map matching method")
 			if(distance < Double.MIN_VALUE)
 				distance = edge.getPath().onTrackClosestNode(observation).distance(observation);
 			assert (distance >= Double.MIN_VALUE) : "Cannot use bayesian emission calculator because one of the distances is zero";
@@ -92,8 +92,8 @@ public class BayesianEmissionCalculator extends EmissionProbabilityCalculator{
 	}
 
 	@Override
-	public double emissionProbability(final Point observation, final Edge segment, final Point previousObservation){
-		return emissionProbability.getOrDefault(segment, Double.POSITIVE_INFINITY);
+	public double emissionProbability(final Point observation, final Edge edge, final Point previousObservation){
+		return emissionProbability.getOrDefault(edge, Double.POSITIVE_INFINITY);
 	}
 
 }

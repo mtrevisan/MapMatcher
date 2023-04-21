@@ -225,7 +225,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 		for(final Edge edge : graphEdgesNearCurrentObservation){
 			final double probability = initialProbabilityCalculator.initialProbability(currentObservation, edge)
 				+ emissionProbabilityCalculator.emissionProbability(currentObservation, edge, null);
-			score.computeIfAbsent(edge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
+			score.computeIfAbsent(edge, k -> new HashMap<>(m))
+				.put(currentObservationIndex, probability);
 			path.computeIfAbsent(edge, k -> new Edge[m])[currentObservationIndex] = edge;
 		}
 
@@ -255,7 +256,13 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			for(final Edge toEdge : graphEdgesNearCurrentObservation){
 				minProbability = Double.POSITIVE_INFINITY;
 
+if(toEdge.getID().equals("obs2[2]-obs2") || toEdge.getID().equals("2"))
+	System.out.println();
+				final double emissionProbability = emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
+
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
+if(fromEdge.getID().equals("2") && toEdge.getID().equals("obs2[2]-obs2") || fromEdge.getID().equals("2") && toEdge.getID().equals("2"))
+	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);
@@ -269,9 +276,10 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 					if(Double.isFinite(probability) && probability <= minProbability){
 						//record minimum probability
 						minProbability = probability;
-						probability += emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
+						probability += emissionProbability;
 
-						score.computeIfAbsent(toEdge, k -> new HashMap<>(m)).put(currentObservationIndex, probability);
+						score.computeIfAbsent(toEdge, k -> new HashMap<>(m))
+							.put(currentObservationIndex, probability);
 
 						//record path
 						System.arraycopy(path.computeIfAbsent(fromEdge, k -> new Edge[m]), 0,
@@ -288,18 +296,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			previousObservationIndex = currentObservationIndex;
 		}
 
-		final Collection<Map.Entry<Double, Edge[]>> minProbabilityPaths = new ArrayList<>(0);
-		final int sortIndex = previousObservationIndex;
-		final Function<Edge, Double> sortScore = edge -> score.getOrDefault(edge,
-			Collections.emptyMap()).getOrDefault(sortIndex, Double.POSITIVE_INFINITY);
-		path.entrySet().removeIf(edgeEntry -> Double.isInfinite(sortScore.apply(edgeEntry.getKey())));
-		while(!path.isEmpty()){
-			final Edge minimumEdge = Collections.min(path.entrySet(), Comparator.comparingDouble(entry -> sortScore.apply(entry.getKey())))
-				.getKey();
-			final double minimumProbability = sortScore.apply(minimumEdge);
-			minProbabilityPaths.add(new AbstractMap.SimpleEntry<>(minimumProbability, path.remove(minimumEdge)));
-		}
-		return minProbabilityPaths;
+		return sortPaths(path, score, previousObservationIndex);
 	}
 
 	private static List<Edge> calculateOffRoadEdges(final Collection<Edge> candidateEdges, final Point[] observations,
@@ -329,21 +326,21 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			offRoadCurrentNode.addOutEdge(offRoadNextEdge);
 		}
 
-//		final Node observationNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
-//		for(final Edge candidateEdge : candidateEdges){
-//			//add edge between current observation and projection on candidate edge
-//			final Point projectedPoint = candidateEdge.getPath().onTrackClosestPoint(currentObservation);
-//			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
-//					+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint)
-//				.addOutEdge(candidateEdge);
-//			//NOTE: avoid connecting to an edge in the opposite direction
-////			if(!candidateEdge.getTo().equals(projectedNode))
-//				augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode)
-//					.withToProjected(candidateEdge));
-//			if(previousObservationIndex >= 0 /*&& !candidateEdge.getFrom().equals(projectedNode)*/)
-//				augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode)
-//					.withFromProjected(candidateEdge));
-//		}
+		final Node observationNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
+		for(final Edge candidateEdge : candidateEdges){
+			//add edge between current observation and projection on candidate edge
+			final Point projectedPoint = candidateEdge.getPath().onTrackClosestPoint(currentObservation);
+			final Node projectedNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex
+					+ NODE_ID_EDGE_INFIX_START + candidateEdge.getID() + NODE_ID_EDGE_INFIX_END, projectedPoint)
+				.addOutEdge(candidateEdge);
+			//NOTE: avoid connecting to an edge in the opposite direction
+//			if(!candidateEdge.getTo().equals(projectedNode))
+				augmentedEdges.add(Edge.createDirectOffRoadEdge(observationNode, projectedNode)
+					.withToProjected(candidateEdge));
+			if(previousObservationIndex >= 0 /*&& !candidateEdge.getFrom().equals(projectedNode)*/)
+				augmentedEdges.add(Edge.createDirectOffRoadEdge(projectedNode, observationNode)
+					.withFromProjected(candidateEdge));
+		}
 
 		return augmentedEdges;
 	}
@@ -363,6 +360,22 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			path = fromEdge.getPath()
 				.append(toEdge.getPath());
 		return path;
+	}
+
+	private static Collection<Map.Entry<Double, Edge[]>> sortPaths(final Map<Edge, Edge[]> path, final Map<Edge, Map<Integer, Double>> score,
+			final int sortIndex){
+		final Collection<Map.Entry<Double, Edge[]>> minProbabilityPaths = new ArrayList<>(0);
+		final Function<Edge, Double> sortScore = edge -> score.getOrDefault(edge,
+			Collections.emptyMap()).getOrDefault(sortIndex, Double.POSITIVE_INFINITY);
+		path.entrySet()
+			.removeIf(edgeEntry -> Double.isInfinite(sortScore.apply(edgeEntry.getKey())));
+		while(! path.isEmpty()){
+			final Edge minimumEdge = Collections.min(path.entrySet(), Comparator.comparingDouble(entry -> sortScore.apply(entry.getKey())))
+				.getKey();
+			final double minimumProbability = sortScore.apply(minimumEdge);
+			minProbabilityPaths.add(new AbstractMap.SimpleEntry<>(minimumProbability, path.remove(minimumEdge)));
+		}
+		return minProbabilityPaths;
 	}
 
 }

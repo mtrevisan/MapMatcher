@@ -43,13 +43,11 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	private static final double LOG_PR_UNCONNECTED_EDGES = ProbabilityHelper.logPr(0.);
 
 	//constants from an edge of the graph
-	private static final double PHI = 0.9;
-//	private static final double PHI = 0.85;
+	private static final double PHI = 0.15;
 	private static final double LOG_PR_PHI = ProbabilityHelper.logPr(PHI);
 	private static final double LOG_PR_NOT_PHI = ProbabilityHelper.logPr(1. - PHI);
 	//constants from an edge outside the graph
-//	private static final double PSI = 0.1;
-	private static final double PSI = 0.012;
+	private static final double PSI = 0.95;
 	private static final double LOG_PR_PSI = ProbabilityHelper.logPr(PSI);
 	private static final double LOG_PR_NOT_PSI = ProbabilityHelper.logPr(1. - PSI);
 
@@ -73,14 +71,14 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	 * Exponential function of the difference between the route length and the great circle distance between <code>o_t</code> and
 	 * <code>o_t+1</code>.<br/>
 	 * </code>Pr(r_i | r_i-1) = 0.5 ⋅ γ ⋅ exp(-γ ⋅ |dist(o_i-1, o_i) - pathDistance(x_i-1, x_i)|)</code> where <code>γ</code> is 3 (empirically),
-	 * <code>γ = 1 / β</code>, and <code>x_k</code> is the projection of the observation <code>o_k</code> onto the segment <code>r</code>.
+	 * <code>γ = 1 / β</code>, and <code>x_k</code> is the projection of the observation <code>o_k</code> onto the edge <code>r</code>.
 	 * </p>
 	 *
 	 * Otherwise
 	 *
 	 * <p>
 	 * <code>Pr(r_i-1 -> r_i) = dist(o_i-1, o_i) / pathDistance(x_i-1, x_i)</code>, where <code>x_k</code> is the projection of the
-	 * observation <code>o_k</code> onto the segment <code>r</code>.
+	 * observation <code>o_k</code> onto the edge <code>r</code>.
 	 * </p>
 	 *
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
@@ -91,8 +89,6 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 			final Polyline path){
 		if(path.isEmpty())
 			return LOG_PR_UNCONNECTED_EDGES;
-//if(fromEdge.getID().equals("12") && toEdge.getID().equals("27"))
-//	System.out.println();
 
 		return (fromEdge.equals(toEdge)? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE)
 			+ calculateOffRoadFactor(fromEdge, toEdge)
@@ -112,15 +108,11 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 
 	private double calculateLogPr(final Point previousObservation, final Point currentObservation, final Polyline path){
 		final double observationsDistance = previousObservation.distance(currentObservation);
-		final Point previousOnTrackPoint = path.onTrackClosestPoint(previousObservation);
-		final Point currentOnTrackPoint = path.onTrackClosestPoint(currentObservation);
-		final double pathDistance = (previousOnTrackPoint.equals(currentOnTrackPoint)
-			? 0.
-			: path.alongTrackDistance(currentOnTrackPoint) - path.alongTrackDistance(previousOnTrackPoint));
+		final double pathDistance = path.alongTrackDistance(currentObservation) - path.alongTrackDistance(previousObservation);
 
 		//expansion of:
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
-		//return ProbabilityHelper.logPr((sameSegment? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * a);
+		//return ProbabilityHelper.logPr((sameEdge? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * a);
 		//in order to overcome overflow on exponential
 		return logPrInverseRateParameter
 			+ Math.abs(observationsDistance - pathDistance) * inverseRateParameter;

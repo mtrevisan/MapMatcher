@@ -32,25 +32,31 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 public class GaussianInitialCalculator extends InitialProbabilityCalculator{
 
+	//constants from an edge of the graph
+	private static final double PHI = 1.e-17;
+	private static final double LOG_PR_PHI = ProbabilityHelper.logPr(PHI);
+
 	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
 
 
 	private final double observationStandardDeviation;
+	private final double k3;
 
 
 	public GaussianInitialCalculator(final double observationStandardDeviation){
 		this.observationStandardDeviation = observationStandardDeviation;
+
+		k3 = ProbabilityHelper.logPr(K2 * observationStandardDeviation);
 	}
 
 
 	@Override
-	public double initialProbability(final Point observation, final Edge segment){
-		if(segment.isOffRoad() && (segment.getFrom().getPoint().equals(observation) || segment.getTo().getPoint().equals(observation)))
+	public double initialProbability(final Point observation, final Edge edge){
+		if(edge.isOffRoad())
 			//FIXME return what? not zero surely, but what?;
-			return 30.;
-//			return 100.;
+			return LOG_PR_PHI;
 
-		final Polyline polyline = segment.getPath();
+		final Polyline polyline = edge.getPath();
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;
 
@@ -58,7 +64,7 @@ public class GaussianInitialCalculator extends InitialProbabilityCalculator{
 		//final double probability = Math.exp(-0.5 * tmp) / (StrictMath.sqrt(2. * Math.PI) * observationStandardDeviation);
 		//return ProbabilityHelper.logPr(probability);
 		//in order to overcome overflow on exponential
-		return 0.5 * tmp - ProbabilityHelper.logPr(K2 * observationStandardDeviation);
+		return 0.5 * tmp - k3;
 	}
 
 }

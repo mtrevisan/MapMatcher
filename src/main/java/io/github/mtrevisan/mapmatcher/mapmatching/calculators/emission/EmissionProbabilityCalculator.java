@@ -34,6 +34,6 @@ public abstract class EmissionProbabilityCalculator{
 
 	public void updateEmissionProbability(Point observation, Collection<Edge> edges){}
 
-	abstract public double emissionProbability(Point observation, Edge segment, Point previousObservation);
+	abstract public double emissionProbability(Point observation, Edge edge, Point previousObservation);
 
 }

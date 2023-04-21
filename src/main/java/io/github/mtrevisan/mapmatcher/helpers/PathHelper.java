@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -72,6 +73,14 @@ public class PathHelper{
 		return averagePositioningError / windowSize;
 	}
 
+
+	public static void restrictSolutions(final Collection<Map.Entry<Double, Edge[]>> paths, final double percentile){
+		if(paths.size() > 1){
+			final double minimumCost = paths.iterator().next().getKey();
+			final double costLimit = minimumCost * (1. + percentile);
+			paths.removeIf(path -> path.getKey() > costLimit);
+		}
+	}
 
 	public static Edge[] connectPath(final Edge[] path, final Graph graph, final PathFindingStrategy pathFinder){
 		final int size = (path != null? path.length: 0);
@@ -349,7 +358,7 @@ public class PathHelper{
 	}
 
 
-	//create id as `<segment>(.<leg>)?
+	//create id as `<edge>(.<leg>)?
 	public static Graph extractDirectGraph(final Collection<Polyline> edges, final double threshold){
 		final NearNodeMergeGraph graph = new NearNodeMergeGraph(threshold)
 			.withTree();
@@ -363,7 +372,7 @@ public class PathHelper{
 		return graph;
 	}
 
-	//create id as `<segment>(.<leg>)?(-rev)?`
+	//create id as `<edge>(.<leg>)?(-rev)?`
 	public static Graph extractBidirectionalGraph(final Collection<Polyline> edges, final double threshold){
 		final NearNodeMergeGraph graph = new NearNodeMergeGraph(threshold)
 			.withTree();

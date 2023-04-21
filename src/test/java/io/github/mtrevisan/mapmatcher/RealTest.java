@@ -34,6 +34,7 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionP
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.GaussianInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
@@ -83,20 +84,19 @@ public class RealTest{
 	public static void main(final String[] args) throws IOException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
-		// correct segment
+		// correct edge
+		final double observationStandardDeviation = 7.;
 //		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
-		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new GaussianInitialCalculator(observationStandardDeviation);
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(12.))
-//			.withPlugin(new ShortestPathTransitionPlugin(1.5))
+			.withPlugin(new ShortestPathTransitionPlugin(2.))
 			.withPlugin(new DirectionTransitionPlugin());
-//		final TransitionProbabilityCalculator transitionCalculator = new LogExponentialTransitionCalculator(200.);
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 				distanceCalculator)
-			.withOffRoad();
+			.withOffRoad()
+			;
 
 		final Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
 			.toArray(Polyline[]::new);
@@ -112,9 +112,8 @@ public class RealTest{
 //https://kops.uni-konstanz.de/server/api/core/bitstreams/324b2478-0f44-496a-a276-4463237646f8/content
 //test/resources/ijgi-11-00538-v2.pdf
 
-observations = Arrays.copyOfRange(observations, 172, 182);
-//observations = Arrays.copyOfRange(observations, 172, 174);
-//observations = Arrays.copyOfRange(observations, 176, 179);
+//observations = Arrays.copyOfRange(observations, 172, 182);
+observations = Arrays.copyOfRange(observations, 176, 179);
 //observations = Arrays.copyOfRange(observations, 0, 172);
 //observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 400, 500);
@@ -133,6 +132,7 @@ observations = Arrays.copyOfRange(observations, 172, 182);
 System.out.println("observation noises: " + Arrays.toString(observationNoises));
 System.out.println("graph & observations: " + graph.toStringWithObservations(filteredObservations));
 		final Collection<Map.Entry<Double, Edge[]>> paths = strategy.findPath(graph, filteredObservations, 400.);
+		PathHelper.restrictSolutions(paths, 0.25);
 
 		final Edge[] path = (paths.size() > 0? paths.iterator().next().getValue(): null);
 System.out.println("true: [13, 4, obs1[4]-obs2, obs2-obs3, obs3-obs4, obs4-obs5]");

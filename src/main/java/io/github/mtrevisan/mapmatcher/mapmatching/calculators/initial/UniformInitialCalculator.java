@@ -37,12 +37,12 @@ public class UniformInitialCalculator extends InitialProbabilityCalculator{
 
 
 	@Override
-	public void calculateInitialProbability(final Collection<Edge> segments){
-		initialProbability = ProbabilityHelper.logPr(1. / segments.size());
+	public void calculateInitialProbability(final Collection<Edge> edges){
+		initialProbability = ProbabilityHelper.logPr(1. / edges.size());
 	}
 
 	@Override
-	public double initialProbability(final Point observation, final Edge segment){
+	public double initialProbability(final Point observation, final Edge edge){
 		return initialProbability;
 	}
 

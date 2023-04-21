@@ -32,6 +32,10 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 
+	//constants from an edge of the graph
+	private static final double PHI = 8.e-17;
+	private static final double LOG_PR_PHI = ProbabilityHelper.logPr(PHI);
+
 	private static final double K1 = 2. / StrictMath.PI;
 	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
 
@@ -44,10 +48,13 @@ public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 
 
 	private final double observationStandardDeviation;
+	private final double k3;
 
 
 	public GaussianEmissionCalculator(final double observationStandardDeviation){
 		this.observationStandardDeviation = observationStandardDeviation;
+
+		k3 = ProbabilityHelper.logPr(K2 * observationStandardDeviation);
 	}
 
 
@@ -62,34 +69,43 @@ public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	@Override
-	public double emissionProbability(final Point observation, final Edge segment, final Point previousObservation){
-		if(segment.isOffRoad() && (segment.getFrom().getPoint().equals(observation) || segment.getTo().getPoint().equals(observation)))
+	public double emissionProbability(final Point observation, final Edge edge, final Point previousObservation){
+		if(edge.isOffRoad())
 			//FIXME return what? not zero surely, but what?;
-			return 30.;
-//			return 100.;
+			return LOG_PR_PHI;
 
-		final Polyline polyline = segment.getPath();
+		final Polyline polyline = edge.getPath();
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;
 
 		//weight given on vehicle heading, which is related to the road direction angle and the trajectory direction angle
-		double tau = 1.;
-		if(previousObservation != null){
-			final Point previousObservationClosest = polyline.onTrackClosestPoint(previousObservation);
-			final Point currentObservationClosest = polyline.onTrackClosestPoint(observation);
-			if(!previousObservationClosest.equals(currentObservationClosest)){
-				final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
-				final double angleGPS = previousObservation.initialBearing(observation);
-				final double angleDelta = StrictMath.abs(angleRoad - angleGPS);
-				tau = TAU0 + StrictMath.exp(StrictMath.toRadians(Math.min(360. - angleDelta, angleDelta)) - K1);
-			}
-		}
+		final double tau = headingWeight(observation, previousObservation, polyline);
 
 		//expansion of:
 		//final double probability = Math.exp(-0.5 * tau * tmp) / (StrictMath.sqrt(2. * Math.PI) * observationStandardDeviation);
 		//return ProbabilityHelper.logPr(probability);
 		//in order to overcome overflow on exponential
-		return 0.5 * tau * tmp - ProbabilityHelper.logPr(K2 * observationStandardDeviation);
+		return 0.5 * tau * tmp - k3;
+	}
+
+	private static double headingWeight(final Point currentObservation, final Point previousObservation, final Polyline polyline){
+		double tau = 1.;
+		if(previousObservation != null){
+			final Point previousObservationClosest = polyline.onTrackClosestPoint(previousObservation);
+			final Point currentObservationClosest = polyline.onTrackClosestPoint(currentObservation);
+			if(!previousObservationClosest.equals(currentObservationClosest)){
+				final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
+				final double angleGPS = previousObservation.initialBearing(currentObservation);
+				final double angleDelta = calculateAngleDifference(angleRoad, angleGPS);
+				tau = TAU0 + StrictMath.exp(StrictMath.toRadians(angleDelta) - K1);
+			}
+		}
+		return tau;
+	}
+
+	private static double calculateAngleDifference(final double angleRoad, final double angleGPS){
+		final double angleDelta = StrictMath.abs(angleRoad - angleGPS);
+		return Math.min(360. - angleDelta, angleDelta);
 	}
 
 }

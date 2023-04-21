@@ -176,35 +176,15 @@ out skel qt;
 			return polylines;
 
 		//collect intersection points
-		final Set<Point> points = new HashSet<>(polylines.size() * 2);
-		final Set<Point> intersectionPoints = new HashSet<>();
-		for(final Polyline polyline : polylines)
-			for(final Point point : polyline.getPoints())
-				if(!points.add(point))
-					intersectionPoints.add(point);
+		final Set<Point> intersectionPoints = collectIntersectionPoints(polylines);
 
 		//split polylines
 		final List<Polyline> splitPolylines = new ArrayList<>(polylines.size());
 		for(Polyline polyline : polylines){
-			final Queue<Point> cutpoints = new PriorityQueue<>(Comparator.comparingDouble(polyline::alongTrackDistance));
-			for(final Point point : polyline.getPoints())
-				if(intersectionPoints.contains(point))
-					cutpoints.add(point);
+			final Queue<Point> cutpoints = extractCutpoints(polyline, intersectionPoints);
 
-			if(cutpoints.isEmpty())
-				splitPolylines.add(polyline);
-			else{
-				//split
-				for(final Point cutpoint : cutpoints){
-					final Point[][] pls = polyline.cutOnNode(cutpoint);
-					if(pls[0].length > 1){
-						splitPolylines.add(FACTORY.createPolyline(pls[0]));
-						polyline = FACTORY.createPolyline(pls[1]);
-					}
-				}
-				if(polyline.getPoints().length > 1)
-					splitPolylines.add(polyline);
-			}
+			//split
+			splitPolyline(polyline, cutpoints, splitPolylines);
 		}
 
 
@@ -212,10 +192,50 @@ out skel qt;
 		simplifier.setDistanceTolerance(tolerance);
 		final List<Polyline> reducedPolylines = new ArrayList<>(splitPolylines.size());
 		for(final Polyline polyline : splitPolylines){
-			final Point[] reducedPoints = simplifier.simplify(polyline.getPoints());
-			reducedPolylines.add(FACTORY.createPolyline(reducedPoints));
+			final Point[] originalPoints = polyline.getPoints();
+			final Point[] reducedPoints = simplifier.simplify(originalPoints);
+			reducedPolylines.add(reducedPoints.length != originalPoints.length
+				? FACTORY.createPolyline(reducedPoints)
+				: polyline);
 		}
 		return reducedPolylines;
+	}
+
+	private static Set<Point> collectIntersectionPoints(Collection<Polyline> polylines){
+		final Set<Point> points = new HashSet<>(polylines.size());
+		final Set<Point> intersectionPoints = new HashSet<>();
+		for(final Polyline polyline : polylines)
+			for(final Point point : polyline.getPoints())
+				if(!points.add(point))
+					intersectionPoints.add(point);
+		return intersectionPoints;
+	}
+
+	private static Queue<Point> extractCutpoints(final Polyline polyline, final Set<Point> intersectionPoints){
+		final Queue<Point> cutpoints = new PriorityQueue<>(Comparator.comparingDouble(polyline::alongTrackDistance));
+		final Point[] points = polyline.getPoints();
+		for(int i = 1; i < points.length - 1; i ++){
+			final Point point = points[i];
+			if(intersectionPoints.contains(point))
+				cutpoints.add(point);
+		}
+		return cutpoints;
+	}
+
+	private static void splitPolyline(Polyline polyline, final Queue<Point> cutpoints, final List<Polyline> splitPolylines){
+		if(cutpoints.isEmpty())
+			splitPolylines.add(polyline);
+		else{
+			for(final Point cutpoint : cutpoints){
+				final Point[][] pls = polyline.cutOnNode(cutpoint);
+				if(pls[0].length > 1){
+					splitPolylines.add(FACTORY.createPolyline(pls[0]));
+					polyline = FACTORY.createPolyline(pls[1]);
+				}
+			}
+			if(polyline.getPoints().length > 1)
+				splitPolylines.add(polyline);
+		}
 	}
 
 	private static void writePoints(final Collection<Point> points, final File outputFile) throws IOException{
@@ -247,7 +267,7 @@ out skel qt;
 			FACTORY.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(2327, roads.size());
+		Assertions.assertEquals(2382, roads.size());
 	}
 
 	@Test
