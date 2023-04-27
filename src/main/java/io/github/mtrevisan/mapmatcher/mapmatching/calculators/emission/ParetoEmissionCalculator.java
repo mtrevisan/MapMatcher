@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -30,10 +30,10 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
+//in urban environments
+public class ParetoEmissionCalculator extends EmissionProbabilityCalculator{
 
 	private static final double K1 = 2. / StrictMath.PI;
-	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
 
 	/**
 	 * 0 < tau0 < 1
@@ -44,25 +44,23 @@ public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 
 
 	private final double observationStandardDeviation;
-	private final double k3;
+
+	private final double shapeFactor;
+	private final double k4;
+	private final double k5;
 
 
-	public GaussianEmissionCalculator(final double observationStandardDeviation){
+	public ParetoEmissionCalculator(final double observationStandardDeviation, final double shapeFactor){
 		this.observationStandardDeviation = observationStandardDeviation;
 
-		k3 = ProbabilityHelper.logPr(K2 * observationStandardDeviation);
+		this.shapeFactor = shapeFactor;
+		k4 = -(1. / shapeFactor + 1.);
+		k5 = ProbabilityHelper.logPr(observationStandardDeviation);
 	}
 
 
 	/**
-	 * Calculate emission probability
-	 * <p>
-	 * A zero-mean gaussian observation error:
-	 * Pr(o_i | r_j) = 1 / (√(2 ⋅ π) ⋅ σ) ⋅ exp(-0.5 ⋅ (dist(o_i, r_j) / σ)^2), where σ = 20 m (empirically)
-	 * </p>
-	 *
 	 * @see <a href="https://hal-enac.archives-ouvertes.fr/hal-01160130/document">Characterization of GNSS receiver position errors for user integrity monitoring in urban environments</a>
-	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	@Override
 	public double emissionProbability(final Point observation, final Edge edge, final Point previousObservation){
@@ -74,10 +72,10 @@ public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 		final double tau = headingWeight(observation, previousObservation, polyline);
 
 		//expansion of:
-		//final double probability = Math.exp(-0.5 * tau * tmp) / (observationStandardDeviation * StrictMath.sqrt(2. * Math.PI));
+		//final double probability = Math.pow(1. + shapeFactor * tmp, -1. / shapeFactor - 1.) / observationStandardDeviation;
 		//return ProbabilityHelper.logPr(probability);
 		//in order to overcome overflow on exponential
-		return 0.5 * tau * tmp - k3;
+		return k4 * ProbabilityHelper.logPr(1. + shapeFactor * tau * tmp) - k5;
 	}
 
 	private static double headingWeight(final Point currentObservation, final Point previousObservation, final Polyline polyline){

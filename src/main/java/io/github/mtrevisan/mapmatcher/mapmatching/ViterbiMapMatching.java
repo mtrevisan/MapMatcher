@@ -256,16 +256,14 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			for(final Edge toEdge : graphEdgesNearCurrentObservation){
 				minProbability = Double.POSITIVE_INFINITY;
 
-if(toEdge.getID().equals("obs2[2]-obs2") || toEdge.getID().equals("2"))
-	System.out.println();
 				final double emissionProbability = emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-if(fromEdge.getID().equals("2") && toEdge.getID().equals("obs2[2]-obs2") || fromEdge.getID().equals("2") && toEdge.getID().equals("2"))
-	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);
+					if(pathAsPolyline.isEmpty())
+						continue;
 
 					double probability = score.getOrDefault(fromEdge, Collections.emptyMap())
 						.getOrDefault(previousObservationIndex, Double.POSITIVE_INFINITY);
@@ -315,16 +313,15 @@ if(fromEdge.getID().equals("2") && toEdge.getID().equals("obs2[2]-obs2") || from
 			augmentedEdges.add(offRoadEdge);
 		}
 
-		final int nextToCurrentIndex = PathHelper.extractNextObservation(observations, currentObservationIndex + 1);
-		if(nextToCurrentIndex >= 0){
-			//add edge between current and next observation
-			final Node offRoadNextNode = Node.of(NODE_ID_OBSERVATION_PREFIX + nextToCurrentIndex,
-				observations[nextToCurrentIndex]);
-			final Edge offRoadNextEdge = Edge.createDirectOffRoadEdge(offRoadCurrentNode, offRoadNextNode);
-			augmentedEdges.add(offRoadNextEdge);
-
-			offRoadCurrentNode.addOutEdge(offRoadNextEdge);
-		}
+//		final int nextToCurrentIndex = PathHelper.extractNextObservation(observations, currentObservationIndex + 1);
+//		if(nextToCurrentIndex >= 0){
+//			//add edge between current and next observation
+//			final Node offRoadNextNode = Node.of(NODE_ID_OBSERVATION_PREFIX + nextToCurrentIndex, observations[nextToCurrentIndex]);
+//			final Edge offRoadNextEdge = Edge.createDirectOffRoadEdge(offRoadCurrentNode, offRoadNextNode);
+//			augmentedEdges.add(offRoadNextEdge);
+//
+//			offRoadCurrentNode.addOutEdge(offRoadNextEdge);
+//		}
 
 		final Node observationNode = Node.of(NODE_ID_OBSERVATION_PREFIX + currentObservationIndex, currentObservation);
 		for(final Edge candidateEdge : candidateEdges){
@@ -369,7 +366,7 @@ if(fromEdge.getID().equals("2") && toEdge.getID().equals("obs2[2]-obs2") || from
 			Collections.emptyMap()).getOrDefault(sortIndex, Double.POSITIVE_INFINITY);
 		path.entrySet()
 			.removeIf(edgeEntry -> Double.isInfinite(sortScore.apply(edgeEntry.getKey())));
-		while(! path.isEmpty()){
+		while(!path.isEmpty()){
 			final Edge minimumEdge = Collections.min(path.entrySet(), Comparator.comparingDouble(entry -> sortScore.apply(entry.getKey())))
 				.getKey();
 			final double minimumProbability = sortScore.apply(minimumEdge);

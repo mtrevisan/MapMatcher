@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -30,33 +30,33 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-public class GaussianInitialCalculator extends InitialProbabilityCalculator{
-
-	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
-
+//in open sky environments
+public class RayleighInitialCalculator extends InitialProbabilityCalculator{
 
 	private final double observationStandardDeviation;
-	private final double k3;
+
+	private final double k5;
 
 
-	public GaussianInitialCalculator(final double observationStandardDeviation){
+	public RayleighInitialCalculator(final double observationStandardDeviation){
 		this.observationStandardDeviation = observationStandardDeviation;
 
-		k3 = ProbabilityHelper.logPr(K2 * observationStandardDeviation);
+		k5 = ProbabilityHelper.logPr(observationStandardDeviation);
 	}
 
 
+	/**
+	 * @see <a href="https://hal-enac.archives-ouvertes.fr/hal-01160130/document">Characterization of GNSS receiver position errors for user integrity monitoring in urban environments</a>
+	 */
 	@Override
 	public double initialProbability(final Point observation, final Edge edge){
 		final Polyline polyline = edge.getPath();
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;
 
-		//expansion of:
-		//final double probability = Math.exp(-0.5 * tmp) / (StrictMath.sqrt(2. * Math.PI) * observationStandardDeviation);
-		//return ProbabilityHelper.logPr(probability);
-		//in order to overcome overflow on exponential
-		return 0.5 * tmp - k3;
+		return ProbabilityHelper.logPr(tmp)
+			- k5
+			+ 0.5 * tmp * tmp;
 	}
 
 }

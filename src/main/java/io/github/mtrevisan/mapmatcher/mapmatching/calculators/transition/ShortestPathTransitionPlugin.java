@@ -107,8 +107,12 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	}
 
 	private double calculateLogPr(final Point previousObservation, final Point currentObservation, final Polyline path){
-		final double observationsDistance = previousObservation.distance(currentObservation);
 		final double pathDistance = path.alongTrackDistance(currentObservation) - path.alongTrackDistance(previousObservation);
+		if(pathDistance < 0.)
+			//the direction of the observations is opposite to the direction of the path
+			return LOG_PR_UNCONNECTED_EDGES;
+
+		final double observationsDistance = previousObservation.distance(currentObservation);
 
 		//expansion of:
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));

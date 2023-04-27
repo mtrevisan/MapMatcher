@@ -32,8 +32,10 @@ import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.RayleighEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.GaussianInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.RayleighInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
@@ -85,13 +87,16 @@ public class RealTest{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct edge
+//		final double observationStandardDeviation = 13.;
 		final double observationStandardDeviation = 7.;
 //		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final InitialProbabilityCalculator initialCalculator = new GaussianInitialCalculator(observationStandardDeviation);
+//		final InitialProbabilityCalculator initialCalculator = new RayleighInitialCalculator(observationStandardDeviation);
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new ShortestPathTransitionPlugin(2.))
 			.withPlugin(new DirectionTransitionPlugin());
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
+//		final EmissionProbabilityCalculator emissionCalculator = new RayleighEmissionCalculator(observationStandardDeviation);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 				distanceCalculator)
@@ -135,7 +140,6 @@ System.out.println("graph & observations: " + graph.toStringWithObservations(fil
 		PathHelper.restrictSolutions(paths, 0.25);
 
 		final Edge[] path = (paths.size() > 0? paths.iterator().next().getValue(): null);
-System.out.println("true: [13, 4, obs1[4]-obs2, obs2-obs3, obs3-obs4, obs4-obs5]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 else
