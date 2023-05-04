@@ -36,7 +36,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.RayleighE
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.GaussianInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.RayleighInitialCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
@@ -87,14 +86,13 @@ public class RealTest{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct edge
-//		final double observationStandardDeviation = 13.;
-		final double observationStandardDeviation = 7.;
+		final double observationStandardDeviation = 5.5;
 //		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final InitialProbabilityCalculator initialCalculator = new GaussianInitialCalculator(observationStandardDeviation);
 //		final InitialProbabilityCalculator initialCalculator = new RayleighInitialCalculator(observationStandardDeviation);
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
-			.withPlugin(new ShortestPathTransitionPlugin(2.))
-			.withPlugin(new DirectionTransitionPlugin());
+			.withPlugin(new DirectionTransitionPlugin())
+			.withPlugin(new ShortestPathTransitionPlugin(2.));
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 //		final EmissionProbabilityCalculator emissionCalculator = new RayleighEmissionCalculator(observationStandardDeviation);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
@@ -161,7 +159,9 @@ if(!pathPolylines.isEmpty()){
 	System.out.println("path polyline: " + sj);
 }
 
-System.out.println("average positioning error: " + PathHelper.averagePositioningError(path, filteredObservations));
+final double averagePositionError = PathHelper.averagePositionError(path, filteredObservations);
+System.out.println("average position error: " + averagePositionError);
+System.out.println("average position standard deviation: " + PathHelper.averagePositionStandardDeviation(path, filteredObservations, averagePositionError));
 
 		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
 		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order

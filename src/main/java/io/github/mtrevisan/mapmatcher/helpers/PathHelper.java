@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2022 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -55,7 +55,7 @@ public class PathHelper{
 	private PathHelper(){}
 
 
-	public static double averagePositioningError(final Edge[] path, final Point[] observations){
+	public static double averagePositionError(final Edge[] path, final Point[] observations){
 		if(path == null)
 			throw new IllegalArgumentException("Path must be non-null");
 		if(observations == null)
@@ -63,14 +63,33 @@ public class PathHelper{
 		if(path.length != observations.length)
 			throw new IllegalArgumentException("Length of path must match length of observations");
 
-		double averagePositioningError = 0.;
+		double cumulativeError = 0.;
 		int windowSize = 0;
 		for(int i = 0; i < observations.length; i ++)
 			if(observations[i] != null && path[i] != null && !path[i].isOffRoad()){
-				averagePositioningError += observations[i].distance(path[i].getPath());
+				cumulativeError += observations[i].distance(path[i].getPath());
 				windowSize ++;
 			}
-		return averagePositioningError / windowSize;
+		return cumulativeError / windowSize;
+	}
+
+	public static double averagePositionStandardDeviation(final Edge[] path, final Point[] observations, final double averageError){
+		if(path == null)
+			throw new IllegalArgumentException("Path must be non-null");
+		if(observations == null)
+			throw new IllegalArgumentException("Observations must be non-null");
+		if(path.length != observations.length)
+			throw new IllegalArgumentException("Length of path must match length of observations");
+
+		double cumulativeError = 0.;
+		int windowSize = 0;
+		for(int i = 0; i < observations.length; i ++)
+			if(observations[i] != null && path[i] != null && !path[i].isOffRoad()){
+				final double delta = observations[i].distance(path[i].getPath()) - averageError;
+				cumulativeError += delta * delta;
+				windowSize ++;
+			}
+		return Math.sqrt(cumulativeError / windowSize);
 	}
 
 

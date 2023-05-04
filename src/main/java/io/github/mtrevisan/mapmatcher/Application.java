@@ -163,7 +163,9 @@ if(!pathPolylines.isEmpty()){
 	System.out.println("path polyline: " + sj);
 }
 
-System.out.println("average positioning error: " + PathHelper.averagePositioningError(path, filteredObservations));
+final double averagePositionError = PathHelper.averagePositionError(path, filteredObservations);
+System.out.println("average position error: " + averagePositionError);
+System.out.println("average position standard deviation: " + PathHelper.averagePositionStandardDeviation(path, filteredObservations, averagePositionError));
 
 		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
 		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2022 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -32,9 +32,10 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 
-	private static final double PROBABILITY_SAME_EDGE = 0.9;
-	private static final double LOG_PR_SAME_EDGE = ProbabilityHelper.logPr(PROBABILITY_SAME_EDGE);
-	private static final double LOG_PR_DIFFERENT_EDGE = ProbabilityHelper.logPr(1. - PROBABILITY_SAME_EDGE);
+	private static final double PROBABILITY_SAME_EDGE = 0.95;
+	private static final double LOG_PR_FORWARD_DIRECTION = ProbabilityHelper.logPr(PROBABILITY_SAME_EDGE);
+	//the direction of the observations projected onto the path is opposite to the direction of the path
+	private static final double LOG_PR_BACKWARD_DIRECTION = ProbabilityHelper.logPr(1. - PROBABILITY_SAME_EDGE);
 
 
 	@Override
@@ -42,7 +43,7 @@ public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
 			final Polyline path){
 		final double previousATD = path.alongTrackDistance(previousObservation);
 		final double currentATD = path.alongTrackDistance(currentObservation);
-		return (previousATD <= currentATD? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE);
+		return (previousATD <= currentATD? LOG_PR_FORWARD_DIRECTION: LOG_PR_BACKWARD_DIRECTION);
 	}
 
 }

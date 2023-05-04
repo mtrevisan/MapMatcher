@@ -32,15 +32,7 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 
-	private static final double K1 = 2. / StrictMath.PI;
 	private static final double K2 = StrictMath.sqrt(2. * Math.PI);
-
-	/**
-	 * 0 < tau0 < 1
-	 *
-	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
-	 */
-	private static final double TAU0 = 0.6;
 
 
 	private final double observationStandardDeviation;
@@ -58,7 +50,7 @@ public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 	 * Calculate emission probability
 	 * <p>
 	 * A zero-mean gaussian observation error:
-	 * Pr(o_i | r_j) = 1 / (√(2 ⋅ π) ⋅ σ) ⋅ exp(-0.5 ⋅ (dist(o_i, r_j) / σ)^2), where σ = 20 m (empirically)
+	 * Pr(o_i | r_j) = 1 / (√(2 ⋅ π) ⋅ σ) ⋅ exp(-0.5 ⋅ (dist(o_i, r_j) / σ)^2)
 	 * </p>
 	 *
 	 * @see <a href="https://hal-enac.archives-ouvertes.fr/hal-01160130/document">Characterization of GNSS receiver position errors for user integrity monitoring in urban environments</a>
@@ -70,34 +62,11 @@ public class GaussianEmissionCalculator extends EmissionProbabilityCalculator{
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;
 
-		//weight given on vehicle heading, which is related to the road direction angle and the trajectory direction angle
-		final double tau = headingWeight(observation, previousObservation, polyline);
-
 		//expansion of:
 		//final double probability = Math.exp(-0.5 * tau * tmp) / (observationStandardDeviation * StrictMath.sqrt(2. * Math.PI));
 		//return ProbabilityHelper.logPr(probability);
 		//in order to overcome overflow on exponential
-		return 0.5 * tau * tmp - k3;
-	}
-
-	private static double headingWeight(final Point currentObservation, final Point previousObservation, final Polyline polyline){
-		double tau = 1.;
-		if(previousObservation != null){
-			final Point previousObservationClosest = polyline.onTrackClosestPoint(previousObservation);
-			final Point currentObservationClosest = polyline.onTrackClosestPoint(currentObservation);
-			if(!previousObservationClosest.equals(currentObservationClosest)){
-				final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
-				final double angleGPS = previousObservation.initialBearing(currentObservation);
-				final double angleDelta = calculateAngleDifference(angleRoad, angleGPS);
-				tau = TAU0 + StrictMath.exp(StrictMath.toRadians(angleDelta) - K1);
-			}
-		}
-		return tau;
-	}
-
-	private static double calculateAngleDifference(final double angleRoad, final double angleGPS){
-		final double angleDelta = StrictMath.abs(angleRoad - angleGPS);
-		return Math.min(360. - angleDelta, angleDelta);
+		return 0.5 * tmp - k3;
 	}
 
 }

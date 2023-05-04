@@ -54,6 +54,10 @@ public class RayleighInitialCalculator extends InitialProbabilityCalculator{
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;
 
+		//expansion of:
+		//final double probability = (tmp / observationStandardDeviation) * Math.exp(-tmp * tmp / 2.);
+		//return ProbabilityHelper.logPr(probability);
+		//in order to overcome overflow on exponential
 		return ProbabilityHelper.logPr(tmp)
 			- k5
 			+ 0.5 * tmp * tmp;

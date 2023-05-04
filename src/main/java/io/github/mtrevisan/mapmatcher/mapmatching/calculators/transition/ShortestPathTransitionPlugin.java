@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mauro Trevisan
+ * Copyright (c) 2022 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -40,7 +40,7 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	private static final double PROBABILITY_SAME_EDGE = 0.6;
 	private static final double LOG_PR_SAME_EDGE = ProbabilityHelper.logPr(PROBABILITY_SAME_EDGE);
 	private static final double LOG_PR_DIFFERENT_EDGE = ProbabilityHelper.logPr(1. - PROBABILITY_SAME_EDGE);
-	private static final double LOG_PR_UNCONNECTED_EDGES = ProbabilityHelper.logPr(0.);
+	private static final double LOG_PR_BACKWARD_DIRECTION = ProbabilityHelper.logPr(0.);
 
 	//constants from an edge of the graph
 	private static final double PHI = 0.15;
@@ -88,7 +88,7 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	public double factor(final Edge fromEdge, final Edge toEdge, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
 		if(path.isEmpty())
-			return LOG_PR_UNCONNECTED_EDGES;
+			return LOG_PR_BACKWARD_DIRECTION;
 
 		return (fromEdge.equals(toEdge)? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE)
 			+ calculateOffRoadFactor(fromEdge, toEdge)
@@ -107,10 +107,11 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	}
 
 	private double calculateLogPr(final Point previousObservation, final Point currentObservation, final Polyline path){
+		//TODO: lim x->-ε = +inf, lim x->+ε = 0, flex point between 0 and +ε
 		final double pathDistance = path.alongTrackDistance(currentObservation) - path.alongTrackDistance(previousObservation);
 		if(pathDistance < 0.)
-			//the direction of the observations is opposite to the direction of the path
-			return LOG_PR_UNCONNECTED_EDGES;
+			//the direction of the observations projected onto the path is opposite to the direction of the path
+			return LOG_PR_BACKWARD_DIRECTION;
 
 		final double observationsDistance = previousObservation.distance(currentObservation);
 

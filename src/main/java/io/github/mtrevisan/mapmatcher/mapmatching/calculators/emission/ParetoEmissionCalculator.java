@@ -33,16 +33,6 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 //in urban environments
 public class ParetoEmissionCalculator extends EmissionProbabilityCalculator{
 
-	private static final double K1 = 2. / StrictMath.PI;
-
-	/**
-	 * 0 < tau0 < 1
-	 *
-	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
-	 */
-	private static final double TAU0 = 0.6;
-
-
 	private final double observationStandardDeviation;
 
 	private final double shapeFactor;
@@ -68,34 +58,11 @@ public class ParetoEmissionCalculator extends EmissionProbabilityCalculator{
 		final double distance = observation.distance(polyline);
 		final double tmp = distance / observationStandardDeviation;
 
-		//weight given on vehicle heading, which is related to the road direction angle and the trajectory direction angle
-		final double tau = headingWeight(observation, previousObservation, polyline);
-
 		//expansion of:
 		//final double probability = Math.pow(1. + shapeFactor * tmp, -1. / shapeFactor - 1.) / observationStandardDeviation;
 		//return ProbabilityHelper.logPr(probability);
 		//in order to overcome overflow on exponential
-		return k4 * ProbabilityHelper.logPr(1. + shapeFactor * tau * tmp) - k5;
-	}
-
-	private static double headingWeight(final Point currentObservation, final Point previousObservation, final Polyline polyline){
-		double tau = 1.;
-		if(previousObservation != null){
-			final Point previousObservationClosest = polyline.onTrackClosestPoint(previousObservation);
-			final Point currentObservationClosest = polyline.onTrackClosestPoint(currentObservation);
-			if(!previousObservationClosest.equals(currentObservationClosest)){
-				final double angleRoad = previousObservationClosest.initialBearing(currentObservationClosest);
-				final double angleGPS = previousObservation.initialBearing(currentObservation);
-				final double angleDelta = calculateAngleDifference(angleRoad, angleGPS);
-				tau = TAU0 + StrictMath.exp(StrictMath.toRadians(angleDelta) - K1);
-			}
-		}
-		return tau;
-	}
-
-	private static double calculateAngleDifference(final double angleRoad, final double angleGPS){
-		final double angleDelta = StrictMath.abs(angleRoad - angleGPS);
-		return Math.min(360. - angleDelta, angleDelta);
+		return k4 * ProbabilityHelper.logPr(1. + shapeFactor * tmp) - k5;
 	}
 
 }
