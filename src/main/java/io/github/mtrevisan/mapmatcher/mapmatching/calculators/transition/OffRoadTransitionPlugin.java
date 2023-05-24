@@ -30,21 +30,35 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
-public class DirectionTransitionPlugin implements TransitionProbabilityPlugin{
+public class OffRoadTransitionPlugin implements TransitionProbabilityPlugin{
 
-	private static final double PROBABILITY_SAME_EDGE = 0.95;
+	private static final double LOG_PR_BACKWARD_DIRECTION = ProbabilityHelper.logPr(0.);
 
-	private static final double LOG_PR_FORWARD_DIRECTION = ProbabilityHelper.logPr(PROBABILITY_SAME_EDGE);
-	//the direction of the observations projected onto the path is opposite to the direction of the path
-	private static final double LOG_PR_BACKWARD_DIRECTION = ProbabilityHelper.logPr(1. - PROBABILITY_SAME_EDGE);
+	//constants from an edge of the graph
+	private static final double PHI = 0.5;
+	//constants from an edge outside the graph
+	private static final double PSI = 0.48;
+
+	private static final double LOG_PR_PHI = ProbabilityHelper.logPr(PHI);
+	private static final double LOG_PR_NOT_PHI = ProbabilityHelper.logPr(1. - PHI);
+	private static final double LOG_PR_PSI = ProbabilityHelper.logPr(PSI);
+	private static final double LOG_PR_NOT_PSI = ProbabilityHelper.logPr(1. - PSI);
 
 
 	@Override
 	public double factor(final Edge fromEdge, final Edge toEdge, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
-		final double previousATD = path.alongTrackDistance(previousObservation);
-		final double currentATD = path.alongTrackDistance(currentObservation);
-		return (previousATD <= currentATD? LOG_PR_FORWARD_DIRECTION: LOG_PR_BACKWARD_DIRECTION);
+		if(path.isEmpty())
+			return LOG_PR_BACKWARD_DIRECTION;
+
+		double logPrOffRoadFactor;
+		if(!fromEdge.isOffRoad())
+			//`offRoadFactor = φ` or `1 - φ`, whether `toEdge` is off-road or not
+			logPrOffRoadFactor = (toEdge.isOffRoad()? LOG_PR_PHI: LOG_PR_NOT_PHI);
+		else
+			//`offRoadFactor = ψ` or `1 - ψ`, whether `toEdge` is off-road or not
+			logPrOffRoadFactor = (toEdge.isOffRoad()? LOG_PR_PSI: LOG_PR_NOT_PSI);
+		return logPrOffRoadFactor;
 	}
 
 }

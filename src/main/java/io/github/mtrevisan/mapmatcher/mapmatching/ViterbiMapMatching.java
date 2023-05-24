@@ -259,6 +259,10 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				final double emissionProbability = emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
+if(fromEdge.getID().equals("13") && toEdge.getID().equals("2"))
+	System.out.println();
+if(fromEdge.getID().equals("13") && toEdge.getID().equals("5"))
+	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);
@@ -347,11 +351,13 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 			final Point[][] cut = toEdge.getPath().cutHard(fromEdge.getTo().getPoint());
 			path = fromEdge.getPath()
 				.append(cut[1]);
+//			path = fromEdge.getPath().getFactory().createPolyline(cut[1]);
 		}
 		else if(!fromEdge.isOffRoad() && toEdge.isOffRoad() && fromEdge.equals(toEdge.getFromProjected())){
 			final Point[][] cut = fromEdge.getPath().cutHard(toEdge.getTo().getPoint());
 			path = toEdge.getPath()
 				.prepend(cut[0]);
+//			path = toEdge.getPath().getFactory().createPolyline(cut[0]);
 		}
 		else if(fromEdge.isOffRoad() && toEdge.isOffRoad() && fromEdge.getTo().equals(toEdge.getFrom()))
 			path = fromEdge.getPath()

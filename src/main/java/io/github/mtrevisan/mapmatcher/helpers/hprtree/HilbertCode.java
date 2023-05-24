@@ -53,7 +53,10 @@ package io.github.mtrevisan.mapmatcher.helpers.hprtree;
  */
 class HilbertCode{
 
+	private static final double LN_2 = StrictMath.log(2.);
+
 	/**
+	 *
 	 * The maximum curve level that can be represented.
 	 */
 	static final int MAX_LEVEL = 16;
@@ -94,7 +97,7 @@ class HilbertCode{
 	 * @return	The level of the curve.
 	 */
 	static int level(final int numberOfPoints){
-		final int pow2 = (int)((Math.log(numberOfPoints) / Math.log(2.)));
+		final int pow2 = (int)((StrictMath.log(numberOfPoints) / LN_2));
 		final int level = pow2 / 2;
 		final int size = size(level);
 		return (size < numberOfPoints? level + 1: level);

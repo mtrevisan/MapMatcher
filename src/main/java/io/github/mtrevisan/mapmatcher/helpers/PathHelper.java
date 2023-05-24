@@ -211,7 +211,6 @@ public class PathHelper{
 
 	public static Polyline calculatePathAsPolyline(final Edge fromEdge, final Edge toEdge, final Graph graph,
 			final PathFindingStrategy pathFinder){
-		final GeometryFactory factory = graph.getFactory();
 		if(fromEdge.equals(toEdge))
 			return fromEdge.getPath();
 
@@ -221,6 +220,7 @@ public class PathHelper{
 		final Node currentNode = toEdge.getFrom();
 
 		Polyline polylineFromTo;
+		final GeometryFactory factory = graph.getFactory();
 		if(previousNode.equals(currentNode)){
 			final Point[] fromPath = fromEdge.getPath().getPoints();
 			final Point[] toPath = toEdge.getPath().getPoints();

@@ -38,18 +38,10 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	 * @see <a href="https://www.hindawi.com/journals/jat/2021/9993860/">An online map matching algorithm based on second-order Hidden Markov Model</a>
 	 */
 	private static final double PROBABILITY_SAME_EDGE = 0.6;
+
 	private static final double LOG_PR_SAME_EDGE = ProbabilityHelper.logPr(PROBABILITY_SAME_EDGE);
 	private static final double LOG_PR_DIFFERENT_EDGE = ProbabilityHelper.logPr(1. - PROBABILITY_SAME_EDGE);
-	private static final double LOG_PR_BACKWARD_DIRECTION = ProbabilityHelper.logPr(0.);
-
-	//constants from an edge of the graph
-	private static final double PHI = 0.15;
-	private static final double LOG_PR_PHI = ProbabilityHelper.logPr(PHI);
-	private static final double LOG_PR_NOT_PHI = ProbabilityHelper.logPr(1. - PHI);
-	//constants from an edge outside the graph
-	private static final double PSI = 0.95;
-	private static final double LOG_PR_PSI = ProbabilityHelper.logPr(PSI);
-	private static final double LOG_PR_NOT_PSI = ProbabilityHelper.logPr(1. - PSI);
+	private static final double LOG_PR_UNFEASIBLE = ProbabilityHelper.logPr(0.);
 
 
 	/** The <code>γ</code> parameter of an exponential probability distribution (<code>γ = 1 / β</code>). */
@@ -88,30 +80,15 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 	public double factor(final Edge fromEdge, final Edge toEdge, final Point previousObservation, final Point currentObservation,
 			final Polyline path){
 		if(path.isEmpty())
-			return LOG_PR_BACKWARD_DIRECTION;
+			return LOG_PR_UNFEASIBLE;
 
-		return (fromEdge.equals(toEdge)? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE)
-			+ calculateOffRoadFactor(fromEdge, toEdge)
-			+ calculateLogPr(previousObservation, currentObservation, path);
-	}
+		final double probability = (fromEdge.equals(toEdge)? LOG_PR_SAME_EDGE: LOG_PR_DIFFERENT_EDGE);
 
-	private static double calculateOffRoadFactor(final Edge fromEdge, final Edge toEdge){
-		double logPrOffRoadFactor;
-		if(!fromEdge.isOffRoad())
-			//`offRoadFactor = φ` or `1 - φ`, whether `toEdge` is off-road or not
-			logPrOffRoadFactor = (toEdge.isOffRoad()? LOG_PR_PHI: LOG_PR_NOT_PHI);
-		else
-			//`offRoadFactor = ψ` or `1 - ψ`, whether `toEdge` is off-road or not
-			logPrOffRoadFactor = (toEdge.isOffRoad()? LOG_PR_PSI: LOG_PR_NOT_PSI);
-		return logPrOffRoadFactor;
-	}
-
-	private double calculateLogPr(final Point previousObservation, final Point currentObservation, final Polyline path){
 		//TODO: lim x->-ε = +inf, lim x->+ε = 0, flex point between 0 and +ε
 		final double pathDistance = path.alongTrackDistance(currentObservation) - path.alongTrackDistance(previousObservation);
 		if(pathDistance < 0.)
 			//the direction of the observations projected onto the path is opposite to the direction of the path
-			return LOG_PR_BACKWARD_DIRECTION;
+			return probability + LOG_PR_UNFEASIBLE;
 
 		final double observationsDistance = previousObservation.distance(currentObservation);
 
@@ -119,7 +96,8 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
 		//return ProbabilityHelper.logPr((sameEdge? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * a);
 		//in order to overcome overflow on exponential
-		return logPrInverseRateParameter
+		return probability
+			+ logPrInverseRateParameter
 			+ Math.abs(observationsDistance - pathDistance) * inverseRateParameter;
 	}
 

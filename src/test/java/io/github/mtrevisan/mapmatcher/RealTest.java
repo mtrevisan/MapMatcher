@@ -32,11 +32,11 @@ import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.GaussianEmissionCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.RayleighEmissionCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.GaussianInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
-import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.RayleighInitialCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ConnectedGraphTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
+import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.OffRoadTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
@@ -92,14 +92,17 @@ public class RealTest{
 //		final InitialProbabilityCalculator initialCalculator = new RayleighInitialCalculator(observationStandardDeviation);
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin())
-			.withPlugin(new ShortestPathTransitionPlugin(2.));
+			/** NOTE: useful only if {@link ViterbiMapMatching#withOffRoad()} is called */
+			.withPlugin(new OffRoadTransitionPlugin())
+			.withPlugin(new ConnectedGraphTransitionPlugin())
+			.withPlugin(new ShortestPathTransitionPlugin(40.))
+			;
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 //		final EmissionProbabilityCalculator emissionCalculator = new RayleighEmissionCalculator(observationStandardDeviation);
 		final DistanceCalculator distanceCalculator = new DistanceCalculator(topologyCalculator);
 		final MapMatchingStrategy strategy = new ViterbiMapMatching(initialCalculator, transitionCalculator, emissionCalculator,
 				distanceCalculator)
-			.withOffRoad()
-			;
+			.withOffRoad();
 
 		final Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
 			.toArray(Polyline[]::new);
@@ -159,9 +162,11 @@ if(!pathPolylines.isEmpty()){
 	System.out.println("path polyline: " + sj);
 }
 
-final double averagePositionError = PathHelper.averagePositionError(path, filteredObservations);
-System.out.println("average position error: " + averagePositionError);
-System.out.println("average position standard deviation: " + PathHelper.averagePositionStandardDeviation(path, filteredObservations, averagePositionError));
+if(path != null){
+	final double averagePositionError = PathHelper.averagePositionError(path, filteredObservations);
+	System.out.println("average position error: " + averagePositionError);
+	System.out.println("average position standard deviation: " + PathHelper.averagePositionStandardDeviation(path, filteredObservations, averagePositionError));
+}
 
 		//first-order to second-order HMM modifications (O(n^w), where w is the window size):
 		//The observation probability of the second-order HMM `P(g_t−1, g_t | c^i_t−1, c^j_t)` can be obtained from the first-order
