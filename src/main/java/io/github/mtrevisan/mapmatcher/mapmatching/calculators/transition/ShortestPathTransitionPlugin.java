@@ -92,6 +92,12 @@ public class ShortestPathTransitionPlugin implements TransitionProbabilityPlugin
 
 		final double observationsDistance = previousObservation.distance(currentObservation);
 
+		//FIXME
+		//	in this case: GEOMETRYCOLLECTION(LINESTRING(9.307739 45.356954400000006,9.3067789 45.356556600000005,9.3060155 45.35658710000001,9.3053899 45.356827100000004,9.3047236 45.35734980000001,9.3043893 45.35754560000001,9.3034702 45.35787650000003),POINT(9.310615 45.359275000000025),POINT(9.307181999999884 45.35665399999942))
+		//	prev is out of path, therefore dist(prev, curr) = 396 m, dist_path(prev_proj, curr_proj) = 54
+		//	that cannot be!
+		//	this plugin works only on a fully connected graph!
+
 		//expansion of:
 		//final double a = rateParameter * Math.exp(-rateParameter * Math.abs(observationsDistance - pathDistance));
 		//return ProbabilityHelper.logPr((sameEdge? PROBABILITY_SAME_EDGE: 1. - PROBABILITY_SAME_EDGE) * a);

@@ -193,7 +193,8 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 	}*/
 
 	@Override
-	public Collection<Map.Entry<Double, Edge[]>> findPath(final Graph graph, final Point[] observations, final double edgesNearObservationThreshold){
+	public Collection<Map.Entry<Double, Edge[]>> findPath(final Graph graph, final Point[] observations,
+			final double edgesNearObservationThreshold){
 		if(graph.isEmpty())
 			//no graph: cannot calculate path
 			return null;
@@ -259,9 +260,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				final double emissionProbability = emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-if(fromEdge.getID().equals("13") && toEdge.getID().equals("2"))
-	System.out.println();
-if(fromEdge.getID().equals("13") && toEdge.getID().equals("5"))
+if(fromEdge.getID().equals("9") && toEdge.getID().equals("5"))
 	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
