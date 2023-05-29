@@ -49,7 +49,8 @@ public class TransitionProbabilityCalculator{
 		double factor = 0.;
 		final Iterator<TransitionProbabilityPlugin> itr = plugins.iterator();
 		while(itr.hasNext() && Double.isFinite(factor))
-			factor += itr.next().factor(fromEdge, toEdge, previousObservation, currentObservation, path);
+			factor += itr.next()
+				.factor(fromEdge, toEdge, previousObservation, currentObservation, path);
 		return factor;
 	}
 

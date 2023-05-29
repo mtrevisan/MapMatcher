@@ -262,6 +262,7 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
+						//NOTE: edges are (directly) connected
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);
 					if(pathAsPolyline.isEmpty())
 						continue;

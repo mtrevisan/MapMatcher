@@ -32,11 +32,11 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 public class ConnectedGraphTransitionPlugin implements TransitionProbabilityPlugin{
 
-	private static final double PROBABILITY_SAME_EDGE = 3. / 5.;
-	private static final double PROBABILITY_DIRECTLY_CONNECTED_EDGES = 2. / 5.;
-	private static final double PROBABILITY_EDGES_SEPARATED_BY_ONE_EDGE_ONLY = 1. / 5.;
+	private static final double PROBABILITY_SAME_EDGE = 0.6;
+	private static final double PROBABILITY_DIRECTLY_CONNECTED_EDGES = 0.4;
+	private static final double PROBABILITY_EDGES_SEPARATED_BY_ONE_EDGE_ONLY = 0.2;
+	private static final double PROBABILITY_OFF_ROAD_EDGE = 0.06;
 	private static final double PROBABILITY_EDGES_SEPARATED_BY_MORE_THAN_ONE_EDGE = 0.;
-	private static final double PROBABILITY_OFF_ROAD_EDGE = 0.3 / 5.;
 
 	private static final double LOG_PR_SAME_EDGE = ProbabilityHelper.logPr(PROBABILITY_SAME_EDGE);
 	private static final double LOG_PR_DIRECTLY_CONNECTED_EDGES = ProbabilityHelper.logPr(PROBABILITY_DIRECTLY_CONNECTED_EDGES);
@@ -56,6 +56,10 @@ public class ConnectedGraphTransitionPlugin implements TransitionProbabilityPlug
 		if(fromEdge.equals(toEdge))
 			return LOG_PR_SAME_EDGE;
 
+		//manage off-road edges
+		if(fromEdge.isOffRoad() || toEdge.isOffRoad())
+			return LOG_PR_OFF_ROAD_EDGE;
+
 		//edges are (directly) connected
 		if(fromEdge.getOutEdges().contains(toEdge))
 			return LOG_PR_DIRECTLY_CONNECTED_EDGES;
@@ -63,10 +67,6 @@ public class ConnectedGraphTransitionPlugin implements TransitionProbabilityPlug
 		//TODO edges are connected through one edge
 //		if(fromEdge.getOutEdges().contains(toEdge))
 //			return LOG_PR_EDGES_SEPARATED_BY_ONE_EDGE_ONLY;
-
-		//manage off-road edges
-		if(fromEdge.isOffRoad() || toEdge.isOffRoad())
-			return LOG_PR_OFF_ROAD_EDGE;
 
 		//edges are connected by more than one edge
 		return LOG_PR_EDGES_SEPARATED_BY_MORE_THAN_ONE_EDGE;

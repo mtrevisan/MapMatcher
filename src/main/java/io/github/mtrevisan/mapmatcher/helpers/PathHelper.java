@@ -220,27 +220,19 @@ public class PathHelper{
 		final Node currentNode = toEdge.getFrom();
 
 		Polyline polylineFromTo;
-		final GeometryFactory factory = graph.getFactory();
-		if(previousNode.equals(currentNode)){
-			final Point[] fromPath = fromEdge.getPath().getPoints();
-			final Point[] toPath = toEdge.getPath().getPoints();
-			final Point[] points = Arrays.copyOf(fromPath, fromPath.length + toPath.length);
-			System.arraycopy(toPath, 0, points, fromPath.length, toPath.length);
-			polylineFromTo = factory.createPolyline(points);
-		}
+		if(previousNode.equals(currentNode))
+			polylineFromTo = fromEdge.getPath().append(toEdge.getPath());
 		else{
 			final Edge[] pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
+			final GeometryFactory factory = graph.getFactory();
 			final List<Polyline> polylines = extractEdgesAsPolyline(pathFromTo, factory);
 			if(polylines.isEmpty())
 				polylineFromTo = factory.createEmptyPolyline();
-			else{
+			else
 				//prepend previousNode path start, append currentNode to path end
-				final Point[] fromPath = fromEdge.getPath().getPoints();
-				final Point[] toPath = toEdge.getPath().getPoints();
-				polylineFromTo = polylines.get(0)
-					.prepend(fromPath)
-					.append(toPath);
-			}
+				polylineFromTo = fromEdge.getPath()
+					.append(polylines.get(0))
+					.append(toEdge.getPath());
 		}
 
 		return polylineFromTo;
