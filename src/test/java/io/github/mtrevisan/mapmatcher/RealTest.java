@@ -120,8 +120,8 @@ public class RealTest{
 
 //observations = Arrays.copyOfRange(observations, 172, 182);
 //observations = Arrays.copyOfRange(observations, 176, 179);
-observations = Arrays.copyOfRange(observations, 0, 172);
 //observations = Arrays.copyOfRange(observations, 165, 172);
+observations = Arrays.copyOfRange(observations, 165, 169);
 //observations = Arrays.copyOfRange(observations, 165, 168);
 //observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 166, 182);

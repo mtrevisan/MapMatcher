@@ -148,7 +148,7 @@ public class PathHelper{
 					Edge connectionFromRoadEdge = null;
 					if(currentEdge != null && currentEdge.isOffRoad()){
 						Edge currentFromProjected = currentEdge.getFromProjected();
-						if(currentFromProjected != null && currentFromProjected.getTo().getID().equals(previousEdge.getTo().getID()))
+						if(currentFromProjected != null && currentFromProjected.getTo().getID().equals(currentEdge.getTo().getID()))
 							currentFromProjected = previousEdge;
 						if(currentFromProjected != null){
 							final Point[] cutFrom = currentFromProjected.getPath().cutHard(currentEdge.getFrom().getPoint())[0];
@@ -157,9 +157,7 @@ public class PathHelper{
 							connectionFromRoadEdge = Edge.createDirectEdge(connectionFromRoadNodeStart, connectionFromRoadNodeEnd,
 								factory.createPolyline(cutFrom));
 
-							if(!connectionFromRoadNodeStart.equals(previousEdge.getFrom()))
-								currentEdge = connectionFromRoadEdge;
-							else{
+							if(connectionFromRoadNodeStart.equals(previousEdge.getFrom())){
 								if(!currentFromProjected.getID().equals(previousEdge.getID()))
 									//restore edge
 									connectedPath.add(previousEdge);
@@ -184,7 +182,7 @@ public class PathHelper{
 							connectedPath.add(null);
 					}
 
-					if(connectionFromRoadEdge != null)
+					if(connectionFromRoadEdge != null && connectionFromRoadEdge != currentEdge)
 						connectedPath.add(connectionFromRoadEdge);
 
 					if(currentEdge != null)
