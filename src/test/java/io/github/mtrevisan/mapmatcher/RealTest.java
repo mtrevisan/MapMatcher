@@ -144,7 +144,6 @@ System.out.println("graph & observations: " + graph.toStringWithObservations(fil
 		PathHelper.restrictSolutions(paths, 0.25);
 
 		final Edge[] path = (paths.size() > 0? paths.iterator().next().getValue(): null);
-System.out.println("TRUE: [obs0-obs0[9], 9, obs2[5]-obs2]");
 if(path != null)
 	System.out.println("path: " + Arrays.toString(Arrays.stream(path).map(e -> (e != null? e.getID(): null)).toArray()));
 else

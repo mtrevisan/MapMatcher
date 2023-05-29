@@ -260,8 +260,6 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 				final double emissionProbability = emissionProbabilityCalculator.emissionProbability(currentObservation, toEdge, previousObservation);
 
 				for(final Edge fromEdge : graphEdgesNearPreviousObservation){
-if(fromEdge.getID().equals("9") && toEdge.getID().equals("5"))
-	System.out.println();
 					Polyline pathAsPolyline = PathHelper.calculatePathAsPolyline(fromEdge, toEdge, graph, pathFinder);
 					if(offRoad && pathAsPolyline.isEmpty())
 						pathAsPolyline = calculateOffRoadPath(fromEdge, toEdge, pathAsPolyline);

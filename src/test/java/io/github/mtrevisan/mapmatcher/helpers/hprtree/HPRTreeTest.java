@@ -43,9 +43,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -80,7 +82,7 @@ out skel qt;
 	public static void main(String[] args) throws IOException{
 		//extract highways
 		final File roadsFile = new File(FILENAME_ROADS_RAW);
-		final List<Polyline> roads = extractPolylines(roadsFile);
+		final Collection<Polyline> roads = extractPolylines(roadsFile);
 
 		//extract toll booths
 		final File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
@@ -99,14 +101,48 @@ out skel qt;
 		writePolylines(reducedRoads, outputRoadsFile);
 	}
 
-	private static List<Polyline> extractPolylines(final File file) throws IOException{
-		final List<Polyline> polylines = new ArrayList<>();
+	private static Set<Polyline> extractPolylines(final File file) throws IOException{
+		//read segments:
+		final Set<Polyline> polylines = new HashSet<>();
 		try(final BufferedReader br = new BufferedReader(new FileReader(file))){
 			String readLine;
 			while((readLine = br.readLine()) != null)
 				if(!readLine.isEmpty())
 					polylines.add(parsePolyline(readLine));
 		}
+
+		//connect segments:
+		final Map<Point, List<Polyline>> segments = new HashMap<>(polylines.size() * 2);
+		for(final Polyline polyline : polylines){
+			//store each terminal node of each segment
+			segments.computeIfAbsent(polyline.getStartPoint(), k -> new ArrayList<>(1))
+				.add(polyline);
+			segments.computeIfAbsent(polyline.getEndPoint(), k -> new ArrayList<>(1))
+				.add(polyline);
+		}
+		for(final Map.Entry<Point, List<Polyline>> entry : segments.entrySet()){
+			final List<Polyline> entryPolylines = entry.getValue();
+			if(entryPolylines.size() == 2){
+				final Point entryPoint = entry.getKey();
+				final Polyline entryPolyline1 = entryPolylines.get(0);
+				final Polyline entryPolyline2 = entryPolylines.get(1);
+				if(entryPolyline1.getStartPoint().equals(entryPoint) && entryPolyline2.getEndPoint().equals(entryPoint)){
+					if(polylines.contains(entryPolyline1) && polylines.contains(entryPolyline2)){
+						polylines.remove(entryPolyline1);
+						polylines.remove(entryPolyline2);
+						polylines.add(entryPolyline2.append(entryPolyline1));
+					}
+				}
+				else if(entryPolyline2.getStartPoint().equals(entryPoint) && entryPolyline1.getEndPoint().equals(entryPoint)){
+					if(polylines.contains(entryPolyline1) && polylines.contains(entryPolyline2)){
+						polylines.remove(entryPolyline1);
+						polylines.remove(entryPolyline2);
+						polylines.add(entryPolyline1.append(entryPolyline2));
+					}
+				}
+			}
+		}
+
 		return polylines;
 	}
 
@@ -180,7 +216,7 @@ out skel qt;
 
 		//split polylines
 		final List<Polyline> splitPolylines = new ArrayList<>(polylines.size());
-		for(Polyline polyline : polylines){
+		for(final Polyline polyline : polylines){
 			final Queue<Point> cutpoints = extractCutpoints(polyline, intersectionPoints);
 
 			//split
@@ -256,7 +292,7 @@ out skel qt;
 	@Test
 	void query_tree() throws IOException{
 		HPRtree<Polyline> tree = new HPRtree<>();
-		List<Polyline> highways = extractPolylines(new File(FILENAME_ROADS_SIMPLIFIED));
+		Set<Polyline> highways = extractPolylines(new File(FILENAME_ROADS_SIMPLIFIED));
 		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
 			tree.insert(geoBoundingBox, polyline);
@@ -267,7 +303,7 @@ out skel qt;
 			FACTORY.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(2382, roads.size());
+		Assertions.assertEquals(1333, roads.size());
 	}
 
 	@Test
