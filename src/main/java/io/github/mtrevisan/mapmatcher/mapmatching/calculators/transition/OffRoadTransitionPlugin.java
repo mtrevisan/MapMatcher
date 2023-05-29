@@ -35,6 +35,7 @@ public class OffRoadTransitionPlugin implements TransitionProbabilityPlugin{
 	private static final double LOG_PR_BACKWARD_DIRECTION = ProbabilityHelper.logPr(0.);
 
 	//constant from an edge of the graph to an off-road edge
+//	private static final double PHI = 0.72;
 	private static final double PHI = 0.2;
 	//constant from an off-road edge to another off-road edge
 	private static final double PSI = 0.48;

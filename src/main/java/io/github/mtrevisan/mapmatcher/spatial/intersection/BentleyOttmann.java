@@ -54,7 +54,7 @@ public class BentleyOttmann{
 		}
 	};
 	private final SweepLineTreeSet sweepLine = new SweepLineTreeSet();
-	private final List<Point> intersections = new ArrayList<>();
+	private final List<Point> intersections = new ArrayList<>(0);
 
 	private final TopologyCalculator topologyCalculator;
 

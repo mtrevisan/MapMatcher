@@ -43,7 +43,7 @@ public class Event implements Comparable<Event>{
 
 	private final Type type;
 	private final Point point;
-	private final List<SweepSegment> segments = new ArrayList<>();
+	private final List<SweepSegment> segments = new ArrayList<>(0);
 
 	private final TopologyCalculator topologyCalculator;
 

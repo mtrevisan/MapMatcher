@@ -219,9 +219,10 @@ public class PathHelper{
 		final Node previousNode = fromEdge.getTo();
 		final Node currentNode = toEdge.getFrom();
 
-		Polyline polylineFromTo;
+		final Polyline polylineFromTo;
 		if(previousNode.equals(currentNode))
-			polylineFromTo = fromEdge.getPath().append(toEdge.getPath());
+			polylineFromTo = fromEdge.getPath()
+				.append(toEdge.getPath());
 		else{
 			final Edge[] pathFromTo = pathFinder.findPath(previousNode, currentNode, graph);
 			final GeometryFactory factory = graph.getFactory();
@@ -234,7 +235,6 @@ public class PathHelper{
 					.append(polylines.get(0))
 					.append(toEdge.getPath());
 		}
-
 		return polylineFromTo;
 	}
 

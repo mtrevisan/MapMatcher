@@ -128,7 +128,7 @@ public class GeoidalCalculator implements TopologyCalculator{
 			bentleyOttmann.addPolyline(factory.createPolyline(startPoint, endPoint));
 		}
 
-		final List<Point> intersections = new ArrayList<>();
+		final List<Point> intersections = new ArrayList<>(0);
 		bentleyOttmann.findIntersections((p1, p2, intersection) -> intersections.add(intersection));
 		return intersections;
 	}

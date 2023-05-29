@@ -95,7 +95,7 @@ public class RealTest{
 			/** NOTE: useful only if {@link ViterbiMapMatching#withOffRoad()} is called */
 			.withPlugin(new OffRoadTransitionPlugin())
 			.withPlugin(new ConnectedGraphTransitionPlugin())
-			.withPlugin(new ShortestPathTransitionPlugin(40.))
+			.withPlugin(new ShortestPathTransitionPlugin(70.))
 			;
 		final EmissionProbabilityCalculator emissionCalculator = new GaussianEmissionCalculator(observationStandardDeviation);
 //		final EmissionProbabilityCalculator emissionCalculator = new RayleighEmissionCalculator(observationStandardDeviation);
@@ -120,9 +120,9 @@ public class RealTest{
 
 //observations = Arrays.copyOfRange(observations, 172, 182);
 //observations = Arrays.copyOfRange(observations, 176, 179);
-//observations = Arrays.copyOfRange(observations, 0, 172);
+observations = Arrays.copyOfRange(observations, 0, 172);
 //observations = Arrays.copyOfRange(observations, 165, 172);
-observations = Arrays.copyOfRange(observations, 165, 168);
+//observations = Arrays.copyOfRange(observations, 165, 168);
 //observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 166, 182);
 //observations = Arrays.copyOfRange(observations, 400, 500);
