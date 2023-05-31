@@ -25,11 +25,13 @@
 package io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
+import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.ProbabilityHelper;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 
+/** NOTE: useful only if {@link ViterbiMapMatching#withOffRoad()} is called */
 public class OffRoadTransitionPlugin implements TransitionProbabilityPlugin{
 
 	private static final double LOG_PR_BACKWARD_DIRECTION = ProbabilityHelper.logPr(0.);

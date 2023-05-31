@@ -31,6 +31,8 @@ import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialProbabilityCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoGraphException;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoObservationsException;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.EdgeWeightCalculator;
@@ -194,15 +196,13 @@ public class ViterbiMapMatching implements MapMatchingStrategy{
 
 	@Override
 	public Collection<Map.Entry<Double, Edge[]>> findPath(final Graph graph, final Point[] observations,
-			final double edgesNearObservationThreshold){
+			final double edgesNearObservationThreshold) throws NoGraphException, NoObservationsException{
 		if(graph.isEmpty())
-			//no graph: cannot calculate path
-			return null;
+			throw new NoGraphException();
 
 		int currentObservationIndex = PathHelper.extractNextObservation(observations, 0);
 		if(currentObservationIndex < 0)
-			//no observations: cannot calculate path
-			return null;
+			throw new NoObservationsException();
 
 		final Collection<Edge> graphEdges = graph.edges();
 		final Map<Edge, Map<Integer, Double>> score = new HashMap<>();

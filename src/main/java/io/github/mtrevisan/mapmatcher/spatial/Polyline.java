@@ -28,8 +28,11 @@ import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 
 
 public class Polyline extends Geometry implements Comparable<Polyline>, Serializable{
@@ -37,7 +40,11 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	@Serial
 	private static final long serialVersionUID = -2848807287557631823L;
 
+
+	private static final Pattern PATTERN_LINESTRING = Pattern.compile("\\s*LINESTRING\\s*\\((.*)\\)\\s*");
+
 	private static final String SPACE = " ";
+	private static final String COMMA = ",";
 
 	private enum CutType{
 		HARD, SOFT
@@ -51,6 +58,10 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		return new Polyline(factory, points);
 	}
 
+	public static Polyline of(final GeometryFactory factory, final String wkt){
+		return new Polyline(factory, wkt);
+	}
+
 	private Polyline(final GeometryFactory factory, final Point... points){
 		super(factory);
 
@@ -58,6 +69,33 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 			this.points = removeConsecutiveDuplicates(points);
 		else
 			this.points = new Point[0];
+	}
+
+	private Polyline(final GeometryFactory factory, String wkt){
+		super(factory);
+
+		//clean input string
+		wkt = PATTERN_LINESTRING.matcher(wkt).replaceAll("$1")
+			.trim();
+
+		final List<Point> points = new ArrayList<>(0);
+		int startIndex = 0;
+		while(true){
+			final int separatorIndex = wkt.indexOf(SPACE, startIndex + 1);
+			if(separatorIndex < 0)
+				break;
+
+			int endIndex = wkt.indexOf(COMMA, separatorIndex + 1);
+			if(endIndex < 0)
+				endIndex = wkt.length();
+			points.add(factory.createPoint(
+				Double.parseDouble(wkt.substring(startIndex, separatorIndex).trim()),
+				Double.parseDouble(wkt.substring(separatorIndex + 1, endIndex).trim())
+			));
+			startIndex = endIndex + 1;
+		}
+
+		this.points = points.toArray(Point[]::new);
 	}
 
 	private static Point[] removeConsecutiveDuplicates(final Point[] input){
@@ -77,6 +115,13 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 	public boolean isEmpty() {
 		return (points.length == 0);
+	}
+
+	public boolean contains(final Point point){
+		for(int i = 0; i < points.length; i ++)
+			if(point.equals(points[i]))
+				return true;
+		return false;
 	}
 
 	public Point getStartPoint(){

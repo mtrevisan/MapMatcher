@@ -31,6 +31,8 @@ import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.simplification.RamerDouglasPeuckerSimplifier;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -40,9 +42,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -51,13 +56,15 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 
 class HPRTreeTest{
 
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
-	private static final String FILENAME_ROADS_RAW = "src/test/resources/it.highways.wkt";
+	private static final String FILENAME_ROADS_RAW = "src/test/resources/it.highways.zip";
 	private static final String FILENAME_TOLL_BOOTHS_RAW = "src/test/resources/it.tollBooths.wkt";
 	private static final String FILENAME_ROADS_SIMPLIFIED = "src/test/resources/it.highways.simplified.5.wkt";
 	private static final String FILENAME_TOLL_BOOTHS_SIMPLIFIED = "src/test/resources/it.tollBooths.simplified.wkt";
@@ -68,21 +75,30 @@ class HPRTreeTest{
 
 	https://overpass-turbo.eu/
 [out:json][timeout:125];
-area["name:en"="Italy"]->.it;
+area["ISO3166-1"="IT"]->.it;
 (
   way["highway"="motorway"](area.it);
   way["highway"="motorway_link"](area.it);
   way["barrier"="toll_booth"](area.it);
 );
-out body;
->;
-out skel qt;
+out geom;
+//out body;
+//>;
+//out skel qt;
 	*/
 	//simplify and create roads and toll-booths files
 	public static void main(String[] args) throws IOException{
 		//extract highways
-		final File roadsFile = new File(FILENAME_ROADS_RAW);
-		final Collection<Polyline> roads = extractPolylines(roadsFile);
+		String output;
+		try(ZipFile zipFile = new ZipFile(FILENAME_ROADS_RAW)){
+			Enumeration<? extends ZipEntry> entries = zipFile.entries();
+			ZipEntry entry = entries.nextElement();
+			InputStream stream = zipFile.getInputStream(entry);
+			output = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+		}
+
+		JSONObject payload = new JSONObject(output);
+		Collection<Polyline> roads = parseOverpassAPIResponse(payload);
 
 		//extract toll booths
 		final File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
@@ -101,6 +117,41 @@ out skel qt;
 		writePolylines(reducedRoads, outputRoadsFile);
 	}
 
+	public static List<Polyline> parseOverpassAPIResponse(final JSONObject payload){
+		final List<Polyline> polylines = new ArrayList<>();
+		final Set<Polyline> twoWayPolylines = new HashSet<>();
+
+		final JSONArray features = payload.getJSONArray("features");
+		for(int i = 0; i < features.length(); i ++){
+			final JSONObject feature = features.getJSONObject(i);
+			final JSONArray geometry = feature.getJSONObject("geometry")
+				.getJSONArray("coordinates");
+			if(feature.has("type") && geometry != null && !geometry.isEmpty()){
+				final int size = geometry.length();
+				final Point[] points = new Point[size];
+				for(int j = 0; j < size; j ++){
+					final JSONArray coordinates = (JSONArray)geometry.get(j);
+					final double x = coordinates.getDouble(0);
+					final double y = coordinates.getDouble(1);
+					points[j] = Point.of(FACTORY, x, y);
+				}
+				if(size > 0){
+					final Polyline polyline = Polyline.of(FACTORY, points);
+					polylines.add(polyline);
+
+					//register and remember which roads are two-way (to be split AFTER #connectDirectPolylines)
+					//add reverse if two-way road
+					if("no".equals(feature.getJSONObject("properties").optString("oneway", null)))
+						twoWayPolylines.add(polyline);
+				}
+			}
+		}
+
+		connectDirectPolylines(polylines, twoWayPolylines);
+
+		return polylines;
+	}
+
 	private static Set<Polyline> extractPolylines(final File file) throws IOException{
 		//read segments:
 		final Set<Polyline> polylines = new HashSet<>();
@@ -110,39 +161,77 @@ out skel qt;
 				if(!readLine.isEmpty())
 					polylines.add(parsePolyline(readLine));
 		}
+		return polylines;
+	}
 
-		//connect segments:
-		final Map<Point, List<Polyline>> segments = new HashMap<>(polylines.size() * 2);
-		for(final Polyline polyline : polylines){
-			//store each terminal node of each segment
-			segments.computeIfAbsent(polyline.getStartPoint(), k -> new ArrayList<>(1))
-				.add(polyline);
-			segments.computeIfAbsent(polyline.getEndPoint(), k -> new ArrayList<>(1))
-				.add(polyline);
-		}
-		for(final Map.Entry<Point, List<Polyline>> entry : segments.entrySet()){
-			final List<Polyline> entryPolylines = entry.getValue();
-			if(entryPolylines.size() == 2){
+/*
+note that not all polylines can be simplified, like in this case:
+
+GEOMETRYCOLLECTION(
+LINESTRING(9.2996392 45.35763450000002,9.3007023 45.35819699999999,9.3015067 45.35828080000002),
+LINESTRING(9.3015067 45.35828080000002,9.3016535 45.3582586), <-- can be merged, but the overall cardinality is 4
+LINESTRING(9.3016535 45.3582586,9.3019765 45.35820150000001), <-- can be merged, but the overall cardinality is 4
+LINESTRING(9.3019765 45.35820150000001,9.304719 45.35719080000001,9.3051635 45.35677849999999)
+)
+
+GEOMETRYCOLLECTION(
+LINESTRING(9.3053899 45.356827100000004,9.3047236 45.35734980000001,9.3039955 45.35770740000001,9.3027492 45.35810509999999,9.3019765 45.35820150000001),
+LINESTRING(9.3019765 45.35820150000001,9.3016535 45.3582586), <-- can be merged, but the overall cardinality is 4
+LINESTRING(9.3016535 45.3582586,9.3015067 45.35828080000002), <-- can be merged, but the overall cardinality is 4
+LINESTRING(9.3015067 45.35828080000002,9.3002734 45.3584989,9.299497 45.358727200000004,9.2987284 45.35910200000001,9.2976876 45.35977219999998)
+)
+
+why it's not merged before?
+*/
+	private static Collection<Polyline> connectDirectPolylines(final Collection<Polyline> polylines, final Set<Polyline> twoWayPolylines){
+		//all the segments must be connected, that is each node must be attached to more than one edge, or no edges at all:
+		final Map<Point, List<Polyline>> uselessNodes = new HashMap<>(polylines.size() * 2);
+		while(true){
+			//read all useless nodes:
+			uselessNodes.clear();
+			for(final Polyline polyline : polylines){
+				//store each terminal node of each segment
+				uselessNodes.computeIfAbsent(polyline.getStartPoint(), k -> new ArrayList<>(1))
+					.add(polyline);
+				uselessNodes.computeIfAbsent(polyline.getEndPoint(), k -> new ArrayList<>(1))
+					.add(polyline);
+			}
+			uselessNodes.entrySet()
+				.removeIf(entry -> {
+					final List<Polyline> list = entry.getValue();
+					return (list.size() != 2
+						|| list.get(0).getStartPoint().equals(list.get(1).getStartPoint())
+						|| list.get(0).getEndPoint().equals(list.get(1).getEndPoint()));
+				});
+			if(uselessNodes.isEmpty())
+				break;
+
+			//connect all edges that point to a useless node:
+			for(final Map.Entry<Point, List<Polyline>> entry : uselessNodes.entrySet()){
 				final Point entryPoint = entry.getKey();
-				final Polyline entryPolyline1 = entryPolylines.get(0);
-				final Polyline entryPolyline2 = entryPolylines.get(1);
-				if(entryPolyline1.getStartPoint().equals(entryPoint) && entryPolyline2.getEndPoint().equals(entryPoint)){
-					if(polylines.contains(entryPolyline1) && polylines.contains(entryPolyline2)){
-						polylines.remove(entryPolyline1);
-						polylines.remove(entryPolyline2);
-						polylines.add(entryPolyline2.append(entryPolyline1));
-					}
-				}
-				else if(entryPolyline2.getStartPoint().equals(entryPoint) && entryPolyline1.getEndPoint().equals(entryPoint)){
-					if(polylines.contains(entryPolyline1) && polylines.contains(entryPolyline2)){
-						polylines.remove(entryPolyline1);
-						polylines.remove(entryPolyline2);
-						polylines.add(entryPolyline1.append(entryPolyline2));
-					}
+				final List<Polyline> entryPolylines = entry.getValue();
+if(entryPoint.equals(Point.of(FACTORY, "9.3016535 45.3582586")))
+	System.out.println();
+
+				final Polyline polyline1 = entryPolylines.get(0);
+				final Polyline polyline2 = entryPolylines.get(1);
+				if(polylines.remove(polyline1) && polylines.remove(polyline2)){
+					final Polyline mergedPolyline = (polyline1.getStartPoint().equals(entryPoint) && polyline2.getEndPoint().equals(entryPoint)
+						? polyline2.append(polyline1)
+						: polyline1.append(polyline2));
+					polylines.add(mergedPolyline);
+
+					if(twoWayPolylines.remove(polyline1) && twoWayPolylines.remove(polyline2))
+						twoWayPolylines.add(mergedPolyline);
 				}
 			}
 		}
 
+for(final Polyline p : polylines)
+	if(p.getStartPoint().equals(Point.of(FACTORY, "9.3019765 45.3582015")))
+		System.out.println();
+		for(final Polyline reversedPolyline : twoWayPolylines)
+			polylines.add(reversedPolyline.reverse());
 		return polylines;
 	}
 
@@ -197,7 +286,7 @@ out skel qt;
 			final Point point = itr.next();
 			boolean found = false;
 			for(final Polyline polyline : polylines)
-				if(polyline.getStartPoint().equals(point) || polyline.getEndPoint().equals(point)){
+				if(polyline.contains(point)){
 					found = true;
 					break;
 				}
@@ -303,7 +392,7 @@ out skel qt;
 			FACTORY.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(1333, roads.size());
+		Assertions.assertEquals(1126, roads.size());
 	}
 
 	@Test

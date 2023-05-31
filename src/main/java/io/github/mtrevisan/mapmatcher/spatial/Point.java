@@ -30,12 +30,16 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 
 
 public class Point extends Geometry implements Comparable<Point>, Serializable{
 
 	@Serial
 	private static final long serialVersionUID = 3422386613349753773L;
+
+
+	private static final Pattern PATTERN_POINT = Pattern.compile("\\s*POINT\\s*\\((.*)\\)\\s*");
 
 	private static final String SPACE = " ";
 
@@ -58,11 +62,30 @@ public class Point extends Geometry implements Comparable<Point>, Serializable{
 		return new Point(factory, point.x, point.y);
 	}
 
+	public static Point of(final GeometryFactory factory, final String wkt){
+		return new Point(factory, wkt);
+	}
+
 	protected Point(final GeometryFactory factory, final double x, final double y){
 		super(factory);
 
 		this.x = x;
 		this.y = y;
+	}
+
+	protected Point(final GeometryFactory factory, String wkt){
+		super(factory);
+
+		//clean input string
+		wkt = PATTERN_POINT.matcher(wkt).replaceAll("$1")
+			.trim();
+
+		final int separatorIndex = wkt.indexOf(SPACE, 1);
+		if(separatorIndex < 0)
+			throw new IllegalArgumentException("WKT input is invalid: " + wkt);
+
+		this.x = Double.parseDouble(wkt.substring(0, separatorIndex).trim());
+		this.y = Double.parseDouble(wkt.substring(separatorIndex + 1).trim());
 	}
 
 	public double getX(){

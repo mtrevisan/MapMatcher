@@ -37,6 +37,8 @@ import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -49,6 +51,9 @@ import java.util.Set;
 
 
 public class PathHelper{
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(PathHelper.class);
+
 
 	public static final String REVERSED_EDGE_SUFFIX = "-rev";
 
@@ -374,7 +379,8 @@ public class PathHelper{
 		int e = 0;
 		for(final Polyline edge : edges){
 			final String id = String.valueOf(e);
-			graph.addApproximateDirectEdge(id, edge);
+			if(graph.addApproximateDirectEdge(id, edge).isEmpty())
+				LOGGER.error("Cannot insert edge {}, may be reversed", edge);
 
 			e ++;
 		}

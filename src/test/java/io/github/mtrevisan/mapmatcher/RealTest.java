@@ -39,13 +39,14 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.Directi
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.OffRoadTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ShortestPathTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoGraphException;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoObservationsException;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
-import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 
@@ -61,6 +62,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 
@@ -82,7 +84,7 @@ public class RealTest{
 	//f1-score (harmonic mean of precision and recall) = 2 * true-positive / (2 * true-positive + false-positive + false-negative) = 2 * precision * recall / (precision + recall)
 	//overall-accuracy = (true-positive + true-negative) / (true-positive + true-negative + false-negative + false-positive)
 	//accuracy = true-positive / number-of-states
-	public static void main(final String[] args) throws IOException{
+	public static void main(final String[] args) throws IOException, NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		//NOTE: the initial probability is a uniform distribution reflecting the fact that there is no known bias about which is the
 		// correct edge
@@ -92,7 +94,6 @@ public class RealTest{
 //		final InitialProbabilityCalculator initialCalculator = new RayleighInitialCalculator(observationStandardDeviation);
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
 			.withPlugin(new DirectionTransitionPlugin())
-			/** NOTE: useful only if {@link ViterbiMapMatching#withOffRoad()} is called */
 			.withPlugin(new OffRoadTransitionPlugin())
 			.withPlugin(new ConnectedGraphTransitionPlugin())
 			.withPlugin(new ShortestPathTransitionPlugin(70.))
@@ -120,15 +121,16 @@ public class RealTest{
 
 //observations = Arrays.copyOfRange(observations, 172, 182);
 //observations = Arrays.copyOfRange(observations, 176, 179);
-//observations = Arrays.copyOfRange(observations, 165, 172);
-observations = Arrays.copyOfRange(observations, 165, 169);
 //observations = Arrays.copyOfRange(observations, 165, 168);
+//observations = Arrays.copyOfRange(observations, 165, 169);
+observations = Arrays.copyOfRange(observations, 166, 172);
 //observations = Arrays.copyOfRange(observations, 170, 185);
 //observations = Arrays.copyOfRange(observations, 166, 182);
 //observations = Arrays.copyOfRange(observations, 400, 500);
 
 		final Collection<Polyline> observedEdges = PathHelper.extractObservedEdges(tree, observations, 500.);
 		final Graph graph = PathHelper.extractDirectGraph(observedEdges, 1.);
+//		final Graph graph = PathHelper.extractDirectGraphAllowSwitch(observedEdges, 1.);
 
 		final GPSPoint[] filteredObservations = PathHelper.extractObservations(tree, observations, 400.);
 		//estimated noise
@@ -151,8 +153,10 @@ else
 
 		final PathFindingStrategy pathFinder = new AStarPathFinder(distanceCalculator);
 		final Edge[] connectedPath = PathHelper.connectPath(path, graph, pathFinder);
-if(connectedPath.length > 0)
+if(connectedPath.length > 0){
 	System.out.println("connected path: " + Arrays.toString(Arrays.stream(connectedPath).map(e -> (e != null? e.getID(): null)).toArray()));
+	System.out.println("number of distinct paths: " + (Arrays.stream(connectedPath).filter(Objects::isNull).count() + 1));
+}
 
 		final List<Polyline> pathPolylines = PathHelper.extractEdgesAsPolyline(connectedPath, factory);
 if(!pathPolylines.isEmpty()){
@@ -192,30 +196,9 @@ if(path != null){
 			String readLine;
 			while((readLine = br.readLine()) != null)
 				if(!readLine.isEmpty())
-					polylines.add(parsePolyline(readLine));
+					polylines.add(Polyline.of(FACTORY, readLine));
 		}
 		return polylines;
-	}
-
-	private static Polyline parsePolyline(final String line){
-		List<Point> points = new ArrayList<>(0);
-		int startIndex = 0;
-		while(true){
-			int separatorIndex = line.indexOf(" ", startIndex + 1);
-			if(separatorIndex < 0)
-				break;
-
-			int endIndex = line.indexOf(", ", separatorIndex + 1);
-			if(endIndex < 0)
-				endIndex = line.length();
-			points.add(FACTORY.createPoint(
-				Double.parseDouble(line.substring(startIndex, separatorIndex)),
-				Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
-			));
-			startIndex = endIndex + 2;
-		}
-
-		return FACTORY.createPolyline(points.toArray(Point[]::new));
 	}
 
 	private static GPSPoint[] extract(String licensePlateNumber, String separator) throws IOException{

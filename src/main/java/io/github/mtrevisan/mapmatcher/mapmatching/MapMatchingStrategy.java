@@ -26,6 +26,8 @@ package io.github.mtrevisan.mapmatcher.mapmatching;
 
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoGraphException;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoObservationsException;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
@@ -34,6 +36,6 @@ import java.util.Map;
 
 public interface MapMatchingStrategy{
 
-	Collection<Map.Entry<Double, Edge[]>> findPath(Graph graph, Point[] observations, double edgesNearObservationThreshold);
+	Collection<Map.Entry<Double, Edge[]>> findPath(Graph graph, Point[] observations, double edgesNearObservationThreshold) throws NoGraphException, NoObservationsException;
 
 }

@@ -35,6 +35,8 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.InitialPro
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformInitialCalculator;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoGraphException;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoObservationsException;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -53,7 +55,7 @@ class AStarMapMatchingTest{
 
 	//FIXME
 //	@Test
-	void should_match_E0_E1_with_bayesian_emission_probability(){
+	void should_match_E0_E1_with_bayesian_emission_probability() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
@@ -107,7 +109,7 @@ class AStarMapMatchingTest{
 
 	//FIXME
 //	@Test
-	void should_match_E0_E1_with_gaussian_emission_probability(){
+	void should_match_E0_E1_with_gaussian_emission_probability() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
@@ -163,7 +165,7 @@ class AStarMapMatchingTest{
 
 	//FIXME
 //	@Test
-	void should_match_E3_E2_with_bayesian_emission_probability(){
+	void should_match_E3_E2_with_bayesian_emission_probability() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()

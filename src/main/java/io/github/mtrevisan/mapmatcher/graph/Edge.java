@@ -71,9 +71,9 @@ public class Edge{
 		if(path == null || path.isEmpty())
 			throw new IllegalArgumentException("`path` node cannot be null or empty");
 
-		id = Objects.requireNonNullElse(from.getID(), "<null>")
+		id = (from.getID() != null && !from.getID().isBlank()? from.getID(): "<null>")
 			+ "-"
-			+ Objects.requireNonNullElse(to.getID(), "<null>");
+			+ (to.getID() != null && !to.getID().isBlank()? to.getID(): "<null>");
 		this.from = from;
 		this.to = to;
 		this.path = path;

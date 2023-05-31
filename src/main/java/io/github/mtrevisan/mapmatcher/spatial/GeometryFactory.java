@@ -63,17 +63,44 @@ public class GeometryFactory{
 		return Point.of(this, point);
 	}
 
+	/**
+	 * Creates a point using the given coordinate in <a href="https://it.wikipedia.org/wiki/Well-Known_Text">WKT</a> format.
+	 *
+	 * @param wkt	A string representation in <a href="https://it.wikipedia.org/wiki/Well-Known_Text">WKT</a> format of a point.
+	 * @return	The created point.
+	 */
+	public Point createPoint(final String wkt){
+		if(wkt == null || wkt.isBlank())
+			throw new IllegalArgumentException("WKT string cannot be null or empty");
+
+		return Point.of(this, wkt);
+	}
+
 
 	/**
 	 * Creates a polyline using the given points.
 	 *
 	 * @param points	An array without <code>null</code> elements.
+	 * @return	The created polyline.
 	 */
 	public Polyline createPolyline(final Point... points){
 		if(points == null)
 			throw new IllegalArgumentException("Points cannot be empty");
 
 		return Polyline.of(this, points);
+	}
+
+	/**
+	 * Creates a polyline using the given points in <a href="https://it.wikipedia.org/wiki/Well-Known_Text">WKT</a> format.
+	 *
+	 * @param wkt	A string representation in <a href="https://it.wikipedia.org/wiki/Well-Known_Text">WKT</a> format of a polyline.
+	 * @return	The created polyline.
+	 */
+	public Polyline createPolyline(final String wkt){
+		if(wkt == null)
+			throw new IllegalArgumentException("WKT string cannot be null");
+
+		return Polyline.of(this, wkt);
 	}
 
 	/**

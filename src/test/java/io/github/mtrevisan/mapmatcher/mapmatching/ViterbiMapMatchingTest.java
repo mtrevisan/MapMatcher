@@ -35,6 +35,8 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformIni
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ConnectedGraphTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoGraphException;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoObservationsException;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
@@ -56,7 +58,7 @@ import java.util.Map;
 class ViterbiMapMatchingTest{
 
 	@Test
-	void should_match_E0_E1_with_bayesian_emission_probability_direct_graph(){
+	void should_match_E0_E1_with_bayesian_emission_probability_direct_graph() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
@@ -110,7 +112,7 @@ class ViterbiMapMatchingTest{
 	}
 
 	@Test
-	void should_match_E0_E3_E1_with_gaussian_emission_probability_direct_graph(){
+	void should_match_E0_E3_E1_with_gaussian_emission_probability_direct_graph() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
@@ -175,7 +177,7 @@ class ViterbiMapMatchingTest{
 	}
 
 	@Test
-	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_direct_graph(){
+	void should_match_E0_E1_with_gaussian_emission_probability_and_all_observations_direct_graph() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
@@ -230,7 +232,7 @@ class ViterbiMapMatchingTest{
 	}
 
 	@Test
-	void should_match_E2_with_bayesian_emission_probability_direct_graph(){
+	void should_match_E2_with_bayesian_emission_probability_direct_graph() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
@@ -286,7 +288,7 @@ class ViterbiMapMatchingTest{
 
 
 	@Test
-	void should_match_E0_E3_E1_with_bayesian_emission_probability_bidirectional_graph(){
+	void should_match_E0_E3_E1_with_bayesian_emission_probability_bidirectional_graph() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()
@@ -344,7 +346,7 @@ class ViterbiMapMatchingTest{
 	}
 
 	@Test
-	void should_match_E0_E3_E1_with_gaussian_emission_probability_bidirectional_graph(){
+	void should_match_E0_E3_E1_with_gaussian_emission_probability_bidirectional_graph() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
@@ -403,7 +405,7 @@ class ViterbiMapMatchingTest{
 	}
 
 	@Test
-	void should_match_E0_E3_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph(){
+	void should_match_E0_E3_E1_with_gaussian_emission_probability_and_all_observations_bidirectional_graph() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final double observationStandardDeviation = 5.;
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
@@ -462,7 +464,7 @@ class ViterbiMapMatchingTest{
 	}
 
 	@Test
-	void should_match_E3_E2_with_bayesian_emission_probability_bidirectional_graph(){
+	void should_match_E3_E2_with_bayesian_emission_probability_bidirectional_graph() throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final InitialProbabilityCalculator initialCalculator = new UniformInitialCalculator();
 		final TransitionProbabilityCalculator transitionCalculator = new TransitionProbabilityCalculator()

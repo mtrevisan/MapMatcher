@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.graph;
 
+import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
 import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
@@ -61,6 +62,9 @@ public class NearNodeMergeGraph implements Graph{
 
 
 	public NearNodeMergeGraph(final double threshold){
+		if(threshold < 0.)
+			throw new IllegalArgumentException("Threshold must be non-negative");
+
 		this.threshold = threshold;
 	}
 
@@ -77,6 +81,30 @@ public class NearNodeMergeGraph implements Graph{
 		return null;
 	}
 
+	public Collection<Edge> addApproximateEdge(final Point from, final Point to){
+		final Collection<Edge> addedEdges = addApproximateDirectEdge(from, to);
+		addedEdges.addAll(addApproximateDirectEdge(to, from));
+		return addedEdges;
+	}
+
+	public Collection<Edge> addApproximateEdge(final Polyline path){
+		final Collection<Edge> addedEdges = addApproximateDirectEdge(path);
+		addedEdges.addAll(addApproximateDirectEdge(path.reverse()));
+		return addedEdges;
+	}
+
+	public Collection<Edge> addApproximateEdge(final String id, final Point from, final Point to){
+		final Collection<Edge> addedEdges = addApproximateDirectEdge(id, from, to);
+		addedEdges.addAll(addApproximateDirectEdge(id + PathHelper.REVERSED_EDGE_SUFFIX, to, from));
+		return addedEdges;
+	}
+
+	public Collection<Edge> addApproximateEdge(final String id, final Polyline path){
+		final Collection<Edge> addedEdges = addApproximateDirectEdge(id, path);
+		addedEdges.addAll(addApproximateDirectEdge(id + PathHelper.REVERSED_EDGE_SUFFIX, path.reverse()));
+		return addedEdges;
+	}
+
 	public Collection<Edge> addApproximateDirectEdge(final Point from, final Point to){
 		return addApproximateDirectEdge(null, from.getFactory().createPolyline(from, to));
 	}
@@ -89,6 +117,9 @@ public class NearNodeMergeGraph implements Graph{
 		return addApproximateDirectEdge(id, from.getFactory().createPolyline(from, to));
 	}
 
+	//FIXME there's a problem here:
+	//	GEOMETRYCOLLECTION(LINESTRING(9.3002353 45.3579842,9.3007023 45.358197,9.3015067 45.3582808),LINESTRING(9.3015067 45.3582808,9.3002734 45.3584989,9.299497 45.3587272,9.2987284 45.359102,9.2976876 45.3597722),LINESTRING(9.3019765 45.3582015,9.3031987 45.3577021),LINESTRING(9.3016535 45.3582586,9.3015067 45.3582808),LINESTRING(9.3019765 45.3582015,9.3016535 45.3582586),LINESTRING(9.3033447 45.3579163,9.3027492 45.3581051,9.3019765 45.3582015))
+	//	the same segment is shared in both ways, so it must be duplicated in some ways (eg. if `from` points to a `to` and vice-versa)
 	public Collection<Edge> addApproximateDirectEdge(final String id, final Polyline path){
 		if(path == null || path.size() < 2)
 			return Collections.emptyList();
@@ -154,28 +185,10 @@ public class NearNodeMergeGraph implements Graph{
 
 	private Collection<Node> connectNodes(final Point newPoint){
 		final Collection<Node> nodes = getApproximateNode(newPoint);
-		final Point virtualStartPoint = calculateVirtualPoint(nodes, newPoint);
+		final Point virtualPoint = calculateVirtualPoint(nodes, newPoint);
 		for(final Node node : nodes)
-			node.setPoint(virtualStartPoint);
+			node.setPoint(virtualPoint);
 		return nodes;
-	}
-
-	//NOTE: not the true average, but close enough
-	private static Point calculateVirtualPoint(final Collection<Node> nodes, final Point newPoint){
-		final Node node = nodes.iterator()
-			.next();
-		//connect the new node to the middle point already calculated (get this point from the first node)
-		Point point = node.getPoint();
-		double latitude = point.getY();
-		double longitude = point.getX();
-		if(nodes.size() == 1){
-			//calculate the middle point between the (only) found node, plus the new one
-			//NOTE: the points are close enough that simply a Euclidean mean is valid
-			latitude = (newPoint.getY() + point.getY()) / 2.;
-			longitude = (newPoint.getX() + point.getX()) / 2.;
-		}
-		final GeometryFactory factory = point.getFactory();
-		return factory.createPoint(longitude, latitude);
 	}
 
 	private Collection<Node> getApproximateNode(final Point point){
@@ -197,9 +210,27 @@ public class NearNodeMergeGraph implements Graph{
 			}
 		else
 			for(final Map.Entry<Point, Node> entry : nodeMap.entrySet())
-				if(threshold == 0. && point.equals(entry.getKey()))
+				if(point.equals(entry.getKey()))
 					closest.add(entry.getValue());
 		return closest;
+	}
+
+	//NOTE: not the true average, but close enough
+	private static Point calculateVirtualPoint(final Collection<Node> nodes, final Point newPoint){
+		final Node node = nodes.iterator()
+			.next();
+		//connect the new node to the middle point already calculated (get this point from the first node)
+		Point point = node.getPoint();
+		double latitude = point.getY();
+		double longitude = point.getX();
+		if(nodes.size() == 1){
+			//calculate the middle point between the (only) found node, plus the new one
+			//NOTE: the points should be close enough that simply an Euclidean mean should be acceptable
+			latitude = (newPoint.getY() + point.getY()) / 2.;
+			longitude = (newPoint.getX() + point.getX()) / 2.;
+		}
+		final GeometryFactory factory = point.getFactory();
+		return factory.createPoint(longitude, latitude);
 	}
 
 	@Override

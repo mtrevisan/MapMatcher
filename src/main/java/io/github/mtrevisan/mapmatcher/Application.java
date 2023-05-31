@@ -37,6 +37,8 @@ import io.github.mtrevisan.mapmatcher.mapmatching.calculators.initial.UniformIni
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.ConnectedGraphTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.DirectionTransitionPlugin;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.transition.TransitionProbabilityCalculator;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoGraphException;
+import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoObservationsException;
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
@@ -65,7 +67,7 @@ import java.util.StringJoiner;
  */
 public class Application{
 
-	public static void main(final String[] args){
+	public static void main(final String[] args) throws NoObservationsException, NoGraphException{
 		final GeoidalCalculator topologyCalculator = new GeoidalCalculator();
 		final GeometryFactory factory = new GeometryFactory(topologyCalculator);
 		final Point node11 = factory.createPoint(12.159747628109386, 45.66132709541773);
