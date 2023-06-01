@@ -62,7 +62,7 @@ import java.util.function.Function;
  */
 public class ViterbiMapMatching implements MapMatchingStrategy{
 
-	private static final String NODE_ID_OBSERVATION_PREFIX = "obs";
+	public static final String NODE_ID_OBSERVATION_PREFIX = "obs";
 	private static final String NODE_ID_EDGE_INFIX_START = "[";
 	private static final String NODE_ID_EDGE_INFIX_END = "]";
 

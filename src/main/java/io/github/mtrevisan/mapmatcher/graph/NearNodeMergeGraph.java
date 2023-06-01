@@ -117,9 +117,6 @@ public class NearNodeMergeGraph implements Graph{
 		return addApproximateDirectEdge(id, from.getFactory().createPolyline(from, to));
 	}
 
-	//FIXME there's a problem here:
-	//	GEOMETRYCOLLECTION(LINESTRING(9.3002353 45.3579842,9.3007023 45.358197,9.3015067 45.3582808),LINESTRING(9.3015067 45.3582808,9.3002734 45.3584989,9.299497 45.3587272,9.2987284 45.359102,9.2976876 45.3597722),LINESTRING(9.3019765 45.3582015,9.3031987 45.3577021),LINESTRING(9.3016535 45.3582586,9.3015067 45.3582808),LINESTRING(9.3019765 45.3582015,9.3016535 45.3582586),LINESTRING(9.3033447 45.3579163,9.3027492 45.3581051,9.3019765 45.3582015))
-	//	the same segment is shared in both ways, so it must be duplicated in some ways (eg. if `from` points to a `to` and vice-versa)
 	public Collection<Edge> addApproximateDirectEdge(final String id, final Polyline path){
 		if(path == null || path.size() < 2)
 			return Collections.emptyList();

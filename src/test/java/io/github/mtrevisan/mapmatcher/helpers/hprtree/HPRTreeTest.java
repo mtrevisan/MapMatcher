@@ -106,8 +106,8 @@ out geom;
 
 		//filter only toll booths on highways
 		filterPointsAlongPolylines(tollBooths, roads);
-		final File outputTollBoothsFile = new File(FILENAME_TOLL_BOOTHS_SIMPLIFIED);
 
+		final File outputTollBoothsFile = new File(FILENAME_TOLL_BOOTHS_SIMPLIFIED);
 		writePoints(tollBooths, outputTollBoothsFile);
 
 		//preserve connection point on highways coming from connection links
@@ -164,25 +164,7 @@ out geom;
 		return polylines;
 	}
 
-/*
-note that not all polylines can be simplified, like in this case:
-
-GEOMETRYCOLLECTION(
-LINESTRING(9.2996392 45.35763450000002,9.3007023 45.35819699999999,9.3015067 45.35828080000002),
-LINESTRING(9.3015067 45.35828080000002,9.3016535 45.3582586), <-- can be merged, but the overall cardinality is 4
-LINESTRING(9.3016535 45.3582586,9.3019765 45.35820150000001), <-- can be merged, but the overall cardinality is 4
-LINESTRING(9.3019765 45.35820150000001,9.304719 45.35719080000001,9.3051635 45.35677849999999)
-)
-
-GEOMETRYCOLLECTION(
-LINESTRING(9.3053899 45.356827100000004,9.3047236 45.35734980000001,9.3039955 45.35770740000001,9.3027492 45.35810509999999,9.3019765 45.35820150000001),
-LINESTRING(9.3019765 45.35820150000001,9.3016535 45.3582586), <-- can be merged, but the overall cardinality is 4
-LINESTRING(9.3016535 45.3582586,9.3015067 45.35828080000002), <-- can be merged, but the overall cardinality is 4
-LINESTRING(9.3015067 45.35828080000002,9.3002734 45.3584989,9.299497 45.358727200000004,9.2987284 45.35910200000001,9.2976876 45.35977219999998)
-)
-
-why it's not merged before?
-*/
+	//FIXME highly inefficient
 	private static Collection<Polyline> connectDirectPolylines(final Collection<Polyline> polylines, final Set<Polyline> twoWayPolylines){
 		//all the segments must be connected, that is each node must be attached to more than one edge, or no edges at all:
 		final Map<Point, List<Polyline>> uselessNodes = new HashMap<>(polylines.size() * 2);
@@ -210,12 +192,13 @@ why it's not merged before?
 			for(final Map.Entry<Point, List<Polyline>> entry : uselessNodes.entrySet()){
 				final Point entryPoint = entry.getKey();
 				final List<Polyline> entryPolylines = entry.getValue();
-if(entryPoint.equals(Point.of(FACTORY, "9.3016535 45.3582586")))
-	System.out.println();
 
 				final Polyline polyline1 = entryPolylines.get(0);
 				final Polyline polyline2 = entryPolylines.get(1);
-				if(polylines.remove(polyline1) && polylines.remove(polyline2)){
+				if(polylines.contains(polyline1) && polylines.contains(polyline2)){
+					polylines.remove(polyline1);
+					polylines.remove(polyline2);
+
 					final Polyline mergedPolyline = (polyline1.getStartPoint().equals(entryPoint) && polyline2.getEndPoint().equals(entryPoint)
 						? polyline2.append(polyline1)
 						: polyline1.append(polyline2));
@@ -227,9 +210,6 @@ if(entryPoint.equals(Point.of(FACTORY, "9.3016535 45.3582586")))
 			}
 		}
 
-for(final Polyline p : polylines)
-	if(p.getStartPoint().equals(Point.of(FACTORY, "9.3019765 45.3582015")))
-		System.out.println();
 		for(final Polyline reversedPolyline : twoWayPolylines)
 			polylines.add(reversedPolyline.reverse());
 		return polylines;
@@ -327,12 +307,15 @@ for(final Polyline p : polylines)
 	}
 
 	private static Set<Point> collectIntersectionPoints(Collection<Polyline> polylines){
-		final Set<Point> points = new HashSet<>(polylines.size());
+		final Map<Point, Polyline> points = new HashMap<>(polylines.size());
 		final Set<Point> intersectionPoints = new HashSet<>();
 		for(final Polyline polyline : polylines)
-			for(final Point point : polyline.getPoints())
-				if(!points.add(point))
+			for(final Point point : polyline.getPoints()){
+				final Polyline previousPolyline = points.put(point, polyline);
+				//NOTE: if an intersection point belongs to the very same edge, `other that` reverted, then ignore
+				if(previousPolyline != null && !previousPolyline.equals(polyline.reverse()))
 					intersectionPoints.add(point);
+			}
 		return intersectionPoints;
 	}
 
@@ -392,7 +375,7 @@ for(final Polyline p : polylines)
 			FACTORY.createPoint(9.40355, 45.33115)
 		));
 
-		Assertions.assertEquals(1126, roads.size());
+		Assertions.assertEquals(1178, roads.size());
 	}
 
 	@Test

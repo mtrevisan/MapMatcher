@@ -40,7 +40,8 @@ public class PathSummaryCreator{
 			final Map<Node, Edge> predecessorTree){
 		final Edge[] fromEndToStart = reconstructPathFromPredecessorTree(end, start, predecessorTree);
 
-		ArrayHelper.reverse(fromEndToStart);
+		if(fromEndToStart != null)
+			ArrayHelper.reverse(fromEndToStart);
 
 		return fromEndToStart;
 	}
@@ -50,14 +51,17 @@ public class PathSummaryCreator{
 		final Edge[] fromMidToStart = reconstructPathFromPredecessorTree(middle, start, predecessorTreeStart);
 		final Edge[] fromEndToMid = reconstructPathFromPredecessorTree(middle, end, predecessorTreeEnd);
 
-		if((start != middle && fromMidToStart.length == 0) || (end != middle && fromEndToMid.length == 0))
-			return new Edge[0];
+		if(start != middle && fromMidToStart == null
+				|| end != middle && fromEndToMid == null)
+			return null;
 
-		final Edge[] fromStartToEnd = new Edge[fromMidToStart.length + fromEndToMid.length];
+		final int midToStartSize = (fromMidToStart != null? fromMidToStart.length: 0);
+		final int endToMidSize = (fromEndToMid != null? fromEndToMid.length: 0);
+		final Edge[] fromStartToEnd = new Edge[midToStartSize + endToMidSize];
 		int size = 0;
-		for(int i = fromMidToStart.length - 1; i >= 0; i --)
+		for(int i = midToStartSize - 1; i >= 0; i --)
 			fromStartToEnd[size ++] = fromMidToStart[i];
-		for(int i = fromEndToMid.length - 1; i >= 0; i --)
+		for(int i = endToMidSize - 1; i >= 0; i --)
 			fromStartToEnd[size ++] = fromEndToMid[i];
 		return fromStartToEnd;
 	}
@@ -70,7 +74,7 @@ public class PathSummaryCreator{
 			result.add(edge);
 			currentNode = edge.getFrom();
 		}
-		return (Objects.equals(currentNode, to)? result.toArray(Edge[]::new): new Edge[0]);
+		return (Objects.equals(currentNode, to)? result.toArray(Edge[]::new): null);
 	}
 
 }
