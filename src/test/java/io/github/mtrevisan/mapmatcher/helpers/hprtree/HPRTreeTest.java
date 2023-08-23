@@ -87,7 +87,8 @@ out geom;
 //out skel qt;
 	*/
 	//simplify and create roads and toll-booths files
-	public static void main(String[] args) throws IOException{
+	public void main(String[] args) throws IOException{
+//	public static void main(String[] args) throws IOException{
 		//extract highways
 		String output;
 		try(ZipFile zipFile = new ZipFile(FILENAME_ROADS_RAW)){
@@ -382,7 +383,7 @@ out geom;
 	void empty_tree_using_list_query(){
 		HPRtree<Object> tree = new HPRtree<>();
 
-		List<Object> list = tree.query(Envelope.of(0., 0., 1., 1.));
+		List<Object> list = tree.query(Envelope.of(0., 1., 0., 1.));
 
 		Assertions.assertTrue(list.isEmpty());
 	}
@@ -403,6 +404,24 @@ out geom;
 	}
 
 	@Test
+	void rTree(){
+		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
+		List<Polyline> geometries = new ArrayList<>();
+		geometries.add(factory.createPolyline(factory.createPoint(5., 5.), factory.createPoint(15., 15.)));
+		geometries.add(factory.createPolyline(factory.createPoint(25., 25.), factory.createPoint(35., 35.)));
+		geometries.add(factory.createPolyline(factory.createPoint(5., 5.), factory.createPoint(17., 15.)));
+		geometries.add(factory.createPolyline(factory.createPoint(25., 25.), factory.createPoint(35., 35.)));
+		geometries.add(factory.createPolyline(factory.createPoint(5., 25.), factory.createPoint(25., 35.)));
+		geometries.add(factory.createPolyline(factory.createPoint(25., 5.), factory.createPoint(35., 15.)));
+		geometries.add(factory.createPolyline(factory.createPoint(2., 2.), factory.createPoint(4., 4.)));
+		HPRtree<String> t = new HPRtree<>(7);
+		for(int i = 0; i < geometries.size(); i ++)
+			t.insert(geometries.get(i).getBoundingBox(), String.valueOf(i + 1));
+
+		Assertions.assertArrayEquals(new String[]{"1", "3", "7"}, t.query(Envelope.of(3., 3., 6., 6.)).toArray());
+	}
+
+	@Test
 	void query(){
 		GeometryFactory factory = new GeometryFactory(new EuclideanCalculator());
 		List<Polyline> geometries = new ArrayList<>();
@@ -413,38 +432,38 @@ out geom;
 		for(Polyline g : geometries)
 			t.insert(g.getBoundingBox(), new Object());
 
-		t.query(Envelope.of(5., 6., 5., 6.));
+		t.query(Envelope.of(5., 5., 6., 6.));
 
-		Assertions.assertEquals(1, t.query(Envelope.of(5., 6., 5., 6.)).size());
-		Assertions.assertEquals(0, t.query(Envelope.of(20., 30., 0., 10.)).size());
-		Assertions.assertEquals(2, t.query(Envelope.of(25., 26., 25., 26.)).size());
-		Assertions.assertEquals(3, t.query(Envelope.of(0., 100., 0., 100.)).size());
+		Assertions.assertEquals(1, t.query(Envelope.of(5., 5., 6., 6.)).size());
+		Assertions.assertEquals(0, t.query(Envelope.of(20., 0., 30., 10.)).size());
+		Assertions.assertEquals(2, t.query(Envelope.of(25., 25., 26., 26.)).size());
+		Assertions.assertEquals(3, t.query(Envelope.of(0., 0., 100., 100.)).size());
 	}
 
 	@Test
 	void query3(){
 		HPRtree<Integer> t = new HPRtree<>();
 		for(int i = 0; i < 3; i ++)
-			t.insert(Envelope.of(i, i + 1, i, i + 1), i);
+			t.insert(Envelope.of(i, i, i + 1, i + 1), i);
 
-		t.query(Envelope.of(0., 1., 0., 1.));
+		t.query(Envelope.of(0., 0., 1., 1.));
 
-		Assertions.assertEquals(3, t.query(Envelope.of(1., 2., 1., 2.)).size());
-		Assertions.assertEquals(0, t.query(Envelope.of(9., 10., 9., 10.)).size());
+		Assertions.assertEquals(3, t.query(Envelope.of(1., 1., 2., 2.)).size());
+		Assertions.assertEquals(0, t.query(Envelope.of(9., 9., 10., 10.)).size());
 	}
 
 	@Test
 	void query10(){
 		HPRtree<Integer> t = new HPRtree<>();
 		for(int i = 0; i < 10; i ++)
-			t.insert(Envelope.of(i, i + 1, i, i + 1), i);
+			t.insert(Envelope.of(i, i, i + 1, i + 1), i);
 
-		t.query(Envelope.of(0, 1, 0, 1));
+		t.query(Envelope.of(0, 0, 1, 1));
 
-		Assertions.assertEquals(3, t.query(Envelope.of(5, 6, 5, 6)).size());
-		Assertions.assertEquals(2, t.query(Envelope.of(9, 10, 9, 10)).size());
-		Assertions.assertEquals(0, t.query(Envelope.of(25, 26, 25, 26)).size());
-		Assertions.assertEquals(10, t.query(Envelope.of(0, 10, 0, 10)).size());
+		Assertions.assertEquals(3, t.query(Envelope.of(5, 5, 6, 6)).size());
+		Assertions.assertEquals(2, t.query(Envelope.of(9, 9, 10, 10)).size());
+		Assertions.assertEquals(0, t.query(Envelope.of(25, 25, 26, 26)).size());
+		Assertions.assertEquals(10, t.query(Envelope.of(0, 0, 10, 10)).size());
 	}
 
 	@Test
@@ -465,14 +484,14 @@ out geom;
 
 	private void queryGrid(int size, HPRtree<Integer> tree){
 		for(int i = 0; i < size; i ++)
-			tree.insert(Envelope.of(i, i + 1, i, i + 1), i);
+			tree.insert(Envelope.of(i, i, i + 1, i + 1), i);
 
-		tree.query(Envelope.of(0, 1, 0, 1));
+		tree.query(Envelope.of(0, 0, 1, 1));
 
-		Assertions.assertEquals(3, tree.query(Envelope.of(5, 6, 5, 6)).size());
-		Assertions.assertEquals(3, tree.query(Envelope.of(9, 10, 9, 10)).size());
-		Assertions.assertEquals(3, tree.query(Envelope.of(25, 26, 25, 26)).size());
-		Assertions.assertEquals(11, tree.query(Envelope.of(0, 10, 0, 10)).size());
+		Assertions.assertEquals(3, tree.query(Envelope.of(5, 5, 6, 6)).size());
+		Assertions.assertEquals(3, tree.query(Envelope.of(9, 9, 10, 10)).size());
+		Assertions.assertEquals(3, tree.query(Envelope.of(25, 25, 26, 26)).size());
+		Assertions.assertEquals(11, tree.query(Envelope.of(0, 0, 10, 10)).size());
 	}
 
 }

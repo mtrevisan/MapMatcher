@@ -360,7 +360,7 @@ public class HPRtree<T>{
 		//create from largest to smallest
 		for(int i = numNodes - 1; i >= 0; i --){
 			final int boundIndex = 4 * i;
-			bounds[i] = Envelope.of(nodeBounds[boundIndex], nodeBounds[boundIndex + 2], nodeBounds[boundIndex + 1], nodeBounds[boundIndex + 3]);
+			bounds[i] = Envelope.of(nodeBounds[boundIndex], nodeBounds[boundIndex + 1], nodeBounds[boundIndex + 2], nodeBounds[boundIndex + 3]);
 		}
 		return bounds;
 	}

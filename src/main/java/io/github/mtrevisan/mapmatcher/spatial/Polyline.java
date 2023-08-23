@@ -142,13 +142,13 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 
 	public Envelope getBoundingBox(){
 		double minLatitude = Double.POSITIVE_INFINITY;
-		double maxLatitude = Double.NEGATIVE_INFINITY;
 		double minLongitude = Double.POSITIVE_INFINITY;
+		double maxLatitude = Double.NEGATIVE_INFINITY;
 		double maxLongitude = Double.NEGATIVE_INFINITY;
 		if(points.length > 0){
 			minLatitude = points[0].getY();
-			maxLatitude = points[0].getY();
 			minLongitude = points[0].getX();
+			maxLatitude = points[0].getY();
 			maxLongitude = points[0].getX();
 		}
 		for(int i = 1; i < points.length; i ++){
@@ -163,7 +163,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 			else if(point.getY() > maxLatitude)
 				maxLatitude = point.getY();
 		}
-		return Envelope.of(minLongitude, maxLongitude, minLatitude, maxLatitude);
+		return Envelope.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 	}
 
 	public boolean isClosed(){

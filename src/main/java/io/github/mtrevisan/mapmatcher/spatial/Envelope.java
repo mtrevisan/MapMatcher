@@ -31,10 +31,10 @@ public class Envelope implements Comparable<Envelope>{
 
 	/** The minimum x-coordinate. */
 	private double minX;
-	/** The maximum x-coordinate. */
-	private double maxX;
 	/** The minimum y-coordinate. */
 	private double minY;
+	/** The maximum x-coordinate. */
+	private double maxX;
 	/** The maximum y-coordinate. */
 	private double maxY;
 
@@ -42,13 +42,13 @@ public class Envelope implements Comparable<Envelope>{
 	/**
 	 * Creates an <code>Envelope</code> for a region defined by maximum and minimum values.
 	 *
-	 * @param x1	The first x-value.
-	 * @param x2	The second x-value.
-	 * @param y1	The first y-value.
-	 * @param y2	The second y-value.
+	 * @param x1 The first x-value.
+	 * @param y1 The first y-value.
+	 * @param x2 The second x-value.
+	 * @param y2 The second y-value.
 	 */
-	public static Envelope of(final double x1, final double x2, final double y1, final double y2){
-		return new Envelope(x1, x2, y1, y2);
+	public static Envelope of(final double x1, final double y1, final double x2, final double y2){
+		return new Envelope(x1, y1, x2, y2);
 	}
 
 	/**
@@ -58,7 +58,7 @@ public class Envelope implements Comparable<Envelope>{
 	 * @param p2	The second point.
 	 */
 	public static Envelope of(final Point p1, final Point p2){
-		return of(p1.getX(), p2.getX(), p1.getY(), p2.getY());
+		return of(p1.getX(), p1.getY(), p2.getX(), p2.getY());
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class Envelope implements Comparable<Envelope>{
 	 * @param p	The point.
 	 */
 	public static Envelope of(final Point p){
-		return of(p.getX(), p.getX(), p.getY(), p.getY());
+		return of(p.getX(), p.getY(), p.getX(), p.getY());
 	}
 
 	public static Envelope ofEmpty(){
@@ -79,7 +79,7 @@ public class Envelope implements Comparable<Envelope>{
 		setToNull();
 	}
 
-	private Envelope(final double x1, final double x2, final double y1, final double y2){
+	private Envelope(final double x1, final double y1, final double x2, final double y2){
 		if(x1 < x2){
 			minX = x1;
 			maxX = x2;
@@ -112,18 +112,6 @@ public class Envelope implements Comparable<Envelope>{
 	}
 
 	/**
-	 * Returns the <code>Envelope</code>s maximum x-value.
-	 * <p>
-	 * <code>min x &gt; max x</code> indicates that this is a null <code>Envelope</code>.
-	 * </p>
-	 *
-	 * @return	The maximum x-coordinate.
-	 */
-	public double getMaxX(){
-		return maxX;
-	}
-
-	/**
 	 * Returns the <code>Envelope</code>s minimum y-value.
 	 * <p>
 	 * <code>min y &gt; max y</code> indicates that this is a null <code>Envelope</code>.
@@ -133,6 +121,18 @@ public class Envelope implements Comparable<Envelope>{
 	 */
 	public double getMinY(){
 		return minY;
+	}
+
+	/**
+	 * Returns the <code>Envelope</code>s maximum x-value.
+	 * <p>
+	 * <code>min x &gt; max x</code> indicates that this is a null <code>Envelope</code>.
+	 * </p>
+	 *
+	 * @return	The maximum x-coordinate.
+	 */
+	public double getMaxX(){
+		return maxX;
 	}
 
 	/**
@@ -211,17 +211,17 @@ public class Envelope implements Comparable<Envelope>{
 	public void expandToInclude(final double x, final double y){
 		if(isNull()){
 			minX = x;
-			maxX = x;
 			minY = y;
+			maxX = x;
 			maxY = y;
 		}
 		else{
 			if(x < minX)
 				minX = x;
-			if(x > maxX)
-				maxX = x;
 			if(y < minY)
 				minY = y;
+			if(x > maxX)
+				maxX = x;
 			if(y > maxY)
 				maxY = y;
 		}
@@ -241,17 +241,17 @@ public class Envelope implements Comparable<Envelope>{
 
 		if(isNull()){
 			minX = other.getMinX();
-			maxX = other.getMaxX();
 			minY = other.getMinY();
+			maxX = other.getMaxX();
 			maxY = other.getMaxY();
 		}
 		else{
 			if(other.minX < minX)
 				minX = other.minX;
-			if(other.maxX > maxX)
-				maxX = other.maxX;
 			if(other.minY < minY)
 				minY = other.minY;
+			if(other.maxX > maxX)
+				maxX = other.maxX;
 			if(other.maxY > maxY)
 				maxY = other.maxY;
 		}
@@ -283,8 +283,8 @@ public class Envelope implements Comparable<Envelope>{
 			return;
 
 		minX -= deltaX;
-		maxX += deltaX;
 		minY -= deltaY;
+		maxX += deltaX;
 		maxY += deltaY;
 
 		//check for envelope disappearing
@@ -307,7 +307,7 @@ public class Envelope implements Comparable<Envelope>{
 		final double intMinY = Math.max(minY, envelope.minY);
 		final double intMaxX = Math.min(maxX, envelope.maxX);
 		final double intMaxY = Math.min(maxY, envelope.maxY);
-		return of(intMinX, intMaxX, intMinY, intMaxY);
+		return of(intMinX, intMinY, intMaxX, intMaxY);
 	}
 
 	/**
