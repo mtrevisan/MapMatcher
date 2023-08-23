@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
-import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRtree;
+import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRTree;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
@@ -107,7 +107,7 @@ public class RealTest{
 
 		final Polyline[] roads = extractPolylines("it.highways.simplified.5.wkt")
 			.toArray(Polyline[]::new);
-		final HPRtree<Polyline> tree = new HPRtree<>();
+		final HPRTree<Polyline> tree = new HPRTree<>();
 		for(final Polyline road : roads){
 			final Envelope geoBoundingBox = road.getBoundingBox();
 			tree.insert(geoBoundingBox, road);

@@ -34,7 +34,7 @@ import java.util.List;
 
 
 /**
- * A Hilbert-Packed R-tree.
+ * A Hilbert-Packed R-Tree.
  * <p>
  * This is a static R-tree which is packed by using the Hilbert ordering of the tree items.
  * </p>
@@ -56,8 +56,10 @@ import java.util.List;
  *
  * @see <a href="https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java">HPRtree.java</a>
  * @see <a href="https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf">Hilbert R-tree: An improved R-tree using fractals</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Hilbert_R-tree">Hilbert R-tree</a>
+ * @see <a href="https://web.cs.swarthmore.edu/~adanner/cs97/s08/pdf/prtreesigmod04.pdf">The Priority R-Tree: A Practically Efficient and Worst-Case Optimal R-Tree</a>
  */
-public class HPRtree<T> implements SpatialTree<T>{
+public class HPRTree<T>{
 
 	private static final int ENV_SIZE = 4;
 	private static final int HILBERT_LEVEL = 12;
@@ -72,33 +74,49 @@ public class HPRtree<T> implements SpatialTree<T>{
 
 
 	/**
-	 * Creates a new index with the default node capacity.
+	 * Creates a new tree with the default node capacity.
 	 */
-	public HPRtree(){
+	public HPRTree(){
 		this(DEFAULT_NODE_CAPACITY);
 	}
 
 	/**
-	 * Creates a new index with the given node capacity.
+	 * Creates a new tree with the given node capacity.
 	 *
 	 * @param nodeCapacity	The node capacity to use.
 	 */
-	public HPRtree(final int nodeCapacity){
+	public HPRTree(final int nodeCapacity){
 		this.nodeCapacity = nodeCapacity;
 	}
 
-	@Override
+
+	/**
+	 * Gets the number of items in the index.
+	 *
+	 * @return the number of items
+	 */
 	public int size(){
 		return items.size();
 	}
 
-	@Override
 	public void insert(final Envelope itemEnvelope, final T item){
 		if(isBuilt)
 			throw new IllegalStateException("Cannot insert items after tree is built.");
 
 		items.add(new Item<>(itemEnvelope, item));
 		totalExtent.expandToInclude(itemEnvelope);
+	}
+
+	public boolean remove(final Envelope itemEnvelope, final T item){
+		//TODO https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf
+		//	find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
+		//	delete the item (remove the item from node `L`)
+		//	if `L` underflow
+		//		borrow some entries from `s` cooperating siblings
+		//	if all the siblings are ready to underflow, merge `s+1` to `s` nodes; then adjust the resulting nodes
+		//		adjust MBR and LHV in parent levels: form a set `S` that contains `L` and its cooperating siblings (if underflow has
+		// 	occurred); then invoke `AdjustTree(s)`
+		throw new UnsupportedOperationException();
 	}
 
 
@@ -234,7 +252,6 @@ public class HPRtree<T> implements SpatialTree<T>{
 	}
 
 
-	@Override
 	public List<T> query(final Envelope searchEnvelope){
 		build();
 
@@ -332,20 +349,6 @@ public class HPRtree<T> implements SpatialTree<T>{
 
 			queryNode(layerIndex, nodeOffset, searchEnvelope, visitor);
 		}
-	}
-
-
-	@Override
-	public boolean remove(final Envelope itemEnvelope, final T item){
-		//TODO https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf
-		//	find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
-		//	delete the item (remove the item from node `L`)
-		//	if `L` underflow
-		//		borrow some entries from `s` cooperating siblings
-		//	if all the siblings are ready to underflow, merge `s+1` to `s` nodes; then adjust the resulting nodes
-		//		adjust MBR and LHV in parent levels: form a set `S` that contains `L` and its cooperating siblings (if underflow has
-		// 	occurred); then invoke `AdjustTree(s)`
-		throw new UnsupportedOperationException();
 	}
 
 

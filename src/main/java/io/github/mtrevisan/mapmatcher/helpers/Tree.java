@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,33 +22,9 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.hprtree;
-
-import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+package io.github.mtrevisan.mapmatcher.helpers;
 
 
-class Item<T>{
-
-	private final Envelope envelope;
-	private final T item;
-
-
-	Item(Envelope envelope, T item){
-		this.envelope = envelope;
-		this.item = item;
-	}
-
-	Envelope getEnvelope(){
-		return envelope;
-	}
-
-	T getItem(){
-		return item;
-	}
-
-	@Override
-	public String toString(){
-		return "Item: " + envelope.toString();
-	}
+public interface Tree{
 
 }

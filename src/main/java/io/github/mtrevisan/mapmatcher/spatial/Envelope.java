@@ -24,6 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
+import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
+import io.github.mtrevisan.mapmatcher.helpers.kdtree.KDNode;
+
 import java.util.Objects;
 
 
@@ -37,6 +40,9 @@ public class Envelope implements Comparable<Envelope>{
 	private double maxX;
 	/** The maximum y-coordinate. */
 	private double maxY;
+
+	private SpatialNode node;
+	private boolean boundary;
 
 
 	/**
@@ -166,6 +172,21 @@ public class Envelope implements Comparable<Envelope>{
 		maxY = -1.;
 	}
 
+	public SpatialNode getNode(){
+		return node;
+	}
+
+	public void setNode(final SpatialNode node){
+		this.node = node;
+	}
+
+	public boolean isBoundary(){
+		return boundary;
+	}
+
+	public void setBoundary(){
+		boundary = true;
+	}
 
 	/**
 	 * Returns the difference between the maximum and minimum <code>x</code> values.
