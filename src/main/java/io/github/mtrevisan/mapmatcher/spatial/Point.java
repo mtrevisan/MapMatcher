@@ -96,6 +96,14 @@ public class Point extends Geometry implements Comparable<Point>, Serializable{
 		return y;
 	}
 
+	public double getCoordinate(final int dimension){
+		return (dimension == 0? x: y);
+	}
+
+	public int getDimensions(){
+		return 2;
+	}
+
 
 	public double distance(final Point point){
 		return factory.topologyCalculator.distance(this, point);

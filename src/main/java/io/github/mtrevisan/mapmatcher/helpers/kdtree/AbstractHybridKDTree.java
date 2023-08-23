@@ -15,9 +15,9 @@ public class AbstractHybridKDTree{
 		if(!envelopes.isEmpty())
 			for(final Envelope queriedEnvelope : envelopes)
 				if(queriedEnvelope.isBoundary()){
-					final KDTree kdTree = new KDTree();
+					final KDTree kdTree = KDTree.ofEmpty();
 					final KDNode kdNode = (KDNode)queriedEnvelope.getNode();
-					kdTree.insert(kdNode, point);
+					kdTree.insert(kdNode, point, 0);
 					return;
 				}
 
@@ -35,11 +35,10 @@ public class AbstractHybridKDTree{
 
 		for(final Envelope envelope : envelopes){
 			if(envelope.isBoundary()){
-				final KDTree kdTree = new KDTree();
+				final KDTree kdTree = KDTree.ofEmpty();
 				final KDNode kdNode = (KDNode)envelope.getNode();
-				if(kdTree.query(kdNode, point)){
+				if(kdTree.query(kdNode, point, 0))
 					return true;
-				}
 			}
 		}
 		return false;
