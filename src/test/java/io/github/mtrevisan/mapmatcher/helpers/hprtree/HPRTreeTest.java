@@ -391,7 +391,7 @@ out geom;
 	@Test
 	void disallowed_inserts(){
 		HPRTree<Object> t = new HPRTree<>(3);
-		t.insert(new NodeItem(Envelope.of(0., 0., 0., 0.), new Object()));
+		t.insert(Envelope.of(0., 0., 0., 0.), new Object());
 		t.insert(Envelope.of(0., 0., 0., 0.), new Object());
 		t.query(Envelope.ofEmpty());
 		try{

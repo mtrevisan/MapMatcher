@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 
 import java.util.ArrayList;
