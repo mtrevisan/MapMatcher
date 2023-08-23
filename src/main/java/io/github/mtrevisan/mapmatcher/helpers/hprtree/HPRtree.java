@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
+import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ import java.util.List;
  * @see <a href="https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java">HPRtree.java</a>
  * @see <a href="https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf">Hilbert R-tree: An improved R-tree using fractals</a>
  */
-public class HPRtree<T>{
+public class HPRtree<T> implements SpatialTree<T>{
 
 	private static final int ENV_SIZE = 4;
 	private static final int HILBERT_LEVEL = 12;
@@ -86,15 +87,12 @@ public class HPRtree<T>{
 		this.nodeCapacity = nodeCapacity;
 	}
 
-	/**
-	 * Gets the number of items in the index.
-	 *
-	 * @return the number of items
-	 */
+	@Override
 	public int size(){
 		return items.size();
 	}
 
+	@Override
 	public void insert(final Envelope itemEnvelope, final T item){
 		if(isBuilt)
 			throw new IllegalStateException("Cannot insert items after tree is built.");
@@ -236,6 +234,7 @@ public class HPRtree<T>{
 	}
 
 
+	@Override
 	public List<T> query(final Envelope searchEnvelope){
 		build();
 
@@ -336,6 +335,7 @@ public class HPRtree<T>{
 	}
 
 
+	@Override
 	public boolean remove(final Envelope itemEnvelope, final T item){
 		//TODO https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf
 		//	find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
