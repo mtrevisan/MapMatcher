@@ -58,7 +58,7 @@ import java.util.List;
  * @see <a href="https://en.wikipedia.org/wiki/Hilbert_R-tree">Hilbert R-tree</a>
  * @see <a href="https://web.cs.swarthmore.edu/~adanner/cs97/s08/pdf/prtreesigmod04.pdf">The Priority R-Tree: A Practically Efficient and Worst-Case Optimal R-Tree</a>
  */
-public class HPRTree<T>{
+public class HilbertPackedRTree<T>{
 
 	private static final int ENV_SIZE = 4;
 	private static final int HILBERT_LEVEL = 12;
@@ -75,7 +75,7 @@ public class HPRTree<T>{
 	/**
 	 * Creates a new tree with the default node capacity.
 	 */
-	public HPRTree(){
+	public HilbertPackedRTree(){
 		this(DEFAULT_NODE_CAPACITY);
 	}
 
@@ -84,7 +84,7 @@ public class HPRTree<T>{
 	 *
 	 * @param nodeCapacity	The node capacity to use.
 	 */
-	public HPRTree(final int nodeCapacity){
+	public HilbertPackedRTree(final int nodeCapacity){
 		this.nodeCapacity = nodeCapacity;
 	}
 

@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.spatial;
 
 import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
-import io.github.mtrevisan.mapmatcher.helpers.kdtree.KDNode;
 
 import java.util.Objects;
 

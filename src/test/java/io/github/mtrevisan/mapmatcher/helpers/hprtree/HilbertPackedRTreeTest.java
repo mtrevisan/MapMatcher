@@ -60,7 +60,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 
-class HPRTreeTest{
+class HilbertPackedRTreeTest{
 
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
@@ -364,7 +364,7 @@ out geom;
 
 	@Test
 	void query_tree() throws IOException{
-		HPRTree<Polyline> tree = new HPRTree<>();
+		HilbertPackedRTree<Polyline> tree = new HilbertPackedRTree<>();
 		Set<Polyline> highways = extractPolylines(new File(FILENAME_ROADS_SIMPLIFIED));
 		for(Polyline polyline : highways){
 			Envelope geoBoundingBox = polyline.getBoundingBox();
@@ -381,7 +381,7 @@ out geom;
 
 	@Test
 	void empty_tree_using_list_query(){
-		HPRTree<Object> tree = new HPRTree<>();
+		HilbertPackedRTree<Object> tree = new HilbertPackedRTree<>();
 
 		List<Object> list = tree.query(Envelope.of(0., 1., 0., 1.));
 
@@ -390,7 +390,7 @@ out geom;
 
 	@Test
 	void disallowed_inserts(){
-		HPRTree<Object> t = new HPRTree<>(3);
+		HilbertPackedRTree<Object> t = new HilbertPackedRTree<>(3);
 		t.insert(Envelope.of(0., 0., 0., 0.), new Object());
 		t.insert(Envelope.of(0., 0., 0., 0.), new Object());
 		t.query(Envelope.ofEmpty());
@@ -414,7 +414,7 @@ out geom;
 		geometries.add(factory.createPolyline(factory.createPoint(5., 25.), factory.createPoint(25., 35.)));
 		geometries.add(factory.createPolyline(factory.createPoint(25., 5.), factory.createPoint(35., 15.)));
 		geometries.add(factory.createPolyline(factory.createPoint(2., 2.), factory.createPoint(4., 4.)));
-		HPRTree<String> t = new HPRTree<>(7);
+		HilbertPackedRTree<String> t = new HilbertPackedRTree<>(7);
 		for(int i = 0; i < geometries.size(); i ++)
 			t.insert(geometries.get(i).getBoundingBox(), String.valueOf(i + 1));
 
@@ -428,7 +428,7 @@ out geom;
 		geometries.add(factory.createPolyline(factory.createPoint(0., 0.), factory.createPoint(10., 10.)));
 		geometries.add(factory.createPolyline(factory.createPoint(20., 20.), factory.createPoint(30., 30.)));
 		geometries.add(factory.createPolyline(factory.createPoint(20., 20.), factory.createPoint(30., 30.)));
-		HPRTree<Object> t = new HPRTree<>(3);
+		HilbertPackedRTree<Object> t = new HilbertPackedRTree<>(3);
 		for(Polyline g : geometries)
 			t.insert(g.getBoundingBox(), new Object());
 
@@ -442,7 +442,7 @@ out geom;
 
 	@Test
 	void query3(){
-		HPRTree<Integer> t = new HPRTree<>();
+		HilbertPackedRTree<Integer> t = new HilbertPackedRTree<>();
 		for(int i = 0; i < 3; i ++)
 			t.insert(Envelope.of(i, i, i + 1, i + 1), i);
 
@@ -454,7 +454,7 @@ out geom;
 
 	@Test
 	void query10(){
-		HPRTree<Integer> t = new HPRTree<>();
+		HilbertPackedRTree<Integer> t = new HilbertPackedRTree<>();
 		for(int i = 0; i < 10; i ++)
 			t.insert(Envelope.of(i, i, i + 1, i + 1), i);
 
@@ -468,21 +468,21 @@ out geom;
 
 	@Test
 	void query100(){
-		queryGrid(100, new HPRTree<>());
+		queryGrid(100, new HilbertPackedRTree<>());
 	}
 
 	@Test
 	void query100_cap8(){
-		queryGrid(100, new HPRTree<>(8));
+		queryGrid(100, new HilbertPackedRTree<>(8));
 	}
 
 	@Test
 	void query100_cap2(){
-		queryGrid(100, new HPRTree<>(2));
+		queryGrid(100, new HilbertPackedRTree<>(2));
 	}
 
 
-	private void queryGrid(int size, HPRTree<Integer> tree){
+	private void queryGrid(int size, HilbertPackedRTree<Integer> tree){
 		for(int i = 0; i < size; i ++)
 			tree.insert(Envelope.of(i, i, i + 1, i + 1), i);
 

@@ -17,7 +17,7 @@ public class AbstractHybridKDTree{
 				if(queriedEnvelope.isBoundary()){
 					final KDTree kdTree = KDTree.ofEmpty();
 					final KDNode kdNode = (KDNode)queriedEnvelope.getNode();
-					kdTree.insert(kdNode, point, 0);
+					kdTree.insert(kdNode, point);
 					return;
 				}
 
@@ -37,7 +37,7 @@ public class AbstractHybridKDTree{
 			if(envelope.isBoundary()){
 				final KDTree kdTree = KDTree.ofEmpty();
 				final KDNode kdNode = (KDNode)envelope.getNode();
-				if(kdTree.query(kdNode, point, 0))
+				if(kdTree.contains(kdNode, point))
 					return true;
 			}
 		}

@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
-import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRTree;
+import io.github.mtrevisan.mapmatcher.helpers.hprtree.HilbertPackedRTree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
@@ -58,7 +58,7 @@ public class NearNodeMergeGraph implements Graph{
 
 	private final double threshold;
 
-	private HPRTree<Polyline> tree;
+	private HilbertPackedRTree<Polyline> tree;
 
 
 	public NearNodeMergeGraph(final double threshold){
@@ -69,7 +69,7 @@ public class NearNodeMergeGraph implements Graph{
 	}
 
 	public NearNodeMergeGraph withTree(){
-		tree = new HPRTree<>();
+		tree = new HilbertPackedRTree<>();
 
 		return this;
 	}

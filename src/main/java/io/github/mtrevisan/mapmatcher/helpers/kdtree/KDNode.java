@@ -5,7 +5,7 @@ import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 
-public class KDNode implements SpatialNode{
+class KDNode implements SpatialNode{
 
 	public Point point;
 

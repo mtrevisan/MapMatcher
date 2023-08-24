@@ -27,7 +27,7 @@ package io.github.mtrevisan.mapmatcher;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
-import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRTree;
+import io.github.mtrevisan.mapmatcher.helpers.hprtree.HilbertPackedRTree;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
@@ -90,7 +90,7 @@ public class Application{
 		final Polyline edge4 = factory.createPolyline(simplifier.simplify(node32_51_61, node52));
 		final Polyline edge5 = factory.createPolyline(simplifier.simplify(node32_51_61, node62));
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
-		final HPRTree<Polyline> tree = new HPRTree<>();
+		final HilbertPackedRTree<Polyline> tree = new HilbertPackedRTree<>();
 		for(final Polyline edge : edges){
 			final Envelope geoBoundingBox = edge.getBoundingBox();
 			tree.insert(geoBoundingBox, edge);

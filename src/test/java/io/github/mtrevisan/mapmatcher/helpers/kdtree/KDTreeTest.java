@@ -3,8 +3,6 @@ package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
-import io.github.mtrevisan.mapmatcher.spatial.Polyline;
-import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.GeoidalCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,38 +25,14 @@ class KDTreeTest{
 	private static final String FILENAME_TOLL_BOOTHS_RAW = "src/test/resources/it.tollBooths.wkt";
 
 
-	@Test
-	void query_tree(){
-		KDTree tree = KDTree.ofEmpty();
-
-		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		for(Point tollBooth : tollBooths)
-			tree.insert(tollBooth);
-
-		Assertions.assertTrue(tree.query(FACTORY.createPoint(14.483_012, 40.741_087)));
-		Assertions.assertTrue(tree.query(FACTORY.createPoint(12.336_738_1, 46.075_984_7)));
-		Assertions.assertFalse(tree.query(FACTORY.createPoint(0., 0.)));
-	}
-
-	@Test
-	void query_tree_bulk_creation(){
-		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		KDTree tree = KDTree.of(tollBooths);
-
-		Assertions.assertTrue(tree.query(FACTORY.createPoint(14.483_012, 40.741_087)));
-		Assertions.assertTrue(tree.query(FACTORY.createPoint(12.336_738_1, 46.075_984_7)));
-		Assertions.assertFalse(tree.query(FACTORY.createPoint(0., 0.)));
-	}
-
 	private static Set<Point> extractPoints(final File file){
 		final List<Point> lines = new ArrayList<>();
 		try(final BufferedReader br = new BufferedReader(new FileReader(file))){
 			String readLine;
-			while((readLine = br.readLine()) != null)
+			while((readLine = br.readLine()) != null){
 				if(!readLine.isEmpty())
 					lines.add(parsePoint(readLine));
+			}
 		}
 		catch(IOException e){
 			e.printStackTrace();
@@ -74,6 +49,96 @@ class KDTreeTest{
 			Double.parseDouble(line.substring(separatorIndex + 1, endIndex))
 		);
 	}
+
+
+	@Test
+	void query_tree_contains_all(){
+		KDTree tree = KDTree.ofEmpty();
+
+		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
+		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		for(Point tollBooth : tollBooths)
+			tree.insert(tollBooth);
+
+		for(Point tollBooth : tollBooths)
+			Assertions.assertTrue(tree.contains(tollBooth));
+		Assertions.assertFalse(tree.contains(FACTORY.createPoint(0., 0.)));
+	}
+
+	@Test
+	void query_tree_neighbour(){
+		KDTree tree = KDTree.ofEmpty();
+
+		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
+		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		for(Point tollBooth : tollBooths)
+			tree.insert(tollBooth);
+
+		for(Point tollBooth : tollBooths)
+			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(tollBooth));
+		Assertions.assertEquals(FACTORY.createPoint(7.5925975, 43.8008445),
+			tree.nearestNeighbour(FACTORY.createPoint(0., 0.)));
+	}
+
+	@Test
+	void query_tree_points_in_range(){
+		KDTree tree = KDTree.ofEmpty();
+
+		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
+		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		for(Point tollBooth : tollBooths)
+			tree.insert(tollBooth);
+
+		Collection<Point> points = tree.pointsInRange(Envelope.of(FACTORY.createPoint(7.5925975, 43.8008445),
+			FACTORY.createPoint(8.5925975, 44.8008445)));
+		Assertions.assertEquals(52, points.size());
+
+		points = tree.pointsInRange(Envelope.of(FACTORY.createPoint(7.5925975, 43.8008445),
+			FACTORY.createPoint(7.5925975, 43.8008445)));
+		Assertions.assertEquals(1, points.size());
+	}
+
+
+	@Test
+	void query_bulk_tree_contains_all(){
+		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
+		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		KDTree tree = KDTree.of(tollBooths);
+
+		for(Point tollBooth : tollBooths)
+			Assertions.assertTrue(tree.contains(tollBooth));
+		Assertions.assertFalse(tree.contains(FACTORY.createPoint(0., 0.)));
+	}
+
+	@Test
+	void query_bulk_tree_neighbour(){
+		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
+		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		KDTree tree = KDTree.of(tollBooths);
+
+		for(Point tollBooth : tollBooths)
+			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(tollBooth));
+		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
+			tree.nearestNeighbour(FACTORY.createPoint(0., 0.)));
+	}
+
+	@Test
+	void query_bulk_tree_points_in_range(){
+		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
+		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		KDTree tree = KDTree.of(tollBooths);
+
+		Collection<Point> points = tree.pointsInRange(Envelope.of(FACTORY.createPoint(7.5925975, 43.8008445),
+			FACTORY.createPoint(8.5925975, 44.8008445)));
+		Assertions.assertEquals(52, points.size());
+
+		points = tree.pointsInRange(Envelope.of(FACTORY.createPoint(7.5925975, 43.8008445),
+			FACTORY.createPoint(7.5925975, 43.8008445)));
+		Assertions.assertEquals(1, points.size());
+	}
+
+
+
 
 //	@Test
 //	void empty_tree_using_list_query(){

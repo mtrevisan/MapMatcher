@@ -2,49 +2,86 @@ package io.github.mtrevisan.mapmatcher.helpers;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
 
 public class QuickSelect{
 
-	private static final Random random = new Random();
-
-
-	public static <T> T select(final List<T> list, final int n, final Comparator<? super T> cmp){
-		return select(list, 0, list.size() - 1, n, cmp);
+	/**
+	 * Determines the k<sup>th</sup> order statistic for the given list.
+	 *
+	 * @param list	The list.
+	 * @param index	The <em>k</em> value to use.
+	 * @param cmp	The comparator to use.
+	 * @return	The k<sup>th</sup> order statistic for the list.
+	 */
+	public static <T> T select(final List<T> list, final int index, final Comparator<? super T> cmp){
+		return select(list, 0, list.size() - 1, index, cmp);
 	}
 
-	public static <T> T select(final List<T> list, int left, int right, final int n, final Comparator<? super T> cmp){
-		for(; ; ){
-			if(left == right)
-				return list.get(left);
+	/**
+	 * Determines the k<sup>th</sup> order statistic for the given list.
+	 *
+	 * @param list	The list.
+	 * @param leftIndex	The left index of the current sublist.
+	 * @param rightIndex	The right index of the current sublist.
+	 * @param index	The <em>k</em> value to use.
+	 * @param cmp	The comparator to use.
+	 * @return	The k<sup>th</sup> order statistic for the list.
+	 */
+	public static <T> T select(final List<T> list, int leftIndex, int rightIndex, final int index, final Comparator<? super T> cmp){
+		while(true){
+			if(leftIndex == rightIndex)
+				return list.get(leftIndex);
 
-			int pivot = pivotIndex(left, right);
-			pivot = partition(list, left, right, pivot, cmp);
-			if(n == pivot)
-				return list.get(n);
+			int pivot = pivotIndex(leftIndex, rightIndex);
+			pivot = partition(list, leftIndex, rightIndex, pivot, cmp);
+			if(index == pivot)
+				return list.get(index);
 
-			if(n < pivot)
-				right = pivot - 1;
+			if(index < pivot)
+				rightIndex = pivot - 1;
 			else
-				left = pivot + 1;
+				leftIndex = pivot + 1;
 		}
 	}
 
-	private static <T> int partition(final List<T> list, final int left, final int right, final int pivot, final Comparator<? super T> cmp){
-		final T pivotValue = list.get(pivot);
-		swap(list, pivot, right);
-		int store = left;
-		for(int i = left; i < right; i ++)
+	/**
+	 * Randomly partitions a set about a pivot such that the values to the left
+	 * of the pivot are less than or equal to the pivot and the values to the
+	 * right of the pivot are greater than the pivot.
+	 *
+	 * @param list	The list.
+	 * @param leftIndex	The left index of the current sublist.
+	 * @param rightIndex	The right index of the current sublist.
+	 * @param pivotIndex	The pivot index.
+	 * @return	The index of the pivot.
+	 */
+	private static <T> int partition(final List<T> list, final int leftIndex, final int rightIndex, final int pivotIndex,
+			final Comparator<? super T> cmp){
+		final T pivotValue = list.get(pivotIndex);
+		//move pivot to end
+		swap(list, pivotIndex, rightIndex);
+
+		int storeIndex = leftIndex;
+		for(int i = leftIndex; i < rightIndex; i ++)
 			if(cmp.compare(list.get(i), pivotValue) < 0){
-				swap(list, store, i);
-				store ++;
+				swap(list, storeIndex, i);
+				storeIndex ++;
 			}
 
-		swap(list, right, store);
-		return store;
+		//move pivot to its final place
+		swap(list, rightIndex, storeIndex);
+
+		return storeIndex;
 	}
 
+	/**
+	 * Swaps two elements in a list.
+	 *
+	 * @param list	The list.
+	 * @param i	The index of the first element to swap.
+	 * @param j	The index of the second element to swap.
+	 */
 	private static <T> void swap(final List<T> list, final int i, final int j){
 		final T value = list.get(i);
 		list.set(i, list.get(j));
@@ -52,7 +89,7 @@ public class QuickSelect{
 	}
 
 	private static int pivotIndex(final int left, final int right){
-		return left + random.nextInt(right - left + 1);
+		return left + (right - left) / 2;
 	}
 
 }

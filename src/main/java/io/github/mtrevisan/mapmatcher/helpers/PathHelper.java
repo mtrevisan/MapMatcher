@@ -29,7 +29,7 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearNodeMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.filters.GPSPositionSpeedFilter;
-import io.github.mtrevisan.mapmatcher.helpers.hprtree.HPRTree;
+import io.github.mtrevisan.mapmatcher.helpers.hprtree.HilbertPackedRTree;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
@@ -351,7 +351,7 @@ public class PathHelper{
 	 * @param threshold	The threshold [m].
 	 * @return	The list of road links whose distance is less than the given radius from each observation.
 	 */
-	public static Collection<Polyline> extractObservedEdges(final HPRTree<Polyline> tree, final Point[] observations,
+	public static Collection<Polyline> extractObservedEdges(final HilbertPackedRTree<Polyline> tree, final Point[] observations,
 			final double threshold){
 		final Set<Polyline> observedEdges = new HashSet<>(0);
 		int currentObservationIndex = PathHelper.extractNextObservation(observations, 0);
@@ -375,7 +375,7 @@ public class PathHelper{
 		return observedEdges;
 	}
 
-	public static GPSPoint[] extractObservations(final HPRTree<Polyline> tree, final GPSPoint[] observations, final double threshold){
+	public static GPSPoint[] extractObservations(final HilbertPackedRTree<Polyline> tree, final GPSPoint[] observations, final double threshold){
 		final GPSPoint[] feasibleObservations = new GPSPoint[observations.length];
 
 		if(observations.length > 0){
