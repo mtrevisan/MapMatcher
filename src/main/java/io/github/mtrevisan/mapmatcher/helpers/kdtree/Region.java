@@ -32,14 +32,14 @@ import java.util.Objects;
 
 public class Region implements Comparable<Region>{
 
-	/** The minimum x-coordinate. */
-	private double minX;
-	/** The minimum y-coordinate. */
-	private double minY;
-	/** The maximum x-coordinate. */
-	private double maxX;
-	/** The maximum y-coordinate. */
-	private double maxY;
+	/** The x-coordinate. */
+	private double x;
+	/** The y-coordinate. */
+	private double y;
+	/** The width along the x-coordinate. */
+	private double width;
+	/** The height along the y-coordinate. */
+	private double height;
 
 	private SpatialNode node;
 	private boolean boundary;
@@ -48,13 +48,13 @@ public class Region implements Comparable<Region>{
 	/**
 	 * Creates an <code>Envelope</code> for a region defined by maximum and minimum values.
 	 *
-	 * @param x1 The first x-value.
-	 * @param y1 The first y-value.
-	 * @param x2 The second x-value.
-	 * @param y2 The second y-value.
+	 * @param x The x-value.
+	 * @param y The y-value.
+	 * @param width The width along the x-value.
+	 * @param height The height along the y-value.
 	 */
-	public static Region of(final double x1, final double y1, final double x2, final double y2){
-		return new Region(x1, y1, x2, y2);
+	public static Region of(final double x, final double y, final double width, final double height){
+		return new Region(x, y, width, height);
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class Region implements Comparable<Region>{
 	 * @param p2	The second point.
 	 */
 	public static Region of(final Point p1, final Point p2){
-		return of(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+		return of(p1.getX(), p1.getY(), p2.getX() - p1.getX(), p2.getY() - p1.getY());
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class Region implements Comparable<Region>{
 	 * @param p	The point.
 	 */
 	public static Region of(final Point p){
-		return of(p.getX(), p.getY(), p.getX(), p.getY());
+		return of(p.getX(), p.getY(), 0., 0.);
 	}
 
 	public static Region ofEmpty(){
@@ -81,76 +81,57 @@ public class Region implements Comparable<Region>{
 	}
 
 
-	private Region(){
+	protected Region(){
 		setToNull();
 	}
 
-	private Region(final double x1, final double y1, final double x2, final double y2){
-		if(x1 < x2){
-			minX = x1;
-			maxX = x2;
-		}
-		else{
-			minX = x2;
-			maxX = x1;
-		}
-
-		if(y1 < y2){
-			minY = y1;
-			maxY = y2;
-		}
-		else{
-			minY = y2;
-			maxY = y1;
-		}
+	protected Region(final double x, final double y, final double width, final double height){
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
 	}
 
 	/**
-	 * Returns the <code>Envelope</code>s minimum x-value.
-	 * <p>
-	 * <code>min x &gt; max x</code> indicates that this is a null <code>Envelope</code>.
-	 * </p>
+	 * Returns the <code>Envelope</code>s x-value.
 	 *
-	 * @return	The minimum x-coordinate.
+	 * @return	The x-coordinate.
 	 */
-	public double getMinX(){
-		return minX;
+	public double getX(){
+		return x;
 	}
 
 	/**
-	 * Returns the <code>Envelope</code>s minimum y-value.
-	 * <p>
-	 * <code>min y &gt; max y</code> indicates that this is a null <code>Envelope</code>.
-	 * </p>
+	 * Returns the <code>Envelope</code>s y-value.
 	 *
-	 * @return	The minimum y-coordinate.
+	 * @return	The y-coordinate.
 	 */
-	public double getMinY(){
-		return minY;
+	public double getY(){
+		return y;
 	}
 
 	/**
-	 * Returns the <code>Envelope</code>s maximum x-value.
+	 * Returns the <code>Envelope</code>s width along the x-value.
 	 * <p>
-	 * <code>min x &gt; max x</code> indicates that this is a null <code>Envelope</code>.
+	 * <code>-1</code> indicates that this is a null <code>Envelope</code>.
 	 * </p>
 	 *
-	 * @return	The maximum x-coordinate.
+	 * @return	The width along the x-coordinate.
 	 */
-	public double getMaxX(){
-		return maxX;
+	public double getWidth(){
+		return width;
 	}
 
 	/**
-	 * Returns the <code>Envelope</code>s maximum y-value.
+	 * Returns the <code>Envelope</code>s height along the y-value.
 	 * <p>
-	 * <code>min y &gt; max y</code> indicates that this is a null <code>Envelope</code>.
+	 * <code>-1</code> indicates that this is a null <code>Envelope</code>.
 	 * </p>
 	 *
-	 * @return	The maximum y-coordinate.
+	 * @return	The height along the y-coordinate.
 	 */
-	public double getMaxY(){
-		return maxY;
+	public double getHeight(){
+		return height;
 	}
 
 	/**
@@ -159,17 +140,17 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether this <code>Envelope</code> is uninitialized or is the envelope of the empty geometry.
 	 */
 	public boolean isNull(){
-		return (maxX < minX);
+		return (width < 0 || height < 0);
 	}
 
 	/**
 	 * Makes this <code>Envelope</code> a "null" envelope, that is, the envelope of the empty geometry.
 	 */
 	public void setToNull(){
-		minX = 0.;
-		maxX = -1.;
-		minY = 0.;
-		maxY = -1.;
+		x = 0.;
+		y = 0.;
+		width = -1;
+		height = -1.;
 	}
 
 	public SpatialNode getNode(){
@@ -186,24 +167,6 @@ public class Region implements Comparable<Region>{
 
 	public void setBoundary(){
 		boundary = true;
-	}
-
-	/**
-	 * Returns the difference between the maximum and minimum <code>x</code> values.
-	 *
-	 * @return	<code>max x - min x</code>, or <code>0</code> if this is a null <code>Envelope</code>.
-	 */
-	public double getWidth(){
-		return (isNull()? 0: maxX - minX);
-	}
-
-	/**
-	 * Returns the difference between the maximum and minimum <code>y</code> values.
-	 *
-	 * @return	<code>max y - min y</code>, or <code>0</code> if this is a null <code>Envelope</code>.
-	 */
-	public double getHeight(){
-		return (isNull()? 0: maxY - minY);
 	}
 
 
@@ -231,20 +194,20 @@ public class Region implements Comparable<Region>{
 	 */
 	public void expandToInclude(final double x, final double y){
 		if(isNull()){
-			minX = x;
-			minY = y;
-			maxX = x;
-			maxY = y;
+			this.x = x;
+			this.y = y;
+			width = x;
+			height = y;
 		}
 		else{
-			if(x < minX)
-				minX = x;
-			if(y < minY)
-				minY = y;
-			if(x > maxX)
-				maxX = x;
-			if(y > maxY)
-				maxY = y;
+			if(x < this.x)
+				this.x = x;
+			if(y < this.y)
+				this.y = y;
+			if(x > width)
+				width = x;
+			if(y > height)
+				height = y;
 		}
 	}
 
@@ -261,20 +224,20 @@ public class Region implements Comparable<Region>{
 			return;
 
 		if(isNull()){
-			minX = other.getMinX();
-			minY = other.getMinY();
-			maxX = other.getMaxX();
-			maxY = other.getMaxY();
+			x = other.getX();
+			y = other.getY();
+			width = other.getWidth();
+			height = other.getHeight();
 		}
 		else{
-			if(other.minX < minX)
-				minX = other.minX;
-			if(other.minY < minY)
-				minY = other.minY;
-			if(other.maxX > maxX)
-				maxX = other.maxX;
-			if(other.maxY > maxY)
-				maxY = other.maxY;
+			if(other.x < x)
+				x = other.x;
+			if(other.y < y)
+				y = other.y;
+			if(other.width > width)
+				width = other.width;
+			if(other.height > height)
+				height = other.height;
 		}
 	}
 
@@ -303,13 +266,13 @@ public class Region implements Comparable<Region>{
 		if(isNull())
 			return;
 
-		minX -= deltaX;
-		minY -= deltaY;
-		maxX += deltaX;
-		maxY += deltaY;
+		x -= deltaX;
+		y -= deltaY;
+		width += deltaX;
+		height += deltaY;
 
 		//check for envelope disappearing
-		if(minX > maxX || minY > maxY)
+		if(x > width || y > height)
 			setToNull();
 	}
 
@@ -324,10 +287,10 @@ public class Region implements Comparable<Region>{
 		if(isNull() || envelope.isNull() || !intersects(envelope))
 			return ofEmpty();
 
-		final double intMinX = Math.max(minX, envelope.minX);
-		final double intMinY = Math.max(minY, envelope.minY);
-		final double intMaxX = Math.min(maxX, envelope.maxX);
-		final double intMaxY = Math.min(maxY, envelope.maxY);
+		final double intMinX = Math.max(x, envelope.x);
+		final double intMinY = Math.max(y, envelope.y);
+		final double intMaxX = Math.min(width, envelope.width);
+		final double intMaxY = Math.min(height, envelope.height);
 		return of(intMinX, intMinY, intMaxX, intMaxY);
 	}
 
@@ -339,7 +302,7 @@ public class Region implements Comparable<Region>{
 	 */
 	public boolean intersects(final Region envelope){
 		return !(isNull() || envelope.isNull()
-			|| envelope.minX > maxX || envelope.maxX < minX || envelope.minY > maxY || envelope.maxY < minY);
+			|| envelope.x > width || envelope.width < x || envelope.y > height || envelope.height < y);
 	}
 
 	/**
@@ -349,7 +312,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether the point intersects this envelope.
 	 */
 	public boolean intersects(final Point p){
-		return !(isNull() || p.getX() > maxX || p.getX() < minX || p.getY() > maxY || p.getY() < minY);
+		return !(isNull() || p.getX() > width || p.getX() < x || p.getY() > height || p.getY() < y);
 	}
 
 
@@ -370,13 +333,13 @@ public class Region implements Comparable<Region>{
 			return 1;
 
 		//compare based on numerical ordering of ordinates
-		int cmp = Double.compare(minX, envelope.minX);
+		int cmp = Double.compare(x, envelope.x);
 		if(cmp == 0)
-			cmp = Double.compare(minY, envelope.minY);
+			cmp = Double.compare(y, envelope.y);
 		if(cmp == 0)
-			cmp = Double.compare(maxX, envelope.maxX);
+			cmp = Double.compare(width, envelope.width);
 		if(cmp == 0)
-			cmp = Double.compare(maxY, envelope.maxY);
+			cmp = Double.compare(height, envelope.height);
 		return cmp;
 	}
 
@@ -388,18 +351,18 @@ public class Region implements Comparable<Region>{
 			return false;
 
 		final Region other = (Region)obj;
-		return (Objects.equals(minX, other.minX) && Objects.equals(minY, other.minY)
-			&& Objects.equals(maxX, other.maxX) && Objects.equals(maxY, other.maxY));
+		return (Objects.equals(x, other.x) && Objects.equals(y, other.y)
+			&& Objects.equals(width, other.width) && Objects.equals(height, other.height));
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(minX, minY, maxX, maxY);
+		return Objects.hash(x, y, width, height);
 	}
 
 	@Override
 	public String toString(){
-		return "Env[" + minX + " : " + maxX + ", " + minY + " : " + maxY + "]";
+		return "Env[" + x + " : " + width + ", " + y + " : " + height + "]";
 	}
 
 }

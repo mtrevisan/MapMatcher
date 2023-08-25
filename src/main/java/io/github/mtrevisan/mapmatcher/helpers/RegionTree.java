@@ -31,6 +31,12 @@ import java.util.Collection;
 
 public interface RegionTree{
 
+	/** Empty the tree of all of its internal points. */
+	void clear();
+
+	boolean isEmpty();
+
+
 	/**
 	 * Add the region to the set (if it is not already in the set).
 	 *
