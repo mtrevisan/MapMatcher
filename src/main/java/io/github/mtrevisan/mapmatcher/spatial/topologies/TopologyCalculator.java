@@ -33,7 +33,8 @@ import java.util.List;
 
 public interface TopologyCalculator{
 
-	double EPSILON = 1.e-9;
+	/** The tolerance distance for considering two points equal. */
+	double getPrecision();
 
 
 	double distance(Point startPoint, Point endPoint);
@@ -69,9 +70,9 @@ public interface TopologyCalculator{
 		final double p1y = point1.getY();
 		final double p2x = point2.getX();
 		final double p2y = point2.getY();
-		if(p1x > p2x || MathHelper.nearlyEqual(p1x, p2x, EPSILON) && p1y > p2y)
+		if(p1x > p2x || MathHelper.nearlyEqual(p1x, p2x, getPrecision()) && p1y > p2y)
 			return 1;
-		if(p1x < p2x || MathHelper.nearlyEqual(p1x, p2x, EPSILON) && p1y < p2y)
+		if(p1x < p2x || MathHelper.nearlyEqual(p1x, p2x, getPrecision()) && p1y < p2y)
 			return -1;
 		return 0;
 	}

@@ -39,6 +39,38 @@ import java.util.List;
  */
 public class GeoidalCalculator implements TopologyCalculator{
 
+	/** The tolerance distance for considering two points equal. */
+	private static final double PRECISION = 1.e-9;
+
+
+	private final double precision;
+
+
+	/**
+	 * Construct a new calculator instance with the given precision.
+	 *
+	 * @param precision	The tolerance distance for considering two points equal.
+	 */
+	public static GeoidalCalculator withPrecision(final double precision){
+		return new GeoidalCalculator(precision);
+	}
+
+
+	public GeoidalCalculator(){
+		precision = PRECISION;
+	}
+
+	protected GeoidalCalculator(final double precision){
+		this.precision = precision;
+	}
+
+
+	@Override
+	public double getPrecision(){
+		return precision;
+	}
+
+
 	/**
 	 * Calculate orthodromic distance, (azimuth) bearing and final bearing between two points using inverse Vincenty formula.
 	 *

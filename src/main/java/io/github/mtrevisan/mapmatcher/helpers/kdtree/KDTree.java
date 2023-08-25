@@ -25,10 +25,10 @@
 package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.QuickSelect;
-import io.github.mtrevisan.mapmatcher.helpers.Tree;
-import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -37,18 +37,25 @@ import java.util.Stack;
 
 
 /**
- * A k-dimensional Tree.
+ * A k-d Tree (short for k-dimensional Tree) is a space-partitioning data
+ * structure for organizing points in a k-dimensional space. k-d trees are a
+ * useful data structure for several applications, such as searches involving a
+ * multidimensional search key (e.g. range searches and nearest neighbor
+ * searches). k-d trees are a special case of binary space partitioning trees.
  * <p>
- * Algorithm		Average		Worst case
- * Space				O(n)			O(n)
- * Search			O(log(n))	O(n)
- * Range search	?				O(k · n^(1 - 1/k))
- * Insert			O(log(n))	O(n)
+ * Algorithm		Average								Worst case
+ * Space				O(n)									O(n)
+ * Search			O(log(n))							O(n)
+ * Range search	k(n) + Θ(n^alpha) + Θ(log(n))	O(k · n^(1 - 1/k)), (for
+ * 	"small enough sides of the searching rectangle") where k(n) is the
+ * 	expected number of matches, alpha depends on the variant of k-d tree.
+ * Insert			O(log(n))							O(n)
  * </p>
  * <p>
  * Note that it is not required to select the median point upon construction of the tree. In the case where median points are not selected,
  * there is no guarantee that the tree will be balanced.<br />
- * Having a balanced tree that evenly splits regions improves the search time.
+ * Having a balanced tree that evenly splits regions improves nearest neighbor performance.
+ * Having a squarish k-d trees improves range search performance.
  * </p>
  *
  * @see <a href="https://en.wikipedia.org/wiki/K-d_tree">H<em>k</em>-d tree</a>
@@ -59,16 +66,17 @@ import java.util.Stack;
  * @see <a href="https://core.ac.uk/download/pdf/19529722.pdf">Multicore construction of k-d trees with applications in graphics and vision</a>
  * @see <a href="https://www.ri.cmu.edu/pub_files/pub1/moore_andrew_1991_1/moore_andrew_1991_1.pdf">An introductory tutorial on kd-trees</a>
  * @see <a href="https://arxiv.org/ftp/arxiv/papers/2106/2106.03799.pdf">Deterministic iteratively build KD-Tree with KNN search for exact applications</a>
+ * @see <a href="https://upcommons.upc.edu/bitstream/handle/2099.1/11309/MasterMercePons.pdf?sequence=1&isAllowed=y">Design, analysis and implementation of new variants of Kd-trees</a>
  */
-public class KDTree implements Tree{
-
-	private static final double PRECISION = 1.e-8;
+public class KDTree implements SpatialTree{
 
 	private KDNode root;
 
+	private Comparator<KDNode>[] comparators;
 
-	public static KDTree ofEmpty(){
-		return new KDTree();
+
+	public static KDTree ofEmpty(final int dimensions){
+		return new KDTree(dimensions);
 	}
 
 	public static KDTree of(final Collection<Point> points){
@@ -76,123 +84,116 @@ public class KDTree implements Tree{
 	}
 
 
-	private KDTree(){}
+	private KDTree(final int dimensions){
+		if(dimensions < 1)
+			throw new IllegalArgumentException ("K-D Tree must have at least dimension 1");
 
+		setDimensions(dimensions);
+	}
+
+	/**
+	 * Constructor for creating a (balanced) median k-d tree.
+	 *
+	 * @param points	A collection of {@link Point}s.
+	 */
 	private KDTree(final Collection<Point> points){
+		if(points.isEmpty())
+			throw new IllegalArgumentException("List of points cannot be empty");
+
+		//extract dimensions from first point
+		for(final Point point : points){
+			setDimensions(point.getDimensions());
+			break;
+		}
+
+		root = buildTree(points);
+	}
+
+	private KDNode buildTree(final Collection<Point> points){
 		final List<KDNode> nodes = new ArrayList<>(points.size());
 		for(final Point point : points){
 			final KDNode node = new KDNode(point);
 			nodes.add(node);
 		}
 
-		//FIXME
-		root = buildTree(nodes, 0, nodes.size(), 0);
-//		root = buildTree(nodes);
-	}
+		final Stack<BuildTreeParams> stack = new Stack<>();
+		stack.push(BuildTreeParams.asRoot(nodes.size()));
 
-	private KDNode buildTree(List<KDNode> nodes, int begin, int end, int index){
-		if(begin >= end)
-			return null;
+		while(!stack.isEmpty()){
+			final BuildTreeParams params = stack.pop();
+			final int begin = params.begin;
+			final int end = params.end;
+			int axis = params.axis;
 
-		//extract dimensions from first point
-		int dimensions = -1;
-		for(final KDNode node : nodes){
-			dimensions = node.point.getDimensions();
-			break;
+			//extract the splitting node
+			final int k = begin + ((end - begin) >> 1);
+			final KDNode median = QuickSelect.select(nodes, begin, end - 1, k, comparators[axis]);
+
+			axis = getNextAxis(axis);
+			if(begin < k)
+				stack.push(new BuildTreeParams(begin, k, axis, median, BuildTreeParams.Side.LEFT));
+			if(k + 1 < end)
+				stack.push(new BuildTreeParams(k + 1, end, axis, median, BuildTreeParams.Side.RIGHT));
+
+			if(root == null)
+				root = median;
+			else if(params.side == BuildTreeParams.Side.LEFT)
+				params.node.left = median;
+			else if(params.side == BuildTreeParams.Side.RIGHT)
+				params.node.right = median;
 		}
 
-		final int k = begin + (end - begin) / 2;
-		final KDNode node = QuickSelect.select(nodes, begin, end - 1, k, new NodeComparator(index));
-
-		index = getNextIndex(index, dimensions);
-		node.left = buildTree(nodes, begin, k, index);
-		node.right = buildTree(nodes, k + 1, end, index);
-
-		return node;
+		return root;
 	}
 
-	//FIXME
-//	private KDNode buildTree(final List<KDNode> nodes){
-//		//extract dimensions from first point
-//		int dimensions = - 1;
-//		for(final KDNode node : nodes){
-//			dimensions = node.point.getDimensions();
-//			break;
-//		}
-//
-//		KDNode root = null;
-//		final Stack<BuildTreeParams> stack = new Stack<>();
-//		stack.push(new BuildTreeParams(0, nodes.size(), 0));
-//
-//		while(!stack.isEmpty()){
-//			final BuildTreeParams params = stack.pop();
-//			final int start = params.begin;
-//			final int stop = params.end;
-//			int currentIndex = params.index;
-//
-//			if(start >= stop)
-//				continue;
-//
-//			final int k = start + (stop - start) / 2;
-//			final KDNode node = QuickSelect.select(nodes, start, stop - 1, k, new NodeComparator(currentIndex));
-//
-//			currentIndex = getNextIndex(currentIndex, dimensions);
-//			node.left = null;
-//			node.right = null;
-//
-//			if(root == null)
-//				root = node;
-//			else{
-//				KDNode parent = null;
-//				KDNode current = root;
-//				while(current != null){
-//					parent = current;
-//					if(node.point.getCoordinate(currentIndex) < current.point.getCoordinate(currentIndex))
-//						current = current.left;
-//					else
-//						current = current.right;
-//				}
-//
-//				if(node.point.getCoordinate(currentIndex) < parent.point.getCoordinate(currentIndex))
-//					parent.left = node;
-//				else
-//					parent.right = node;
-//			}
-//
-//			stack.push(new BuildTreeParams(start, k, currentIndex));
-//			stack.push(new BuildTreeParams(k + 1, stop, currentIndex));
-//		}
-//
-//		return root;
-//	}
+	private static class BuildTreeParams extends NodeAxisItem{
+		private final int begin;
+		private final int end;
+		private final Side side;
 
-	private static class BuildTreeParams{
-		final int begin;
-		final int end;
-		final int index;
+		private enum Side{LEFT, RIGHT}
 
-		BuildTreeParams(final int begin, final int end, final int index){
+		private static BuildTreeParams asRoot(final int size){
+			return new BuildTreeParams(0, size, 0, null, null);
+		}
+
+		private BuildTreeParams(final int begin, final int end, final int axis, final KDNode parent, final Side side){
+			super(parent, axis);
+
 			this.begin = begin;
 			this.end = end;
-			this.index = index;
+			this.side = side;
 		}
 	}
 
 	private static class NodeComparator implements Comparator<KDNode>{
 
-		private final int index;
+		private final int axis;
 
-		private NodeComparator(final int index){
-			this.index = index;
+		private NodeComparator(final int axis){
+			this.axis = axis;
 		}
 
 		@Override
 		public int compare(final KDNode node1, final KDNode node2){
-			return Double.compare(node1.point.getCoordinate(index), node2.point.getCoordinate(index));
+			return Double.compare(node1.point.getCoordinate(axis), node2.point.getCoordinate(axis));
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	private void setDimensions(final int dimensions){
+		comparators = (Comparator<KDNode>[])Array.newInstance(Comparator.class, dimensions);
+		for(int i = 0; i < dimensions; i ++)
+			comparators[i] = new NodeComparator(i);
+	}
 
+
+	@Override
+	public void clear(){
+		root = null;
+	}
+
+	@Override
 	public boolean isEmpty(){
 		return (root == null);
 	}
@@ -236,27 +237,31 @@ public class KDTree implements Tree{
 	 * </p>
 	 *
 	 * @param point	The point to add.
-	 * @throws NullPointerException	If {@code p} is {@code null}.
 	 */
+	@Override
 	public void insert(final Point point){
 		insert(root, point);
 	}
 
 	KDNode insert(KDNode parent, final Point point){
+		if(point.getDimensions() < comparators.length)
+			throw new IllegalArgumentException("Point dimension are less than what specified constructing this tree");
+
+		//find parent node
 		KDNode parentNode = null;
-		final int dimensions = point.getDimensions();
-		int index = getNextIndex(dimensions - 1, dimensions);
+		int axis = getNextAxis(comparators.length - 1);
 		while(parent != null){
 			parentNode = parent;
 
-			if(point.getCoordinate(index) < parent.point.getCoordinate(index))
+			if(point.getCoordinate(axis) < parent.point.getCoordinate(axis))
 				parent = parent.left;
 			else
 				parent = parent.right;
 
-			index = getNextIndex(index, dimensions);
+			axis = getNextAxis(axis);
 		}
 
+		//insert point in the right place
 		final KDNode newNode = new KDNode(point);
 		if(parentNode == null){
 			if(isEmpty())
@@ -265,8 +270,8 @@ public class KDTree implements Tree{
 			return newNode;
 		}
 		else{
-			index = getNextIndex(index, dimensions);
-			if(point.getCoordinate(index) < parentNode.point.getCoordinate(index))
+			axis = getNextAxis(axis);
+			if(point.getCoordinate(axis) < parentNode.point.getCoordinate(axis))
 				parentNode.left = newNode;
 			else
 				parentNode.right = newNode;
@@ -276,123 +281,206 @@ public class KDTree implements Tree{
 	}
 
 
+	@Override
 	public boolean contains(final Point point){
 		return contains(root, point);
 	}
 
 	boolean contains(KDNode currentNode, final Point point){
-		if(root == null)
-			throw new IllegalStateException("Tree is empty");
-		if(isEmpty())
+		if(isEmpty() || point == null)
 			return false;
 
-		final int dimensions = point.getDimensions();
-		int index = 0;
+		final double precision = point.getDistanceCalculator().getPrecision();
+
+		int axis = 0;
 		while(currentNode != null){
-			if(currentNode.point.equals(point, PRECISION))
+			if(currentNode.point.equals(point, precision))
 				return true;
 
-			if(point.getCoordinate(index) < currentNode.point.getCoordinate(index))
+			if(point.getCoordinate(axis) < currentNode.point.getCoordinate(axis))
 				currentNode = currentNode.left;
 			else
 				currentNode = currentNode.right;
 
-			index = getNextIndex(index, dimensions);
+			axis = getNextAxis(axis);
 		}
 
 		return false;
 	}
 
 
+	/**
+	 * Find the nearest point in the k-d tree to the given point.
+	 * <p>
+	 * Only returns null if the tree was initially empty. Otherwise, must
+	 * return some point that belongs to the tree.
+	 * <p>
+	 * If tree is empty or if the target is <code>null</code> then
+	 * <code>null</code> is returned.
+	 *
+	 * @param point	The target of the search.
+	 * @return Closest {@link Point} object in the tree to the target.
+	 */
+	@Override
 	public Point nearestNeighbour(final Point point){
-		if(root == null)
-			throw new IllegalStateException("Tree is empty");
-		if(isEmpty())
+		if(isEmpty() || point == null)
 			return null;
 
 		KDNode bestNode = null;
-		double bestSquareDistance = 0.;
-		final int dimensions = point.getDimensions();
+		double bestDistanceSquare = Double.POSITIVE_INFINITY;
+		final double precision = point.getDistanceCalculator().getPrecision();
 
-		final Stack<NodeIndexItem> stack = new Stack<>();
-		stack.push(new NodeIndexItem(root, 0));
+		final Stack<NodeAxisItem> stack = new Stack<>();
+		stack.push(new NodeAxisItem(root, 0));
 		while(!stack.isEmpty()){
-			final NodeIndexItem currentItem = stack.pop();
+			final NodeAxisItem currentItem = stack.pop();
 			final KDNode currentNode = currentItem.node;
 
-			final double squareDistance = (currentNode.point.getX() - point.getX()) * (currentNode.point.getX() - point.getX())
+			final double distanceSquare = (currentNode.point.getX() - point.getX()) * (currentNode.point.getX() - point.getX())
 				+ (currentNode.point.getY() - point.getY()) * (currentNode.point.getY() - point.getY());
 
-			if(bestNode == null || squareDistance < bestSquareDistance){
-				bestSquareDistance = squareDistance;
+			if(bestNode == null || distanceSquare < bestDistanceSquare){
+				bestDistanceSquare = distanceSquare;
 				bestNode = currentNode;
 			}
-			if(bestSquareDistance <= PRECISION * PRECISION)
+			if(bestDistanceSquare <= precision * precision)
 				break;
 
-			final double coordinateDelta = currentNode.point.getCoordinate(currentItem.index) - point.getCoordinate(currentItem.index);
-			final int index = getNextIndex(currentItem.index, dimensions);
+			int axis = currentItem.axis;
+			final double coordinateDelta = currentNode.point.getCoordinate(axis) - point.getCoordinate(axis);
+			axis = getNextAxis(axis);
 			if(coordinateDelta > 0. && currentNode.left != null){
-				stack.push(new NodeIndexItem(currentNode.left, index));
-				if(coordinateDelta * coordinateDelta < bestSquareDistance)
-					stack.push(new NodeIndexItem(currentNode.left, index));
+				stack.push(new NodeAxisItem(currentNode.left, axis));
+				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
+					stack.push(new NodeAxisItem(currentNode.left, axis));
 			}
 			else if(coordinateDelta <= 0. && currentNode.right != null){
-				stack.push(new NodeIndexItem(currentNode.right, index));
-				if(coordinateDelta * coordinateDelta < bestSquareDistance)
-					stack.push(new NodeIndexItem(currentNode.right, index));
+				stack.push(new NodeAxisItem(currentNode.right, axis));
+				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
+					stack.push(new NodeAxisItem(currentNode.right, axis));
 			}
 		}
 
 		return (bestNode != null? bestNode.point: null);
 	}
 
-	private static class NodeIndexItem{
+	private static class NodeAxisItem{
 		final KDNode node;
-		final int index;
+		final int axis;
 
-		NodeIndexItem(final KDNode node, final int index){
+		private NodeAxisItem(final KDNode node, final int axis){
 			this.node = node;
-			this.index = index;
+			this.axis = axis;
 		}
 	}
 
 
-	public Collection<Point> pointsInRange(final Envelope envelope){
+	/**
+	 * Locate all points within the tree that fall within the given rectangle.
+	 *
+	 * @param rangeMin	Minimum point of the searching rectangle.
+	 * @param rangeMax	Maximum point of the searching rectangle.
+	 * @return	Collection of {@link Point}s that fall within the given envelope.
+	 */
+	@Override
+	public Collection<Point> pointsInRange(final Point rangeMin, final Point rangeMax){
+		if(rangeMin.getX() > rangeMax.getX() || rangeMin.getY() > rangeMax.getY())
+			throw new IllegalArgumentException("Unfeasible search rectangle boundaries");
+
 		final Stack<Point> points = new Stack<>();
 		if(isEmpty())
 			return points;
 
-		final Point rangeMin = root.point.getFactory().createPoint(envelope.getMinX(), envelope.getMinY());
-		final Point rangeMax = root.point.getFactory().createPoint(envelope.getMaxX(), envelope.getMaxY());
-		final int dimensions = root.point.getDimensions();
-		int index = 0;
+		int axis = 0;
 
 		final Stack<KDNode> nodes = new Stack<>();
 		nodes.push(root);
 		while(!nodes.isEmpty()){
 			final KDNode node = nodes.pop();
+			final Point point = node.point;
 
-			//add contained points to points stack
-			if(envelope.intersects(node.point))
-				points.push(node.point);
+			//add contained points to points stack if inside the region
+			if(inside(point, rangeMin, rangeMax))
+				points.push(point);
 
-			if(node.left != null && node.point.getCoordinate(index) >= rangeMin.getCoordinate(index))
+			if(node.left != null && point.getCoordinate(axis) >= rangeMin.getCoordinate(axis))
 				nodes.push(node.left);
-			if(node.right != null && node.point.getCoordinate(index) <= rangeMax.getCoordinate(index))
+			if(node.right != null && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis))
 				nodes.push(node.right);
 
-			index = getNextIndex(index, dimensions);
+			axis = getNextAxis(axis);
 		}
 		return points;
 	}
 
+	/**
+	 * Locate all points within the tree that fall within the given circle.
+	 *
+	 * @param center	Center point of the searching circle.
+	 * @param radius	Radius of the searching circle.
+	 * @return	Collection of {@link Point}s that fall within the given envelope.
+	 */
+	@Override
+	public Collection<Point> pointsInRange(final Point center, final double radius){
+		final Stack<Point> points = new Stack<>();
+		if(isEmpty())
+			return points;
+
+		int axis = 0;
+
+		final Stack<KDNode> nodes = new Stack<>();
+		nodes.push(root);
+		while(!nodes.isEmpty()){
+			final KDNode node = nodes.pop();
+			final Point point = node.point;
+
+			//add contained points to points stack if inside the region
+			if(inside(point, center, radius))
+				points.push(point);
+
+			if(node.left != null && point.getCoordinate(axis) >= center.getCoordinate(axis))
+				nodes.push(node.left);
+			if(node.right != null && point.getCoordinate(axis) <= center.getCoordinate(axis))
+				nodes.push(node.right);
+
+			axis = getNextAxis(axis);
+		}
+		return points;
+	}
+
+	/**
+	 * .Tests if the point intersects (lies inside) the region.
+	 *
+	 * @param point	The point to be tested.
+	 * @param rangeMin	Minimum point of the searching rectangle.
+	 * @param rangeMax	Maximum point of the searching rectangle.
+	 * @return	Whether the point lies inside the rectangle.
+	 */
+	private static boolean inside(final Point point, final Point rangeMin, final Point rangeMax){
+		return (rangeMin.getX() <= point.getX() && point.getX() <= rangeMax.getX()
+			&& rangeMin.getY() <= point.getY() && point.getY() <= rangeMax.getY());
+	}
+
+	/**
+	 * .Tests if the point intersects (lies inside) the region.
+	 *
+	 * @param point	The point to be tested.
+	 * @param center	Center point of the searching circle.
+	 * @param radius	Radius of the searching circle.
+	 * @return	Whether the point lies inside the circle.
+	 */
+	private static boolean inside(final Point point, final Point center, final double radius){
+		return (point.distance(center) <= radius);
+	}
+
 
 	//FIXME: another way to choose the cutting dimension is to calculate the variance of all values in each dimension and the largest one
-	// will be chosen as the cutting dimension. The larger variance means data is more scatter on the axis, so that we can split data better
-	// in this way.
-	private static int getNextIndex(final int currentIndex, final int dimensions){
-		return (currentIndex + 1) % dimensions;
+	// will be chosen as the cutting dimension (knowledge of overall points is needed). The larger variance means data is more scatter on
+	// the axis, so that we can split data better in this way.
+	//FIXME: squarish k-d trees - When a rectangle is split by a newly inserted point, the longest side of the rectangle is cut (knowledge
+	// of overall BB is needed). Better performance for range search.
+	private int getNextAxis(final int currentAxis){
+		return (currentAxis + 1) % comparators.length;
 	}
 
 }

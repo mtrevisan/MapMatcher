@@ -48,7 +48,7 @@ public class GeodeticHelper{
 	private static final double ON_TRACK_POINT_PRECISION = 0.1;
 
 	//mean Earth radius [m]
-	private static final double EARTH_RADIUS = 6_371_000.;
+	public static final double EARTH_RADIUS = 6_371_000.;
 	private static final double EARTH_CIRCUMFERENCE = 2. * StrictMath.PI * EARTH_RADIUS;
 	private static final double METERS_PER_DEGREE = EARTH_CIRCUMFERENCE / 360.;
 

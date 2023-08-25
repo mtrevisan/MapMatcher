@@ -24,7 +24,22 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
+import io.github.mtrevisan.mapmatcher.helpers.kdtree.Region;
 
-public interface Tree{
+import java.util.Collection;
+
+
+public interface RegionTree{
+
+	/**
+	 * Add the region to the set (if it is not already in the set).
+	 *
+	 * @param region	The region to add.
+	 */
+	void insert(final Region region);
+
+	boolean contains(final Region region);
+
+	Collection<Region> regionsInRange(final Region region);
 
 }

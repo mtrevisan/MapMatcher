@@ -22,22 +22,31 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.kdtree;
+package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
-import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
+import io.github.mtrevisan.mapmatcher.helpers.kdtree.Region;
 
-
-class KDNode implements SpatialNode{
-
-	public Point point;
-
-	public KDNode left;
-	public KDNode right;
+import java.util.Collection;
 
 
-	public KDNode(final Point point){
-		this.point = point;
+public class QuadTree implements RegionTree{
+
+	@Override
+	public void insert(final Region region){
+		//TODO
+	}
+
+	@Override
+	public boolean contains(final Region region){
+		//TODO
+		return false;
+	}
+
+	@Override
+	public Collection<Region> regionsInRange(final Region region){
+		//TODO
+		return null;
 	}
 
 }

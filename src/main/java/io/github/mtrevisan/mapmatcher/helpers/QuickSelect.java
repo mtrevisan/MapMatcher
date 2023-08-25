@@ -89,7 +89,7 @@ public class QuickSelect{
 	}
 
 	private static int pivotIndex(final int left, final int right){
-		return left + (right - left) / 2;
+		return left + ((right - left) >> 1);
 	}
 
 }

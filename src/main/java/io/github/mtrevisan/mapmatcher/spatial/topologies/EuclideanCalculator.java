@@ -34,6 +34,38 @@ import java.util.List;
 
 public class EuclideanCalculator implements TopologyCalculator{
 
+	/** The tolerance distance for considering two points equal. */
+	private static final double PRECISION = 1.e-6;
+
+
+	private final double precision;
+
+
+	/**
+	 * Construct a new calculator instance with the given precision.
+	 *
+	 * @param precision	The tolerance distance for considering two points equal.
+	 */
+	public static EuclideanCalculator withPrecision(final double precision){
+		return new EuclideanCalculator(precision);
+	}
+
+
+	public EuclideanCalculator(){
+		precision = PRECISION;
+	}
+
+	protected EuclideanCalculator(final double precision){
+		this.precision = precision;
+	}
+
+
+	@Override
+	public double getPrecision(){
+		return precision;
+	}
+
+
 	@Override
 	public double distance(final Point startPoint, final Point endPoint){
 		final double dx = startPoint.getX() - endPoint.getX();

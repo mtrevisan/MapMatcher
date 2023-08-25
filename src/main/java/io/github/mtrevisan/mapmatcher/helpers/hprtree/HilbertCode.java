@@ -98,7 +98,7 @@ class HilbertCode{
 	 */
 	static int level(final int numberOfPoints){
 		final int pow2 = (int)((StrictMath.log(numberOfPoints) / LN_2));
-		final int level = pow2 / 2;
+		final int level = pow2 >> 1;
 		final int size = size(level);
 		return (size < numberOfPoints? level + 1: level);
 	}

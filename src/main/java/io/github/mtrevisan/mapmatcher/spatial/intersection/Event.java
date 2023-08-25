@@ -39,8 +39,6 @@ public class Event implements Comparable<Event>{
 		POINT_LEFT, POINT_RIGHT, INTERSECTION
 	}
 
-	private static final double EPSILON = 1.e-9;
-
 	private final Type type;
 	private final Point point;
 	private final List<SweepSegment> segments = new ArrayList<>(0);
@@ -87,13 +85,14 @@ public class Event implements Comparable<Event>{
 	}
 
 	boolean nearlyEqual(final Event event){
-		return (MathHelper.nearlyEqual(point().getX(), event.point().getX(), EPSILON)
-			&& MathHelper.nearlyEqual(point().getY(), event.point().getY(), EPSILON));
+		final double precision = point.getDistanceCalculator().getPrecision();
+		return (MathHelper.nearlyEqual(point.getX(), event.point().getX(), precision)
+			&& MathHelper.nearlyEqual(point.getY(), event.point().getY(), precision));
 	}
 
 	@Override
 	public int compareTo(final Event event){
-		return topologyCalculator.compare(point(), event.point());
+		return topologyCalculator.compare(point, event.point());
 	}
 
 	@Override

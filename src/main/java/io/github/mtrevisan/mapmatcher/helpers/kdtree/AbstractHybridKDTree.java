@@ -1,51 +1,52 @@
 package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
-import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.List;
+import java.util.Collection;
 
 
 public class AbstractHybridKDTree{
 
-	public void insert(final SpatialTree tree, final Envelope envelope, final Point point){
-		List<Envelope> envelopes = query(tree, envelope);
+	public void insert(final RegionTree tree, final Region region){
+		tree.insert(region);
+	}
 
-		if(!envelopes.isEmpty())
-			for(final Envelope queriedEnvelope : envelopes)
-				if(queriedEnvelope.isBoundary()){
-					final KDTree kdTree = KDTree.ofEmpty();
-					final KDNode kdNode = (KDNode)queriedEnvelope.getNode();
+	public void insert(final RegionTree tree, final Region region, final Point point){
+		final Collection<Region> regions = regionsInRange(tree, region);
+
+		if(!regions.isEmpty())
+			for(final Region queriedRegion : regions)
+				if(queriedRegion.isBoundary()){
+					final KDTree kdTree = KDTree.ofEmpty(2);
+					final KDNode kdNode = (KDNode)queriedRegion.getNode();
 					kdTree.insert(kdNode, point);
 					return;
 				}
 
-		envelope.setBoundary();
-		envelope.setNode(new KDNode(point));
-		tree.insert(envelope);
+		region.setBoundary();
+		region.setNode(new KDNode(point));
+		tree.insert(region);
 	}
 
-	public void insert(final SpatialTree tree, final Envelope envelope){
-		tree.insert(envelope);
+
+	public Collection<Region> regionsInRange(final RegionTree tree, final Region region){
+		return tree.regionsInRange(region);
 	}
 
-	public boolean query(final SpatialTree tree, final Envelope boundary, final Point point){
-		final List<Envelope> envelopes = tree.query(boundary);
+	public boolean contains(final RegionTree tree, final Region region, final Point point){
+		final Collection<Region> regions = regionsInRange(tree, region);
 
-		for(final Envelope envelope : envelopes){
-			if(envelope.isBoundary()){
-				final KDTree kdTree = KDTree.ofEmpty();
-				final KDNode kdNode = (KDNode)envelope.getNode();
-				if(kdTree.contains(kdNode, point))
-					return true;
-			}
-		}
+		if(!regions.isEmpty())
+			for(final Region queriedRegion : regions)
+				if(queriedRegion.isBoundary()){
+					final KDTree kdTree = KDTree.ofEmpty(2);
+					final KDNode kdNode = (KDNode)queriedRegion.getNode();
+					if(kdTree.contains(kdNode, point))
+						return true;
+				}
+
 		return false;
-	}
-
-	public List<Envelope> query(final SpatialTree tree, final Envelope envelope){
-		return tree.query(envelope);
 	}
 
 }
