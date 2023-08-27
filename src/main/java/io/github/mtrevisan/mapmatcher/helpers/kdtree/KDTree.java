@@ -140,7 +140,7 @@ public class KDTree implements SpatialTree{
 				root = median;
 			else if(params.side == BuildTreeParams.Side.LEFT)
 				params.node.left = median;
-			else if(params.side == BuildTreeParams.Side.RIGHT)
+			else
 				params.node.right = median;
 		}
 

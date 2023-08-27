@@ -74,17 +74,17 @@ import java.util.Stack;
  */
 public class SuccinctKDTree implements SpatialTree{
 
-	private BitSet structure = new BitSet();
-	private final List<Point> data;
+	private final BitSet structure = new BitSet();
+	private final ArrayList<Point> data;
 
-	private Comparator<KDNode>[] comparators;
+	private Comparator<Point>[] comparators;
 
 
 	public static SuccinctKDTree ofEmpty(final int dimensions){
 		return new SuccinctKDTree(dimensions);
 	}
 
-	public static SuccinctKDTree of(final Collection<Point> points){
+	public static SuccinctKDTree of(final List<Point> points){
 		return new SuccinctKDTree(points);
 	}
 
@@ -103,7 +103,7 @@ public class SuccinctKDTree implements SpatialTree{
 	 *
 	 * @param points	A collection of {@link Point}s.
 	 */
-	private SuccinctKDTree(final Collection<Point> points){
+	private SuccinctKDTree(final List<Point> points){
 		if(points.isEmpty())
 			throw new IllegalArgumentException("List of points cannot be empty");
 
@@ -118,81 +118,71 @@ public class SuccinctKDTree implements SpatialTree{
 		buildTree(points);
 	}
 
-	private void buildTree(final Collection<Point> points){
-		final List<KDNode> nodes = new ArrayList<>(points.size());
-		for(final Point point : points){
-			final KDNode node = new KDNode(point);
-			nodes.add(node);
-		}
-
+	private void buildTree(final List<Point> points){
 		final Stack<BuildTreeParams> stack = new Stack<>();
-		stack.push(BuildTreeParams.asRoot(nodes.size()));
+		stack.push(BuildTreeParams.asRoot(points.size()));
 
 		while(!stack.isEmpty()){
 			final BuildTreeParams params = stack.pop();
 			final int begin = params.begin;
 			final int end = params.end;
-			final int parentIndex = params.nodeIndex;
+			final int index = params.nodeIndex;
 			int axis = params.axis;
 
 			//extract the splitting node
 			final int k = begin + ((end - begin) >> 1);
-			final KDNode median = QuickSelect.select(nodes, begin, end - 1, k, comparators[axis]);
+			final Point median = QuickSelect.select(points, begin, end - 1, k, comparators[axis]);
 
 			axis = getNextAxis(axis);
 			if(begin < k)
-				stack.push(new BuildTreeParams(begin, k, axis, parentIndex, BuildTreeParams.Side.LEFT));
+				stack.push(new BuildTreeParams(begin, k, axis, leftIndex(index)));
 			if(k + 1 < end)
-				stack.push(new BuildTreeParams(k + 1, end, axis, parentIndex, BuildTreeParams.Side.RIGHT));
+				stack.push(new BuildTreeParams(k + 1, end, axis, rightIndex(index)));
 
 			if(isEmpty())
-				addNode(0, median.point);
-			else if(params.side == BuildTreeParams.Side.LEFT)
-				addNode(leftIndex(params.nodeIndex), median.point);
-			else if(params.side == BuildTreeParams.Side.RIGHT)
-				addNode(rightIndex(params.nodeIndex), median.point);
+				addNode(index, median);
+			else if(isLeftNode(params.nodeIndex))
+				addNode(params.nodeIndex, median);
+			else
+				addNode(params.nodeIndex, median);
 		}
 	}
 
 	private static class BuildTreeParams extends NodeIndexAxisItem{
 		private final int begin;
 		private final int end;
-		private final Side side;
-
-		private enum Side{LEFT, RIGHT}
 
 		private static BuildTreeParams asRoot(final int size){
-			return new BuildTreeParams(0, size, 0, 0, null);
+			return new BuildTreeParams(0, size, 0, 0);
 		}
 
-		private BuildTreeParams(final int begin, final int end, final int axis, final int parentIndex, final Side side){
+		private BuildTreeParams(final int begin, final int end, final int axis, final int parentIndex){
 			super(parentIndex, axis);
 
 			this.begin = begin;
 			this.end = end;
-			this.side = side;
 		}
 	}
 
-	private static class NodeComparator implements Comparator<KDNode>{
+	private static class PointComparator implements Comparator<Point>{
 
 		private final int axis;
 
-		private NodeComparator(final int axis){
+		private PointComparator(final int axis){
 			this.axis = axis;
 		}
 
 		@Override
-		public int compare(final KDNode node1, final KDNode node2){
-			return Double.compare(node1.point.getCoordinate(axis), node2.point.getCoordinate(axis));
+		public int compare(final Point point1, final Point point2){
+			return Double.compare(point1.getCoordinate(axis), point2.getCoordinate(axis));
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private void setDimensions(final int dimensions){
-		comparators = (Comparator<KDNode>[])Array.newInstance(Comparator.class, dimensions);
+		comparators = (Comparator<Point>[])Array.newInstance(Comparator.class, dimensions);
 		for(int i = 0; i < dimensions; i ++)
-			comparators[i] = new NodeComparator(i);
+			comparators[i] = new PointComparator(i);
 	}
 
 
@@ -252,27 +242,25 @@ public class SuccinctKDTree implements SpatialTree{
 		if(point.getDimensions() < comparators.length)
 			throw new IllegalArgumentException("Point dimension are less than what specified constructing this tree");
 
-		int parentIndex = (isEmpty()? -1: 0);
-		//find parent node
-		int parentNodeIndex = -1;
-		int axis = getNextAxis(comparators.length - 1);
-		while(parentIndex >= 0 && parentIndex < structure.length()){
-			parentNodeIndex = parentIndex;
-
-			if(point.getCoordinate(axis) < data(parentIndex).getCoordinate(axis))
-				parentIndex = leftIndex(parentIndex);
-			else
-				parentIndex = rightIndex(parentIndex);
-
-			axis = getNextAxis(axis);
-		}
-
-		//insert point in the right place
-		if(parentNodeIndex == -1){
-			if(isEmpty())
-				addNode(0, point);
-		}
+		if(isEmpty())
+			addNode(0, point);
 		else{
+			int parentIndex = 0;
+			//find parent node
+			int parentNodeIndex = -1;
+			int axis = 0;
+			while(parentIndex >= 0 && data(parentIndex) != null){
+				parentNodeIndex = parentIndex;
+
+				if(point.getCoordinate(axis) < data(parentIndex).getCoordinate(axis))
+					parentIndex = leftIndex(parentIndex);
+				else
+					parentIndex = rightIndex(parentIndex);
+
+				axis = getNextAxis(axis);
+			}
+
+			//insert point in the right place
 			axis = getNextAxis(axis);
 			if(point.getCoordinate(axis) < data(parentNodeIndex).getCoordinate(axis))
 				addNode(leftIndex(parentNodeIndex), point);
@@ -291,7 +279,7 @@ public class SuccinctKDTree implements SpatialTree{
 
 		int axis = 0;
 		int currentNodeIndex = 0;
-		while(currentNodeIndex >= 0 && currentNodeIndex < structure.length()){
+		while(currentNodeIndex >= 0 && currentNodeIndex <= indexLastNode()){
 			if(data(currentNodeIndex).equals(point, precision))
 				return true;
 
@@ -349,14 +337,14 @@ public class SuccinctKDTree implements SpatialTree{
 			final double coordinateDelta = currentNodeData.getCoordinate(axis) - point.getCoordinate(axis);
 			axis = getNextAxis(axis);
 			final int currentNodeLeftIndex = leftIndex(currentNodeIndex);
-			if(coordinateDelta > 0. && currentNodeLeftIndex >= 0 && currentNodeLeftIndex < structure.length()){
+			if(coordinateDelta > 0. && currentNodeLeftIndex >= 0 && currentNodeLeftIndex <= indexLastNode()){
 				stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
 				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
 					stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
 			}
 			else{
 				final int currentNodeRightIndex = rightIndex(currentNodeIndex);
-				if(coordinateDelta <= 0. && currentNodeRightIndex >= 0 && currentNodeRightIndex < structure.length()){
+				if(coordinateDelta <= 0. && currentNodeRightIndex >= 0 && currentNodeRightIndex <= indexLastNode()){
 					stack.push(new NodeIndexAxisItem(currentNodeRightIndex, axis));
 					if(coordinateDelta * coordinateDelta < bestDistanceSquare)
 						stack.push(new NodeIndexAxisItem(currentNodeRightIndex, axis));
@@ -407,10 +395,10 @@ public class SuccinctKDTree implements SpatialTree{
 				points.push(point);
 
 			final int nodeLeftIndex = leftIndex(nodeIndex);
-			if(nodeLeftIndex >= 0 && nodeLeftIndex < structure.length() && point.getCoordinate(axis) >= rangeMin.getCoordinate(axis))
+			if(nodeLeftIndex >= 0 && nodeLeftIndex <= indexLastNode() && point.getCoordinate(axis) >= rangeMin.getCoordinate(axis))
 				nodes.push(nodeLeftIndex);
 			final int nodeRightIndex = rightIndex(nodeIndex);
-			if(nodeRightIndex >= 0 && nodeRightIndex < structure.length() && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis))
+			if(nodeRightIndex >= 0 && nodeRightIndex <= indexLastNode() && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis))
 				nodes.push(nodeRightIndex);
 
 			axis = getNextAxis(axis);
@@ -444,10 +432,10 @@ public class SuccinctKDTree implements SpatialTree{
 				points.push(point);
 
 			final int nodeLeftIndex = leftIndex(nodeIndex);
-			if(nodeLeftIndex >= 0 && nodeLeftIndex < structure.length() && point.getCoordinate(axis) >= center.getCoordinate(axis))
+			if(nodeLeftIndex >= 0 && nodeLeftIndex <= indexLastNode() && point.getCoordinate(axis) >= center.getCoordinate(axis))
 				nodes.push(nodeLeftIndex);
 			final int nodeRightIndex = rightIndex(nodeIndex);
-			if(nodeRightIndex >= 0 && nodeRightIndex < structure.length() && point.getCoordinate(axis) <= center.getCoordinate(axis))
+			if(nodeRightIndex >= 0 && nodeRightIndex <= indexLastNode() && point.getCoordinate(axis) <= center.getCoordinate(axis))
 				nodes.push(nodeRightIndex);
 
 			axis = getNextAxis(axis);
@@ -499,15 +487,29 @@ public class SuccinctKDTree implements SpatialTree{
 		return (parentIndex << 1) + 2;
 	}
 
-	private void addNode(final int index, final Point point){
-		if(index >= structure.length())
-			structure = insertBit(structure, index, true);
-
-		structure.set(index);
-		data.add(point);
+	private static boolean isLeftNode(final int index){
+		return (index % 2 == 0);
 	}
 
-//	public void encodeSuccinct(){
+	private void addNode(final int index, final Point point){
+//		if(index < indexLastNode())
+//			structure = insertBit(structure, index, true);
+
+		structure.set(index);
+		addPoint(index, point);
+	}
+
+	private int indexLastNode(){
+		return structure.previousSetBit(structure.length());
+	}
+
+	private void addPoint(final int index, final Point point){
+		while(data.size() <= index)
+			data.add(null);
+		data.set(index, point);
+	}
+
+	//	public void encodeSuccinct(){
 //		if(isEmpty())
 //			return;
 //
@@ -534,7 +536,7 @@ public class SuccinctKDTree implements SpatialTree{
 //	}
 //
 //	private KDNode decodeSuccinct(final BitSet structure, final List<Point> data, final int index){
-//		if(index < structure.length() && structure.get(index)){
+//		if(index < indexLastNode() && structure.get(index)){
 //			final KDNode root = new KDNode(data.get(index));
 //			root.left = decodeSuccinct(structure, data, index + 1);
 //			root.right = decodeSuccinct(structure, data, index + 1);
@@ -544,7 +546,7 @@ public class SuccinctKDTree implements SpatialTree{
 //	}
 
 	private Point data(final int index){
-		return data.get(countSetBits(index) - 1);
+		return (index < data.size()? data.get(index): null);
 	}
 
 	private int countSetBits(final int index){

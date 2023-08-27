@@ -40,7 +40,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 class SuccinctKDTreeTest{
@@ -52,7 +51,7 @@ class SuccinctKDTreeTest{
 
 
 	@SuppressWarnings("CallToPrintStackTrace")
-	private static Set<Point> extractPoints(final File file){
+	private static List<Point> extractPoints(final File file){
 		final List<Point> lines = new ArrayList<>();
 		try(final BufferedReader br = new BufferedReader(new FileReader(file))){
 			String readLine;
@@ -64,7 +63,7 @@ class SuccinctKDTreeTest{
 		catch(IOException e){
 			e.printStackTrace();
 		}
-		return new HashSet<>(lines);
+		return lines;
 	}
 
 	private static Point parsePoint(final String line){
@@ -80,11 +79,9 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void contains_all(){
-		SuccinctKDTree tree = SuccinctKDTree.ofEmpty(2);
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		for(Point tollBooth : tollBooths)
-			tree.insert(tollBooth);
+		List<Point> tollBooths = extractPoints(tollBoothsFile);
+		SuccinctKDTree tree = SuccinctKDTree.of(tollBooths);
 
 		for(Point tollBooth : tollBooths)
 			Assertions.assertTrue(tree.contains(tollBooth));
@@ -93,11 +90,9 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void neighbour(){
-		SuccinctKDTree tree = SuccinctKDTree.ofEmpty(2);
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		for(Point tollBooth : tollBooths)
-			tree.insert(tollBooth);
+		List<Point> tollBooths = extractPoints(tollBoothsFile);
+		SuccinctKDTree tree = SuccinctKDTree.of(tollBooths);
 
 		for(Point tollBooth : tollBooths)
 			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(tollBooth));
@@ -127,7 +122,7 @@ class SuccinctKDTreeTest{
 	void points_in_range(){
 		SuccinctKDTree tree = SuccinctKDTree.ofEmpty(2);
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		for(Point tollBooth : tollBooths)
 			tree.insert(tollBooth);
 
@@ -179,7 +174,7 @@ class SuccinctKDTreeTest{
 	@Test
 	void bulk_contains_all(){
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctKDTree tree = SuccinctKDTree.of(tollBooths);
 
 		for(Point tollBooth : tollBooths)
@@ -190,7 +185,7 @@ class SuccinctKDTreeTest{
 	@Test
 	void bulk_neighbour(){
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctKDTree tree = SuccinctKDTree.of(tollBooths);
 
 		for(Point tollBooth : tollBooths)
@@ -204,7 +199,7 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void bulk_neighbour_euclidean(){
-		SuccinctKDTree tree = SuccinctKDTree.of(new HashSet<>(Arrays.asList(
+		SuccinctKDTree tree = SuccinctKDTree.of(Arrays.asList(
 			FACTORY_EUCLIDEAN.createPoint(6., 4.),
 			FACTORY_EUCLIDEAN.createPoint(5., 2.),
 			FACTORY_EUCLIDEAN.createPoint(8., 6.),
@@ -212,7 +207,7 @@ class SuccinctKDTreeTest{
 			FACTORY_EUCLIDEAN.createPoint(4., 7.),
 			FACTORY_EUCLIDEAN.createPoint(9., 3.),
 			FACTORY_EUCLIDEAN.createPoint(2., 8.)
-		)));
+		));
 
 		Assertions.assertEquals(FACTORY.createPoint(8., 6.),
 			tree.nearestNeighbour(FACTORY.createPoint(9., 8.)));
@@ -221,7 +216,7 @@ class SuccinctKDTreeTest{
 	@Test
 	void bulk_points_in_range(){
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-		Set<Point> tollBooths = extractPoints(tollBoothsFile);
+		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctKDTree tree = SuccinctKDTree.of(tollBooths);
 
 		Collection<Point> points = tree.pointsInRange(FACTORY.createPoint(7.5925975, 43.8008445),
@@ -235,7 +230,7 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void bulk_points_in_range_rectangle(){
-		SuccinctKDTree tree = SuccinctKDTree.of(new HashSet<>(Arrays.asList(
+		SuccinctKDTree tree = SuccinctKDTree.of(Arrays.asList(
 			FACTORY_EUCLIDEAN.createPoint(6., 4.),
 			FACTORY_EUCLIDEAN.createPoint(5., 2.),
 			FACTORY_EUCLIDEAN.createPoint(8., 6.),
@@ -243,7 +238,7 @@ class SuccinctKDTreeTest{
 			FACTORY_EUCLIDEAN.createPoint(4., 7.),
 			FACTORY_EUCLIDEAN.createPoint(9., 3.),
 			FACTORY_EUCLIDEAN.createPoint(2., 8.)
-		)));
+		));
 
 		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(1., 5.),
 			FACTORY_EUCLIDEAN.createPoint(5., 9.));
@@ -254,7 +249,7 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void bulk_points_in_range_circle(){
-		SuccinctKDTree tree = SuccinctKDTree.of(new HashSet<>(Arrays.asList(
+		SuccinctKDTree tree = SuccinctKDTree.of(Arrays.asList(
 			FACTORY_EUCLIDEAN.createPoint(6., 4.),
 			FACTORY_EUCLIDEAN.createPoint(5., 2.),
 			FACTORY_EUCLIDEAN.createPoint(8., 6.),
@@ -262,12 +257,30 @@ class SuccinctKDTreeTest{
 			FACTORY_EUCLIDEAN.createPoint(4., 7.),
 			FACTORY_EUCLIDEAN.createPoint(9., 3.),
 			FACTORY_EUCLIDEAN.createPoint(2., 8.)
-		)));
+		));
 
 		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
 		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
 				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
 			new HashSet<>(points));
+	}
+
+
+	@Test
+	void tes(){
+		final List<Point> points = Arrays.asList(
+			FACTORY_EUCLIDEAN.createPoint(6., 4.),
+			FACTORY_EUCLIDEAN.createPoint(5., 2.),
+			FACTORY_EUCLIDEAN.createPoint(8., 6.),
+			FACTORY_EUCLIDEAN.createPoint(2., 1.),
+			FACTORY_EUCLIDEAN.createPoint(4., 7.),
+			FACTORY_EUCLIDEAN.createPoint(9., 3.),
+			FACTORY_EUCLIDEAN.createPoint(2., 8.)
+		);
+		SuccinctKDTree tree = SuccinctKDTree.of(points);
+
+		for(Point point : points)
+			Assertions.assertTrue(tree.contains(point));
 	}
 
 }
