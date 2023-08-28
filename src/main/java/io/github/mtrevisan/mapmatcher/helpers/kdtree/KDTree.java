@@ -30,7 +30,6 @@ import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -209,7 +208,7 @@ public class KDTree implements SpatialTree{
 	 * <p>
 	 * This means that if (0.7, 0.2) is the root, then (0.5, 0.9) will be
 	 * added to the left, since its x-coordinate is smaller than the
-	 * x-coordinate of the root node.  Similarly, if the next point to be
+	 * x-coordinate of the root node. Similarly, if the next point to be
 	 * added is (0.8, 0.1), that point will be added to the right of root,
 	 * since its x-coordinate is larger than the x-coordinate of the root node.
 	 * </p>
@@ -225,7 +224,7 @@ public class KDTree implements SpatialTree{
 	 * </p>
 	 * <p>
 	 * This means that if we next add (0.6, 0.8), it will be added to the left
-	 * of (0.5, 0.9).  Similarly, if we next add (0.4, 0.95), it will be added
+	 * of (0.5, 0.9). Similarly, if we next add (0.4, 0.95), it will be added
 	 * to the right of (0.5, 0.9).
 	 * </p>
 	 * <p>
@@ -479,7 +478,7 @@ public class KDTree implements SpatialTree{
 	// will be chosen as the cutting dimension (knowledge of overall points is needed). The larger variance means data is more scatter on
 	// the axis, so that we can split data better in this way.
 	//FIXME: squarish k-d trees - When a rectangle is split by a newly inserted point, the longest side of the rectangle is cut (knowledge
-	// of overall BB is needed). Better performance for range search.
+	// of local BB is needed). Better performance for range search.
 	private int getNextAxis(final int currentAxis){
 		return (currentAxis + 1) % comparators.length;
 	}

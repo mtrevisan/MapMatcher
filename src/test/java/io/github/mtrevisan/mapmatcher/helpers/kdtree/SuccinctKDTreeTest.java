@@ -79,6 +79,11 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void contains_all(){
+//		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
+//		List<Point> tollBooths = extractPoints(tollBoothsFile);
+//		SuccinctKDTree tree = SuccinctKDTree.ofEmpty(2, tollBooths.size());
+//		for(Point tollBooth : tollBooths)
+//			tree.insert(tollBooth);
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctKDTree tree = SuccinctKDTree.of(tollBooths);

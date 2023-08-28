@@ -4,6 +4,7 @@ import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
+import java.util.List;
 
 
 public class AbstractHybridKDTree{
@@ -18,9 +19,9 @@ public class AbstractHybridKDTree{
 		if(!regions.isEmpty())
 			for(final Region queriedRegion : regions)
 				if(queriedRegion.isBoundary()){
-					final KDTree kdTree = KDTree.ofEmpty(2);
-					final KDNode kdNode = (KDNode)queriedRegion.getNode();
-					kdTree.insert(kdNode, point);
+					final KDTree terminalTree = KDTree.ofEmpty(2);
+					final KDNode parentNode = (KDNode)queriedRegion.getNode();
+					terminalTree.insert(parentNode, point);
 					return;
 				}
 
@@ -28,6 +29,22 @@ public class AbstractHybridKDTree{
 		region.setNode(new KDNode(point));
 		tree.insert(region);
 	}
+
+//	public void insert(final RegionTree tree, final Region region, final List<Point> points){
+//		final Collection<Region> regions = regionsInRange(tree, region);
+//
+//		if(!regions.isEmpty())
+//			for(final Region queriedRegion : regions)
+//				if(queriedRegion.isBoundary()){
+//					final KDNode parentNode = (KDNode)queriedRegion.getNode();
+//					final KDTree terminalTree = KDTree.of(parentNode, points);
+//					return;
+//				}
+//
+//		region.setBoundary();
+//		region.setNode(new KDNode(points));
+//		tree.insert(region);
+//	}
 
 
 	public Collection<Region> regionsInRange(final RegionTree tree, final Region region){

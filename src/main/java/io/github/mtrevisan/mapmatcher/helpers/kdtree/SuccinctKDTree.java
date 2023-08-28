@@ -27,9 +27,8 @@ package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 import io.github.mtrevisan.mapmatcher.helpers.QuickSelect;
 import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import org.agrona.collections.Int2ObjectHashMap;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
@@ -38,7 +37,7 @@ import java.util.Stack;
 
 
 /**
- * A k-d Tree (short for k-dimensional Tree) is a space-partitioning data
+ * A k-d tree (short for k-dimensional tree) is a space-partitioning data
  * structure for organizing points in a k-dimensional space. k-d trees are a
  * useful data structure for several applications, such as searches involving a
  * multidimensional search key (e.g. range searches and nearest neighbor
@@ -74,10 +73,15 @@ import java.util.Stack;
  */
 public class SuccinctKDTree implements SpatialTree{
 
-	private final BitSet structure = new BitSet();
-	private final ArrayList<Point> data;
+	private static final int ROOT_INDEX = 0;
+	private static final int STARTING_DIMENSION = 0;
+	private static final double LOG2 = Math.log(2.);
 
-	private Comparator<Point>[] comparators;
+	//(min-max) 0-33 bit/node vs 64-256 bit/node, that is 12.9% wrt simple k-d tree
+	private final BitSet structure = new BitSet();
+	private Int2ObjectHashMap<Point> data;
+
+	private DataComparator[] comparators;
 
 
 	public static SuccinctKDTree ofEmpty(final int dimensions){
@@ -97,7 +101,7 @@ public class SuccinctKDTree implements SpatialTree{
 		if(dimensions < 1)
 			throw new IllegalArgumentException ("K-D Tree must have at least dimension 1");
 
-		data = new ArrayList<>();
+		createDataHolder();
 
 		setDimensions(dimensions);
 	}
@@ -106,7 +110,7 @@ public class SuccinctKDTree implements SpatialTree{
 		if(dimensions < 1)
 			throw new IllegalArgumentException ("K-D Tree must have at least dimension 1");
 
-		data = new ArrayList<>(maxPoints);
+		createDataHolder(maxPoints);
 
 		setDimensions(dimensions);
 	}
@@ -120,7 +124,8 @@ public class SuccinctKDTree implements SpatialTree{
 		if(points.isEmpty())
 			throw new IllegalArgumentException("List of points cannot be empty");
 
-		data = new ArrayList<>(points.size());
+
+		createDataHolder(points.size());
 
 		//extract dimensions from first point
 		for(final Point point : points){
@@ -129,6 +134,17 @@ public class SuccinctKDTree implements SpatialTree{
 		}
 
 		buildTree(points);
+	}
+
+	private void createDataHolder(){
+		data = new Int2ObjectHashMap<>();
+	}
+
+	private void createDataHolder(final int size){
+		//the maximum number of nodes in a binary tree of height `h` is `2^h – 1`, therefore in order to contain at least `n` nodes, the
+		//tree has to have at least h = log2(n + 1)
+		final int h = (int)Math.ceil(Math.log(size + 1) / LOG2);
+		data = new Int2ObjectHashMap<>(1 << h, (float)size / (1 << h));
 	}
 
 	private void buildTree(final List<Point> points){
@@ -166,7 +182,7 @@ public class SuccinctKDTree implements SpatialTree{
 		private final int end;
 
 		private static BuildTreeParams asRoot(final int size){
-			return new BuildTreeParams(0, size, 0, 0);
+			return new BuildTreeParams(0, size, STARTING_DIMENSION, ROOT_INDEX);
 		}
 
 		private BuildTreeParams(final int begin, final int end, final int axis, final int parentIndex){
@@ -177,11 +193,16 @@ public class SuccinctKDTree implements SpatialTree{
 		}
 	}
 
-	private static class PointComparator implements Comparator<Point>{
+	private void setDimensions(final int dimensions){
+		comparators = new DataComparator[dimensions];
+		for(int i = 0; i < dimensions; i ++)
+			comparators[i] = new DataComparator(i);
+	}
 
+	private static class DataComparator implements Comparator<Point>{
 		private final int axis;
 
-		private PointComparator(final int axis){
+		private DataComparator(final int axis){
 			this.axis = axis;
 		}
 
@@ -189,13 +210,6 @@ public class SuccinctKDTree implements SpatialTree{
 		public int compare(final Point point1, final Point point2){
 			return Double.compare(point1.getCoordinate(axis), point2.getCoordinate(axis));
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private void setDimensions(final int dimensions){
-		comparators = (Comparator<Point>[])Array.newInstance(Comparator.class, dimensions);
-		for(int i = 0; i < dimensions; i ++)
-			comparators[i] = new PointComparator(i);
 	}
 
 
@@ -220,7 +234,7 @@ public class SuccinctKDTree implements SpatialTree{
 	 * <p>
 	 * This means that if (0.7, 0.2) is the root, then (0.5, 0.9) will be
 	 * added to the left, since its x-coordinate is smaller than the
-	 * x-coordinate of the root node.  Similarly, if the next point to be
+	 * x-coordinate of the root node. Similarly, if the next point to be
 	 * added is (0.8, 0.1), that point will be added to the right of root,
 	 * since its x-coordinate is larger than the x-coordinate of the root node.
 	 * </p>
@@ -236,7 +250,7 @@ public class SuccinctKDTree implements SpatialTree{
 	 * </p>
 	 * <p>
 	 * This means that if we next add (0.6, 0.8), it will be added to the left
-	 * of (0.5, 0.9).  Similarly, if we next add (0.4, 0.95), it will be added
+	 * of (0.5, 0.9). Similarly, if we next add (0.4, 0.95), it will be added
 	 * to the right of (0.5, 0.9).
 	 * </p>
 	 * <p>
@@ -250,22 +264,28 @@ public class SuccinctKDTree implements SpatialTree{
 	 *
 	 * @param point	The point to add.
 	 */
+	@SuppressWarnings("DataFlowIssue")
 	@Override
 	public void insert(final Point point){
 		if(point.getDimensions() < comparators.length)
 			throw new IllegalArgumentException("Point dimension are less than what specified constructing this tree");
 
 		if(isEmpty())
-			addNode(0, point);
+			addNode(ROOT_INDEX, point);
 		else{
-			int parentIndex = 0;
+			//start from first dimension
+			int axis = STARTING_DIMENSION;
+			//start from root
+			int parentIndex = ROOT_INDEX;
 			//find parent node
 			int parentNodeIndex = -1;
-			int axis = 0;
-			while(parentIndex >= 0 && data(parentIndex) != null){
+			Point parentNodePoint = null;
+			Point currentPoint;
+			while(parentIndex >= 0 && (currentPoint = data(parentIndex)) != null){
 				parentNodeIndex = parentIndex;
+				parentNodePoint = currentPoint;
 
-				if(point.getCoordinate(axis) < data(parentIndex).getCoordinate(axis))
+				if(point.getCoordinate(axis) < currentPoint.getCoordinate(axis))
 					parentIndex = leftIndex(parentIndex);
 				else
 					parentIndex = rightIndex(parentIndex);
@@ -275,7 +295,7 @@ public class SuccinctKDTree implements SpatialTree{
 
 			//insert point in the right place
 			axis = getNextAxis(axis);
-			if(point.getCoordinate(axis) < data(parentNodeIndex).getCoordinate(axis))
+			if(point.getCoordinate(axis) < parentNodePoint.getCoordinate(axis))
 				addNode(leftIndex(parentNodeIndex), point);
 			else
 				addNode(rightIndex(parentNodeIndex), point);
@@ -290,13 +310,16 @@ public class SuccinctKDTree implements SpatialTree{
 
 		final double precision = point.getDistanceCalculator().getPrecision();
 
-		int axis = 0;
-		int currentNodeIndex = 0;
-		while(currentNodeIndex >= 0 && data(currentNodeIndex) != null){
-			if(data(currentNodeIndex).equals(point, precision))
+		//start from first dimension
+		int axis = STARTING_DIMENSION;
+		//start from root
+		int currentNodeIndex = ROOT_INDEX;
+		Point currentPoint;
+		while(currentNodeIndex >= 0 && (currentPoint = data(currentNodeIndex)) != null){
+			if(currentPoint.equals(point, precision))
 				return true;
 
-			if(point.getCoordinate(axis) < data(currentNodeIndex).getCoordinate(axis))
+			if(point.getCoordinate(axis) < currentPoint.getCoordinate(axis))
 				currentNodeIndex = leftIndex(currentNodeIndex);
 			else
 				currentNodeIndex = rightIndex(currentNodeIndex);
@@ -325,47 +348,44 @@ public class SuccinctKDTree implements SpatialTree{
 		if(isEmpty() || point == null)
 			return null;
 
-		int bestNodeIndex = -1;
-		double bestDistanceSquare = Double.POSITIVE_INFINITY;
+		Point bestNodePoint = null;
+		double bestDistance = Double.POSITIVE_INFINITY;
 		final double precision = point.getDistanceCalculator().getPrecision();
 
 		final Stack<NodeIndexAxisItem> stack = new Stack<>();
-		stack.push(new NodeIndexAxisItem(0, 0));
+		stack.push(new NodeIndexAxisItem(ROOT_INDEX, STARTING_DIMENSION));
 		while(!stack.isEmpty()){
 			final NodeIndexAxisItem currentItem = stack.pop();
 			final int currentNodeIndex = currentItem.nodeIndex;
 
-			final Point currentNodeData = data(currentNodeIndex);
-			final double distanceSquare = (currentNodeData.getX() - point.getX()) * (currentNodeData.getX() - point.getX())
-				+ (currentNodeData.getY() - point.getY()) * (currentNodeData.getY() - point.getY());
-
-			if(bestNodeIndex == -1 || distanceSquare < bestDistanceSquare){
-				bestDistanceSquare = distanceSquare;
-				bestNodeIndex = currentNodeIndex;
+			final Point currentNodePoint = data(currentNodeIndex);
+			final double distance = currentNodePoint.distance(point);
+			if(distance < bestDistance){
+				bestDistance = distance;
+				bestNodePoint = currentNodePoint;
 			}
-			if(bestDistanceSquare <= precision * precision)
+			if(bestDistance <= precision)
 				break;
 
-			int axis = currentItem.axis;
-			final double coordinateDelta = currentNodeData.getCoordinate(axis) - point.getCoordinate(axis);
-			axis = getNextAxis(axis);
+			final double coordinateDelta = currentNodePoint.getCoordinate(currentItem.axis) - point.getCoordinate(currentItem.axis);
+			final int axis = getNextAxis(currentItem.axis);
 			final int currentNodeLeftIndex = leftIndex(currentNodeIndex);
-			if(coordinateDelta > 0. && currentNodeLeftIndex >= 0 && data(currentNodeLeftIndex) != null){
+			if(coordinateDelta >= 0. && data(currentNodeLeftIndex) != null){
 				stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
-				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
+				if(coordinateDelta < bestDistance)
 					stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
 			}
-			else{
+			else if(coordinateDelta < 0.){
 				final int currentNodeRightIndex = rightIndex(currentNodeIndex);
-				if(coordinateDelta <= 0. && currentNodeRightIndex >= 0 && data(currentNodeRightIndex) != null){
+				if(data(currentNodeRightIndex) != null){
 					stack.push(new NodeIndexAxisItem(currentNodeRightIndex, axis));
-					if(coordinateDelta * coordinateDelta < bestDistanceSquare)
+					if(-coordinateDelta < bestDistance)
 						stack.push(new NodeIndexAxisItem(currentNodeRightIndex, axis));
 				}
 			}
 		}
 
-		return (bestNodeIndex >= 0? data(bestNodeIndex): null);
+		return bestNodePoint;
 	}
 
 	private static class NodeIndexAxisItem{
@@ -395,10 +415,12 @@ public class SuccinctKDTree implements SpatialTree{
 		if(isEmpty())
 			return points;
 
-		int axis = 0;
+		//start from first dimension
+		int axis = STARTING_DIMENSION;
 
 		final Stack<Integer> nodes = new Stack<>();
-		nodes.push(0);
+		//start from root
+		nodes.push(ROOT_INDEX);
 		while(!nodes.isEmpty()){
 			final int nodeIndex = nodes.pop();
 			final Point point = data(nodeIndex);
@@ -408,10 +430,10 @@ public class SuccinctKDTree implements SpatialTree{
 				points.push(point);
 
 			final int nodeLeftIndex = leftIndex(nodeIndex);
-			if(nodeLeftIndex >= 0 && data(nodeLeftIndex) != null && point.getCoordinate(axis) >= rangeMin.getCoordinate(axis))
+			if(data(nodeLeftIndex) != null && point.getCoordinate(axis) >= rangeMin.getCoordinate(axis))
 				nodes.push(nodeLeftIndex);
 			final int nodeRightIndex = rightIndex(nodeIndex);
-			if(nodeRightIndex >= 0 && data(nodeRightIndex) != null && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis))
+			if(data(nodeRightIndex) != null && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis))
 				nodes.push(nodeRightIndex);
 
 			axis = getNextAxis(axis);
@@ -432,10 +454,12 @@ public class SuccinctKDTree implements SpatialTree{
 		if(isEmpty())
 			return points;
 
-		int axis = 0;
+		//start from first dimension
+		int axis = STARTING_DIMENSION;
 
 		final Stack<Integer> nodes = new Stack<>();
-		nodes.push(0);
+		//start from root
+		nodes.push(ROOT_INDEX);
 		while(!nodes.isEmpty()){
 			final int nodeIndex = nodes.pop();
 			final Point point = data(nodeIndex);
@@ -445,10 +469,10 @@ public class SuccinctKDTree implements SpatialTree{
 				points.push(point);
 
 			final int nodeLeftIndex = leftIndex(nodeIndex);
-			if(nodeLeftIndex >= 0 && data(nodeLeftIndex) != null && point.getCoordinate(axis) >= center.getCoordinate(axis))
+			if(data(nodeLeftIndex) != null && point.getCoordinate(axis) >= center.getCoordinate(axis))
 				nodes.push(nodeLeftIndex);
 			final int nodeRightIndex = rightIndex(nodeIndex);
-			if(nodeRightIndex >= 0 && data(nodeRightIndex) != null && point.getCoordinate(axis) <= center.getCoordinate(axis))
+			if(data(nodeRightIndex) != null && point.getCoordinate(axis) <= center.getCoordinate(axis))
 				nodes.push(nodeRightIndex);
 
 			axis = getNextAxis(axis);
@@ -486,7 +510,7 @@ public class SuccinctKDTree implements SpatialTree{
 	// will be chosen as the cutting dimension (knowledge of overall points is needed). The larger variance means data is more scatter on
 	// the axis, so that we can split data better in this way.
 	//FIXME: squarish k-d trees - When a rectangle is split by a newly inserted point, the longest side of the rectangle is cut (knowledge
-	// of overall BB is needed). Better performance for range search.
+	// of local BB is needed). Better performance for range search.
 	private int getNextAxis(final int currentAxis){
 		return (currentAxis + 1) % comparators.length;
 	}
@@ -510,27 +534,11 @@ public class SuccinctKDTree implements SpatialTree{
 	}
 
 	private void addPoint(final int index, final Point point){
-		while(data.size() <= index)
-			data.add(null);
-		data.set(index, point);
+		data.put(index, point);
 	}
 
 	private Point data(final int index){
-		return (index < data.size()? data.get(index): null);
-	}
-
-	private int countSetBits(final int index){
-//FIXME can structure.cardinality() be used?
-		int count = 0;
-		int i = -1;
-		while(++ i <= index){
-			i = structure.nextSetBit(i);
-			if(i < 0 || i == Integer.MAX_VALUE)
-				break;
-
-			count ++;
-		}
-		return count;
+		return data.get(index);
 	}
 
 }

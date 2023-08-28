@@ -62,15 +62,14 @@ public class GeoidalApproximateCalculator extends GeoidalCalculator{
 	 */
 	@Override
 	public double distance(final Point startPoint, final Point endPoint){
-		double lat1 = startPoint.getY();
-		double lat2 = endPoint.getY();
-		final double halfDeltaLat = Math.toRadians(lat2 - lat1) / 2.;
+		final double lat1 = Math.toRadians(startPoint.getY());
+		final double lat2 = Math.toRadians(endPoint.getY());
+		final double halfDeltaLat = (lat2 - lat1) / 2.;
 		final double halfDeltaLon = Math.toRadians(endPoint.getX() - startPoint.getX()) / 2.;
-		lat1 = Math.toRadians(lat1);
-		lat2 = Math.toRadians(lat2);
 
-		final double a = Math.sin(halfDeltaLat) * Math.sin(halfDeltaLat)
-			+ Math.sin(halfDeltaLon) * Math.sin(halfDeltaLon) * Math.cos(lat1) * Math.cos(lat2);
+		final double sinHalfDeltaLat = Math.sin(halfDeltaLat);
+		final double sinHalfDeltaLon = Math.sin(halfDeltaLon);
+		final double a = sinHalfDeltaLat * sinHalfDeltaLat + sinHalfDeltaLon * sinHalfDeltaLon * Math.cos(lat1) * Math.cos(lat2);
 		final double c = 2. * Math.atan2(Math.sqrt(a), Math.sqrt(1. - a));
 		return GeodeticHelper.EARTH_RADIUS * c;
 	}

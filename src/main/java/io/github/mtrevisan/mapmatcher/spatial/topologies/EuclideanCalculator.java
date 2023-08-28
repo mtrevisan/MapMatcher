@@ -93,37 +93,28 @@ public class EuclideanCalculator implements TopologyCalculator{
 			return distance(point, startPoint);
 
 		/*
-		 * (1) r = AC dot AB
-		 *         ---------
-		 *         ||AB||^2
-		 *
+		 * r = (AC dot AB) / ||AB||^2
 		 * r has the following meaning:
-		 *   r=0 P = A
-		 *   r=1 P = B
-		 *   r<0 P is on the backward extension of AB
-		 *   r>1 P is on the forward extension of AB
-		 *   0<r<1 P is interior to AB
+		 *   r = 0 P = A
+		 *   r = 1 P = B
+		 *   r < 0 P is on the backward extension of AB
+		 *   r > 1 P is on the forward extension of AB
+		 *   0 < r < 1 P is interior to AB
 		 */
-		final double len2 = (endPoint.getX() - startPoint.getX()) * (endPoint.getX() - startPoint.getX())
-			+ (endPoint.getY() - startPoint.getY()) * (endPoint.getY() - startPoint.getY());
-		final double r = ((point.getX() - startPoint.getX()) * (endPoint.getX() - startPoint.getX())
-			+ (point.getY() - startPoint.getY()) * (endPoint.getY() - startPoint.getY())) / len2;
-
-		if(r <= 0.)
+		final double dx = endPoint.getX() - startPoint.getX();
+		final double dy = endPoint.getY() - startPoint.getY();
+		final double rr = (point.getX() - startPoint.getX()) * dx + (point.getY() - startPoint.getY()) * dy;
+		if(rr <= 0.)
 			return distance(point, startPoint);
-		if(r >= 1.)
+		if(rr >= dx * dx + dy * dy)
 			return distance(point, endPoint);
 
 		/*
-		 * (2) s = (Ay-Cy)(Bx-Ax)-(Ax-Cx)(By-Ay)
-		 *         -----------------------------
-		 *                    L^2
+		 * s = ((Ay - Cy) * (Bx - Ax) - (Ax - Cx) * (By - Ay)) / L^2
 		 *
-		 * Then the distance from C to P = |s|*L.
+		 * Then the distance from C to P is |s| * L.
 		 */
-		final double s = ((startPoint.getY() - point.getY()) * (endPoint.getX() - startPoint.getX())
-			- (startPoint.getX() - point.getX()) * (endPoint.getY() - startPoint.getY())) / len2;
-		return Math.abs(s) * StrictMath.sqrt(len2);
+		return Math.abs((startPoint.getY() - point.getY()) * dx - (startPoint.getX() - point.getX()) * dy) / StrictMath.hypot(dx, dy);
 	}
 
 
