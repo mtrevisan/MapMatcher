@@ -362,7 +362,7 @@ public class Region implements Comparable<Region>{
 
 	@Override
 	public String toString(){
-		return "Env[" + x + " : " + width + ", " + y + " : " + height + "]";
+		return "Env[" + x + " : " + (x + width) + ", " + y + " : " + (y + height) + "]";
 	}
 
 }

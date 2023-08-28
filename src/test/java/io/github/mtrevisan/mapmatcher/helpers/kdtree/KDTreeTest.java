@@ -104,9 +104,7 @@ class KDTreeTest{
 		for(Point tollBooth : tollBooths)
 			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(
 				tollBooth.getFactory().createPoint(tollBooth.getX() + 1.e-7, tollBooth.getY() + 1.e-7)));
-		//FIXME should be this
-//		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
-		Assertions.assertEquals(FACTORY.createPoint(7.5925975, 43.8008445),
+		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
 			tree.nearestNeighbour(FACTORY.createPoint(0., 0.)));
 	}
 

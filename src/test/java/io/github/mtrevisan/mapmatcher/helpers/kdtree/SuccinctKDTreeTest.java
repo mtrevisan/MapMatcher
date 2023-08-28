@@ -110,7 +110,7 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void neighbour_euclidean(){
-		SuccinctKDTree tree = SuccinctKDTree.ofEmpty(2);
+		SuccinctKDTree tree = SuccinctKDTree.createEmpty(2);
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
@@ -140,7 +140,7 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void points_in_range_rectangle(){
-		SuccinctKDTree tree = SuccinctKDTree.ofEmpty(2);
+		SuccinctKDTree tree = SuccinctKDTree.createEmpty(2);
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
@@ -158,7 +158,7 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void points_in_range_circle(){
-		SuccinctKDTree tree = SuccinctKDTree.ofEmpty(2);
+		SuccinctKDTree tree = SuccinctKDTree.createEmpty(2);
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
