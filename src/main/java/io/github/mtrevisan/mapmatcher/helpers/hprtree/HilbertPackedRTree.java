@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * A Hilbert-Packed R-Tree.
  * <p>
- * This is a static R-tree which is packed by using the Hilbert ordering of the tree items.
+ * A static R-tree which is packed by using the Hilbert ordering of the tree items.
  * </p>
  * <p>
  * The tree is constructed by sorting the items by the Hilbert code of the midpoint of their envelope.<br/>
@@ -53,9 +53,9 @@ import java.util.List;
  * It should also be more memory-efficient, due to fewer object allocations.<br/>
  * </p>
  *
+ * @see <a href="https://en.wikipedia.org/wiki/Hilbert_R-tree">Hilbert R-tree</a>
  * @see <a href="https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java">HPRtree.java</a>
  * @see <a href="https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf">Hilbert R-tree: An improved R-tree using fractals</a>
- * @see <a href="https://en.wikipedia.org/wiki/Hilbert_R-tree">Hilbert R-tree</a>
  * @see <a href="https://web.cs.swarthmore.edu/~adanner/cs97/s08/pdf/prtreesigmod04.pdf">The Priority R-Tree: A Practically Efficient and Worst-Case Optimal R-Tree</a>
  */
 public class HilbertPackedRTree<T>{

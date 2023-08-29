@@ -35,14 +35,26 @@ public interface SpatialTree{
 
 
 	/**
-	 * Add the point to the set (if it is not already in the set).
+	 * Add the point to the tree (if it is not already in the tree).
 	 *
 	 * @param point	The point to add.
 	 */
 	void insert(final Point point);
 
+	/**
+	 * Assess the given point is inside the tree.
+	 *
+	 * @param point	The point to check.
+	 * @return	Whether the point is contained into the tree.
+	 */
 	boolean contains(final Point point);
 
+	/**
+	 * Return the nearest neighbor to the given point.
+	 *
+	 * @param point	The point to query.
+	 * @return	The point that is the nearest neighbor.
+	 */
 	Point nearestNeighbour(final Point point);
 
 	/**

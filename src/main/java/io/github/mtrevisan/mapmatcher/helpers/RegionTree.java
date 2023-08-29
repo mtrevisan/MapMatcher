@@ -35,16 +35,34 @@ public interface RegionTree{
 
 
 	/**
-	 * Add the region to the set (if it is not already in the set).
+	 * Add the region to the tree (if it is not already in the tree).
 	 *
 	 * @param region	The region to add.
 	 */
 	void insert(Region region);
 
-	boolean delete(Region envelope);
+	/**
+	 * Delete the region from the tree.
+	 *
+	 * @param region	The region to delete.
+	 * @return	Whether the region was deleted.
+	 */
+	boolean delete(Region region);
 
+	/**
+	 * Assess the given region is inside the tree.
+	 *
+	 * @param region	The region to check.
+	 * @return	Whether the region is contained into the tree.
+	 */
 	boolean contains(Region region);
 
+	/**
+	 * Query the tree returning all the regions that lies inside the given region.
+	 *
+	 * @param region	The region used to filter.
+	 * @return	The list of regions contained into the given one.
+	 */
 	Collection<Region> query(Region region);
 
 }
