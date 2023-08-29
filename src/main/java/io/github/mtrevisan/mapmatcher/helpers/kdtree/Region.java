@@ -27,6 +27,7 @@ package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
+import java.util.BitSet;
 import java.util.Objects;
 
 
@@ -44,6 +45,8 @@ public class Region implements Comparable<Region>{
 	/** The height along the y-coordinate. */
 	private double height;
 
+	/** Store linear region quadtree location code. */
+	private String code;
 	private SpatialNode node;
 	private boolean boundary;
 
@@ -152,6 +155,14 @@ public class Region implements Comparable<Region>{
 	public void setToNull(){
 		width = NULL_DIMENSION;
 		height = NULL_DIMENSION;
+	}
+
+	public void setCode(final String code){
+		this.code = code;
+	}
+
+	public int getLevel(){
+		return (code.length() >> 1);
 	}
 
 	public SpatialNode getNode(){
@@ -302,7 +313,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether the <code>Envelope</code>s intersect.
 	 */
 	public boolean intersects(final Region envelope){
-		return !(isNull() || envelope.isNull()
+		return !(envelope == null || isNull() || envelope.isNull()
 			|| envelope.x > x + width || envelope.x + envelope.width < x
 			|| envelope.y > y + height || envelope.y + envelope.height < y);
 	}
@@ -314,7 +325,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether the point intersects this envelope.
 	 */
 	public boolean intersects(final Point p){
-		return !(isNull() || p.getX() > x + width || p.getX() < x || p.getY() > y + height || p.getY() < y);
+		return !(p == null || isNull() || p.getX() > x + width || p.getX() < x || p.getY() > y + height || p.getY() < y);
 	}
 
 
@@ -364,7 +375,7 @@ public class Region implements Comparable<Region>{
 
 	@Override
 	public String toString(){
-		return "Env[" + x + " : " + (x + width) + ", " + y + " : " + (y + height) + "]";
+		return "Env(" + code + ")[" + x + " : " + (x + width) + ", " + y + " : " + (y + height) + "]";
 	}
 
 }

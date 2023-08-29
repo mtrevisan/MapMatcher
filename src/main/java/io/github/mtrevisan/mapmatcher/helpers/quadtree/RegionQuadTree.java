@@ -36,64 +36,116 @@ public class RegionQuadTree implements RegionTree{
 
 	private final Region envelope;
 	private final RegionQuadTree[] children;
-	private final List<Region> envelopes;
+	private final List<Region> regions;
 
-	private final int maxEnvelopes;
+	private final int maxRegions;
 
 
 	public static RegionQuadTree create(final Region envelope){
 		return new RegionQuadTree(envelope, 100);
 	}
 
-	public static RegionQuadTree create(final Region envelope, final int maxEnvelopes){
-		return new RegionQuadTree(envelope, maxEnvelopes);
+	public static RegionQuadTree create(final Region envelope, final int maxRegions){
+		return new RegionQuadTree(envelope, maxRegions);
 	}
 
 
-	private RegionQuadTree(final Region envelope, final int maxEnvelopes){
-		if(maxEnvelopes < 1)
-			throw new IllegalArgumentException("Maximum number of envelopes for this node must be greater than zero");
+	private RegionQuadTree(final Region envelope, final int maxRegions){
+		if(maxRegions < 1)
+			throw new IllegalArgumentException("Maximum number of regions for this node must be greater than zero");
 
 		this.envelope = envelope;
 		this.children = new RegionQuadTree[4];
-		this.envelopes = new ArrayList<>();
+		this.regions = new ArrayList<>(maxRegions);
 
-		this.maxEnvelopes = maxEnvelopes;
+		this.maxRegions = maxRegions;
 	}
 
 
-	@Override
-	public void insert(final Region envelope){
-		final Stack<RegionQuadTree> stack = new Stack<>();
-		stack.push(this);
-		while(!stack.isEmpty()){
-			final RegionQuadTree current = stack.pop();
+//	@Override
+//	public void insert(final Region region){
+//		insert(region, "");
+//	}
+//
+//	private void insert(final Region region, final String code){
+//		if(children[0] != null){
+//			final int childIndex = getChildIndex(region);
+//			if(childIndex != INDEX_SELF){
+//				children[childIndex].insert(region, code + childIndex);
+//				return;
+//			}
+//		}
+//
+//		region.setCode(code);
+//		regions.add(region);
+//
+//		if(regions.size() > maxRegions){
+//			split();
+//
+//			//redistribute sub-regions to the right child
+//			int i = 0;
+//			while(i < regions.size()){
+//				final int childIndex = getChildIndex(regions.get(i));
+//				if(childIndex != INDEX_SELF)
+//					children[childIndex].insert(regions.remove(i), code + childIndex);
+//				else
+//					i ++;
+//			}
+//		}
+//	}
 
-			if(current.children[0] != null){
-				final int indexToPlaceObject = current.getChildIndex(envelope);
-				if(indexToPlaceObject != INDEX_SELF){
-					stack.push(current.children[indexToPlaceObject]);
+	@Override
+	public void insert(final Region region){
+		final Stack<InsertItem> stack = new Stack<>();
+		stack.push(new InsertItem(this, "", region));
+		while(!stack.isEmpty()){
+			final InsertItem item = stack.pop();
+			final RegionQuadTree itemNode = item.node;
+			final String itemCode = item.code;
+			final Region itemRegion = item.region;
+
+			if(itemNode.children[0] != null){
+				final int childIndex = itemNode.getChildIndex(itemRegion);
+				if(childIndex != INDEX_SELF){
+					stack.push(new InsertItem(itemNode.children[childIndex], itemCode + childIndex, itemRegion));
 					continue;
 				}
 			}
 
-			current.envelopes.add(envelope);
+			//store linear region quadtree location code:
+			//	NW is 0, NE is 1, SW is 2, SE is 3
+			//	the number of bytes halved is the number of level the region is
+			itemRegion.setCode(itemCode);
+			itemNode.regions.add(itemRegion);
 
-			if(current.envelopes.size() > current.maxEnvelopes){
-				current.split();
+			if(itemNode.regions.size() > itemNode.maxRegions){
+				itemNode.split();
 
-				//redistribute envelopes to the right child
+				//redistribute sub-regions to the right child
 				int i = 0;
-				while(i < current.envelopes.size()){
-					final int indexToPlaceObject = current.getChildIndex(current.envelopes.get(i));
-					if(indexToPlaceObject != INDEX_SELF){
-						stack.push(current.children[indexToPlaceObject]);
-						current.envelopes.remove(i);
+				while(i < itemNode.regions.size()){
+					final Region nodeRegion = itemNode.regions.get(i);
+					final int childIndex = itemNode.getChildIndex(nodeRegion);
+					if(childIndex != INDEX_SELF){
+						stack.push(new InsertItem(itemNode.children[childIndex], itemCode + childIndex, nodeRegion));
+						itemNode.regions.remove(i);
 					}
 					else
 						i ++;
 				}
 			}
+		}
+	}
+
+	private static class InsertItem{
+		final RegionQuadTree node;
+		final String code;
+		final Region region;
+
+		private InsertItem(final RegionQuadTree node, final String code, final Region region){
+			this.node = node;
+			this.code = code;
+			this.region = region;
 		}
 	}
 
@@ -103,23 +155,23 @@ public class RegionQuadTree implements RegionTree{
 
 		final double x = envelope.getX();
 		final double y = envelope.getY();
-		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, childWidth, childHeight), maxEnvelopes);
-		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, childWidth, childHeight), maxEnvelopes);
-		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, childWidth, childHeight), maxEnvelopes);
-		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + childWidth, y + childHeight, childWidth, childHeight), maxEnvelopes);
+		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, childWidth, childHeight), maxRegions);
+		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, childWidth, childHeight), maxRegions);
+		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, childWidth, childHeight), maxRegions);
+		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + childWidth, y + childHeight, childWidth, childHeight), maxRegions);
 	}
 
-	protected int getChildIndex(final Region envelope){
+	protected int getChildIndex(final Region region){
 		int index = INDEX_SELF;
-		final double verticalDividingLine = envelope.getX() + envelope.getWidth() / 2.;
-		final double horizontalDividingLine = envelope.getY() + envelope.getHeight() / 2.;
+		final double verticalDividingLine = this.envelope.getX() + this.envelope.getWidth() / 2.;
+		final double horizontalDividingLine = this.envelope.getY() + this.envelope.getHeight() / 2.;
 
-		final boolean fitsCompletelyInNorthHalf = (envelope.getY() < horizontalDividingLine
-			&& envelope.getHeight() + envelope.getY() < horizontalDividingLine);
-		final boolean fitsCompletelyInSouthHalf = (envelope.getY() > horizontalDividingLine);
-		final boolean fitsCompletelyInWestHalf = (envelope.getX() < verticalDividingLine
-			&& envelope.getX() + envelope.getWidth() < verticalDividingLine);
-		final boolean fitsCompletelyInEastHalf = (envelope.getX() > verticalDividingLine);
+		final boolean fitsCompletelyInNorthHalf = (region.getY() < horizontalDividingLine
+			&& region.getHeight() + region.getY() < horizontalDividingLine);
+		final boolean fitsCompletelyInSouthHalf = (region.getY() > horizontalDividingLine);
+		final boolean fitsCompletelyInWestHalf = (region.getX() < verticalDividingLine
+			&& region.getX() + region.getWidth() < verticalDividingLine);
+		final boolean fitsCompletelyInEastHalf = (region.getX() > verticalDividingLine);
 
 		if(fitsCompletelyInEastHalf){
 			if(fitsCompletelyInNorthHalf)
@@ -136,22 +188,44 @@ public class RegionQuadTree implements RegionTree{
 		return index;
 	}
 
-	@Override
-	public boolean delete(final Region envelope){
-		final Stack<RegionQuadTree> stack = new Stack<>();
-		stack.push(this);
-		while(!stack.isEmpty()){
-			final RegionQuadTree current = stack.pop();
 
-			final int index = current.getChildIndex(envelope);
-			if(index != INDEX_SELF && current.children[index] != null)
-				stack.push(current.children[index]);
-			else
-				for(int i = 0; i < current.envelopes.size(); i ++)
-					if(current.envelopes.get(i).equals(envelope)){
-						current.envelopes.remove(i);
+//	@Override
+//	public boolean delete(final Region region){
+//		final int index = getChildIndex(region);
+//		if(index == INDEX_SELF || children[index] == null){
+//			for(int i = 0; i < regions.size(); i ++){
+//				if(regions.get(i).equals(region)){
+//					regions.remove(i)
+//						.setCode(null);
+//					return true;
+//				}
+//			}
+//		}
+//		else{
+//			children[index].delete(region);
+//			return true;
+//		}
+//
+//		return false;
+//	}
+
+	@Override
+	public boolean delete(final Region region){
+		RegionQuadTree currentNode = this;
+		while(currentNode != null){
+			final int index = currentNode.getChildIndex(region);
+			if(index == INDEX_SELF || currentNode.children[index] == null){
+				final List<Region> nodeRegions = currentNode.regions;
+				for(int i = 0; i < nodeRegions.size(); i ++)
+					if(nodeRegions.get(i).equals(region)){
+						nodeRegions.remove(i)
+							.setCode(null);
 						return true;
 					}
+				break;
+			}
+			else
+				currentNode = currentNode.children[index];
 		}
 
 		return false;
@@ -159,24 +233,24 @@ public class RegionQuadTree implements RegionTree{
 
 
 	@Override
-	public boolean contains(final Region envelope){
+	public boolean contains(final Region region){
 		final Stack<RegionQuadTree> stack = new Stack<>();
 		stack.push(this);
 		while(!stack.isEmpty()){
-			final RegionQuadTree current = stack.pop();
+			final RegionQuadTree node = stack.pop();
 
-			final int index = current.getChildIndex(envelope);
+			final int index = node.getChildIndex(region);
 			if(index == INDEX_SELF){
-				if(current.children[0] != null)
-					for(final RegionQuadTree child : current.children)
-						if(envelope.intersects(child.envelope))
+				if(node.children[0] != null)
+					for(final RegionQuadTree child : node.children)
+						if(region.intersects(child.envelope))
 							stack.push(child);
 			}
-			else if(current.children[index] != null)
-				stack.push(current.children[index]);
+			else if(node.children[index] != null)
+				stack.push(node.children[index]);
 
-			for(final Region region : current.envelopes)
-				if(region.intersects(envelope))
+			for(final Region nodeRegion : node.regions)
+				if(nodeRegion.intersects(region))
 					return true;
 		}
 
@@ -184,27 +258,27 @@ public class RegionQuadTree implements RegionTree{
 	}
 
 	@Override
-	public Collection<Region> query(final Region envelope){
+	public Collection<Region> query(final Region region){
 		final List<Region> returnList = new ArrayList<>();
 
 		final Stack<RegionQuadTree> stack = new Stack<>();
 		stack.push(this);
 		while(!stack.isEmpty()){
-			final RegionQuadTree current = stack.pop();
+			final RegionQuadTree node = stack.pop();
 
-			final int index = current.getChildIndex(envelope);
+			final int index = node.getChildIndex(region);
 			if(index == INDEX_SELF){
-				if(current.children[0] != null)
-					for(final RegionQuadTree child : current.children)
-						if(envelope.intersects(child.envelope))
+				if(node.children[0] != null)
+					for(final RegionQuadTree child : node.children)
+						if(region.intersects(child.envelope))
 							stack.push(child);
 			}
-			else if(current.children[index] != null)
-				stack.push(current.children[index]);
+			else if(node.children[index] != null)
+				stack.push(node.children[index]);
 
-			for(final Region region : current.envelopes)
-				if(region.intersects(envelope))
-					returnList.add(region);
+			for(final Region nodeRegion : node.regions)
+				if(nodeRegion.intersects(region))
+					returnList.add(nodeRegion);
 		}
 
 		return returnList;
@@ -213,7 +287,7 @@ public class RegionQuadTree implements RegionTree{
 
 	@Override
 	public boolean isEmpty(){
-		return envelopes.isEmpty();
+		return regions.isEmpty();
 	}
 
 }

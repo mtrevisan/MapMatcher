@@ -32,11 +32,11 @@ import java.util.Arrays;
 import java.util.List;
 
 
-class RegionQuadTreeTest{
+class SuccinctRegionQuadTreeTest{
 
 	@Test
 	void contains_all_max_envelopes(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
+		SuccinctRegionQuadTree tree = SuccinctRegionQuadTree.create(Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -56,53 +56,7 @@ class RegionQuadTreeTest{
 
 	@Test
 	void delete_max_envelopes(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
-		List<Region> regions = Arrays.asList(
-			Region.of(5., 5., 10., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 5., 12., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 25., 20., 10.),
-			Region.of(25., 5., 10., 10.),
-			Region.of(2., 2., 2., 2.)
-		);
-		for(Region region : regions)
-			tree.insert(region);
-
-		int deleteIndex = 6;
-		Assertions.assertTrue(tree.delete(regions.get(deleteIndex)));
-		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.)));
-		for(Region region : regions){
-			if(!region.equals(regions.get(deleteIndex)))
-				Assertions.assertTrue(tree.contains(region));
-			else
-				Assertions.assertFalse(tree.contains(region));
-		}
-	}
-
-	@Test
-	void contains_all(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 1);
-		List<Region> regions = Arrays.asList(
-			Region.of(5., 5., 10., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 5., 12., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 25., 20., 10.),
-			Region.of(25., 5., 10., 10.),
-			Region.of(2., 2., 2., 2.)
-		);
-		for(Region region : regions)
-			tree.insert(region);
-
-		for(Region region : regions)
-			Assertions.assertTrue(tree.contains(region));
-		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
-	}
-
-	@Test
-	void delete(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 1);
+		SuccinctRegionQuadTree tree = SuccinctRegionQuadTree.create(Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
