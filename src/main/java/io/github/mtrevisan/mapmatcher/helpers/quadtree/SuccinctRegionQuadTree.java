@@ -1,7 +1,6 @@
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
-import io.github.mtrevisan.mapmatcher.helpers.kdtree.Region;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import org.agrona.collections.Int2ObjectHashMap;
 

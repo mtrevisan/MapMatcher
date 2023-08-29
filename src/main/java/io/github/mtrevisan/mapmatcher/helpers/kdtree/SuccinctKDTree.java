@@ -141,11 +141,11 @@ public class SuccinctKDTree implements SpatialTree{
 		data = new Int2ObjectHashMap<>();
 	}
 
-	private void createDataHolder(final int size){
+	private void createDataHolder(final int maxSize){
 		//the maximum number of nodes in a binary tree of height `h` is `2^h – 1`, therefore in order to contain at least `n` nodes, the
 		//tree has to have at least h = log2(n + 1)
-		final int h = (int)Math.ceil(Math.log(size + 1) / LOG2);
-		data = new Int2ObjectHashMap<>(1 << h, (float)size / (1 << h));
+		final int h = (int)Math.ceil(Math.log(maxSize + 1) / LOG2);
+		data = new Int2ObjectHashMap<>(1 << h, (float)maxSize / (1 << h));
 	}
 
 	private void buildTree(final List<Point> points){

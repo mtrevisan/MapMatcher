@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.kdtree.Region;
+import io.github.mtrevisan.mapmatcher.helpers.bplustree.BPlusTree;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +36,7 @@ class RegionQuadTreeTest{
 
 	@Test
 	void contains_all_max_envelopes(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 10);
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -48,15 +48,20 @@ class RegionQuadTreeTest{
 		);
 		for(Region region : regions)
 			tree.insert(region);
-
+		final BPlusTree<String, Region> bptree = BPlusTree.ofOrder(regions.size());
 		for(Region region : regions)
+			bptree.insert(region.getCode(), region);
+
+		for(Region region : regions){
 			Assertions.assertTrue(tree.contains(region));
+			Assertions.assertFalse(bptree.query(region.getCode()).isEmpty());
+		}
 		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
 	}
 
 	@Test
 	void delete_max_envelopes(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 10);
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),

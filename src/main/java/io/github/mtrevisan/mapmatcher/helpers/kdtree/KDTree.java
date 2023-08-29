@@ -38,10 +38,12 @@ import java.util.Stack;
 
 /**
  * A k-d Tree (short for k-dimensional Tree) is a space-partitioning data
- * structure for organizing points in a k-dimensional space. k-d trees are a
+ * structure for organizing points in a k-dimensional space.
+ * <p>k-d trees are a
  * useful data structure for several applications, such as searches involving a
  * multidimensional search key (e.g. range searches and nearest neighbor
  * searches). k-d trees are a special case of binary space partitioning trees.
+ * </p>
  * <p>
  * Algorithm		Average								Worst case
  * Space				O(n)									O(n)

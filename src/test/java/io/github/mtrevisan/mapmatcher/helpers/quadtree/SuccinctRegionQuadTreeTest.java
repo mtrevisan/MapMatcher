@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.kdtree.Region;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

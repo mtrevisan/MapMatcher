@@ -1,7 +1,7 @@
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
-import io.github.mtrevisan.mapmatcher.helpers.kdtree.Region;
+import io.github.mtrevisan.mapmatcher.helpers.bplustree.BPlusTree;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,27 +38,23 @@ public class RegionQuadTree implements RegionTree{
 	private final RegionQuadTree[] children;
 	private final List<Region> regions;
 
-	private final int maxRegions;
+	private final int maxRegionsPerNode;
 
 
-	public static RegionQuadTree create(final Region envelope){
-		return new RegionQuadTree(envelope, 100);
-	}
-
-	public static RegionQuadTree create(final Region envelope, final int maxRegions){
-		return new RegionQuadTree(envelope, maxRegions);
+	public static RegionQuadTree create(final Region envelope, final int maxRegionsPerNode){
+		return new RegionQuadTree(envelope, maxRegionsPerNode);
 	}
 
 
-	private RegionQuadTree(final Region envelope, final int maxRegions){
-		if(maxRegions < 1)
+	private RegionQuadTree(final Region envelope, final int maxRegionsPerNode){
+		if(maxRegionsPerNode < 1)
 			throw new IllegalArgumentException("Maximum number of regions for this node must be greater than zero");
 
 		this.envelope = envelope;
 		this.children = new RegionQuadTree[4];
-		this.regions = new ArrayList<>(maxRegions);
+		this.regions = new ArrayList<>(maxRegionsPerNode);
 
-		this.maxRegions = maxRegions;
+		this.maxRegionsPerNode = maxRegionsPerNode;
 	}
 
 
@@ -79,7 +75,7 @@ public class RegionQuadTree implements RegionTree{
 //		region.setCode(code);
 //		regions.add(region);
 //
-//		if(regions.size() > maxRegions){
+//		if(regions.size() > maxRegionsPerNode){
 //			split();
 //
 //			//redistribute sub-regions to the right child
@@ -118,7 +114,7 @@ public class RegionQuadTree implements RegionTree{
 			itemRegion.setCode(itemCode);
 			itemNode.regions.add(itemRegion);
 
-			if(itemNode.regions.size() > itemNode.maxRegions){
+			if(itemNode.regions.size() > itemNode.maxRegionsPerNode){
 				itemNode.split();
 
 				//redistribute sub-regions to the right child
@@ -155,10 +151,10 @@ public class RegionQuadTree implements RegionTree{
 
 		final double x = envelope.getX();
 		final double y = envelope.getY();
-		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, childWidth, childHeight), maxRegions);
-		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, childWidth, childHeight), maxRegions);
-		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, childWidth, childHeight), maxRegions);
-		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + childWidth, y + childHeight, childWidth, childHeight), maxRegions);
+		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, childWidth, childHeight), maxRegionsPerNode);
+		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, childWidth, childHeight), maxRegionsPerNode);
+		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, childWidth, childHeight), maxRegionsPerNode);
+		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + childWidth, y + childHeight, childWidth, childHeight), maxRegionsPerNode);
 	}
 
 	protected int getChildIndex(final Region region){

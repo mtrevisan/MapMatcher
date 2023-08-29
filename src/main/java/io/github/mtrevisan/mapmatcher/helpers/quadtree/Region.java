@@ -22,12 +22,11 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.kdtree;
+package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.BitSet;
 import java.util.Objects;
 
 
@@ -155,6 +154,10 @@ public class Region implements Comparable<Region>{
 	public void setToNull(){
 		width = NULL_DIMENSION;
 		height = NULL_DIMENSION;
+	}
+
+	public String getCode(){
+		return code;
 	}
 
 	public void setCode(final String code){

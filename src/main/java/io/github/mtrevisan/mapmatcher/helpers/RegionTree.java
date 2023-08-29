@@ -24,7 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
-import io.github.mtrevisan.mapmatcher.helpers.kdtree.Region;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 
 import java.util.Collection;
 
