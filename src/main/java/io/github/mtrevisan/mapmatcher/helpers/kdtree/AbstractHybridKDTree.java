@@ -48,7 +48,7 @@ public class AbstractHybridKDTree{
 
 
 	public Collection<Region> regionsInRange(final RegionTree tree, final Region region){
-		return tree.regionsInRange(region);
+		return tree.query(region);
 	}
 
 	public boolean contains(final RegionTree tree, final Region region, final Point point){

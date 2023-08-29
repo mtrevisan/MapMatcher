@@ -215,12 +215,6 @@ public class SuccinctKDTree implements SpatialTree{
 
 
 	@Override
-	public void clear(){
-		structure.clear();
-		data.clear();
-	}
-
-	@Override
 	public boolean isEmpty(){
 		return (structure.cardinality() == 0);
 	}
@@ -408,7 +402,7 @@ public class SuccinctKDTree implements SpatialTree{
 	 * @return	Collection of {@link Point}s that fall within the given envelope.
 	 */
 	@Override
-	public Collection<Point> pointsInRange(final Point rangeMin, final Point rangeMax){
+	public Collection<Point> query(final Point rangeMin, final Point rangeMax){
 		if(rangeMin.getX() > rangeMax.getX() || rangeMin.getY() > rangeMax.getY())
 			throw new IllegalArgumentException("Unfeasible search rectangle boundaries");
 
@@ -450,7 +444,7 @@ public class SuccinctKDTree implements SpatialTree{
 	 * @return	Collection of {@link Point}s that fall within the given envelope.
 	 */
 	@Override
-	public Collection<Point> pointsInRange(final Point center, final double radius){
+	public Collection<Point> query(final Point center, final double radius){
 		final Stack<Point> points = new Stack<>();
 		if(isEmpty())
 			return points;

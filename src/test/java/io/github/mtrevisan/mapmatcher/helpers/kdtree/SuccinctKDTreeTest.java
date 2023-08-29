@@ -129,11 +129,11 @@ class SuccinctKDTreeTest{
 		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctKDTree tree = SuccinctKDTree.of(tollBooths);
 
-		Collection<Point> points = tree.pointsInRange(FACTORY.createPoint(12.1, 45.5),
+		Collection<Point> points = tree.query(FACTORY.createPoint(12.1, 45.5),
 			FACTORY.createPoint(12.5, 45.9));
 		Assertions.assertEquals(34, points.size());
 
-		points = tree.pointsInRange(FACTORY.createPoint(7.5925975, 43.8008445),
+		points = tree.query(FACTORY.createPoint(7.5925975, 43.8008445),
 			FACTORY.createPoint(7.5925975, 43.8008445));
 		Assertions.assertEquals(1, points.size());
 	}
@@ -149,7 +149,7 @@ class SuccinctKDTreeTest{
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(9., 3.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
 
-		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(1., 5.),
+		Collection<Point> points = tree.query(FACTORY_EUCLIDEAN.createPoint(1., 5.),
 			FACTORY_EUCLIDEAN.createPoint(5., 9.));
 		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
 				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
@@ -167,7 +167,7 @@ class SuccinctKDTreeTest{
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(9., 3.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
 
-		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
+		Collection<Point> points = tree.query(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
 		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
 				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
 			new HashSet<>(points));
@@ -222,11 +222,11 @@ class SuccinctKDTreeTest{
 		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctKDTree tree = SuccinctKDTree.of(tollBooths);
 
-		Collection<Point> points = tree.pointsInRange(FACTORY.createPoint(7.5925975, 43.8008445),
+		Collection<Point> points = tree.query(FACTORY.createPoint(7.5925975, 43.8008445),
 			FACTORY.createPoint(8.5925975, 44.8008445));
 		Assertions.assertEquals(52, points.size());
 
-		points = tree.pointsInRange(FACTORY.createPoint(7.5925975, 43.8008445),
+		points = tree.query(FACTORY.createPoint(7.5925975, 43.8008445),
 			FACTORY.createPoint(7.5925975, 43.8008445));
 		Assertions.assertEquals(1, points.size());
 	}
@@ -243,7 +243,7 @@ class SuccinctKDTreeTest{
 			FACTORY_EUCLIDEAN.createPoint(2., 8.)
 		));
 
-		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(1., 5.),
+		Collection<Point> points = tree.query(FACTORY_EUCLIDEAN.createPoint(1., 5.),
 			FACTORY_EUCLIDEAN.createPoint(5., 9.));
 		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
 				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
@@ -262,7 +262,7 @@ class SuccinctKDTreeTest{
 			FACTORY_EUCLIDEAN.createPoint(2., 8.)
 		));
 
-		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
+		Collection<Point> points = tree.query(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
 		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
 				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
 			new HashSet<>(points));

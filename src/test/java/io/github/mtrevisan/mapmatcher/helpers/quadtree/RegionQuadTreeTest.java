@@ -38,7 +38,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -80,8 +79,8 @@ class RegionQuadTreeTest{
 
 
 	@Test
-	void contains_all(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 0);
+	void contains_all_max_envelopes(){
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -99,183 +98,76 @@ class RegionQuadTreeTest{
 		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
 	}
 
-//	@Test
-//	void neighbour(){
-//		RegionQuadTree tree = RegionQuadTree.ofEmpty(2);
-//		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-//		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-//		for(Point tollBooth : tollBooths)
-//			tree.insert(tollBooth);
-//
-//		for(Point tollBooth : tollBooths)
-//			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(tollBooth));
-//		for(Point tollBooth : tollBooths)
-//			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(
-//				tollBooth.getFactory().createPoint(tollBooth.getX() + 1.e-7, tollBooth.getY() + 1.e-7)));
-//		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
-//			tree.nearestNeighbour(FACTORY.createPoint(0., 0.)));
-//	}
-//
-//	@Test
-//	void neighbour_euclidean(){
-//		RegionQuadTree tree = RegionQuadTree.ofEmpty(2);
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 1.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(4., 7.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(9., 3.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
-//
-//		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(8., 6.),
-//			tree.nearestNeighbour(FACTORY_EUCLIDEAN.createPoint(9., 8.)));
-//	}
-//
-//	@Test
-//	void points_in_range(){
-//		RegionQuadTree tree = RegionQuadTree.ofEmpty(2);
-//		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-//		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-//		for(Point tollBooth : tollBooths)
-//			tree.insert(tollBooth);
-//
-//		Collection<Point> points = tree.pointsInRange(FACTORY.createPoint(12.1, 45.5),
-//			FACTORY.createPoint(12.5, 45.9));
-//		Assertions.assertEquals(33, points.size());
-//
-//		points = tree.pointsInRange(FACTORY.createPoint(7.5925975, 43.8008445),
-//			FACTORY.createPoint(7.5925975, 43.8008445));
-//		Assertions.assertEquals(1, points.size());
-//	}
-//
-//	@Test
-//	void points_in_range_rectangle(){
-//		RegionQuadTree tree = RegionQuadTree.ofEmpty(2);
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 1.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(4., 7.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(9., 3.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
-//
-//		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(1., 5.),
-//			FACTORY_EUCLIDEAN.createPoint(5., 9.));
-//		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
-//				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
-//			new HashSet<>(points));
-//	}
-//
-//	@Test
-//	void points_in_range_circle(){
-//		RegionQuadTree tree = RegionQuadTree.ofEmpty(2);
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 1.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(4., 7.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(9., 3.));
-//		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
-//
-//		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
-//		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
-//				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
-//			new HashSet<>(points));
-//	}
-//
-//
-//	@Test
-//	void bulk_contains_all(){
-//		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-//		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-//		RegionQuadTree tree = RegionQuadTree.of(tollBooths);
-//
-//		for(Point tollBooth : tollBooths)
-//			Assertions.assertTrue(tree.contains(tollBooth));
-//		Assertions.assertFalse(tree.contains(FACTORY.createPoint(0., 0.)));
-//	}
-//
-//	@Test
-//	void bulk_neighbour(){
-//		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-//		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-//		RegionQuadTree tree = RegionQuadTree.of(tollBooths);
-//
-//		for(Point tollBooth : tollBooths)
-//			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(tollBooth));
-//		for(Point tollBooth : tollBooths)
-//			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(
-//				tollBooth.getFactory().createPoint(tollBooth.getX() - 1.e-7, tollBooth.getY() + 1.e-7)));
-//		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
-//			tree.nearestNeighbour(FACTORY.createPoint(0., 0.)));
-//	}
-//
-//	@Test
-//	void bulk_neighbour_euclidean(){
-//		RegionQuadTree tree = RegionQuadTree.of(new HashSet<>(Arrays.asList(
-//			FACTORY_EUCLIDEAN.createPoint(6., 4.),
-//			FACTORY_EUCLIDEAN.createPoint(5., 2.),
-//			FACTORY_EUCLIDEAN.createPoint(8., 6.),
-//			FACTORY_EUCLIDEAN.createPoint(2., 1.),
-//			FACTORY_EUCLIDEAN.createPoint(4., 7.),
-//			FACTORY_EUCLIDEAN.createPoint(9., 3.),
-//			FACTORY_EUCLIDEAN.createPoint(2., 8.)
-//		)));
-//
-//		Assertions.assertEquals(FACTORY.createPoint(8., 6.),
-//			tree.nearestNeighbour(FACTORY.createPoint(9., 8.)));
-//	}
-//
-//	@Test
-//	void bulk_points_in_range(){
-//		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
-//		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-//		RegionQuadTree tree = RegionQuadTree.of(tollBooths);
-//
-//		Collection<Point> points = tree.pointsInRange(FACTORY.createPoint(7.5925975, 43.8008445),
-//			FACTORY.createPoint(8.5925975, 44.8008445));
-//		Assertions.assertEquals(52, points.size());
-//
-//		points = tree.pointsInRange(FACTORY.createPoint(7.5925975, 43.8008445),
-//			FACTORY.createPoint(7.5925975, 43.8008445));
-//		Assertions.assertEquals(1, points.size());
-//	}
-//
-//	@Test
-//	void bulk_points_in_range_rectangle(){
-//		RegionQuadTree tree = RegionQuadTree.of(new HashSet<>(Arrays.asList(
-//			FACTORY_EUCLIDEAN.createPoint(6., 4.),
-//			FACTORY_EUCLIDEAN.createPoint(5., 2.),
-//			FACTORY_EUCLIDEAN.createPoint(8., 6.),
-//			FACTORY_EUCLIDEAN.createPoint(2., 1.),
-//			FACTORY_EUCLIDEAN.createPoint(4., 7.),
-//			FACTORY_EUCLIDEAN.createPoint(9., 3.),
-//			FACTORY_EUCLIDEAN.createPoint(2., 8.)
-//		)));
-//
-//		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(1., 5.),
-//			FACTORY_EUCLIDEAN.createPoint(5., 9.));
-//		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
-//				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
-//			new HashSet<>(points));
-//	}
-//
-//	@Test
-//	void bulk_points_in_range_circle(){
-//		RegionQuadTree tree = RegionQuadTree.of(new HashSet<>(Arrays.asList(
-//			FACTORY_EUCLIDEAN.createPoint(6., 4.),
-//			FACTORY_EUCLIDEAN.createPoint(5., 2.),
-//			FACTORY_EUCLIDEAN.createPoint(8., 6.),
-//			FACTORY_EUCLIDEAN.createPoint(2., 1.),
-//			FACTORY_EUCLIDEAN.createPoint(4., 7.),
-//			FACTORY_EUCLIDEAN.createPoint(9., 3.),
-//			FACTORY_EUCLIDEAN.createPoint(2., 8.)
-//		)));
-//
-//		Collection<Point> points = tree.pointsInRange(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
-//		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
-//				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
-//			new HashSet<>(points));
-//	}
+	@Test
+	void delete_max_envelopes(){
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
+		List<Region> regions = Arrays.asList(
+			Region.of(5., 5., 10., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 5., 12., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 25., 20., 10.),
+			Region.of(25., 5., 10., 10.),
+			Region.of(2., 2., 2., 2.)
+		);
+		for(Region region : regions)
+			tree.insert(region);
+
+		int deleteIndex = 6;
+		Assertions.assertTrue(tree.delete(regions.get(deleteIndex)));
+		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.)));
+		for(Region region : regions){
+			if(!region.equals(regions.get(deleteIndex)))
+				Assertions.assertTrue(tree.contains(region));
+			else
+				Assertions.assertFalse(tree.contains(region));
+		}
+	}
+
+	@Test
+	void contains_all(){
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 1);
+		List<Region> regions = Arrays.asList(
+			Region.of(5., 5., 10., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 5., 12., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 25., 20., 10.),
+			Region.of(25., 5., 10., 10.),
+			Region.of(2., 2., 2., 2.)
+		);
+		for(Region region : regions)
+			tree.insert(region);
+
+		for(Region region : regions)
+			Assertions.assertTrue(tree.contains(region));
+		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
+	}
+
+	@Test
+	void delete(){
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 1);
+		List<Region> regions = Arrays.asList(
+			Region.of(5., 5., 10., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 5., 12., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 25., 20., 10.),
+			Region.of(25., 5., 10., 10.),
+			Region.of(2., 2., 2., 2.)
+		);
+		for(Region region : regions)
+			tree.insert(region);
+
+		int deleteIndex = 6;
+		Assertions.assertTrue(tree.delete(regions.get(deleteIndex)));
+		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.)));
+		for(Region region : regions){
+			if(!region.equals(regions.get(deleteIndex)))
+				Assertions.assertTrue(tree.contains(region));
+			else
+				Assertions.assertFalse(tree.contains(region));
+		}
+	}
 
 }

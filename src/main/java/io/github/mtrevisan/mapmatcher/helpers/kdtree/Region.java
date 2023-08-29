@@ -32,6 +32,9 @@ import java.util.Objects;
 
 public class Region implements Comparable<Region>{
 
+	private static final double NULL_DIMENSION = -1.;
+
+
 	/** The x-coordinate. */
 	private double x;
 	/** The y-coordinate. */
@@ -147,10 +150,8 @@ public class Region implements Comparable<Region>{
 	 * Makes this <code>Envelope</code> a "null" envelope, that is, the envelope of the empty geometry.
 	 */
 	public void setToNull(){
-		x = 0.;
-		y = 0.;
-		width = -1;
-		height = -1.;
+		width = NULL_DIMENSION;
+		height = NULL_DIMENSION;
 	}
 
 	public SpatialNode getNode(){
@@ -272,7 +273,7 @@ public class Region implements Comparable<Region>{
 		height += deltaY;
 
 		//check for envelope disappearing
-		if(x > width || y > height)
+		if(width < 0 || height < 0)
 			setToNull();
 	}
 
@@ -302,7 +303,8 @@ public class Region implements Comparable<Region>{
 	 */
 	public boolean intersects(final Region envelope){
 		return !(isNull() || envelope.isNull()
-			|| envelope.x > width || envelope.width < x || envelope.y > height || envelope.height < y);
+			|| envelope.x > x + width || envelope.x + envelope.width < x
+			|| envelope.y > y + height || envelope.y + envelope.height < y);
 	}
 
 	/**
@@ -312,7 +314,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether the point intersects this envelope.
 	 */
 	public boolean intersects(final Point p){
-		return !(isNull() || p.getX() > width || p.getX() < x || p.getY() > height || p.getY() < y);
+		return !(isNull() || p.getX() > x + width || p.getX() < x || p.getY() > y + height || p.getY() < y);
 	}
 
 

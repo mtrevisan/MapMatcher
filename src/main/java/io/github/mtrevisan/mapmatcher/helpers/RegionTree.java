@@ -31,9 +31,6 @@ import java.util.Collection;
 
 public interface RegionTree{
 
-	/** Empty the tree of all of its internal points. */
-	void clear();
-
 	boolean isEmpty();
 
 
@@ -42,10 +39,12 @@ public interface RegionTree{
 	 *
 	 * @param region	The region to add.
 	 */
-	void insert(final Region region);
+	void insert(Region region);
 
-	boolean contains(final Region region);
+	boolean delete(Region envelope);
 
-	Collection<Region> regionsInRange(final Region region);
+	boolean contains(Region region);
+
+	Collection<Region> query(Region region);
 
 }

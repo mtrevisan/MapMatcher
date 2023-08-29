@@ -31,9 +31,6 @@ import java.util.Collection;
 
 public interface SpatialTree{
 
-	/** Empty the tree of all of its internal points. */
-	void clear();
-
 	boolean isEmpty();
 
 
@@ -48,8 +45,22 @@ public interface SpatialTree{
 
 	Point nearestNeighbour(final Point point);
 
-	Collection<Point> pointsInRange(final Point rangeMin, final Point rangeMax);
+	/**
+	 * Query the tree returning all the points that lies inside the given rectangle.
+	 *
+	 * @param rangeMin	Minimum coordinate of the rectangle.
+	 * @param rangeMax	Maximum coordinate of the rectangle.
+	 * @return	The list of points that lies inside the given rectangle.
+	 */
+	Collection<Point> query(final Point rangeMin, final Point rangeMax);
 
-	Collection<Point> pointsInRange(final Point center, final double radius);
+	/**
+	 * Query the tree returning all the points that lies inside the given circle.
+	 *
+	 * @param center	Center of the circle.
+	 * @param radius	Radius of the circle.
+	 * @return	The list of points that lies inside the given circle.
+	 */
+	Collection<Point> query(final Point center, final double radius);
 
 }
