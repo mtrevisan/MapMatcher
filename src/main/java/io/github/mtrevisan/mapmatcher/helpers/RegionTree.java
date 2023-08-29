@@ -29,7 +29,10 @@ import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import java.util.Collection;
 
 
-public interface RegionTree{
+/**
+ * @param <R>	The type of {@link Region} to use.
+ */
+public interface RegionTree<R extends Region>{
 
 	boolean isEmpty();
 
@@ -39,7 +42,7 @@ public interface RegionTree{
 	 *
 	 * @param region	The region to add.
 	 */
-	void insert(Region region);
+	void insert(R region);
 
 	/**
 	 * Delete the region from the tree.
@@ -47,7 +50,7 @@ public interface RegionTree{
 	 * @param region	The region to delete.
 	 * @return	Whether the region was deleted.
 	 */
-	boolean delete(Region region);
+	boolean delete(R region);
 
 	/**
 	 * Assess the given region is inside the tree.
@@ -55,7 +58,7 @@ public interface RegionTree{
 	 * @param region	The region to check.
 	 * @return	Whether the region is contained into the tree.
 	 */
-	boolean contains(Region region);
+	boolean contains(R region);
 
 	/**
 	 * Query the tree returning all the regions that lies inside the given region.
@@ -63,6 +66,6 @@ public interface RegionTree{
 	 * @param region	The region used to filter.
 	 * @return	The list of regions contained into the given one.
 	 */
-	Collection<Region> query(Region region);
+	Collection<R> query(R region);
 
 }

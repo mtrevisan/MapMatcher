@@ -15,7 +15,7 @@ public class AbstractHybridKDTree{
 	}
 
 	public void insert(final RegionTree tree, final Region region, final Point point){
-		final Collection<Region> regions = regionsInRange(tree, region);
+		final Collection<Region> regions = query(tree, region);
 
 		if(!regions.isEmpty())
 			for(final Region queriedRegion : regions)
@@ -26,9 +26,10 @@ public class AbstractHybridKDTree{
 					return;
 				}
 
-		region.setBoundary();
-		region.setNode(new KDNode(point));
-		tree.insert(region);
+		final HybridRegion hybridRegion = new HybridRegion(region);
+		hybridRegion.setBoundary();
+		hybridRegion.setNode(new KDNode(point));
+		tree.insert(hybridRegion);
 	}
 
 //	public void insert(final RegionTree tree, final Region region, final List<Point> points){
@@ -48,22 +49,21 @@ public class AbstractHybridKDTree{
 //	}
 
 
-	public Collection<Region> regionsInRange(final RegionTree tree, final Region region){
+	public Collection<Region> query(final RegionTree tree, final Region region){
 		return tree.query(region);
 	}
 
 	public boolean contains(final RegionTree tree, final Region region, final Point point){
-		final Collection<Region> regions = regionsInRange(tree, region);
+		final Collection<Region> regions = query(tree, region);
 
 		if(!regions.isEmpty())
 			for(final Region queriedRegion : regions)
 				if(queriedRegion.isBoundary()){
-					final KDTree kdTree = KDTree.ofEmpty(2);
+					final KDTree kdTree = KDTree.ofEmpty(point.getDimensions());
 					final KDNode kdNode = (KDNode)queriedRegion.getNode();
 					if(kdTree.contains(kdNode, point))
 						return true;
 				}
-
 		return false;
 	}
 
