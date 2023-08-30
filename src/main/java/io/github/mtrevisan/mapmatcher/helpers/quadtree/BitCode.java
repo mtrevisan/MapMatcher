@@ -47,6 +47,20 @@ public class BitCode extends BitSet implements Comparable<BitCode>{
 	/**
 	 * Appends the given amount of bits, little endian, in the underlying {@link BitSet}.
 	 *
+	 * @param index	The index from which to start reading.
+	 * @param bits	The number of bits to append, zero is LSB.
+	 * @return	The value.
+	 */
+	public int valueAt(final int index, final int bits){
+		int value = 0x00;
+		for(int i = 0; i < bits; i ++)
+			value = (value << 1) | (get(index + i)? 1: 0);
+		return value;
+	}
+
+	/**
+	 * Appends the given amount of bits, little endian, in the underlying {@link BitSet}.
+	 *
 	 * @param value	The value to append.
 	 * @param bits	The number of bits to append, zero is LSB.
 	 * @return	This instance.

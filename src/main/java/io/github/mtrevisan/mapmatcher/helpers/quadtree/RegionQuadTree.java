@@ -192,6 +192,28 @@ public class RegionQuadTree implements RegionTree{
 		children[INDEX_SOUTH_EAST_CHILD] = create(options, Region.of(x + width, y + height, width, height));
 	}
 
+	private static Region calculateRegion(final Region envelope, final int child){
+		double x = envelope.getX();
+		double y = envelope.getY();
+		double width = envelope.getWidth();
+		double height = envelope.getHeight();
+		final BitCode code = envelope.getCode();
+		final int depth = (code != null? code.getLevel(): 0);
+		for(int i = 0; i < depth; i ++){
+			final int index = code.valueAt(i << 1, 2);
+			width /= 2.;
+			height /= 2.;
+			x += ((index & 0x01) != 0x00? width: 0);
+			y += ((index & 0x10) != 0x00? height: 0);
+		}
+
+		width /= 2.;
+		height /= 2.;
+		x += ((child & 0x01) != 0x00? width: 0);
+		y += ((child & 0x10) != 0x00? height: 0);
+		return Region.of(x, y, width, height);
+	}
+
 	private int getChildIndex(final Region region){
 		final double x = region.getX();
 		final double y = region.getY();
