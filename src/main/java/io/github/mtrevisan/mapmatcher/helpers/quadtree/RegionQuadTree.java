@@ -178,6 +178,7 @@ public class RegionQuadTree implements RegionTree{
 
 		final double x = envelope.getX();
 		final double y = envelope.getY();
+		//FIXME ge xé na manièra de kavar sti "Region.of"?
 		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, childWidth, childHeight), maxRegionsPerNode);
 		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, childWidth, childHeight), maxRegionsPerNode);
 		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, childWidth, childHeight), maxRegionsPerNode);
