@@ -77,11 +77,11 @@ public class KDTree implements SpatialTree{
 	private Comparator<KDNode>[] comparators;
 
 
-	public static KDTree ofEmpty(final int dimensions){
+	public static KDTree ofDimensions(final int dimensions){
 		return new KDTree(dimensions);
 	}
 
-	public static KDTree of(final Collection<Point> points){
+	public static KDTree ofPoints(final Collection<Point> points){
 		return new KDTree(points);
 	}
 
@@ -90,7 +90,7 @@ public class KDTree implements SpatialTree{
 		if(dimensions < 1)
 			throw new IllegalArgumentException ("K-D Tree must have at least dimension 1");
 
-		setDimensions(dimensions);
+		createComparators(dimensions);
 	}
 
 	/**
@@ -104,14 +104,14 @@ public class KDTree implements SpatialTree{
 
 		//extract dimensions from first point
 		for(final Point point : points){
-			setDimensions(point.getDimensions());
+			createComparators(point.getDimensions());
 			break;
 		}
 
-		root = buildTree(points);
+		buildTree(points);
 	}
 
-	private KDNode buildTree(final Collection<Point> points){
+	private void buildTree(final Collection<Point> points){
 		final List<KDNode> nodes = new ArrayList<>(points.size());
 		for(final Point point : points){
 			final KDNode node = new KDNode(point);
@@ -144,8 +144,6 @@ public class KDTree implements SpatialTree{
 			else
 				params.node.right = median;
 		}
-
-		return root;
 	}
 
 	private static class BuildTreeParams extends NodeAxisItem{
@@ -168,8 +166,14 @@ public class KDTree implements SpatialTree{
 		}
 	}
 
-	private static class NodeComparator implements Comparator<KDNode>{
+	@SuppressWarnings("unchecked")
+	private void createComparators(final int dimensions){
+		comparators = (Comparator<KDNode>[])Array.newInstance(Comparator.class, dimensions);
+		for(int i = 0; i < dimensions; i ++)
+			comparators[i] = new NodeComparator(i);
+	}
 
+	private static class NodeComparator implements Comparator<KDNode>{
 		private final int axis;
 
 		private NodeComparator(final int axis){
@@ -180,13 +184,6 @@ public class KDTree implements SpatialTree{
 		public int compare(final KDNode node1, final KDNode node2){
 			return Double.compare(node1.point.getCoordinate(axis), node2.point.getCoordinate(axis));
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private void setDimensions(final int dimensions){
-		comparators = (Comparator<KDNode>[])Array.newInstance(Comparator.class, dimensions);
-		for(int i = 0; i < dimensions; i ++)
-			comparators[i] = new NodeComparator(i);
 	}
 
 
@@ -287,7 +284,8 @@ public class KDTree implements SpatialTree{
 		if(isEmpty() || point == null)
 			return false;
 
-		final double precision = point.getDistanceCalculator().getPrecision();
+		final double precision = point.getDistanceCalculator()
+			.getPrecision();
 
 		int axis = 0;
 		while(currentNode != null){
@@ -325,7 +323,9 @@ public class KDTree implements SpatialTree{
 
 		KDNode bestNode = null;
 		double bestDistanceSquare = Double.POSITIVE_INFINITY;
-		final double precision = point.getDistanceCalculator().getPrecision();
+		double precisionSquare = point.getDistanceCalculator()
+			.getPrecision();
+		precisionSquare *= precisionSquare;
 
 		final Stack<NodeAxisItem> stack = new Stack<>();
 		stack.push(new NodeAxisItem(root, 0));
@@ -333,19 +333,22 @@ public class KDTree implements SpatialTree{
 			final NodeAxisItem currentItem = stack.pop();
 			final KDNode currentNode = currentItem.node;
 
-			final double distanceSquare = (currentNode.point.getX() - point.getX()) * (currentNode.point.getX() - point.getX())
-				+ (currentNode.point.getY() - point.getY()) * (currentNode.point.getY() - point.getY());
-
-			if(bestNode == null || distanceSquare < bestDistanceSquare){
+			final Point currentNodePoint = currentNode.point;
+			//calculate euclidean distance squared
+			double distanceSquare = 0.;
+			for(int i = 0; i < point.getDimensions(); i ++){
+				final double delta = currentNodePoint.getCoordinate(i) - point.getCoordinate(i);
+				distanceSquare += delta * delta;
+			}
+			if(distanceSquare < bestDistanceSquare){
 				bestDistanceSquare = distanceSquare;
 				bestNode = currentNode;
 			}
-			if(bestDistanceSquare <= precision * precision)
+			if(bestDistanceSquare <= precisionSquare)
 				break;
 
-			int axis = currentItem.axis;
-			final double coordinateDelta = currentNode.point.getCoordinate(axis) - point.getCoordinate(axis);
-			axis = getNextAxis(axis);
+			final double coordinateDelta = currentNodePoint.getCoordinate(currentItem.axis) - point.getCoordinate(currentItem.axis);
+			final int axis = getNextAxis(currentItem.axis);
 			if(coordinateDelta > 0. && currentNode.left != null){
 				stack.push(new NodeAxisItem(currentNode.left, axis));
 				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
@@ -381,9 +384,6 @@ public class KDTree implements SpatialTree{
 	 */
 	@Override
 	public Collection<Point> query(final Point rangeMin, final Point rangeMax){
-		if(rangeMin.getX() > rangeMax.getX() || rangeMin.getY() > rangeMax.getY())
-			throw new IllegalArgumentException("Unfeasible search rectangle boundaries");
-
 		final Stack<Point> points = new Stack<>();
 		if(isEmpty())
 			return points;
@@ -411,42 +411,7 @@ public class KDTree implements SpatialTree{
 	}
 
 	/**
-	 * Locate all points within the tree that fall within the given circle.
-	 *
-	 * @param center	Center point of the searching circle.
-	 * @param radius	Radius of the searching circle.
-	 * @return	Collection of {@link Point}s that fall within the given envelope.
-	 */
-	@Override
-	public Collection<Point> query(final Point center, final double radius){
-		final Stack<Point> points = new Stack<>();
-		if(isEmpty())
-			return points;
-
-		int axis = 0;
-
-		final Stack<KDNode> nodes = new Stack<>();
-		nodes.push(root);
-		while(!nodes.isEmpty()){
-			final KDNode node = nodes.pop();
-			final Point point = node.point;
-
-			//add contained points to points stack if inside the region
-			if(inside(point, center, radius))
-				points.push(point);
-
-			if(node.left != null && point.getCoordinate(axis) >= center.getCoordinate(axis))
-				nodes.push(node.left);
-			if(node.right != null && point.getCoordinate(axis) <= center.getCoordinate(axis))
-				nodes.push(node.right);
-
-			axis = getNextAxis(axis);
-		}
-		return points;
-	}
-
-	/**
-	 * .Tests if the point intersects (lies inside) the region.
+	 * Tests if the point intersects (lies inside) the region.
 	 *
 	 * @param point	The point to be tested.
 	 * @param rangeMin	Minimum point of the searching rectangle.
@@ -454,20 +419,10 @@ public class KDTree implements SpatialTree{
 	 * @return	Whether the point lies inside the rectangle.
 	 */
 	private static boolean inside(final Point point, final Point rangeMin, final Point rangeMax){
-		return (rangeMin.getX() <= point.getX() && point.getX() <= rangeMax.getX()
-			&& rangeMin.getY() <= point.getY() && point.getY() <= rangeMax.getY());
-	}
-
-	/**
-	 * .Tests if the point intersects (lies inside) the region.
-	 *
-	 * @param point	The point to be tested.
-	 * @param center	Center point of the searching circle.
-	 * @param radius	Radius of the searching circle.
-	 * @return	Whether the point lies inside the circle.
-	 */
-	private static boolean inside(final Point point, final Point center, final double radius){
-		return (point.distance(center) <= radius);
+		for(int i = 0; i < point.getDimensions(); i ++)
+			if(point.getCoordinate(i) < rangeMin.getCoordinate(i) || point.getCoordinate(i) > rangeMax.getCoordinate(i))
+				return false;
+		return true;
 	}
 
 

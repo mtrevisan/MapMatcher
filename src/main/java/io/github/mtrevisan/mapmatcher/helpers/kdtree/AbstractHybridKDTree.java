@@ -43,7 +43,7 @@ public class AbstractHybridKDTree{
 		if(!regions.isEmpty())
 			for(final Region queriedRegion : regions)
 				if(queriedRegion.isBoundary()){
-					final KDTree terminalTree = KDTree.ofEmpty(point.getDimensions());
+					final KDTree terminalTree = KDTree.ofDimensions(point.getDimensions());
 					final KDNode parentNode = (KDNode)queriedRegion.getNode();
 					terminalTree.insert(parentNode, point);
 					return;
@@ -67,7 +67,7 @@ public class AbstractHybridKDTree{
 		if(!regions.isEmpty())
 			for(final Region queriedRegion : regions)
 				if(queriedRegion.isBoundary()){
-					final KDTree terminalTree = KDTree.ofEmpty(point.getDimensions());
+					final KDTree terminalTree = KDTree.ofDimensions(point.getDimensions());
 					final KDNode kdNode = (KDNode)queriedRegion.getNode();
 					if(terminalTree.contains(kdNode, point))
 						return true;

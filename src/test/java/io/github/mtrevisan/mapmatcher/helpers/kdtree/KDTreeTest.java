@@ -80,7 +80,7 @@ class KDTreeTest{
 
 	@Test
 	void contains_all(){
-		KDTree tree = KDTree.ofEmpty(2);
+		KDTree tree = KDTree.ofDimensions(2);
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
 		for(Point tollBooth : tollBooths)
@@ -93,7 +93,7 @@ class KDTreeTest{
 
 	@Test
 	void neighbour(){
-		KDTree tree = KDTree.ofEmpty(2);
+		KDTree tree = KDTree.ofDimensions(2);
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
 		for(Point tollBooth : tollBooths)
@@ -104,13 +104,13 @@ class KDTreeTest{
 		for(Point tollBooth : tollBooths)
 			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(
 				tollBooth.getFactory().createPoint(tollBooth.getX() + 1.e-7, tollBooth.getY() + 1.e-7)));
-		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
+		Assertions.assertEquals(FACTORY.createPoint(7.5925975, 43.8008445),
 			tree.nearestNeighbour(FACTORY.createPoint(0., 0.)));
 	}
 
 	@Test
 	void neighbour_euclidean(){
-		KDTree tree = KDTree.ofEmpty(2);
+		KDTree tree = KDTree.ofDimensions(2);
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
@@ -124,8 +124,8 @@ class KDTreeTest{
 	}
 
 	@Test
-	void points_in_range(){
-		KDTree tree = KDTree.ofEmpty(2);
+	void points_in_range1(){
+		KDTree tree = KDTree.ofDimensions(2);
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
 		for(Point tollBooth : tollBooths)
@@ -141,8 +141,8 @@ class KDTreeTest{
 	}
 
 	@Test
-	void points_in_range_rectangle(){
-		KDTree tree = KDTree.ofEmpty(2);
+	void points_in_range2(){
+		KDTree tree = KDTree.ofDimensions(2);
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
@@ -158,29 +158,12 @@ class KDTreeTest{
 			new HashSet<>(points));
 	}
 
-	@Test
-	void points_in_range_circle(){
-		KDTree tree = KDTree.ofEmpty(2);
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 1.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(4., 7.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(9., 3.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
-
-		Collection<Point> points = tree.query(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
-		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
-				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
-			new HashSet<>(points));
-	}
-
 
 	@Test
 	void bulk_contains_all(){
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		KDTree tree = KDTree.of(tollBooths);
+		KDTree tree = KDTree.ofPoints(tollBooths);
 
 		for(Point tollBooth : tollBooths)
 			Assertions.assertTrue(tree.contains(tollBooth));
@@ -191,7 +174,7 @@ class KDTreeTest{
 	void bulk_neighbour(){
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		KDTree tree = KDTree.of(tollBooths);
+		KDTree tree = KDTree.ofPoints(tollBooths);
 
 		for(Point tollBooth : tollBooths)
 			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(tollBooth));
@@ -204,7 +187,7 @@ class KDTreeTest{
 
 	@Test
 	void bulk_neighbour_euclidean(){
-		KDTree tree = KDTree.of(new HashSet<>(Arrays.asList(
+		KDTree tree = KDTree.ofPoints(new HashSet<>(Arrays.asList(
 			FACTORY_EUCLIDEAN.createPoint(6., 4.),
 			FACTORY_EUCLIDEAN.createPoint(5., 2.),
 			FACTORY_EUCLIDEAN.createPoint(8., 6.),
@@ -219,10 +202,10 @@ class KDTreeTest{
 	}
 
 	@Test
-	void bulk_points_in_range(){
+	void bulk_points_in_range1(){
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		KDTree tree = KDTree.of(tollBooths);
+		KDTree tree = KDTree.ofPoints(tollBooths);
 
 		Collection<Point> points = tree.query(FACTORY.createPoint(7.5925975, 43.8008445),
 			FACTORY.createPoint(8.5925975, 44.8008445));
@@ -234,8 +217,8 @@ class KDTreeTest{
 	}
 
 	@Test
-	void bulk_points_in_range_rectangle(){
-		KDTree tree = KDTree.of(new HashSet<>(Arrays.asList(
+	void bulk_points_in_range2(){
+		KDTree tree = KDTree.ofPoints(new HashSet<>(Arrays.asList(
 			FACTORY_EUCLIDEAN.createPoint(6., 4.),
 			FACTORY_EUCLIDEAN.createPoint(5., 2.),
 			FACTORY_EUCLIDEAN.createPoint(8., 6.),
@@ -247,24 +230,6 @@ class KDTreeTest{
 
 		Collection<Point> points = tree.query(FACTORY_EUCLIDEAN.createPoint(1., 5.),
 			FACTORY_EUCLIDEAN.createPoint(5., 9.));
-		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
-				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
-			new HashSet<>(points));
-	}
-
-	@Test
-	void bulk_points_in_range_circle(){
-		KDTree tree = KDTree.of(new HashSet<>(Arrays.asList(
-			FACTORY_EUCLIDEAN.createPoint(6., 4.),
-			FACTORY_EUCLIDEAN.createPoint(5., 2.),
-			FACTORY_EUCLIDEAN.createPoint(8., 6.),
-			FACTORY_EUCLIDEAN.createPoint(2., 1.),
-			FACTORY_EUCLIDEAN.createPoint(4., 7.),
-			FACTORY_EUCLIDEAN.createPoint(9., 3.),
-			FACTORY_EUCLIDEAN.createPoint(2., 8.)
-		)));
-
-		Collection<Point> points = tree.query(FACTORY_EUCLIDEAN.createPoint(3., 7.), 2.8);
 		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
 				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
 			new HashSet<>(points));

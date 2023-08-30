@@ -24,63 +24,41 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
-import java.util.BitSet;
 
+public class QuadTreeOptions{
 
-public class BitCode extends BitSet implements Comparable<BitCode>{
+	public static final int MAX_LEVELS_UNLIMITED = -1;
 
-	private int bitCount;
-
-
-	public static BitCode ofEmpty(){
-		return new BitCode();
-	}
-
-
-	private BitCode(){}
-
-
-	public int getLevel(){
-		return (bitCount >> 1);
-	}
 
 	/**
-	 * Appends the given amount of bits, little endian, in the underlying {@link BitSet}.
-	 *
-	 * @param value	The value to append.
-	 * @param bits	The number of bits to append, zero is LSB.
-	 * @return	This instance.
+	 * The maximum number of regions for this node before splitting (coverage-based splitting if 1, density-based splitting if greater than
+	 * 1).
 	 */
-	public BitCode append(final int value, final int bits){
-		int mask = 1;
-		for(int i = 0; i < bits; i ++, bitCount ++, mask <<= 1)
-			if((value & mask) != 0)
-				set(bitCount);
+	int maxRegionsPerNode = 10;
+	/** The maximum number of levels. */
+	int maxLevels = MAX_LEVELS_UNLIMITED;
+
+
+	public static QuadTreeOptions withDefault(){
+		return new QuadTreeOptions();
+	}
+
+	private QuadTreeOptions(){}
+
+
+	public QuadTreeOptions withMaxRegionsPerNode(final int maxRegionsPerNode){
+		if(maxRegionsPerNode < 1)
+			throw new IllegalArgumentException("Maximum number of regions for this node must be greater than zero");
+
+		this.maxRegionsPerNode = maxRegionsPerNode;
+
 		return this;
 	}
 
-	public BitCode clone(){
-		return (BitCode)super.clone();
-	}
+	public QuadTreeOptions withMaxLevels(final int maxLevels){
+		this.maxLevels = (maxLevels < 0? MAX_LEVELS_UNLIMITED: maxLevels);
 
-
-	@Override
-	public String toString(){
-		final StringBuilder sb = new StringBuilder(bitCount);
-		for(int i = 0; i < bitCount; i ++)
-			sb.append(get(i)? '1': '0');
-		return sb.toString();
-	}
-
-	@Override
-	public int compareTo(final BitCode other){
-		if(equals(other))
-			return 0;
-
-		final BitSet xor = clone();
-		xor.xor(other);
-		//compare the first different bit
-		return (get(xor.length() - 1)? 1: -1);
+		return this;
 	}
 
 }

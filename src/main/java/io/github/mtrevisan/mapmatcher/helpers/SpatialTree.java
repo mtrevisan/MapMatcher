@@ -66,13 +66,4 @@ public interface SpatialTree{
 	 */
 	Collection<Point> query(final Point rangeMin, final Point rangeMax);
 
-	/**
-	 * Query the tree returning all the points that lies inside the given circle.
-	 *
-	 * @param center	Center of the circle.
-	 * @param radius	Radius of the circle.
-	 * @return	The list of points that lies inside the given circle.
-	 */
-	Collection<Point> query(final Point center, final double radius);
-
 }

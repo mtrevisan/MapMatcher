@@ -51,6 +51,7 @@ import java.util.Set;
  * @see <a href="https://github.com/myui/btree4j">btree4j</a>
  * @see <a href="https://github.com/karanchauhan/BPlus-Tree">Memory Resident B Plus Tree</a>
  * @see <a href="https://github.com/Morgan279/MemoryBasedBPlusTree">MemoryBasedBPlusTree</a>
+ * @see <a href="https://www.baeldung.com/cs/b-trees-vs-btrees">The Difference Between B-trees and B+trees</a>
  *
  * @param <E>	Key type.
  * @param <K>	Entry type.

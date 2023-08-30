@@ -37,11 +37,13 @@ import java.util.Stack;
 
 
 /**
- * A k-d tree (short for k-dimensional tree) is a space-partitioning data
- * structure for organizing points in a k-dimensional space. k-d trees are a
+ * A k-d Tree (short for k-dimensional Tree) is a space-partitioning data
+ * structure for organizing points in a k-dimensional space.
+ * <p>k-d trees are a
  * useful data structure for several applications, such as searches involving a
  * multidimensional search key (e.g. range searches and nearest neighbor
  * searches). k-d trees are a special case of binary space partitioning trees.
+ * </p>
  * <p>
  * Algorithm		Average								Worst case
  * Space				O(n)									O(n)
@@ -85,15 +87,15 @@ public class SuccinctKDTree implements SpatialTree{
 	private DataComparator[] comparators;
 
 
-	public static SuccinctKDTree createEmpty(final int dimensions){
+	public static SuccinctKDTree ofDimensions(final int dimensions){
 		return new SuccinctKDTree(dimensions);
 	}
 
-	public static SuccinctKDTree createEmpty(final int dimensions, final int maxPoints){
+	public static SuccinctKDTree ofDimensions(final int dimensions, final int maxPoints){
 		return new SuccinctKDTree(dimensions, maxPoints);
 	}
 
-	public static SuccinctKDTree of(final List<Point> points){
+	public static SuccinctKDTree ofPoints(final List<Point> points){
 		return new SuccinctKDTree(points);
 	}
 
@@ -102,18 +104,16 @@ public class SuccinctKDTree implements SpatialTree{
 		if(dimensions < 1)
 			throw new IllegalArgumentException ("K-D Tree must have at least dimension 1");
 
-		createDataHolder();
 
-		setDimensions(dimensions);
+		initialize(-1, dimensions);
 	}
 
 	private SuccinctKDTree(final int dimensions, final int maxPoints){
 		if(dimensions < 1)
 			throw new IllegalArgumentException ("K-D Tree must have at least dimension 1");
 
-		createDataHolder(maxPoints);
 
-		setDimensions(dimensions);
+		initialize(maxPoints, dimensions);
 	}
 
 	/**
@@ -125,27 +125,32 @@ public class SuccinctKDTree implements SpatialTree{
 		if(points.isEmpty())
 			throw new IllegalArgumentException("List of points cannot be empty");
 
-
-		createDataHolder(points.size());
-
 		//extract dimensions from first point
-		for(final Point point : points){
-			setDimensions(point.getDimensions());
-			break;
-		}
+		final int dimensions = points.get(0).getDimensions();
+		if(dimensions < 1)
+			throw new IllegalArgumentException ("K-D Tree must have at least dimension 1");
+
+
+		initialize(points.size(), dimensions);
 
 		buildTree(points);
 	}
 
-	private void createDataHolder(){
-		data = new Int2ObjectHashMap<>();
+	private void initialize(final int points, final int dimensions){
+		createDataHolder(points);
+
+		createComparators(dimensions);
 	}
 
 	private void createDataHolder(final int maxSize){
-		//the maximum number of nodes in a binary tree of height `h` is `2^h – 1`, therefore in order to contain at least `n` nodes, the
-		//tree has to have at least h = log2(n + 1)
-		final int h = (int)Math.ceil(Math.log(maxSize + 1) / LOG2);
-		data = new Int2ObjectHashMap<>(1 << h, (float)maxSize / (1 << h));
+		if(maxSize < 0)
+			data = new Int2ObjectHashMap<>();
+		else{
+			//the maximum number of nodes in a binary tree of height `h` is `2^h – 1`, therefore in order to contain at least `n` nodes, the
+			//tree has to have at least h = log2(n + 1)
+			final int h = (int)Math.ceil(Math.log(maxSize + 1) / LOG2);
+			data = new Int2ObjectHashMap<>(1 << h, (float)maxSize / (1 << h));
+		}
 	}
 
 	private void buildTree(final List<Point> points){
@@ -194,7 +199,7 @@ public class SuccinctKDTree implements SpatialTree{
 		}
 	}
 
-	private void setDimensions(final int dimensions){
+	private void createComparators(final int dimensions){
 		comparators = new DataComparator[dimensions];
 		for(int i = 0; i < dimensions; i ++)
 			comparators[i] = new DataComparator(i);
@@ -303,7 +308,8 @@ public class SuccinctKDTree implements SpatialTree{
 		if(isEmpty() || point == null)
 			return false;
 
-		final double precision = point.getDistanceCalculator().getPrecision();
+		final double precision = point.getDistanceCalculator()
+			.getPrecision();
 
 		//start from first dimension
 		int axis = STARTING_DIMENSION;
@@ -344,8 +350,10 @@ public class SuccinctKDTree implements SpatialTree{
 			return null;
 
 		Point bestNodePoint = null;
-		double bestDistance = Double.POSITIVE_INFINITY;
-		final double precision = point.getDistanceCalculator().getPrecision();
+		double bestDistanceSquare = Double.POSITIVE_INFINITY;
+		double precisionSquare = point.getDistanceCalculator()
+			.getPrecision();
+		precisionSquare *= precisionSquare;
 
 		final Stack<NodeIndexAxisItem> stack = new Stack<>();
 		stack.push(new NodeIndexAxisItem(ROOT_INDEX, STARTING_DIMENSION));
@@ -354,12 +362,17 @@ public class SuccinctKDTree implements SpatialTree{
 			final int nodeIndex = item.nodeIndex;
 
 			final Point currentNodePoint = data(nodeIndex);
-			final double distance = currentNodePoint.distance(point);
-			if(distance < bestDistance){
-				bestDistance = distance;
+			//calculate euclidean distance squared
+			double distanceSquare = 0.;
+			for(int i = 0; i < point.getDimensions(); i ++){
+				final double delta = currentNodePoint.getCoordinate(i) - point.getCoordinate(i);
+				distanceSquare += delta * delta;
+			}
+			if(distanceSquare < bestDistanceSquare){
+				bestDistanceSquare = distanceSquare;
 				bestNodePoint = currentNodePoint;
 			}
-			if(bestDistance <= precision)
+			if(bestDistanceSquare <= precisionSquare)
 				break;
 
 			final double coordinateDelta = currentNodePoint.getCoordinate(item.axis) - point.getCoordinate(item.axis);
@@ -367,14 +380,14 @@ public class SuccinctKDTree implements SpatialTree{
 			final int currentNodeLeftIndex = leftIndex(nodeIndex);
 			if(coordinateDelta >= 0. && data(currentNodeLeftIndex) != null){
 				stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
-				if(coordinateDelta < bestDistance)
+				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
 					stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
 			}
 			else if(coordinateDelta < 0.){
 				final int currentNodeRightIndex = rightIndex(nodeIndex);
 				if(data(currentNodeRightIndex) != null){
 					stack.push(new NodeIndexAxisItem(currentNodeRightIndex, axis));
-					if(-coordinateDelta < bestDistance)
+					if(-coordinateDelta * coordinateDelta < bestDistanceSquare)
 						stack.push(new NodeIndexAxisItem(currentNodeRightIndex, axis));
 				}
 			}
@@ -403,9 +416,6 @@ public class SuccinctKDTree implements SpatialTree{
 	 */
 	@Override
 	public Collection<Point> query(final Point rangeMin, final Point rangeMax){
-		if(rangeMin.getX() > rangeMax.getX() || rangeMin.getY() > rangeMax.getY())
-			throw new IllegalArgumentException("Unfeasible search rectangle boundaries");
-
 		final Stack<Point> points = new Stack<>();
 		if(isEmpty())
 			return points;
@@ -437,45 +447,6 @@ public class SuccinctKDTree implements SpatialTree{
 	}
 
 	/**
-	 * Locate all points within the tree that fall within the given circle.
-	 *
-	 * @param center	Center point of the searching circle.
-	 * @param radius	Radius of the searching circle.
-	 * @return	Collection of {@link Point}s that fall within the given envelope.
-	 */
-	@Override
-	public Collection<Point> query(final Point center, final double radius){
-		final Stack<Point> points = new Stack<>();
-		if(isEmpty())
-			return points;
-
-		//start from first dimension
-		int axis = STARTING_DIMENSION;
-
-		final Stack<Integer> nodes = new Stack<>();
-		//start from root
-		nodes.push(ROOT_INDEX);
-		while(!nodes.isEmpty()){
-			final int nodeIndex = nodes.pop();
-			final Point point = data(nodeIndex);
-
-			//add contained points to points stack if inside the region
-			if(inside(point, center, radius))
-				points.push(point);
-
-			final int nodeLeftIndex = leftIndex(nodeIndex);
-			if(data(nodeLeftIndex) != null && point.getCoordinate(axis) >= center.getCoordinate(axis))
-				nodes.push(nodeLeftIndex);
-			final int nodeRightIndex = rightIndex(nodeIndex);
-			if(data(nodeRightIndex) != null && point.getCoordinate(axis) <= center.getCoordinate(axis))
-				nodes.push(nodeRightIndex);
-
-			axis = getNextAxis(axis);
-		}
-		return points;
-	}
-
-	/**
 	 * Tests if the point intersects (lies inside) the region.
 	 *
 	 * @param point	The point to be tested.
@@ -484,20 +455,10 @@ public class SuccinctKDTree implements SpatialTree{
 	 * @return	Whether the point lies inside the rectangle.
 	 */
 	private static boolean inside(final Point point, final Point rangeMin, final Point rangeMax){
-		return (rangeMin.getX() <= point.getX() && point.getX() <= rangeMax.getX()
-			&& rangeMin.getY() <= point.getY() && point.getY() <= rangeMax.getY());
-	}
-
-	/**
-	 * Tests if the point intersects (lies inside) the region.
-	 *
-	 * @param point	The point to be tested.
-	 * @param center	Center point of the searching circle.
-	 * @param radius	Radius of the searching circle.
-	 * @return	Whether the point lies inside the circle.
-	 */
-	private static boolean inside(final Point point, final Point center, final double radius){
-		return (point.distance(center) <= radius);
+		for(int i = 0; i < point.getDimensions(); i ++)
+			if(point.getCoordinate(i) < rangeMin.getCoordinate(i) || point.getCoordinate(i) > rangeMax.getCoordinate(i))
+				return false;
+		return true;
 	}
 
 

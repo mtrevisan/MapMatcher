@@ -36,7 +36,9 @@ class RegionQuadTreeTest{
 
 	@Test
 	void contains_all_max_envelopes(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 10);
+		QuadTreeOptions options = QuadTreeOptions.withDefault()
+			.withMaxRegionsPerNode(10);
+		RegionQuadTree tree = RegionQuadTree.create(options, Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -56,7 +58,9 @@ class RegionQuadTreeTest{
 
 	@Test
 	void delete_max_envelopes(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 10);
+		QuadTreeOptions options = QuadTreeOptions.withDefault()
+			.withMaxRegionsPerNode(10);
+		RegionQuadTree tree = RegionQuadTree.create(options, Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -82,7 +86,9 @@ class RegionQuadTreeTest{
 
 	@Test
 	void contains_all(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 1);
+		QuadTreeOptions options = QuadTreeOptions.withDefault()
+			.withMaxRegionsPerNode(1);
+		RegionQuadTree tree = RegionQuadTree.create(options, Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -107,7 +113,9 @@ class RegionQuadTreeTest{
 
 	@Test
 	void delete(){
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), 1);
+		QuadTreeOptions options = QuadTreeOptions.withDefault()
+			.withMaxRegionsPerNode(1);
+		RegionQuadTree tree = RegionQuadTree.create(options, Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
