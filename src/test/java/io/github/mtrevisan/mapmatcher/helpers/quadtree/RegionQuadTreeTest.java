@@ -48,14 +48,9 @@ class RegionQuadTreeTest{
 		);
 		for(Region region : regions)
 			tree.insert(region);
-		final BPlusTree<String, Region> bptree = BPlusTree.ofOrder(regions.size());
-		for(Region region : regions)
-			bptree.insert(region.getCode(), region);
 
-		for(Region region : regions){
+		for(Region region : regions)
 			Assertions.assertTrue(tree.contains(region));
-			Assertions.assertFalse(bptree.query(region.getCode()).isEmpty());
-		}
 		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
 	}
 
@@ -99,9 +94,14 @@ class RegionQuadTreeTest{
 		);
 		for(Region region : regions)
 			tree.insert(region);
-
+		final BPlusTree<BitCode, Region> bptree = BPlusTree.ofOrder(regions.size());
 		for(Region region : regions)
+			bptree.insert(region.getCode(), region);
+
+		for(Region region : regions){
 			Assertions.assertTrue(tree.contains(region));
+			Assertions.assertFalse(bptree.query(region.getCode()).isEmpty());
+		}
 		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
 	}
 

@@ -27,6 +27,7 @@ package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
+import java.util.BitSet;
 import java.util.Objects;
 
 
@@ -45,7 +46,7 @@ public class Region implements Comparable<Region>{
 	private double height;
 
 	/** Store linear region quadtree location code. */
-	private String code;
+	private BitCode code;
 	private SpatialNode node;
 	private boolean boundary;
 
@@ -156,11 +157,11 @@ public class Region implements Comparable<Region>{
 		height = NULL_DIMENSION;
 	}
 
-	public String getCode(){
+	public BitCode getCode(){
 		return code;
 	}
 
-	public void setCode(final String code){
+	public void setCode(final BitCode code){
 		this.code = code;
 	}
 

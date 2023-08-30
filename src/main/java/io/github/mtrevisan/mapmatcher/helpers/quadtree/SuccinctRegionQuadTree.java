@@ -1,3 +1,27 @@
+/**
+ * Copyright (c) 2023 Mauro Trevisan
+ * <p>
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
@@ -58,17 +82,17 @@ public class SuccinctRegionQuadTree implements RegionTree{
 	@Override
 	public void insert(final Region region){
 		final Stack<NodeIDRegionItem> stack = new Stack<>();
-		stack.push(new NodeIDRegionItem(this, "", region));
+		stack.push(new NodeIDRegionItem(this, BitCode.ofEmpty(), region));
 		while(!stack.isEmpty()){
 			final NodeIDRegionItem item = stack.pop();
 			final SuccinctRegionQuadTree itemNode = item.node;
-			final String itemID = item.id;
+			final BitCode itemCode = item.code;
 			final Region itemRegion = item.region;
 
 			if(itemNode.children[0] != null){
 				final int childIndex = itemNode.getChildIndex(itemRegion);
 				if(childIndex != INDEX_SELF){
-					stack.push(new NodeIDRegionItem(itemNode.children[childIndex], itemID + childIndex, itemRegion));
+					stack.push(new NodeIDRegionItem(itemNode.children[childIndex], itemCode.clone().append(childIndex, 2), itemRegion));
 					continue;
 				}
 			}
@@ -79,35 +103,35 @@ public class SuccinctRegionQuadTree implements RegionTree{
 				//redistribute sub-regions to the right child
 				int childIndex = itemNode.getChildIndex(itemNode.region);
 				if(childIndex != INDEX_SELF){
-					stack.push(new NodeIDRegionItem(itemNode.children[childIndex], itemID + childIndex, itemNode.region));
+					stack.push(new NodeIDRegionItem(itemNode.children[childIndex], itemCode.clone().append(childIndex, 2), itemNode.region));
 					itemNode.region = null;
 				}
 				childIndex = itemNode.getChildIndex(itemRegion);
 				if(childIndex != INDEX_SELF)
-					stack.push(new NodeIDRegionItem(itemNode.children[childIndex], itemID + childIndex, itemRegion));
+					stack.push(new NodeIDRegionItem(itemNode.children[childIndex], itemCode.clone().append(childIndex, 2), itemRegion));
 				else{
 					if(itemNode.region == null)
 						itemNode.region = itemRegion;
 
-					itemRegion.setCode(itemID);
+					itemRegion.setCode(itemCode);
 				}
 			}
 			else{
 				itemNode.region = itemRegion;
 
-				itemRegion.setCode(itemID);
+				itemRegion.setCode(itemCode);
 			}
 		}
 	}
 
 	private static class NodeIDRegionItem{
 		final SuccinctRegionQuadTree node;
-		final String id;
+		final BitCode code;
 		final Region region;
 
-		private NodeIDRegionItem(final SuccinctRegionQuadTree node, final String id, final Region region){
+		private NodeIDRegionItem(final SuccinctRegionQuadTree node, final BitCode code, final Region region){
 			this.node = node;
-			this.id = id;
+			this.code = code;
 			this.region = region;
 		}
 	}

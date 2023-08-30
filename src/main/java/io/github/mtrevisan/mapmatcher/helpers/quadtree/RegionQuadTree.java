@@ -1,7 +1,30 @@
+/**
+ * Copyright (c) 2023 Mauro Trevisan
+ * <p>
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
-import io.github.mtrevisan.mapmatcher.helpers.bplustree.BPlusTree;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -93,17 +116,19 @@ public class RegionQuadTree implements RegionTree{
 	@Override
 	public void insert(final Region region){
 		final Stack<InsertItem> stack = new Stack<>();
-		stack.push(new InsertItem(this, "", region));
+		stack.push(new InsertItem(this, BitCode.ofEmpty(), region));
 		while(!stack.isEmpty()){
 			final InsertItem item = stack.pop();
 			final RegionQuadTree itemNode = item.node;
-			final String itemCode = item.code;
+			final BitCode itemCode = item.code;
 			final Region itemRegion = item.region;
 
 			if(itemNode.children[0] != null){
 				final int childIndex = itemNode.getChildIndex(itemRegion);
 				if(childIndex != INDEX_SELF){
-					stack.push(new InsertItem(itemNode.children[childIndex], itemCode + childIndex, itemRegion));
+					final BitCode newItemCode = itemCode.clone()
+						.append(childIndex, 2);
+					stack.push(new InsertItem(itemNode.children[childIndex], newItemCode, itemRegion));
 					continue;
 				}
 			}
@@ -123,7 +148,9 @@ public class RegionQuadTree implements RegionTree{
 					final Region nodeRegion = itemNode.regions.get(i);
 					final int childIndex = itemNode.getChildIndex(nodeRegion);
 					if(childIndex != INDEX_SELF){
-						stack.push(new InsertItem(itemNode.children[childIndex], itemCode + childIndex, nodeRegion));
+						final BitCode newItemCode = itemCode.clone()
+							.append(childIndex, 2);
+						stack.push(new InsertItem(itemNode.children[childIndex], newItemCode, nodeRegion));
 						itemNode.regions.remove(i);
 					}
 					else
@@ -135,10 +162,10 @@ public class RegionQuadTree implements RegionTree{
 
 	private static class InsertItem{
 		final RegionQuadTree node;
-		final String code;
+		final BitCode code;
 		final Region region;
 
-		private InsertItem(final RegionQuadTree node, final String code, final Region region){
+		private InsertItem(final RegionQuadTree node, final BitCode code, final Region region){
 			this.node = node;
 			this.code = code;
 			this.region = region;
