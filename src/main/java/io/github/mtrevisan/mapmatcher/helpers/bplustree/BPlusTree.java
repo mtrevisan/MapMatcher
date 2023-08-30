@@ -50,8 +50,8 @@ public class BPlusTree<K extends Comparable<K>, E>{
 		if(order < 3)
 			throw new IllegalArgumentException("The order of B+ Tree must be greater than or equal to 3");
 
-		this.overflowBound = order - 1;
-		this.underflowBound = (overflowBound >> 1);
+		overflowBound = order - 1;
+		underflowBound = (overflowBound >> 1);
 	}
 
 
@@ -120,7 +120,7 @@ public class BPlusTree<K extends Comparable<K>, E>{
 			return false;
 
 		if(root.keys.isEmpty())
-			this.handleRootUnderflow();
+			handleRootUnderflow();
 
 		return true;
 	}
@@ -134,7 +134,7 @@ public class BPlusTree<K extends Comparable<K>, E>{
 			return false;
 
 		if(root.keys.isEmpty())
-			this.handleRootUnderflow();
+			handleRootUnderflow();
 
 		return true;
 	}
@@ -291,35 +291,35 @@ public class BPlusTree<K extends Comparable<K>, E>{
 
 		private void handleUnderflow(final BPlusTreeNode childNode, final int childIndex, final int keyIndex){
 			BPlusTreeNode neighbor;
-			if(childIndex > 0 && (neighbor = this.children.get(childIndex - 1)).keys.size() > underflowBound){
-				childNode.borrow(neighbor, this.keys.get(keyIndex), true);
+			if(childIndex > 0 && (neighbor = children.get(childIndex - 1)).keys.size() > underflowBound){
+				childNode.borrow(neighbor, keys.get(keyIndex), true);
 				final K boundKey = (childNode.getClass().equals(BPlusTreeNonLeafNode.class)
 					? findLeafKey(childNode)
 					: childNode.keys.get(0));
-				this.keys.set(keyIndex, boundKey);
+				keys.set(keyIndex, boundKey);
 
 			}
-			else if(childIndex < this.children.size() - 1 && (neighbor = this.children.get(childIndex + 1)).keys.size() > underflowBound){
-				final int parentKeyIndex = childIndex == 0? 0: Math.min(this.keys.size() - 1, keyIndex + 1);
-				childNode.borrow(neighbor, this.keys.get(parentKeyIndex), false);
-				this.keys.set(parentKeyIndex, (childNode.getClass().equals(BPlusTreeNonLeafNode.class)
+			else if(childIndex < children.size() - 1 && (neighbor = children.get(childIndex + 1)).keys.size() > underflowBound){
+				final int parentKeyIndex = childIndex == 0? 0: Math.min(keys.size() - 1, keyIndex + 1);
+				childNode.borrow(neighbor, keys.get(parentKeyIndex), false);
+				keys.set(parentKeyIndex, (childNode.getClass().equals(BPlusTreeNonLeafNode.class)
 					? findLeafKey(neighbor)
 					: neighbor.keys.get(0)));
 			}
 			else if(childIndex > 0){
 				//combine current child to left child
-				neighbor = this.children.get(childIndex - 1);
-				neighbor.combine(childNode, this.keys.get(keyIndex));
-				this.keys.remove(keyIndex);
-				this.children.remove(childIndex);
+				neighbor = children.get(childIndex - 1);
+				neighbor.combine(childNode, keys.get(keyIndex));
+				keys.remove(keyIndex);
+				children.remove(childIndex);
 
 			}
 			else{
 				//combine right child to current child (child index = 0)
-				neighbor = this.children.get(1);
-				childNode.combine(neighbor, this.keys.get(0));
-				this.keys.remove(0);
-				this.children.remove(1);
+				neighbor = children.get(1);
+				childNode.combine(neighbor, keys.get(0));
+				keys.remove(0);
+				children.remove(1);
 			}
 		}
 
@@ -328,8 +328,8 @@ public class BPlusTree<K extends Comparable<K>, E>{
 			final List<K> allKeys = keys;
 			final List<BPlusTreeNode> allChildren = children;
 
-			this.keys = new ArrayList<>(allKeys.subList(0, medianIndex));
-			this.children = new ArrayList<>(allChildren.subList(0, medianIndex + 1));
+			keys = new ArrayList<>(allKeys.subList(0, medianIndex));
+			children = new ArrayList<>(allChildren.subList(0, medianIndex + 1));
 
 			final List<K> rightKeys = new ArrayList<>(allKeys.subList(medianIndex + 1, allKeys.size()));
 			final List<BPlusTreeNode> rightChildren = new ArrayList<>(allChildren.subList(medianIndex + 1, allChildren.size()));
@@ -339,23 +339,23 @@ public class BPlusTree<K extends Comparable<K>, E>{
 		@Override
 		protected void combine(final BPlusTreeNode neighbor, final K parentKey){
 			final BPlusTreeNonLeafNode nonLeafNode = (BPlusTreeNonLeafNode)neighbor;
-			this.keys.add(parentKey);
-			this.keys.addAll(nonLeafNode.keys);
-			this.children.addAll(nonLeafNode.children);
+			keys.add(parentKey);
+			keys.addAll(nonLeafNode.keys);
+			children.addAll(nonLeafNode.children);
 		}
 
 		@Override
 		protected void borrow(final BPlusTreeNode neighbor, final K parentKey, final boolean isLeft){
 			final BPlusTreeNonLeafNode nonLeafNode = (BPlusTreeNonLeafNode)neighbor;
 			if(isLeft){
-				this.keys.add(0, parentKey);
-				this.children.add(0, nonLeafNode.children.get(nonLeafNode.children.size() - 1));
+				keys.add(0, parentKey);
+				children.add(0, nonLeafNode.children.get(nonLeafNode.children.size() - 1));
 				nonLeafNode.children.remove(nonLeafNode.children.size() - 1);
 				nonLeafNode.keys.remove(nonLeafNode.keys.size() - 1);
 			}
 			else{
-				this.keys.add(parentKey);
-				this.children.add(nonLeafNode.children.get(0));
+				keys.add(parentKey);
+				children.add(nonLeafNode.children.get(0));
 				nonLeafNode.keys.remove(0);
 				nonLeafNode.children.remove(0);
 			}
@@ -448,8 +448,8 @@ public class BPlusTree<K extends Comparable<K>, E>{
 			if(keyIndex == -1)
 				return new RemoveResult(false, false);
 
-			this.keys.remove(keyIndex);
-			this.data.remove(keyIndex);
+			keys.remove(keyIndex);
+			data.remove(keyIndex);
 
 			return new RemoveResult(true, isUnderflow());
 		}
@@ -462,8 +462,8 @@ public class BPlusTree<K extends Comparable<K>, E>{
 
 			data.get(keyIndex).remove(value);
 			if(data.get(keyIndex).isEmpty()){
-				this.keys.remove(keyIndex);
-				this.data.remove(keyIndex);
+				keys.remove(keyIndex);
+				data.remove(keyIndex);
 			}
 
 			return new RemoveResult(true, isUnderflow());
@@ -472,9 +472,9 @@ public class BPlusTree<K extends Comparable<K>, E>{
 		@Override
 		protected void combine(final BPlusTreeNode neighbor, final K parentKey){
 			final BPlusTreeLeafNode leafNode = (BPlusTreeLeafNode)neighbor;
-			this.keys.addAll(leafNode.keys);
-			this.data.addAll(leafNode.data);
-			this.next = leafNode.next;
+			keys.addAll(leafNode.keys);
+			data.addAll(leafNode.data);
+			next = leafNode.next;
 		}
 
 		@Override
@@ -483,13 +483,13 @@ public class BPlusTree<K extends Comparable<K>, E>{
 			int borrowIndex;
 			if(isLeft){
 				borrowIndex = leafNode.keys.size() - 1;
-				this.keys.add(0, leafNode.keys.get(borrowIndex));
-				this.data.add(0, leafNode.data.get(borrowIndex));
+				keys.add(0, leafNode.keys.get(borrowIndex));
+				data.add(0, leafNode.data.get(borrowIndex));
 			}
 			else{
 				borrowIndex = 0;
-				this.keys.add(leafNode.keys.get(borrowIndex));
-				this.data.add(leafNode.data.get(borrowIndex));
+				keys.add(leafNode.keys.get(borrowIndex));
+				data.add(leafNode.data.get(borrowIndex));
 			}
 
 			leafNode.keys.remove(borrowIndex);
@@ -515,15 +515,15 @@ public class BPlusTree<K extends Comparable<K>, E>{
 			final List<K> allKeys = keys;
 			final List<Set<E>> allData = data;
 
-			this.keys = new ArrayList<>(allKeys.subList(0, medianIndex));
-			this.data = new ArrayList<>(allData.subList(0, medianIndex));
+			keys = new ArrayList<>(allKeys.subList(0, medianIndex));
+			data = new ArrayList<>(allData.subList(0, medianIndex));
 
 			final List<K> rightKeys = new ArrayList<>(allKeys.subList(medianIndex, allKeys.size()));
 			final List<Set<E>> rightData = new ArrayList<>(allData.subList(medianIndex, allData.size()));
 			final BPlusTreeLeafNode newLeafNode = new BPlusTreeLeafNode(rightKeys, rightData);
 
-			newLeafNode.next = this.next;
-			this.next = newLeafNode;
+			newLeafNode.next = next;
+			next = newLeafNode;
 			return newLeafNode;
 		}
 

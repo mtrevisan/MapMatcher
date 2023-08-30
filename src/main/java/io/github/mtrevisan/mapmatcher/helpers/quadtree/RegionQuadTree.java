@@ -51,8 +51,8 @@ public class RegionQuadTree implements RegionTree{
 			throw new IllegalArgumentException("Maximum number of regions for this node must be greater than zero");
 
 		this.envelope = envelope;
-		this.children = new RegionQuadTree[4];
-		this.regions = new ArrayList<>(maxRegionsPerNode);
+		children = new RegionQuadTree[4];
+		regions = new ArrayList<>(maxRegionsPerNode);
 
 		this.maxRegionsPerNode = maxRegionsPerNode;
 	}
@@ -159,8 +159,8 @@ public class RegionQuadTree implements RegionTree{
 
 	protected int getChildIndex(final Region region){
 		int index = INDEX_SELF;
-		final double verticalDividingLine = this.envelope.getX() + this.envelope.getWidth() / 2.;
-		final double horizontalDividingLine = this.envelope.getY() + this.envelope.getHeight() / 2.;
+		final double verticalDividingLine = envelope.getX() + envelope.getWidth() / 2.;
+		final double horizontalDividingLine = envelope.getY() + envelope.getHeight() / 2.;
 
 		final boolean fitsCompletelyInNorthHalf = (region.getY() < horizontalDividingLine
 			&& region.getHeight() + region.getY() < horizontalDividingLine);

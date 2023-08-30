@@ -5,7 +5,6 @@ import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
-import java.util.List;
 
 
 public class AbstractHybridKDTree{
