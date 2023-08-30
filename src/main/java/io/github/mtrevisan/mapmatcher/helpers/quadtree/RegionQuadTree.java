@@ -173,40 +173,41 @@ public class RegionQuadTree implements RegionTree{
 	}
 
 	private void split(){
-		final double childWidth = envelope.getWidth() / 2.;
-		final double childHeight = envelope.getHeight() / 2.;
-
 		final double x = envelope.getX();
 		final double y = envelope.getY();
+		final double width = envelope.getWidth() / 2.;
+		final double height = envelope.getHeight() / 2.;
+
 		//FIXME ge xé na manièra de kavar sti "Region.of"?
-		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, childWidth, childHeight), maxRegionsPerNode);
-		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, childWidth, childHeight), maxRegionsPerNode);
-		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, childWidth, childHeight), maxRegionsPerNode);
-		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + childWidth, y + childHeight, childWidth, childHeight), maxRegionsPerNode);
+		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, width, height), maxRegionsPerNode);
+		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + width, y, width, height), maxRegionsPerNode);
+		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + height, width, height), maxRegionsPerNode);
+		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + width, y + height, width, height), maxRegionsPerNode);
 	}
 
 	protected int getChildIndex(final Region region){
+		final double x = region.getX();
+		final double y = region.getY();
+		final double width = region.getWidth();
+		final double height = region.getHeight();
+		final double midX = envelope.getX() + envelope.getWidth() / 2.;
+		final double midY = envelope.getY() + envelope.getHeight() / 2.;
+		final boolean northSide = (y < midY && height + y < midY);
+		final boolean southSide = (y > midY);
+		final boolean westSide = (x < midX && x + width < midX);
+		final boolean eastSide = (x > midX);
+
 		int index = INDEX_SELF;
-		final double verticalDividingLine = envelope.getX() + envelope.getWidth() / 2.;
-		final double horizontalDividingLine = envelope.getY() + envelope.getHeight() / 2.;
-
-		final boolean fitsCompletelyInNorthHalf = (region.getY() < horizontalDividingLine
-			&& region.getHeight() + region.getY() < horizontalDividingLine);
-		final boolean fitsCompletelyInSouthHalf = (region.getY() > horizontalDividingLine);
-		final boolean fitsCompletelyInWestHalf = (region.getX() < verticalDividingLine
-			&& region.getX() + region.getWidth() < verticalDividingLine);
-		final boolean fitsCompletelyInEastHalf = (region.getX() > verticalDividingLine);
-
-		if(fitsCompletelyInEastHalf){
-			if(fitsCompletelyInNorthHalf)
+		if(eastSide){
+			if(northSide)
 				index = INDEX_NORTH_EAST_CHILD;
-			else if(fitsCompletelyInSouthHalf)
+			else if(southSide)
 				index = INDEX_SOUTH_EAST_CHILD;
 		}
-		else if(fitsCompletelyInWestHalf){
-			if(fitsCompletelyInNorthHalf)
+		else if(westSide){
+			if(northSide)
 				index = INDEX_NORTH_WEST_CHILD;
-			else if(fitsCompletelyInSouthHalf)
+			else if(southSide)
 				index = INDEX_SOUTH_WEST_CHILD;
 		}
 		return index;
