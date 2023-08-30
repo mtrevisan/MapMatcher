@@ -64,7 +64,7 @@ public class RegionQuadTree implements RegionTree{
 	private final Region envelope;
 	/** The list of children. */
 	private final RegionQuadTree[] children;
-	/** The actual regions this node spans. */
+	/** The actual regions this node contains. */
 	private final List<Region> regions;
 
 	private final QuadTreeOptions options;
@@ -280,13 +280,13 @@ public class RegionQuadTree implements RegionTree{
 						nodeRegions.remove(i)
 							.setCode(null);
 
-						//FIXME re-balance the tree
-//						if(currentNode.regions.isEmpty()){
-//							final List<Region> descendants = getAllDescendants(currentNode);
-//							clear(currentNode);
-//							for(final Region descendant : descendants)
-//								currentNode.insert(descendant);
-//						}
+						//re-balance the tree
+						if(nodeRegions.isEmpty() && currentNode.hasChildren()){
+							final List<Region> descendants = getAllDescendants(currentNode);
+							clear(currentNode);
+							for(final Region descendant : descendants)
+								currentNode.insert(descendant);
+						}
 
 						return true;
 					}

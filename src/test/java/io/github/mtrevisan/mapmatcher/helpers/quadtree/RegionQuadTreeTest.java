@@ -84,6 +84,7 @@ class RegionQuadTreeTest{
 		}
 	}
 
+
 	@Test
 	void contains_all(){
 		QuadTreeOptions options = QuadTreeOptions.withDefault()
@@ -109,6 +110,33 @@ class RegionQuadTreeTest{
 			Assertions.assertFalse(bptree.query(region.getCode()).isEmpty());
 		}
 		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
+	}
+
+	@Test
+	void query(){
+		QuadTreeOptions options = QuadTreeOptions.withDefault()
+			.withMaxRegionsPerNode(1);
+		RegionQuadTree tree = RegionQuadTree.create(options, Region.of(2., 2., 33., 33.));
+		List<Region> regions = Arrays.asList(
+			Region.of(5., 5., 10., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 5., 12., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 25., 20., 10.),
+			Region.of(25., 5., 10., 10.),
+			Region.of(2., 2., 2., 2.)
+		);
+		for(Region region : regions)
+			tree.insert(region);
+		final BPlusTree<BitCode, Region> bptree = BPlusTree.ofOrder(regions.size());
+		for(Region region : regions)
+			bptree.insert(region.getCode(), region);
+
+		final Region queriedRegion = Region.of(3., 3., 3., 3.);
+		Assertions.assertEquals(3, tree.query(queriedRegion).size());
+		BitCode key = BitCode.ofEmpty();
+		//TODO extract key from queried region
+		Assertions.assertEquals(3, bptree.query(key).size());
 	}
 
 	@Test
