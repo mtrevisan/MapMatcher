@@ -48,6 +48,7 @@ import java.util.Stack;
  * @see <a href="http://www.cs.umd.edu/%7Ehjs/pubs/bulkload.pdf">Speeding Up Construction of Quadtrees for Spatial Indexing</a>
  * @see <a href="https://ruc.udc.es/dspace/bitstream/handle/2183/13769/BernardoRoca_Guillermode_TD_2014.pdf">New data structures and algorithms for the efficient management of large spatial datasets</a>
  * @see <a href="https://www.ifi.uzh.ch/dam/jcr:ffffffff-96c1-007c-ffff-fffff2d50548/ReportWolfensbergerFA.pdf">Improving the Performance of Region Quadtrees</a>
+ * @see <a href="https://github.com/Octopus773/QuadTree">QuadTree</a>
  *
  * quad k-d
  * https://core.ac.uk/download/pdf/41827175.pdf
@@ -67,26 +68,23 @@ public class RegionQuadTree implements RegionTree{
 	/** The list of children. */
 	private final RegionQuadTree[] children;
 	/** The actual regions this node contains. */
-	private final List<Region> regions;
+	private List<Region> regions;
 
 
 	/**
 	 * Creator of a node.
 	 *
 	 * @param envelope	The region envelope defining the node.
-	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
-	 * 	density-based splitting if greater than 1).
 	 * @return	The node.
 	 */
-	public static RegionQuadTree create(final Region envelope, final int maxRegionsPerNode){
-		return new RegionQuadTree(envelope, maxRegionsPerNode);
+	public static RegionQuadTree create(final Region envelope){
+		return new RegionQuadTree(envelope);
 	}
 
 
-	private RegionQuadTree(final Region envelope, final int maxRegionsPerNode){
+	private RegionQuadTree(final Region envelope){
 		this.envelope = envelope;
 		children = new RegionQuadTree[4];
-		regions = new ArrayList<>(maxRegionsPerNode);
 	}
 
 
@@ -174,12 +172,14 @@ public class RegionQuadTree implements RegionTree{
 			//	the number of bytes halved is the number of level the region is
 			itemRegion.setCode(itemCode);
 			//add the region to the list of regions of the current node
+			if(itemNode.regions == null)
+				itemNode.regions = new ArrayList<>(maxRegionsPerNode);
 			itemNode.regions.add(itemRegion);
 
 			//if number of regions is greater than the maximum, split the node
 			if(itemNode.regions.size() > maxRegionsPerNode
 					&& (maxLevels < 0 || itemCode.getLevel() < maxLevels)){
-				itemNode.split(maxRegionsPerNode);
+				itemNode.split();
 
 				//redistribute sub-regions to the right child where it belongs
 				int i = 0;
@@ -211,17 +211,17 @@ public class RegionQuadTree implements RegionTree{
 		}
 	}
 
-	private void split(final int maxRegionsPerNode){
+	private void split(){
 		final double x = envelope.getX();
 		final double y = envelope.getY();
 		final double width = envelope.getWidth() / 2.;
 		final double height = envelope.getHeight() / 2.;
 
 		//FIXME ge xé na manièra de kavar sti "Region.of"?
-		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, width, height), maxRegionsPerNode);
-		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + width, y, width, height), maxRegionsPerNode);
-		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + height, width, height), maxRegionsPerNode);
-		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + width, y + height, width, height), maxRegionsPerNode);
+		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, width, height));
+		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + width, y, width, height));
+		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + height, width, height));
+		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + width, y + height, width, height));
 	}
 
 	private static Region calculateRegion(final Region envelope, final int child){
@@ -306,7 +306,7 @@ public class RegionQuadTree implements RegionTree{
 			final int index = currentNode.getChildIndex(region);
 			if(index == INDEX_SELF || currentNode.children[index] == null){
 				final List<Region> nodeRegions = currentNode.regions;
-				for(int i = 0; i < nodeRegions.size(); i ++){
+				for(int i = 0; i < (nodeRegions != null? nodeRegions.size(): 0); i ++){
 					final Region nodeRegion = nodeRegions.get(i);
 					if(nodeRegion.equals(region)){
 						nodeRegions.remove(i)
@@ -383,9 +383,10 @@ public class RegionQuadTree implements RegionTree{
 				//that search area could include one
 				stack.push(node.children[index]);
 
-			for(final Region nodeRegion : node.regions)
-				if(nodeRegion.intersects(region))
-					return true;
+			if(node.regions != null)
+				for(final Region nodeRegion : node.regions)
+					if(nodeRegion.intersects(region))
+						return true;
 		}
 
 		return false;
@@ -412,9 +413,10 @@ public class RegionQuadTree implements RegionTree{
 				//that search area could include one
 				stack.push(node.children[index]);
 
-			for(final Region nodeRegion : node.regions)
-				if(nodeRegion.intersects(region))
-					returnList.add(nodeRegion);
+			if(node.regions != null)
+				for(final Region nodeRegion : node.regions)
+					if(nodeRegion.intersects(region))
+						returnList.add(nodeRegion);
 		}
 
 		return returnList;
@@ -423,7 +425,7 @@ public class RegionQuadTree implements RegionTree{
 
 	@Override
 	public boolean isEmpty(){
-		return regions.isEmpty();
+		return (regions == null || regions.isEmpty());
 	}
 
 }

@@ -37,7 +37,7 @@ class RegionQuadTreeTest{
 	@Test
 	void contains_all_max_envelopes(){
 		int maxRegionsPerNode = 10;
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), maxRegionsPerNode);
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -58,7 +58,7 @@ class RegionQuadTreeTest{
 	@Test
 	void delete_max_envelopes(){
 		int maxRegionsPerNode = 10;
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), maxRegionsPerNode);
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -86,7 +86,7 @@ class RegionQuadTreeTest{
 	@Test
 	void contains_all(){
 		int maxRegionsPerNode = 1;
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), maxRegionsPerNode);
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -112,7 +112,7 @@ class RegionQuadTreeTest{
 	@Test
 	void query(){
 		int maxRegionsPerNode = 1;
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), maxRegionsPerNode);
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
@@ -138,7 +138,7 @@ class RegionQuadTreeTest{
 	@Test
 	void delete(){
 		int maxRegionsPerNode = 1;
-		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.), maxRegionsPerNode);
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 10., 10.),
 			Region.of(25., 25., 10., 10.),
