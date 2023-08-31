@@ -27,7 +27,6 @@ package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
-import java.util.BitSet;
 import java.util.Objects;
 
 
@@ -313,13 +312,25 @@ public class Region implements Comparable<Region>{
 	/**
 	 * Tests if the region defined by <code>other</code> intersects the region of this <code>Envelope</code>.
 	 *
-	 * @param envelope	The <code>Envelope</code> which this <code>Envelope</code> is being checked for intersecting
+	 * @param envelope	The <code>Envelope</code> which this <code>Envelope</code> is being checked for intersection.
 	 * @return	Whether the <code>Envelope</code>s intersect.
 	 */
 	public boolean intersects(final Region envelope){
 		return !(envelope == null || isNull() || envelope.isNull()
-			|| envelope.x > x + width || envelope.x + envelope.width < x
-			|| envelope.y > y + height || envelope.y + envelope.height < y);
+			|| x + width < envelope.x || envelope.x + envelope.width < x
+			|| y + height < envelope.y || envelope.y + envelope.height < y);
+	}
+
+	/**
+	 * Tests if the region defined by <code>other</code> is fully contained into the region of this <code>Envelope</code>.
+	 *
+	 * @param envelope	The <code>Envelope</code> which this <code>Envelope</code> is being checked for containment.
+	 * @return	Whether the <code>Envelope</code>s is fully contained.
+	 */
+	public boolean contains(final Region envelope){
+		return (envelope != null && !isNull() && !envelope.isNull()
+			&& x >= envelope.x && envelope.x + envelope.width <= x + width
+			&& y >= envelope.y && envelope.y + envelope.height <= y + height);
 	}
 
 	/**
@@ -328,7 +339,7 @@ public class Region implements Comparable<Region>{
 	 * @param p	The point to be tested.
 	 * @return	Whether the point intersects this envelope.
 	 */
-	public boolean intersects(final Point p){
+	public boolean contains(final Point p){
 		return !(p == null || isNull() || p.getX() > x + width || p.getX() < x || p.getY() > y + height || p.getY() < y);
 	}
 
@@ -379,7 +390,9 @@ public class Region implements Comparable<Region>{
 
 	@Override
 	public String toString(){
-		return "Env(" + code + ")[" + x + " : " + (x + width) + ", " + y + " : " + (y + height) + "]";
+		return (boundary? "Boundary": "Region")
+			+ (code != null? "(" + code + ")": "")
+			+ "[" + x + " : " + (x + width) + ", " + y + " : " + (y + height) + "]";
 	}
 
 }

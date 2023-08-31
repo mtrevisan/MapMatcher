@@ -67,7 +67,7 @@
 
 		<!-- JUnit -->
 		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
-		<junit.junit-jupiter-engine.version>5.9.2</junit.junit-jupiter-engine.version>
+		<junit.junit-jupiter-engine.version>5.10.0</junit.junit-jupiter-engine.version>
 	</properties>
 
 	<repositories>

@@ -1,5 +1,8 @@
 package io.github.mtrevisan.mapmatcher.helpers.bplustree;
 
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.BitCode;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.RegionQuadTree;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -171,6 +174,33 @@ class BPlusTreeTest{
 	private void reverseLoad(BPlusTree<Integer, Integer> bPlusTree){
 		for(int i = ENTRY_BOUND - 1; i >= 0; -- i)
 			bPlusTree.insert(i, i);
+	}
+
+
+	//FIXME kapir kome ke se fà
+	@Test
+	void query(){
+		int maxRegionsPerNode = 1;
+		RegionQuadTree tree = RegionQuadTree.create(Region.of(2., 2., 33., 33.));
+		List<Region> regions = Arrays.asList(
+			Region.of(5., 5., 10., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 5., 12., 10.),
+			Region.of(25., 25., 10., 10.),
+			Region.of(5., 25., 20., 10.),
+			Region.of(25., 5., 10., 10.),
+			Region.of(2., 2., 2., 2.)
+		);
+		for(Region region : regions)
+			tree.insert(region, maxRegionsPerNode);
+		final BPlusTree<BitCode, Region> bptree = BPlusTree.ofOrder(regions.size());
+		for(Region region : regions)
+			bptree.insert(region.getCode(), region);
+
+		final Region queriedRegion = Region.of(3., 3., 3., 3.);
+		BitCode key = BitCode.ofEmpty();
+		//TODO extract key from queried region
+//		Assertions.assertEquals(1, bptree.query(key).size());
 	}
 
 }

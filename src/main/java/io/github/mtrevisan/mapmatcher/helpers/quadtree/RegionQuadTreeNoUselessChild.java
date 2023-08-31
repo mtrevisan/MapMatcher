@@ -51,6 +51,8 @@ import java.util.Stack;
  */
 public class RegionQuadTreeNoUselessChild implements RegionTree{
 
+	public static final int MAX_LEVELS_UNLIMITED = -1;
+
 	private static final int INDEX_SELF = -1;
 	private static final int INDEX_NORTH_WEST_CHILD = 0;
 	private static final int INDEX_NORTH_EAST_CHILD = 1;
@@ -113,7 +115,15 @@ public class RegionQuadTreeNoUselessChild implements RegionTree{
 //	}
 
 	@Override
-	public void insert(final Region region){
+	public void insert(final Region region, final int maxRegionsPerNode){
+		insert(region, maxRegionsPerNode, MAX_LEVELS_UNLIMITED);
+	}
+
+	@Override
+	public void insert(final Region region, final int maxRegionsPerNode, final int maxLevels){
+		if(maxLevels < MAX_LEVELS_UNLIMITED)
+			throw new IllegalArgumentException("Invalid number of max levels: (" + maxLevels + ")");
+
 		final Stack<InsertItem> stack = new Stack<>();
 		stack.push(new InsertItem(this, BitCode.ofEmpty(), region));
 		while(!stack.isEmpty()){
@@ -253,7 +263,12 @@ public class RegionQuadTreeNoUselessChild implements RegionTree{
 //	}
 
 	@Override
-	public boolean delete(final Region region){
+	public boolean delete(final Region region, final int maxRegionsPerNode){
+		return delete(region, maxRegionsPerNode, MAX_LEVELS_UNLIMITED);
+	}
+
+	@Override
+	public boolean delete(final Region region, final int maxRegionsPerNode, final int maxLevels){
 		RegionQuadTreeNoUselessChild currentNode = this;
 		while(currentNode != null){
 			final int index = currentNode.getChildIndex(region);
@@ -265,13 +280,13 @@ public class RegionQuadTreeNoUselessChild implements RegionTree{
 						nodeRegions.remove(i)
 							.setCode(null);
 
-						//FIXME re-balance the tree
-//						if(currentNode.regions.isEmpty()){
-//							final List<Region> descendants = getAllDescendants(currentNode);
-//							clear(currentNode);
-//							for(final Region descendant : descendants)
-//								currentNode.insert(descendant);
-//						}
+						//re-balance the tree
+						if(nodeRegions.isEmpty() && currentNode.hasChildren()){
+							final List<Region> descendants = getAllDescendants(currentNode);
+							clear(currentNode);
+							for(final Region descendant : descendants)
+								currentNode.insert(descendant, maxRegionsPerNode, maxLevels);
+						}
 
 						return true;
 					}
@@ -320,6 +335,33 @@ public class RegionQuadTreeNoUselessChild implements RegionTree{
 
 
 	@Override
+	public boolean intersects(final Region region){
+		final Stack<RegionQuadTreeNoUselessChild> stack = new Stack<>();
+		stack.push(this);
+		while(!stack.isEmpty()){
+			final RegionQuadTreeNoUselessChild node = stack.pop();
+
+			final int index = node.getChildIndex(region);
+			if(index == INDEX_SELF || !node.hasChildren()){
+				if(node.hasChildren())
+					for(final RegionQuadTreeNoUselessChild child : node.children)
+						if(child != null && child.envelope.intersects(region))
+							stack.push(child);
+			}
+			else if(node.children[index] != null)
+				//the search area is in one of the children totally, but it is still not possible to exclude the objects on this node, because
+				//that search area could include one
+				stack.push(node.children[index]);
+
+			for(final Region nodeRegion : node.regions)
+				if(nodeRegion.intersects(region))
+					return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean contains(final Region region){
 		final Stack<RegionQuadTreeNoUselessChild> stack = new Stack<>();
 		stack.push(this);
@@ -330,7 +372,7 @@ public class RegionQuadTreeNoUselessChild implements RegionTree{
 			if(index == INDEX_SELF || !node.hasChildren()){
 				if(node.hasChildren())
 					for(final RegionQuadTreeNoUselessChild child : node.children)
-						if(child != null && region.intersects(child.envelope))
+						if(child != null && child.envelope.contains(region))
 							stack.push(child);
 			}
 			else if(node.children[index] != null)
@@ -339,7 +381,7 @@ public class RegionQuadTreeNoUselessChild implements RegionTree{
 				stack.push(node.children[index]);
 
 			for(final Region nodeRegion : node.regions)
-				if(nodeRegion.intersects(region))
+				if(nodeRegion.contains(region))
 					return true;
 		}
 

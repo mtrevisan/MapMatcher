@@ -80,6 +80,7 @@ public class SuccinctKDTree implements SpatialTree{
 	private static final int STARTING_DIMENSION = 0;
 	private static final double LOG2 = Math.log(2.);
 
+
 	//(min-max) 0-33 bit/node vs 64-256 bit/node, that is 12.9% wrt simple k-d tree
 	private final BitSet structure = new BitSet();
 	private Int2ObjectHashMap<Point> data;
@@ -154,9 +155,10 @@ public class SuccinctKDTree implements SpatialTree{
 	}
 
 	private void buildTree(final List<Point> points){
+		final int dimensions = comparators.length;
+
 		final Stack<BuildTreeItem> stack = new Stack<>();
 		stack.push(BuildTreeItem.asRoot(points.size()));
-
 		while(!stack.isEmpty()){
 			final BuildTreeItem item = stack.pop();
 			final int begin = item.begin;
@@ -168,7 +170,7 @@ public class SuccinctKDTree implements SpatialTree{
 			final int k = begin + ((end - begin) >> 1);
 			final Point median = QuickSelect.select(points, begin, end - 1, k, comparators[axis]);
 
-			axis = getNextAxis(axis);
+			axis = getNextAxis(axis, dimensions);
 			if(begin < k)
 				stack.push(new BuildTreeItem(begin, k, axis, leftIndex(index)));
 			if(k + 1 < end)
@@ -264,42 +266,71 @@ public class SuccinctKDTree implements SpatialTree{
 	 *
 	 * @param point	The point to add.
 	 */
-	@SuppressWarnings("DataFlowIssue")
 	@Override
 	public void insert(final Point point){
-		if(point.getDimensions() < comparators.length)
+		final int dimensions = comparators.length;
+		if(point.getDimensions() < dimensions)
 			throw new IllegalArgumentException("Point dimension are less than what specified constructing this tree");
 
 		if(isEmpty())
 			addNode(ROOT_INDEX, point);
 		else{
+			//find parent node
+			int lastParentIndex = -1;
+			Point parentPoint;
 			//start from first dimension
+			int lastAxis = STARTING_DIMENSION;
 			int axis = STARTING_DIMENSION;
 			//start from root
 			int parentIndex = ROOT_INDEX;
-			//find parent node
-			int parentNodeIndex = -1;
-			Point parentNodePoint = null;
-			Point currentPoint;
-			while(parentIndex >= 0 && (currentPoint = data(parentIndex)) != null){
-				parentNodeIndex = parentIndex;
-				parentNodePoint = currentPoint;
+			while(parentIndex >= 0 && (parentPoint = data(parentIndex)) != null){
+				lastParentIndex = parentIndex;
+				lastAxis = axis;
 
-				if(point.getCoordinate(axis) < currentPoint.getCoordinate(axis))
+				if(point.getCoordinate(axis) < parentPoint.getCoordinate(axis))
 					parentIndex = leftIndex(parentIndex);
 				else
 					parentIndex = rightIndex(parentIndex);
 
-				axis = getNextAxis(axis);
+				axis = getNextAxis(axis, dimensions);
 			}
 
 			//insert point in the right place
-			axis = getNextAxis(axis);
-			if(point.getCoordinate(axis) < parentNodePoint.getCoordinate(axis))
-				addNode(leftIndex(parentNodeIndex), point);
+			if(point.getCoordinate(lastAxis) < data(lastParentIndex).getCoordinate(lastAxis))
+				addNode(leftIndex(lastParentIndex), point);
 			else
-				addNode(rightIndex(parentNodeIndex), point);
+				addNode(rightIndex(lastParentIndex), point);
 		}
+	}
+
+	//TODO to find out how to do it with parentIndex...
+	/** NOTE: used by {@link HybridKDTree}. */
+	void insert(int parentIndex, final Point point){
+		final int dimensions = point.getDimensions();
+
+		//find parent node
+		int lastParentIndex = -1;
+		Point parentPoint;
+		//start from first dimension
+		int lastAxis = STARTING_DIMENSION;
+		int axis = STARTING_DIMENSION;
+		while(parentIndex >= 0 && (parentPoint = data(parentIndex)) != null){
+			lastParentIndex = parentIndex;
+			lastAxis = axis;
+
+			if(point.getCoordinate(axis) < parentPoint.getCoordinate(axis))
+				parentIndex = leftIndex(parentIndex);
+			else
+				parentIndex = rightIndex(parentIndex);
+
+			axis = getNextAxis(axis, dimensions);
+		}
+
+		//insert point in the right place
+		if(point.getCoordinate(lastAxis) < data(lastParentIndex).getCoordinate(lastAxis))
+			addNode(leftIndex(lastParentIndex), point);
+		else
+			addNode(rightIndex(lastParentIndex), point);
 	}
 
 
@@ -310,6 +341,7 @@ public class SuccinctKDTree implements SpatialTree{
 
 		final double precision = point.getDistanceCalculator()
 			.getPrecision();
+		final int dimensions = comparators.length;
 
 		//start from first dimension
 		int axis = STARTING_DIMENSION;
@@ -325,7 +357,35 @@ public class SuccinctKDTree implements SpatialTree{
 			else
 				currentNodeIndex = rightIndex(currentNodeIndex);
 
-			axis = getNextAxis(axis);
+			axis = getNextAxis(axis, dimensions);
+		}
+
+		return false;
+	}
+
+	//TODO to find out how to do it with parentIndex...
+	/** NOTE: used by {@link HybridKDTree}. */
+	boolean contains(int parentIndex, final Point point){
+		if(isEmpty() || point == null)
+			return false;
+
+		final double precision = point.getDistanceCalculator()
+			.getPrecision();
+		final int dimensions = point.getDimensions();
+
+		//start from first dimension
+		int axis = STARTING_DIMENSION;
+		Point currentPoint;
+		while(parentIndex >= 0 && (currentPoint = data(parentIndex)) != null){
+			if(currentPoint.equals(point, precision))
+				return true;
+
+			if(point.getCoordinate(axis) < currentPoint.getCoordinate(axis))
+				parentIndex = leftIndex(parentIndex);
+			else
+				parentIndex = rightIndex(parentIndex);
+
+			axis = getNextAxis(axis, dimensions);
 		}
 
 		return false;
@@ -355,6 +415,7 @@ public class SuccinctKDTree implements SpatialTree{
 			.getPrecision();
 		precisionSquare *= precisionSquare;
 
+		final int dimensions = comparators.length;
 		final Stack<NodeIndexAxisItem> stack = new Stack<>();
 		stack.push(new NodeIndexAxisItem(ROOT_INDEX, STARTING_DIMENSION));
 		while(!stack.isEmpty()){
@@ -362,12 +423,7 @@ public class SuccinctKDTree implements SpatialTree{
 			final int nodeIndex = item.nodeIndex;
 
 			final Point currentNodePoint = data(nodeIndex);
-			//calculate euclidean distance squared
-			double distanceSquare = 0.;
-			for(int i = 0; i < point.getDimensions(); i ++){
-				final double delta = currentNodePoint.getCoordinate(i) - point.getCoordinate(i);
-				distanceSquare += delta * delta;
-			}
+			final double distanceSquare = euclideanDistanceSquare(point, currentNodePoint);
 			if(distanceSquare < bestDistanceSquare){
 				bestDistanceSquare = distanceSquare;
 				bestNodePoint = currentNodePoint;
@@ -376,7 +432,7 @@ public class SuccinctKDTree implements SpatialTree{
 				break;
 
 			final double coordinateDelta = currentNodePoint.getCoordinate(item.axis) - point.getCoordinate(item.axis);
-			final int axis = getNextAxis(item.axis);
+			final int axis = getNextAxis(item.axis, dimensions);
 			final int currentNodeLeftIndex = leftIndex(nodeIndex);
 			if(coordinateDelta >= 0. && data(currentNodeLeftIndex) != null){
 				stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
@@ -394,6 +450,15 @@ public class SuccinctKDTree implements SpatialTree{
 		}
 
 		return bestNodePoint;
+	}
+
+	private static double euclideanDistanceSquare(final Point point, final Point currentNodePoint){
+		double distanceSquare = 0.;
+		for(int i = 0; i < point.getDimensions(); i ++){
+			final double delta = currentNodePoint.getCoordinate(i) - point.getCoordinate(i);
+			distanceSquare += delta * delta;
+		}
+		return distanceSquare;
 	}
 
 	private static class NodeIndexAxisItem{
@@ -422,6 +487,7 @@ public class SuccinctKDTree implements SpatialTree{
 
 		//start from first dimension
 		int axis = STARTING_DIMENSION;
+		final int dimensions = comparators.length;
 
 		final Stack<Integer> nodes = new Stack<>();
 		//start from root
@@ -441,7 +507,7 @@ public class SuccinctKDTree implements SpatialTree{
 			if(data(nodeRightIndex) != null && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis))
 				nodes.push(nodeRightIndex);
 
-			axis = getNextAxis(axis);
+			axis = getNextAxis(axis, dimensions);
 		}
 		return points;
 	}
@@ -467,8 +533,8 @@ public class SuccinctKDTree implements SpatialTree{
 	// the axis, so that we can split data better in this way.
 	//FIXME: squarish k-d trees - When a rectangle is split by a newly inserted point, the longest side of the rectangle is cut (knowledge
 	// of local BB is needed). Better performance for range search.
-	private int getNextAxis(final int currentAxis){
-		return (currentAxis + 1) % comparators.length;
+	private static int getNextAxis(final int currentAxis, final int dimensions){
+		return (currentAxis + 1) % dimensions;
 	}
 
 

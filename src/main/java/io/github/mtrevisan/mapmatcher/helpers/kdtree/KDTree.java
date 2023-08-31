@@ -72,6 +72,9 @@ import java.util.Stack;
  */
 public class KDTree implements SpatialTree{
 
+	private static final int STARTING_DIMENSION = 0;
+
+
 	private KDNode root;
 
 	private Comparator<KDNode>[] comparators;
@@ -131,7 +134,7 @@ public class KDTree implements SpatialTree{
 			final int k = begin + ((end - begin) >> 1);
 			final KDNode median = QuickSelect.select(nodes, begin, end - 1, k, comparators[axis]);
 
-			axis = getNextAxis(axis);
+			axis = getNextAxis(axis, comparators.length);
 			if(begin < k)
 				stack.push(new BuildTreeParams(begin, k, axis, median, BuildTreeParams.Side.LEFT));
 			if(k + 1 < end)
@@ -234,60 +237,80 @@ public class KDTree implements SpatialTree{
 	 */
 	@Override
 	public void insert(final Point point){
-		insert(root, point);
-	}
-
-	KDNode insert(KDNode parent, final Point point){
 		if(point.getDimensions() < comparators.length)
 			throw new IllegalArgumentException("Point dimension are less than what specified constructing this tree");
 
 		//find parent node
 		KDNode parentNode = null;
-		int axis = getNextAxis(comparators.length - 1);
+		//start from first dimension
+		int lastAxis = STARTING_DIMENSION;
+		int axis = STARTING_DIMENSION;
+		KDNode parent = root;
 		while(parent != null){
 			parentNode = parent;
+			lastAxis = axis;
 
 			if(point.getCoordinate(axis) < parent.point.getCoordinate(axis))
 				parent = parent.left;
 			else
 				parent = parent.right;
 
-			axis = getNextAxis(axis);
+			axis = getNextAxis(axis, comparators.length);
 		}
 
 		//insert point in the right place
 		final KDNode newNode = new KDNode(point);
-		if(parentNode == null){
-			if(isEmpty())
-				root = newNode;
+		if(parentNode == null)
+			root = newNode;
+		else if(point.getCoordinate(lastAxis) < parentNode.point.getCoordinate(lastAxis))
+			parentNode.left = newNode;
+		else
+			parentNode.right = newNode;
+	}
 
-			return newNode;
-		}
-		else{
-			axis = getNextAxis(axis);
-			if(point.getCoordinate(axis) < parentNode.point.getCoordinate(axis))
-				parentNode.left = newNode;
+	/** NOTE: used by {@link HybridKDTree}. */
+	static void insert(KDNode parent, final Point point){
+		if(parent == null)
+			throw new IllegalArgumentException("Parent node cannot be null");
+
+		final int dimensions = point.getDimensions();
+
+		//find parent node
+		KDNode parentNode = null;
+		//start from first dimension
+		int lastAxis = STARTING_DIMENSION;
+		int axis = STARTING_DIMENSION;
+		while(parent != null){
+			parentNode = parent;
+			lastAxis = axis;
+
+			if(point.getCoordinate(axis) < parent.point.getCoordinate(axis))
+				parent = parent.left;
 			else
-				parentNode.right = newNode;
+				parent = parent.right;
 
-			return root;
+			axis = getNextAxis(axis, dimensions);
 		}
+
+		//insert point in the right place
+		final KDNode newNode = new KDNode(point);
+		if(point.getCoordinate(lastAxis) < parentNode.point.getCoordinate(lastAxis))
+			parentNode.left = newNode;
+		else
+			parentNode.right = newNode;
 	}
 
 
 	@Override
 	public boolean contains(final Point point){
-		return contains(root, point);
-	}
-
-	boolean contains(KDNode currentNode, final Point point){
-		if(isEmpty() || point == null)
+		if(point == null)
 			return false;
 
 		final double precision = point.getDistanceCalculator()
 			.getPrecision();
 
-		int axis = 0;
+		int axis = STARTING_DIMENSION;
+		KDNode currentNode = root;
 		while(currentNode != null){
 			if(currentNode.point.equals(point, precision))
 				return true;
@@ -297,7 +320,32 @@ public class KDTree implements SpatialTree{
 			else
 				currentNode = currentNode.right;
 
-			axis = getNextAxis(axis);
+			axis = getNextAxis(axis, comparators.length);
+		}
+
+		return false;
+	}
+
+	/** NOTE: used by {@link HybridKDTree}. */
+	static boolean contains(KDNode currentNode, final Point point){
+		if(point == null)
+			return false;
+
+		final double precision = point.getDistanceCalculator()
+			.getPrecision();
+		final int dimensions = point.getDimensions();
+
+		int axis = STARTING_DIMENSION;
+		while(currentNode != null){
+			if(currentNode.point.equals(point, precision))
+				return true;
+
+			if(point.getCoordinate(axis) < currentNode.point.getCoordinate(axis))
+				currentNode = currentNode.left;
+			else
+				currentNode = currentNode.right;
+
+			axis = getNextAxis(axis, dimensions);
 		}
 
 		return false;
@@ -334,12 +382,7 @@ public class KDTree implements SpatialTree{
 			final KDNode currentNode = currentItem.node;
 
 			final Point currentNodePoint = currentNode.point;
-			//calculate euclidean distance squared
-			double distanceSquare = 0.;
-			for(int i = 0; i < point.getDimensions(); i ++){
-				final double delta = currentNodePoint.getCoordinate(i) - point.getCoordinate(i);
-				distanceSquare += delta * delta;
-			}
+			final double distanceSquare = euclideanDistanceSquare(point, currentNodePoint);
 			if(distanceSquare < bestDistanceSquare){
 				bestDistanceSquare = distanceSquare;
 				bestNode = currentNode;
@@ -348,7 +391,7 @@ public class KDTree implements SpatialTree{
 				break;
 
 			final double coordinateDelta = currentNodePoint.getCoordinate(currentItem.axis) - point.getCoordinate(currentItem.axis);
-			final int axis = getNextAxis(currentItem.axis);
+			final int axis = getNextAxis(currentItem.axis, comparators.length);
 			if(coordinateDelta > 0. && currentNode.left != null){
 				stack.push(new NodeAxisItem(currentNode.left, axis));
 				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
@@ -362,6 +405,15 @@ public class KDTree implements SpatialTree{
 		}
 
 		return (bestNode != null? bestNode.point: null);
+	}
+
+	private static double euclideanDistanceSquare(final Point point, final Point currentNodePoint){
+		double distanceSquare = 0.;
+		for(int i = 0; i < point.getDimensions(); i ++){
+			final double delta = currentNodePoint.getCoordinate(i) - point.getCoordinate(i);
+			distanceSquare += delta * delta;
+		}
+		return distanceSquare;
 	}
 
 	private static class NodeAxisItem{
@@ -388,7 +440,7 @@ public class KDTree implements SpatialTree{
 		if(isEmpty())
 			return points;
 
-		int axis = 0;
+		int axis = STARTING_DIMENSION;
 
 		final Stack<KDNode> nodes = new Stack<>();
 		nodes.push(root);
@@ -405,7 +457,7 @@ public class KDTree implements SpatialTree{
 			if(node.right != null && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis))
 				nodes.push(node.right);
 
-			axis = getNextAxis(axis);
+			axis = getNextAxis(axis, comparators.length);
 		}
 		return points;
 	}
@@ -431,8 +483,8 @@ public class KDTree implements SpatialTree{
 	// the axis, so that we can split data better in this way.
 	//FIXME: squarish k-d trees - When a rectangle is split by a newly inserted point, the longest side of the rectangle is cut (knowledge
 	// of local BB is needed). Better performance for range search.
-	private int getNextAxis(final int currentAxis){
-		return (currentAxis + 1) % comparators.length;
+	private static int getNextAxis(final int currentAxis, final int dimensions){
+		return (currentAxis + 1) % dimensions;
 	}
 
 }

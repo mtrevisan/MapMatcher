@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.bplustree.BPlusTree;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -51,8 +50,8 @@ class RegionQuadTreeTest{
 			tree.insert(region, maxRegionsPerNode);
 
 		for(Region region : regions)
-			Assertions.assertTrue(tree.contains(region));
-		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
+			Assertions.assertTrue(tree.intersects(region));
+		Assertions.assertFalse(tree.intersects(Region.of(100., 100., 1., 1.)));
 	}
 
 	@Test
@@ -72,13 +71,13 @@ class RegionQuadTreeTest{
 			tree.insert(region, maxRegionsPerNode);
 
 		int deleteIndex = 6;
-		Assertions.assertTrue(tree.delete(regions.get(deleteIndex)));
-		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.)));
+		Assertions.assertTrue(tree.delete(regions.get(deleteIndex), maxRegionsPerNode));
+		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.), maxRegionsPerNode));
 		for(Region region : regions){
 			if(!region.equals(regions.get(deleteIndex)))
-				Assertions.assertTrue(tree.contains(region));
+				Assertions.assertTrue(tree.intersects(region));
 			else
-				Assertions.assertFalse(tree.contains(region));
+				Assertions.assertFalse(tree.intersects(region));
 		}
 	}
 
@@ -98,15 +97,10 @@ class RegionQuadTreeTest{
 		);
 		for(Region region : regions)
 			tree.insert(region, maxRegionsPerNode);
-		final BPlusTree<BitCode, Region> bptree = BPlusTree.ofOrder(regions.size());
-		for(Region region : regions)
-			bptree.insert(region.getCode(), region);
 
-		for(Region region : regions){
-			Assertions.assertTrue(tree.contains(region));
-			Assertions.assertFalse(bptree.query(region.getCode()).isEmpty());
-		}
-		Assertions.assertFalse(tree.contains(Region.of(100., 100., 1., 1.)));
+		for(Region region : regions)
+			Assertions.assertTrue(tree.intersects(region));
+		Assertions.assertFalse(tree.intersects(Region.of(100., 100., 1., 1.)));
 	}
 
 	@Test
@@ -124,15 +118,9 @@ class RegionQuadTreeTest{
 		);
 		for(Region region : regions)
 			tree.insert(region, maxRegionsPerNode);
-		final BPlusTree<BitCode, Region> bptree = BPlusTree.ofOrder(regions.size());
-		for(Region region : regions)
-			bptree.insert(region.getCode(), region);
 
 		final Region queriedRegion = Region.of(3., 3., 3., 3.);
 		Assertions.assertEquals(3, tree.query(queriedRegion).size());
-		BitCode key = BitCode.ofEmpty();
-		//TODO extract key from queried region
-//		Assertions.assertEquals(1, bptree.query(key).size());
 	}
 
 	@Test
@@ -152,13 +140,13 @@ class RegionQuadTreeTest{
 			tree.insert(region, maxRegionsPerNode);
 
 		int deleteIndex = 6;
-		Assertions.assertTrue(tree.delete(regions.get(deleteIndex)));
-		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.)));
+		Assertions.assertTrue(tree.delete(regions.get(deleteIndex), maxRegionsPerNode));
+		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.), maxRegionsPerNode));
 		for(Region region : regions){
 			if(!region.equals(regions.get(deleteIndex)))
-				Assertions.assertTrue(tree.contains(region));
+				Assertions.assertTrue(tree.intersects(region));
 			else
-				Assertions.assertFalse(tree.contains(region));
+				Assertions.assertFalse(tree.intersects(region));
 		}
 	}
 

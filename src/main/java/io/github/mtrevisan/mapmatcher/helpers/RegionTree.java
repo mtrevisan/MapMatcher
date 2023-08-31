@@ -35,33 +35,66 @@ public interface RegionTree{
 
 
 	/**
-	 * Add the region to the tree (if it is not already in the tree).
+	 * Add the region to the tree (if it is not already in the tree) with unlimited levels.
 	 *
 	 * @param region	The region to add.
+	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
+	 * 	density-based splitting if greater than 1).
 	 */
-	void insert(Region region);
+	void insert(Region region, int maxRegionsPerNode);
+
+	/**
+	 * Add the region to the tree (if it is not already in the tree) with unlimited levels.
+	 *
+	 * @param region	The region to add.
+	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
+	 * 	density-based splitting if greater than 1).
+	 * @param maxLevels	The maximum number of levels. A number less than zero means infinite levels.
+	 */
+	void insert(Region region, int maxRegionsPerNode, int maxLevels);
 
 	/**
 	 * Delete the region from the tree.
 	 *
 	 * @param region	The region to delete.
+	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
+	 * 	density-based splitting if greater than 1). Used during re-balancing of the tree.
 	 * @return	Whether the region was deleted.
 	 */
-	boolean delete(Region region);
+	boolean delete(Region region, int maxRegionsPerNode);
 
 	/**
-	 * Assess the given region is inside the tree.
+	 * Delete the region from the tree.
+	 *
+	 * @param region	The region to delete.
+	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
+	 * 	density-based splitting if greater than 1). Used during re-balancing of the tree.
+	 * @param maxLevels	The maximum number of levels. A number less than zero means infinite levels. Used during re-balancing of the tree.
+	 * @return	Whether the region was deleted.
+	 */
+	boolean delete(Region region, int maxRegionsPerNode, int maxLevels);
+
+	/**
+	 * Assess the given region intersects the tree.
 	 *
 	 * @param region	The region to check.
-	 * @return	Whether the region is contained into the tree.
+	 * @return	Whether the region intersects the tree.
+	 */
+	boolean intersects(Region region);
+
+	/**
+	 * Assess the given region is fully contained into the tree.
+	 *
+	 * @param region	The region to check.
+	 * @return	Whether the region is fully contained into the tree.
 	 */
 	boolean contains(Region region);
 
 	/**
-	 * Query the tree returning all the regions that lies inside the given region.
+	 * Query the tree returning all the regions that intersect the given region.
 	 *
 	 * @param region	The region used to filter.
-	 * @return	The list of regions contained into the given one.
+	 * @return	The list of regions with a non-null intersection with the given one.
 	 */
 	Collection<Region> query(Region region);
 
