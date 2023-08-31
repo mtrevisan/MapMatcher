@@ -74,13 +74,15 @@ public class HybridKDTree{
 
 	private static boolean insert(final RegionTree tree, final Region region, final Point point){
 		final Collection<Region> regions = query(tree, region);
-		if(!regions.isEmpty())
+		if(!regions.isEmpty()){
+			final int dimensions = point.getDimensions();
 			for(final Region queriedRegion : regions)
 				if(queriedRegion.isBoundary()){
 					final KDNode parentNode = (KDNode)queriedRegion.getNode();
-					KDTree.insert(parentNode, point);
+					KDTree.insert(parentNode, point, dimensions);
 					return true;
 				}
+		}
 		return false;
 	}
 
@@ -91,14 +93,32 @@ public class HybridKDTree{
 
 	public static boolean contains(final RegionTree tree, final Region region, final Point point){
 		final Collection<Region> regions = query(tree, region);
-		if(!regions.isEmpty())
+		if(!regions.isEmpty()){
+			final int dimensions = point.getDimensions();
 			for(final Region queriedRegion : regions)
 				if(queriedRegion.isBoundary()){
 					final KDNode kdNode = (KDNode)queriedRegion.getNode();
-					if(KDTree.contains(kdNode, point))
+					if(KDTree.contains(kdNode, point, dimensions))
 						return true;
 				}
+		}
 		return false;
+	}
+
+
+	public static Point nearestNeighbor(final RegionTree tree, final Region region, final Point point){
+		final Collection<Region> regions = query(tree, region);
+		if(!regions.isEmpty()){
+			final int dimensions = point.getDimensions();
+			for(final Region queriedRegion : regions)
+				if(queriedRegion.isBoundary()){
+					final KDNode kdNode = (KDNode)queriedRegion.getNode();
+					final Point nearestNeighbor = KDTree.nearestNeighbour(kdNode, point, dimensions);
+					if(nearestNeighbor != null)
+						return nearestNeighbor;
+				}
+		}
+		return null;
 	}
 
 }

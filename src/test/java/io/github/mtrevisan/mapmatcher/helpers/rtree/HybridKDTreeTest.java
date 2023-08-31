@@ -39,31 +39,34 @@ class HybridKDTreeTest{
 
 	@Test
 	void simple(){
-		int maxRegionsPerNode = 1;
+		int minObjects = 1;
+		int maxObjects = 10;
 		RTree quadTree0 = RTree.create();
-		quadTree0.insert(Region.of(10., 10., 10., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(5., 5., 10., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(25., 25., 10., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(5., 5., 12., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(5., 25., 20., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(25., 5., 10., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(2., 2., 2., 2.), maxRegionsPerNode);
+		quadTree0.insert(Region.of(10., 10., 10., 10.), minObjects, maxObjects);
+		quadTree0.insert(Region.of(5., 5., 10., 10.), minObjects, maxObjects);
+		quadTree0.insert(Region.of(25., 25., 10., 10.), minObjects, maxObjects);
+		quadTree0.insert(Region.of(5., 5., 12., 10.), minObjects, maxObjects);
+		quadTree0.insert(Region.of(5., 25., 20., 10.), minObjects, maxObjects);
+		quadTree0.insert(Region.of(25., 5., 10., 10.), minObjects, maxObjects);
+		quadTree0.insert(Region.of(2., 2., 2., 2.), minObjects, maxObjects);
 
 		RTree quadTree = RTree.create();
-		HybridKDTree.insert(quadTree, Region.of(10., 10., 10., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 10., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(25., 25., 10., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 12., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(5., 25., 20., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(25., 5., 10., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(2., 2., 2., 2.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, Region.of(10., 10., 10., 10.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, Region.of(5., 5., 10., 10.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, Region.of(25., 25., 10., 10.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, Region.of(5., 5., 12., 10.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, Region.of(5., 25., 20., 10.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, Region.of(25., 5., 10., 10.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, Region.of(2., 2., 2., 2.), minObjects, maxObjects);
 		Region region = Region.of(5., 5., 5., 5.);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), minObjects, maxObjects);
 
 		Assertions.assertTrue(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
 		Assertions.assertFalse(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
+		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
+			HybridKDTree.nearestNeighbor(quadTree, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
 	}
 
 }

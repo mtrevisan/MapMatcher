@@ -62,15 +62,19 @@ public class RTree implements RegionTree{
 	@Override
 	public void insert(final Region region, final int minObjects, final int maxObjects){
 		final RNode node = RNode.createLeaf(region);
-		final RNode parent = chooseLeaf(root, node);
-		parent.children.add(node);
-		node.parent = parent;
-		if(parent.children.size() > maxObjects){
-			final RNode[] splits = splitNode(parent, minObjects);
-			adjustTree(splits[0], splits[1], minObjects, maxObjects);
+		if(isEmpty())
+			root = node;
+		else{
+			final RNode parent = chooseLeaf(root, node);
+			parent.children.add(node);
+			node.parent = parent;
+			if(parent.children.size() > maxObjects){
+				final RNode[] splits = splitNode(parent, minObjects);
+				adjustTree(splits[0], splits[1], minObjects, maxObjects);
+			}
+			else
+				adjustTree(parent, null, minObjects, maxObjects);
 		}
-		else
-			adjustTree(parent, null, minObjects, maxObjects);
 	}
 
 	private static RNode chooseLeaf(final RNode parent, final RNode node){

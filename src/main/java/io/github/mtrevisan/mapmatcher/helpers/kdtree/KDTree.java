@@ -237,44 +237,18 @@ public class KDTree implements SpatialTree{
 	 */
 	@Override
 	public void insert(final Point point){
-		if(point.getDimensions() < comparators.length)
+		final int dimensions = comparators.length;
+		if(point.getDimensions() < dimensions)
 			throw new IllegalArgumentException("Point dimension are less than what specified constructing this tree");
 
-		//find parent node
-		KDNode parentNode = null;
-		//start from first dimension
-		int lastAxis = STARTING_DIMENSION;
-		int axis = STARTING_DIMENSION;
-		KDNode parent = root;
-		while(parent != null){
-			parentNode = parent;
-			lastAxis = axis;
-
-			if(point.getCoordinate(axis) < parent.point.getCoordinate(axis))
-				parent = parent.left;
-			else
-				parent = parent.right;
-
-			axis = getNextAxis(axis, comparators.length);
-		}
-
-		//insert point in the right place
-		final KDNode newNode = new KDNode(point);
-		if(parentNode == null)
-			root = newNode;
-		else if(point.getCoordinate(lastAxis) < parentNode.point.getCoordinate(lastAxis))
-			parentNode.left = newNode;
+		if(isEmpty())
+			root = new KDNode(point);
 		else
-			parentNode.right = newNode;
+			insert(root, point, dimensions);
 	}
 
 	/** NOTE: used by {@link HybridKDTree}. */
-	static void insert(KDNode parent, final Point point){
-		if(parent == null)
-			throw new IllegalArgumentException("Parent node cannot be null");
-
-		final int dimensions = point.getDimensions();
-
+	static void insert(KDNode parent, final Point point, final int dimensions){
 		//find parent node
 		KDNode parentNode = null;
 		//start from first dimension
@@ -305,35 +279,13 @@ public class KDTree implements SpatialTree{
 	public boolean contains(final Point point){
 		if(point == null)
 			return false;
-
-		final double precision = point.getDistanceCalculator()
-			.getPrecision();
-
-		int axis = STARTING_DIMENSION;
-		KDNode currentNode = root;
-		while(currentNode != null){
-			if(currentNode.point.equals(point, precision))
-				return true;
-
-			if(point.getCoordinate(axis) < currentNode.point.getCoordinate(axis))
-				currentNode = currentNode.left;
-			else
-				currentNode = currentNode.right;
-
-			axis = getNextAxis(axis, comparators.length);
-		}
-
-		return false;
+		return contains(root, point, comparators.length);
 	}
 
 	/** NOTE: used by {@link HybridKDTree}. */
-	static boolean contains(KDNode currentNode, final Point point){
-		if(point == null)
-			return false;
-
+	static boolean contains(KDNode currentNode, final Point point, final int dimensions){
 		final double precision = point.getDistanceCalculator()
 			.getPrecision();
-		final int dimensions = point.getDimensions();
 
 		int axis = STARTING_DIMENSION;
 		while(currentNode != null){
@@ -369,6 +321,11 @@ public class KDTree implements SpatialTree{
 		if(isEmpty() || point == null)
 			return null;
 
+		return nearestNeighbour(root, point, comparators.length);
+	}
+
+	/** NOTE: used by {@link HybridKDTree}. */
+	static Point nearestNeighbour(KDNode currentNode, final Point point, final int dimensions){
 		KDNode bestNode = null;
 		double bestDistanceSquare = Double.POSITIVE_INFINITY;
 		double precisionSquare = point.getDistanceCalculator()
@@ -376,31 +333,31 @@ public class KDTree implements SpatialTree{
 		precisionSquare *= precisionSquare;
 
 		final Stack<NodeAxisItem> stack = new Stack<>();
-		stack.push(new NodeAxisItem(root, 0));
+		stack.push(new NodeAxisItem(currentNode, 0));
 		while(!stack.isEmpty()){
 			final NodeAxisItem currentItem = stack.pop();
-			final KDNode currentNode = currentItem.node;
+			final KDNode node = currentItem.node;
 
-			final Point currentNodePoint = currentNode.point;
-			final double distanceSquare = euclideanDistanceSquare(point, currentNodePoint);
+			final Point nodePoint = node.point;
+			final double distanceSquare = euclideanDistanceSquare(point, nodePoint);
 			if(distanceSquare < bestDistanceSquare){
 				bestDistanceSquare = distanceSquare;
-				bestNode = currentNode;
+				bestNode = node;
 			}
 			if(bestDistanceSquare <= precisionSquare)
 				break;
 
-			final double coordinateDelta = currentNodePoint.getCoordinate(currentItem.axis) - point.getCoordinate(currentItem.axis);
-			final int axis = getNextAxis(currentItem.axis, comparators.length);
-			if(coordinateDelta > 0. && currentNode.left != null){
-				stack.push(new NodeAxisItem(currentNode.left, axis));
+			final double coordinateDelta = nodePoint.getCoordinate(currentItem.axis) - point.getCoordinate(currentItem.axis);
+			final int axis = getNextAxis(currentItem.axis, dimensions);
+			if(coordinateDelta > 0. && node.left != null){
+				stack.push(new NodeAxisItem(node.left, axis));
 				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
-					stack.push(new NodeAxisItem(currentNode.left, axis));
+					stack.push(new NodeAxisItem(node.left, axis));
 			}
-			else if(coordinateDelta <= 0. && currentNode.right != null){
-				stack.push(new NodeAxisItem(currentNode.right, axis));
+			else if(coordinateDelta <= 0. && node.right != null){
+				stack.push(new NodeAxisItem(node.right, axis));
 				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
-					stack.push(new NodeAxisItem(currentNode.right, axis));
+					stack.push(new NodeAxisItem(node.right, axis));
 			}
 		}
 
