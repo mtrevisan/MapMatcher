@@ -52,6 +52,7 @@ import java.util.Set;
  * @see <a href="https://github.com/karanchauhan/BPlus-Tree">Memory Resident B Plus Tree</a>
  * @see <a href="https://github.com/Morgan279/MemoryBasedBPlusTree">MemoryBasedBPlusTree</a>
  * @see <a href="https://www.baeldung.com/cs/b-trees-vs-btrees">The Difference Between B-trees and B+trees</a>
+ * @see <a href="https://arxiv.org/ftp/arxiv/papers/1209/1209.6495.pdf">Comparison of Advance Tree Data Structures</a>
  *
  * @param <E>	Key type.
  * @param <K>	Entry type.

@@ -54,6 +54,8 @@ import java.util.Stack;
  */
 public class RegionQuadTree implements RegionTree{
 
+	public static final int MAX_LEVELS_UNLIMITED = -1;
+
 	private static final int INDEX_SELF = -1;
 	private static final int INDEX_NORTH_WEST_CHILD = 0;
 	private static final int INDEX_NORTH_EAST_CHILD = 1;
@@ -67,20 +69,24 @@ public class RegionQuadTree implements RegionTree{
 	/** The actual regions this node contains. */
 	private final List<Region> regions;
 
-	private final QuadTreeOptions options;
 
-
-	public static RegionQuadTree create(final QuadTreeOptions options, final Region envelope){
-		return new RegionQuadTree(options, envelope);
+	/**
+	 * Creator of a node.
+	 *
+	 * @param envelope	The region envelope defining the node.
+	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
+	 * 	density-based splitting if greater than 1).
+	 * @return	The node.
+	 */
+	public static RegionQuadTree create(final Region envelope, final int maxRegionsPerNode){
+		return new RegionQuadTree(envelope, maxRegionsPerNode);
 	}
 
 
-	private RegionQuadTree(final QuadTreeOptions options, final Region envelope){
+	private RegionQuadTree(final Region envelope, final int maxRegionsPerNode){
 		this.envelope = envelope;
 		children = new RegionQuadTree[4];
-		regions = new ArrayList<>(options.maxRegionsPerNode);
-
-		this.options = options;
+		regions = new ArrayList<>(maxRegionsPerNode);
 	}
 
 
@@ -118,6 +124,32 @@ public class RegionQuadTree implements RegionTree{
 
 	@Override
 	public void insert(final Region region){
+		throw new UnsupportedOperationException("Use insert(Region, int) or insert(Region, int, int) instead");
+	}
+
+	/**
+	 * Insert a new node.
+	 *
+	 * @param region	The region to add.
+	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
+	 * 	density-based splitting if greater than 1).
+	 */
+	public void insert(final Region region, final int maxRegionsPerNode){
+		insert(region, maxRegionsPerNode, MAX_LEVELS_UNLIMITED);
+	}
+
+	/**
+	 * Insert a new node.
+	 *
+	 * @param region	The region to add.
+	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
+	 * 	density-based splitting if greater than 1).
+	 * @param maxLevels	The maximum number of levels.
+	 */
+	public void insert(final Region region, final int maxRegionsPerNode, final int maxLevels){
+		if(maxLevels < MAX_LEVELS_UNLIMITED)
+			throw new IllegalArgumentException("Invalid number of max levels: (" + maxLevels + ")");
+
 		final Stack<InsertItem> stack = new Stack<>();
 		stack.push(new InsertItem(this, BitCode.ofEmpty(), region));
 		while(!stack.isEmpty()){
@@ -145,9 +177,9 @@ public class RegionQuadTree implements RegionTree{
 			itemNode.regions.add(itemRegion);
 
 			//if number of regions is greater than the maximum, split the node
-			if(itemNode.regions.size() > options.maxRegionsPerNode
-					&& (options.maxLevels < 0 || itemCode.getLevel() < options.maxLevels)){
-				itemNode.split();
+			if(itemNode.regions.size() > maxRegionsPerNode
+					&& (maxLevels < 0 || itemCode.getLevel() < maxLevels)){
+				itemNode.split(maxRegionsPerNode);
 
 				//redistribute sub-regions to the right child where it belongs
 				int i = 0;
@@ -179,17 +211,17 @@ public class RegionQuadTree implements RegionTree{
 		}
 	}
 
-	private void split(){
+	private void split(final int maxRegionsPerNode){
 		final double x = envelope.getX();
 		final double y = envelope.getY();
 		final double width = envelope.getWidth() / 2.;
 		final double height = envelope.getHeight() / 2.;
 
 		//FIXME ge xé na manièra de kavar sti "Region.of"?
-		children[INDEX_NORTH_WEST_CHILD] = create(options, Region.of(x, y, width, height));
-		children[INDEX_NORTH_EAST_CHILD] = create(options, Region.of(x + width, y, width, height));
-		children[INDEX_SOUTH_WEST_CHILD] = create(options, Region.of(x, y + height, width, height));
-		children[INDEX_SOUTH_EAST_CHILD] = create(options, Region.of(x + width, y + height, width, height));
+		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, width, height), maxRegionsPerNode);
+		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + width, y, width, height), maxRegionsPerNode);
+		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + height, width, height), maxRegionsPerNode);
+		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + width, y + height, width, height), maxRegionsPerNode);
 	}
 
 	private static Region calculateRegion(final Region envelope, final int child){
