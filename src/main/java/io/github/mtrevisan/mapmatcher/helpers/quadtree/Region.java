@@ -245,14 +245,14 @@ public class Region implements Comparable<Region>{
 			height = other.getHeight();
 		}
 		else{
-			if(other.x < x)
-				x = other.x;
-			if(other.y < y)
-				y = other.y;
-			if(other.width > width)
-				width = other.width;
-			if(other.height > height)
-				height = other.height;
+			final double newLeft = Math.min(x, other.x);
+			final double newTop = Math.min(y, other.y);
+			final double newRight = Math.max(x + width, other.x + other.width);
+			final double newBottom = Math.max(y + height, other.y + other.height);
+			x = newLeft;
+			y = newTop;
+			width = newRight - newLeft;
+			height = newBottom - newTop;
 		}
 	}
 
