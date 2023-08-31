@@ -88,13 +88,17 @@ public class BitCode extends BitSet implements Comparable<BitCode>{
 
 	@Override
 	public int compareTo(final BitCode other){
-		if(equals(other))
-			return 0;
+		if(bitCount != other.bitCount)
+			return (bitCount - other.bitCount) >> 1;
 
 		final BitSet xor = clone();
 		xor.xor(other);
+		final int firstDifference = xor.nextSetBit(0);
+		if(bitCount == other.bitCount && firstDifference == -1)
+			return 0;
+
 		//compare the first different bit
-		return (get(xor.length() - 1)? 1: -1);
+		return (get(firstDifference)? 1: -1);
 	}
 
 }

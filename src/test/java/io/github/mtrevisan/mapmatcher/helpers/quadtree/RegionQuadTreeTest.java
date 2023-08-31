@@ -136,7 +136,7 @@ class RegionQuadTreeTest{
 		Assertions.assertEquals(3, tree.query(queriedRegion).size());
 		BitCode key = BitCode.ofEmpty();
 		//TODO extract key from queried region
-		Assertions.assertEquals(3, bptree.query(key).size());
+		Assertions.assertEquals(1, bptree.query(key).size());
 	}
 
 	@Test

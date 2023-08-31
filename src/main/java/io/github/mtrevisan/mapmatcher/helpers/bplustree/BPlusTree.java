@@ -58,6 +58,9 @@ import java.util.Set;
  */
 public class BPlusTree<K extends Comparable<K>, E>{
 
+	private static final String EMPTY_STRING = "";
+
+
 	private final int overflowBound;
 	private final int underflowBound;
 
@@ -188,7 +191,7 @@ public class BPlusTree<K extends Comparable<K>, E>{
 
 	@Override
 	public String toString(){
-		return (root != null? root.toString(): "");
+		return (root != null? root.toString(): EMPTY_STRING);
 	}
 
 
@@ -532,7 +535,7 @@ public class BPlusTree<K extends Comparable<K>, E>{
 			final int index = keyIndexUpperBound(key);
 			keys.add(index, key);
 			data.add(index, asSet(value));
-			return isOverflow()? split(): null;
+			return (isOverflow()? split(): null);
 		}
 
 		private BPlusTreeLeafNode split(){
