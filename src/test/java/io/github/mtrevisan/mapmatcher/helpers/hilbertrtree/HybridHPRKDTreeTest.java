@@ -22,46 +22,46 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.rtree;
+package io.github.mtrevisan.mapmatcher.helpers.hilbertrtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.kdtree.HybridKDTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.RegionQuadTree;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
-class HybridKDTreeTest{
+class HybridHPRKDTreeTest{
 
 	private static final GeometryFactory FACTORY_EUCLIDEAN = new GeometryFactory(new EuclideanCalculator());
 
 
 	@Test
 	void simple(){
-		int minObjects = 1;
-		int maxObjects = 10;
-		RTree quadTree0 = RTree.create();
-		quadTree0.insert(Region.of(10., 10., 10., 10.), minObjects, maxObjects);
-		quadTree0.insert(Region.of(5., 5., 10., 10.), minObjects, maxObjects);
-		quadTree0.insert(Region.of(25., 25., 10., 10.), minObjects, maxObjects);
-		quadTree0.insert(Region.of(5., 5., 12., 10.), minObjects, maxObjects);
-		quadTree0.insert(Region.of(5., 25., 20., 10.), minObjects, maxObjects);
-		quadTree0.insert(Region.of(25., 5., 10., 10.), minObjects, maxObjects);
-		quadTree0.insert(Region.of(2., 2., 2., 2.), minObjects, maxObjects);
+		int maxRegionsPerNode = 1;
+		RegionQuadTree quadTree0 = RegionQuadTree.create(Region.of(2., 2., 35., 35.));
+		quadTree0.insert(Region.of(10., 10., 10., 10.), maxRegionsPerNode);
+		quadTree0.insert(Region.of(5., 5., 10., 10.), maxRegionsPerNode);
+		quadTree0.insert(Region.of(25., 25., 10., 10.), maxRegionsPerNode);
+		quadTree0.insert(Region.of(5., 5., 12., 10.), maxRegionsPerNode);
+		quadTree0.insert(Region.of(5., 25., 20., 10.), maxRegionsPerNode);
+		quadTree0.insert(Region.of(25., 5., 10., 10.), maxRegionsPerNode);
+		quadTree0.insert(Region.of(2., 2., 2., 2.), maxRegionsPerNode);
 
-		RTree quadTree = RTree.create();
-		HybridKDTree.insert(quadTree, Region.of(10., 10., 10., 10.), minObjects, maxObjects);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 10., 10.), minObjects, maxObjects);
-		HybridKDTree.insert(quadTree, Region.of(25., 25., 10., 10.), minObjects, maxObjects);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 12., 10.), minObjects, maxObjects);
-		HybridKDTree.insert(quadTree, Region.of(5., 25., 20., 10.), minObjects, maxObjects);
-		HybridKDTree.insert(quadTree, Region.of(25., 5., 10., 10.), minObjects, maxObjects);
-		HybridKDTree.insert(quadTree, Region.of(2., 2., 2., 2.), minObjects, maxObjects);
+		RegionQuadTree quadTree = RegionQuadTree.create(Region.of(2., 2., 35., 35.));
+		HybridKDTree.insert(quadTree, Region.of(10., 10., 10., 10.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, Region.of(5., 5., 10., 10.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, Region.of(25., 25., 10., 10.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, Region.of(5., 5., 12., 10.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, Region.of(5., 25., 20., 10.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, Region.of(25., 5., 10., 10.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, Region.of(2., 2., 2., 2.), maxRegionsPerNode);
 		Region region = Region.of(5., 5., 5., 5.);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), minObjects, maxObjects);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), minObjects, maxObjects);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), minObjects, maxObjects);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), maxRegionsPerNode);
 
 		Assertions.assertTrue(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
 		Assertions.assertFalse(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));

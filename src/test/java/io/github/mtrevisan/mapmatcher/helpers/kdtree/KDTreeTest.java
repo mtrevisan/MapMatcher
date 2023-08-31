@@ -133,7 +133,7 @@ class KDTreeTest{
 
 		Collection<Point> points = tree.query(FACTORY.createPoint(12.1, 45.5),
 			FACTORY.createPoint(12.5, 45.9));
-		Assertions.assertEquals(33, points.size());
+		Assertions.assertEquals(37, points.size());
 
 		points = tree.query(FACTORY.createPoint(7.5925975, 43.8008445),
 			FACTORY.createPoint(7.5925975, 43.8008445));
@@ -233,6 +233,28 @@ class KDTreeTest{
 		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
 				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
 			new HashSet<>(points));
+	}
+
+	@Test
+	void stress(){
+		KDTree tree = KDTree.ofDimensions(2);
+		//create unbalanced tree
+		int size = 50_000;
+		for(int i = 0; i < size; i ++){
+			Point pt = FACTORY_EUCLIDEAN.createPoint(i, 0.);
+			tree.insert(pt);
+		}
+
+		for(int i = 0; i < size - 10; i ++){
+			Point min = FACTORY_EUCLIDEAN.createPoint(i, 0.);
+			Point max = FACTORY_EUCLIDEAN.createPoint(i + 10., 1.);
+			Assertions.assertEquals(11, tree.query(min, max).size());
+		}
+		for(int i = size - 10; i < size; i ++){
+			Point min = FACTORY_EUCLIDEAN.createPoint(i, 0.);
+			Point max = FACTORY_EUCLIDEAN.createPoint(i + 10., 1.);
+			Assertions.assertEquals(size - i, tree.query(min, max).size());
+		}
 	}
 
 }

@@ -29,20 +29,21 @@ import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.lang.reflect.Array;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 
 /**
  * A k-d Tree (short for k-dimensional Tree) is a space-partitioning data
  * structure for organizing points in a k-dimensional space.
- * <p>k-d trees are a
- * useful data structure for several applications, such as searches involving a
- * multidimensional search key (e.g. range searches and nearest neighbor
- * searches). k-d trees are a special case of binary space partitioning trees.
+ * <p>k-d trees are a useful data structure for several applications, such as
+ * searches involving a multidimensional search key (e.g. range searches and
+ * nearest neighbor searches). k-d trees are a special case of binary space
+ * partitioning trees.
  * </p>
  * <p>
  * Algorithm		Average								Worst case
@@ -121,7 +122,7 @@ public class KDTree implements SpatialTree{
 			nodes.add(node);
 		}
 
-		final Stack<BuildTreeParams> stack = new Stack<>();
+		final Deque<BuildTreeParams> stack = new ArrayDeque<>();
 		stack.push(BuildTreeParams.asRoot(nodes.size()));
 
 		while(!stack.isEmpty()){
@@ -248,8 +249,9 @@ public class KDTree implements SpatialTree{
 	}
 
 	/** NOTE: used by {@link HybridKDTree}. */
+	@SuppressWarnings("DataFlowIssue")
 	static void insert(KDNode parent, final Point point, final int dimensions){
-		//find parent node
+		//traverse the tree and find the parent node:
 		KDNode parentNode = null;
 		//start from first dimension
 		int lastAxis = STARTING_DIMENSION;
@@ -266,7 +268,7 @@ public class KDTree implements SpatialTree{
 			axis = getNextAxis(axis, dimensions);
 		}
 
-		//insert point in the right place
+		//add new loaf node to the tree
 		final KDNode newNode = new KDNode(point);
 		if(point.getCoordinate(lastAxis) < parentNode.point.getCoordinate(lastAxis))
 			parentNode.left = newNode;
@@ -332,7 +334,7 @@ public class KDTree implements SpatialTree{
 			.getPrecision();
 		precisionSquare *= precisionSquare;
 
-		final Stack<NodeAxisItem> stack = new Stack<>();
+		final Deque<NodeAxisItem> stack = new ArrayDeque<>();
 		stack.push(new NodeAxisItem(currentNode, 0));
 		while(!stack.isEmpty()){
 			final NodeAxisItem currentItem = stack.pop();
@@ -384,37 +386,29 @@ public class KDTree implements SpatialTree{
 	}
 
 
-	/**
-	 * Locate all points within the tree that fall within the given rectangle.
-	 *
-	 * @param rangeMin	Minimum point of the searching rectangle.
-	 * @param rangeMax	Maximum point of the searching rectangle.
-	 * @return	Collection of {@link Point}s that fall within the given envelope.
-	 */
 	@Override
 	public Collection<Point> query(final Point rangeMin, final Point rangeMax){
-		final Stack<Point> points = new Stack<>();
+		final Deque<Point> points = new ArrayDeque<>();
 		if(isEmpty())
 			return points;
 
-		int axis = STARTING_DIMENSION;
-
-		final Stack<KDNode> nodes = new Stack<>();
-		nodes.push(root);
-		while(!nodes.isEmpty()){
-			final KDNode node = nodes.pop();
-			final Point point = node.point;
+		final Deque<NodeAxisItem> stack = new ArrayDeque<>();
+		stack.push(new NodeAxisItem(root, STARTING_DIMENSION));
+		while(!stack.isEmpty()){
+			final NodeAxisItem item = stack.pop();
+			final KDNode node = item.node;
+			final int axis = item.axis;
 
 			//add contained points to points stack if inside the region
+			final Point point = node.point;
 			if(inside(point, rangeMin, rangeMax))
 				points.push(point);
 
+			final int nextAxis = getNextAxis(axis, comparators.length);
 			if(node.left != null && point.getCoordinate(axis) >= rangeMin.getCoordinate(axis))
-				nodes.push(node.left);
+				stack.push(new NodeAxisItem(node.left, nextAxis));
 			if(node.right != null && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis))
-				nodes.push(node.right);
-
-			axis = getNextAxis(axis, comparators.length);
+				stack.push(new NodeAxisItem(node.right, nextAxis));
 		}
 		return points;
 	}
@@ -428,9 +422,12 @@ public class KDTree implements SpatialTree{
 	 * @return	Whether the point lies inside the rectangle.
 	 */
 	private static boolean inside(final Point point, final Point rangeMin, final Point rangeMax){
-		for(int i = 0; i < point.getDimensions(); i ++)
-			if(point.getCoordinate(i) < rangeMin.getCoordinate(i) || point.getCoordinate(i) > rangeMax.getCoordinate(i))
+		for(int axis = 0; axis < point.getDimensions(); axis ++){
+			final double pointCoordinate = point.getCoordinate(axis);
+			if(pointCoordinate < rangeMin.getCoordinate(axis) || pointCoordinate > rangeMax.getCoordinate(axis))
 				return false;
+		}
+
 		return true;
 	}
 
