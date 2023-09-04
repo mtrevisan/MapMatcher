@@ -85,6 +85,64 @@ out geom;
 //out body;
 //>;
 //out skel qt;
+
+
+== list of buildings ==
+[out:json];
+area[name="Lozzo di Cadore"]->.searchArea;
+(
+  nwr["building"](area.searchArea);
+  nwr["addr:housenumber"](area.searchArea);
+);
+out center;
+out tags;
+out qt;
+
+== list of streets ==
+[out:json];
+area["ISO3166-1"="IT"]->.state;
+area["ISO3166-2"="IT-34"]->.region;
+area[name="Lozzo di Cadore"]->.searchArea;
+way(area.state)(area.region)(area.searchArea)["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$"];
+(._;>;);
+out qt;
+
+== outline of comuni ==
+[out:json];
+area["ISO3166-1"="IT"]->.state;
+area["ISO3166-2"="IT-34"]->.region;
+area["name"="Treviso"]["admin_level"="6"]->.city;
+rel(area.state)(area.region)(area.city)["admin_level"="8"];
+out geom;
+
+== outline of provincia ==
+[out:json];
+area["ISO3166-1"="IT"]->.state;
+area["ISO3166-2"="IT-34"]->.region;
+rel(area.state)(area.region)["admin_level"="6"];
+out geom;
+
+== outline of region ==
+[out:json];
+area["ISO3166-1"="IT"]->.state;
+rel(area.state)["admin_level"="4"];
+out geom;
+
+== outline of state ==
+[out:json];
+area["ISO3166-1"="IT"]->.state;
+rel(area.state)["admin_level"="2"];
+out geom;
+
+
+https://openaddresses.io/
+
+	== con outline ==
+	out body;
+	>;
+	out skel qt;
+
+
 	*/
 	//simplify and create roads and toll-booths files
 	public void main(String[] args) throws IOException{
