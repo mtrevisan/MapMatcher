@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.Stack;
 
 
-public class RTree implements RegionTree{
+public class RTree implements RegionTree<RTreeOptions>{
 
 	private RNode root;
 
@@ -55,12 +55,7 @@ public class RTree implements RegionTree{
 
 
 	@Override
-	public void insert(final Region region, final int minObjects){
-		throw new UnsupportedOperationException("Call insert(Region, int, int) instead");
-	}
-
-	@Override
-	public void insert(final Region region, final int minObjects, final int maxObjects){
+	public void insert(final Region region, final RTreeOptions options){
 		final RNode node = RNode.createLeaf(region);
 		if(isEmpty())
 			root = node;
@@ -68,12 +63,12 @@ public class RTree implements RegionTree{
 			final RNode parent = chooseLeaf(root, node);
 			parent.children.add(node);
 			node.parent = parent;
-			if(parent.children.size() > maxObjects){
-				final RNode[] splits = splitNode(parent, minObjects);
-				adjustTree(splits[0], splits[1], minObjects, maxObjects);
+			if(parent.children.size() > options.maxObjects){
+				final RNode[] splits = splitNode(parent, options.minObjects);
+				adjustTree(splits[0], splits[1], options.minObjects, options.maxObjects);
 			}
 			else
-				adjustTree(parent, null, minObjects, maxObjects);
+				adjustTree(parent, null, options.minObjects, options.maxObjects);
 		}
 	}
 
@@ -259,7 +254,7 @@ public class RTree implements RegionTree{
 
 
 	@Override
-	public boolean delete(final Region region, final int minObjects){
+	public boolean delete(final Region region, final RTreeOptions options){
 		final RNode leaf = findLeaf(root, region);
 		boolean isDeleted = false;
 		if(leaf != null){
@@ -269,14 +264,9 @@ public class RTree implements RegionTree{
 					break;
 				}
 			if(isDeleted)
-				condenseTree(leaf, minObjects);
+				condenseTree(leaf, options);
 		}
 		return isDeleted;
-	}
-
-	@Override
-	public boolean delete(final Region region, final int minObjects, final int unused){
-		throw new UnsupportedOperationException("Call delete(Region, int) instead");
 	}
 
 	private static RNode findLeaf(final RNode parent, final Region region){
@@ -295,14 +285,14 @@ public class RTree implements RegionTree{
 		return null;
 	}
 
-	private void condenseTree(RNode remove, final int minObjects){
+	private void condenseTree(RNode remove, final RTreeOptions options){
 		final Set<RNode> reprocessedNodes = new HashSet<>();
 		while(remove != root){
-			if(remove.leaf && remove.children.size() < minObjects){
+			if(remove.leaf && remove.children.size() < options.minObjects){
 				reprocessedNodes.addAll(remove.children);
 				remove.parent.children.remove(remove);
 			}
-			else if(!remove.leaf && remove.children.size() < minObjects){
+			else if(!remove.leaf && remove.children.size() < options.minObjects){
 				final LinkedList<RNode> toVisit = new LinkedList<>(remove.children);
 				while(!toVisit.isEmpty()){
 					final RNode node = toVisit.pop();
@@ -319,7 +309,7 @@ public class RTree implements RegionTree{
 			remove = remove.parent;
 		}
 		for(final RNode eNode : reprocessedNodes)
-			insert(eNode.region, minObjects);
+			insert(eNode.region, options);
 	}
 
 	private static void tighten(final RNode parent){

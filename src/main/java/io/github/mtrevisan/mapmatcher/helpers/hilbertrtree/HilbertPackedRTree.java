@@ -26,9 +26,11 @@ package io.github.mtrevisan.mapmatcher.helpers.hilbertrtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 
@@ -63,6 +65,11 @@ public class HilbertPackedRTree<T>{
 	private static final int ENV_SIZE = 4;
 	private static final int HILBERT_LEVEL = 12;
 	private static final int DEFAULT_NODE_CAPACITY = 16;
+
+	private static final int NODE_BOUND_X_INDEX = 0;
+	private static final int NODE_BOUND_Y_INDEX = 1;
+	private static final int NODE_BOUND_WIDTH_INDEX = 2;
+	private static final int NODE_BOUND_HEIGHT_INDEX = 3;
 
 	private final List<Item<T>> items = new ArrayList<>(0);
 	private final int nodeCapacity;
@@ -136,7 +143,7 @@ public class HilbertPackedRTree<T>{
 
 		layerStartIndex = computeLayerIndices(items.size(), nodeCapacity);
 		//allocate storage
-		final int nodeCount = layerStartIndex[layerStartIndex.length - 1] / 4;
+		final int nodeCount = layerStartIndex[layerStartIndex.length - 1] >> 2;
 		nodeBounds = createBoundsArray(nodeCount);
 
 		//compute tree nodes
@@ -183,20 +190,20 @@ public class HilbertPackedRTree<T>{
 	}
 
 	private static double[] createBoundsArray(final int size){
-		final double[] a = new double[4 * size];
+		final double[] a = new double[size << 2];
 		for(int i = 0; i < size; i ++){
-			final int index = 4 * i;
-			a[index] = Double.MAX_VALUE;
-			a[index + 1] = Double.MAX_VALUE;
-			a[index + 2] = - Double.MAX_VALUE;
-			a[index + 3] = - Double.MAX_VALUE;
+			final int index = i << 2;
+			a[index + NODE_BOUND_X_INDEX] = Double.NaN;
+			a[index + NODE_BOUND_Y_INDEX] = Double.NaN;
+			a[index + NODE_BOUND_WIDTH_INDEX] = - Double.NaN;
+			a[index + NODE_BOUND_HEIGHT_INDEX] = - Double.NaN;
 		}
 		return a;
 	}
 
 	private void computeLeafNodes(final int layerSize){
 		for(int i = 0; i < layerSize; i += ENV_SIZE)
-			computeLeafNodeBounds(i, nodeCapacity * i / 4);
+			computeLeafNodeBounds(i, (nodeCapacity * i) >> 2);
 	}
 
 	private void computeLeafNodeBounds(final int nodeIndex, final int blockStart){
@@ -223,23 +230,33 @@ public class HilbertPackedRTree<T>{
 
 	private void computeNodeBounds(final int nodeIndex, final int blockStart, final int nodeMaxIndex){
 		for(int i = 0; i <= nodeCapacity; i ++){
-			final int index = blockStart + 4 * i;
+			final int index = blockStart + (i << 2);
 			if(index >= nodeMaxIndex)
 				break;
 
-			updateNodeBounds(nodeIndex, nodeBounds[index], nodeBounds[index + 1], nodeBounds[index + 2], nodeBounds[index + 3]);
+			updateNodeBounds(nodeIndex,
+				nodeBounds[index + NODE_BOUND_X_INDEX], nodeBounds[index + NODE_BOUND_Y_INDEX],
+				nodeBounds[index + NODE_BOUND_WIDTH_INDEX], nodeBounds[index + NODE_BOUND_HEIGHT_INDEX]);
 		}
 	}
 
 	private void updateNodeBounds(final int nodeIndex, final double x, final double y, final double width, final double height){
-		if(x < nodeBounds[nodeIndex])
-			nodeBounds[nodeIndex] = x;
-		if(y < nodeBounds[nodeIndex + 1])
-			nodeBounds[nodeIndex + 1] = y;
-		if(width > nodeBounds[nodeIndex + 2])
-			nodeBounds[nodeIndex + 2] = width;
-		if(height > nodeBounds[nodeIndex + 3])
-			nodeBounds[nodeIndex + 3] = height;
+		if(Double.isNaN(nodeBounds[nodeIndex + NODE_BOUND_X_INDEX])){
+			nodeBounds[nodeIndex + NODE_BOUND_X_INDEX] = x;
+			nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX] = y;
+			nodeBounds[nodeIndex + NODE_BOUND_WIDTH_INDEX] = width;
+			nodeBounds[nodeIndex + NODE_BOUND_HEIGHT_INDEX] = height;
+		}
+		else{
+			final double newLeft = Math.min(nodeBounds[nodeIndex + NODE_BOUND_X_INDEX], x);
+			final double newTop = Math.min(nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX], y);
+			final double newRight = Math.max(nodeBounds[nodeIndex + NODE_BOUND_X_INDEX] + nodeBounds[nodeIndex + NODE_BOUND_WIDTH_INDEX], x + width);
+			final double newBottom = Math.max(nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX] + nodeBounds[nodeIndex + NODE_BOUND_HEIGHT_INDEX], y + height);
+			nodeBounds[nodeIndex + NODE_BOUND_X_INDEX] = newLeft;
+			nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX] = newTop;
+			nodeBounds[nodeIndex + NODE_BOUND_WIDTH_INDEX] = newRight - newLeft;
+			nodeBounds[nodeIndex + NODE_BOUND_HEIGHT_INDEX] = newBottom - newTop;
+		}
 	}
 
 
@@ -278,24 +295,9 @@ public class HilbertPackedRTree<T>{
 
 			//visit the item if its region intersects search region
 			final Item<T> item = items.get(itemIndex);
-			if(intersects(item.getRegion(), region))
+			if(item.getRegion().intersects(region))
 				visitor.visitItem(item.getItem());
 		}
-	}
-
-	/**
-	 * Tests whether two region intersect.
-	 * Avoids the null check in {@link Region#intersects(Region)}.
-	 *
-	 * @param region1	A region.
-	 * @param region2	A region.
-	 * @return	Whether the regions intersect.
-	 */
-	private static boolean intersects(final Region region1, final Region region2){
-		return !(region2.getX() > region1.getX() + region1.getWidth()
-			|| region2.getX() + region2.getWidth() < region1.getX()
-			|| region2.getY() > region1.getY() + region1.getHeight()
-			|| region2.getY() + region2.getHeight() < region1.getY());
 	}
 
 	private void queryTopLayer(final Region region, final ItemVisitor<T> visitor){
@@ -313,58 +315,64 @@ public class HilbertPackedRTree<T>{
 	}
 
 	private void queryNode(final int layerIndex, final int nodeOffset, final Region region, final ItemVisitor<T> visitor){
-		final int layerStart = layerStartIndex[layerIndex];
+		int layerStart = layerStartIndex[layerIndex];
 		final int nodeIndex = layerStart + nodeOffset;
 		if(!intersects(nodeIndex, region))
 			return;
 
-		if(layerIndex == 0){
-			final int childNodesOffset = nodeOffset / ENV_SIZE * nodeCapacity;
-			queryItems(childNodesOffset, region, visitor);
-		}
-		else{
-			final int childNodesOffset = nodeOffset * nodeCapacity;
-			queryNodeChildren(layerIndex - 1, childNodesOffset, region, visitor);
+		final Deque<Integer> stack = new ArrayDeque<>();
+		stack.push(layerIndex);
+		stack.push(nodeOffset);
+		while(!stack.isEmpty()){
+			final int currentOffset = stack.pop();
+			final int currentIndex = stack.pop();
+
+			if(currentIndex == 0){
+				final int childNodesOffset = currentOffset / ENV_SIZE * nodeCapacity;
+				queryItems(childNodesOffset, region, visitor);
+			}
+			else{
+				final int childNodesOffset = currentOffset * nodeCapacity;
+				//query node children
+				layerStart = layerStartIndex[currentIndex - 1];
+				final int layerEnd = layerStartIndex[currentIndex];
+				for(int i = 0; i < nodeCapacity; i ++){
+					final int childNodeOffset = childNodesOffset + ENV_SIZE * i;
+					//don't query past layer end
+					if(layerStart + childNodeOffset >= layerEnd)
+						break;
+
+					stack.push(currentIndex - 1);
+					stack.push(childNodeOffset);
+				}
+			}
 		}
 	}
 
 	private boolean intersects(final int nodeIndex, final Region region){
-		final boolean isBeyond = (
-			region.getX() + region.getWidth() < nodeBounds[nodeIndex]
-			|| region.getY() + region.getHeight() < nodeBounds[nodeIndex + 1]
-			|| region.getX() > nodeBounds[nodeIndex] + nodeBounds[nodeIndex + 2]
-			|| region.getY() > nodeBounds[nodeIndex + 1] + nodeBounds[nodeIndex + 3]);
-		return !isBeyond;
-	}
+		return !(region.getX() + region.getWidth() < nodeBounds[nodeIndex + NODE_BOUND_X_INDEX]
+			|| region.getY() + region.getHeight() < nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX]
+			|| region.getX() > nodeBounds[nodeIndex + NODE_BOUND_X_INDEX] + nodeBounds[nodeIndex + NODE_BOUND_WIDTH_INDEX]
+			|| region.getY() > nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX] + nodeBounds[nodeIndex + NODE_BOUND_HEIGHT_INDEX]);
 
-	private void queryNodeChildren(final int layerIndex, final int blockOffset, final Region region, final ItemVisitor<T> visitor){
-		final int layerStart = layerStartIndex[layerIndex];
-		final int layerEnd = layerStartIndex[layerIndex + 1];
-		for(int i = 0; i < nodeCapacity; i ++){
-			final int nodeOffset = blockOffset + ENV_SIZE * i;
-			//don't query past layer end
-			if(layerStart + nodeOffset >= layerEnd)
-				break;
-
-			queryNode(layerIndex, nodeOffset, region, visitor);
-		}
 	}
 
 
-	/**
-	 * Gets the extents of the internal index nodes,
-	 *
-	 * @return	A list of the internal node extents.
-	 */
-	public Region[] getBounds(){
-		final int numNodes = nodeBounds.length / 4;
-		final Region[] bounds = new Region[numNodes];
-		//create from largest to smallest
-		for(int i = numNodes - 1; i >= 0; i --){
-			final int boundIndex = 4 * i;
-			bounds[i] = Region.of(nodeBounds[boundIndex], nodeBounds[boundIndex + 1], nodeBounds[boundIndex + 2], nodeBounds[boundIndex + 3]);
-		}
-		return bounds;
-	}
+//	/**
+//	 * Gets the extents of the internal index nodes,
+//	 *
+//	 * @return	A list of the internal node extents.
+//	 */
+//	public Region[] getBounds(){
+//		final int numNodes = nodeBounds.length >> 2;
+//		final Region[] bounds = new Region[numNodes];
+//		//create from largest to smallest
+//		for(int i = numNodes - 1; i >= 0; i --){
+//			final int boundIndex = i << 2;
+//			bounds[i] = Region.of(nodeBounds[boundIndex + NODE_BOUND_X_INDEX], nodeBounds[boundIndex + NODE_BOUND_Y_INDEX],
+//				nodeBounds[boundIndex + NODE_BOUND_WIDTH_INDEX], nodeBounds[boundIndex + NODE_BOUND_HEIGHT_INDEX]);
+//		}
+//		return bounds;
+//	}
 
 }

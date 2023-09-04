@@ -25,11 +25,12 @@
 package io.github.mtrevisan.mapmatcher.helpers;
 
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 
 import java.util.Collection;
 
 
-public interface RegionTree{
+public interface RegionTree<O extends TreeOptions>{
 
 	boolean isEmpty();
 
@@ -38,41 +39,18 @@ public interface RegionTree{
 	 * Add the region to the tree (if it is not already in the tree) with unlimited levels.
 	 *
 	 * @param region	The region to add.
-	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
-	 * 	density-based splitting if greater than 1).
+	 * @param options	The tree options (used during construction phase).
 	 */
-	void insert(Region region, int maxRegionsPerNode);
-
-	/**
-	 * Add the region to the tree (if it is not already in the tree) with unlimited levels.
-	 *
-	 * @param region	The region to add.
-	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
-	 * 	density-based splitting if greater than 1).
-	 * @param maxLevels	The maximum number of levels. A number less than zero means infinite levels.
-	 */
-	void insert(Region region, int maxRegionsPerNode, int maxLevels);
+	void insert(Region region, O options);
 
 	/**
 	 * Delete the region from the tree.
 	 *
 	 * @param region	The region to delete.
-	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
-	 * 	density-based splitting if greater than 1). Used during re-balancing of the tree.
+	 * @param options	The tree options (used during re-balancing phase).
 	 * @return	Whether the region was deleted.
 	 */
-	boolean delete(Region region, int maxRegionsPerNode);
-
-	/**
-	 * Delete the region from the tree.
-	 *
-	 * @param region	The region to delete.
-	 * @param maxRegionsPerNode	The maximum number of regions for this node before splitting (coverage-based splitting if 1,
-	 * 	density-based splitting if greater than 1). Used during re-balancing of the tree.
-	 * @param maxLevels	The maximum number of levels. A number less than zero means infinite levels. Used during re-balancing of the tree.
-	 * @return	Whether the region was deleted.
-	 */
-	boolean delete(Region region, int maxRegionsPerNode, int maxLevels);
+	boolean delete(Region region, O options);
 
 	/**
 	 * Assess the given region intersects the tree.

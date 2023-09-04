@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,41 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.hprtree;
+package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
-import io.github.mtrevisan.mapmatcher.spatial.Envelope;
-
-
-class HilbertEncoder{
-
-	private final int level;
-	private final double minX;
-	private final double minY;
-	private final double strideX;
-	private final double strideY;
-
-
-	HilbertEncoder(final int level, final Envelope extent){
-		this.level = level;
-		final int hSide = (int)Math.pow(2, level) - 1;
-
-		minX = extent.getMinX();
-		final double extentX = extent.getWidth();
-		strideX = extentX / hSide;
-
-		minY = extent.getMinX();
-		final double extentY = extent.getHeight();
-		strideY = extentY / hSide;
-	}
-
-	int encode(final Envelope env){
-		final double middleX = env.getWidth() / 2 + env.getMinX();
-		final int x = (int)((middleX - minX) / strideX);
-
-		final double middleY = env.getHeight() / 2 + env.getMinY();
-		final int y = (int)((middleY - minY) / strideY);
-
-		return HilbertCode.encode(level, x, y);
-	}
-
+public interface TreeOptions{
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -22,16 +22,41 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.hprtree;
+package io.github.mtrevisan.mapmatcher.helpers.rtree;
 
 
-interface ItemVisitor<T>{
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 
-	/**
-	 * Visits an item in the index.
-	 *
-	 * @param item the index item to be visited
-	 */
-	void visitItem(T item);
+
+public class RTreeOptions implements TreeOptions{
+
+	int minObjects = 1;
+	int maxObjects = 10;
+
+
+	public static RTreeOptions withDefault(){
+		return new RTreeOptions();
+	}
+
+	public RTreeOptions(){}
+
+
+	public RTreeOptions withMinObjects(final int minObjects){
+		if(minObjects < 1)
+			throw new IllegalArgumentException("Minimum number of objects for this node must be greater than zero");
+
+		this.minObjects = minObjects;
+
+		return this;
+	}
+
+	public RTreeOptions withMaxObjects(final int maxObjects){
+		if(maxObjects < 1)
+			throw new IllegalArgumentException("Maximum number of objects for this node must be greater than zero");
+
+		this.maxObjects = maxObjects;
+
+		return this;
+	}
 
 }

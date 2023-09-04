@@ -53,7 +53,7 @@ public class PathSummaryCreator{
 
 		if(start != middle && fromMidToStart == null
 				|| end != middle && fromEndToMid == null)
-			return null;
+			return new Edge[0];
 
 		final int midToStartSize = (fromMidToStart != null? fromMidToStart.length: 0);
 		final int endToMidSize = (fromEndToMid != null? fromEndToMid.length: 0);

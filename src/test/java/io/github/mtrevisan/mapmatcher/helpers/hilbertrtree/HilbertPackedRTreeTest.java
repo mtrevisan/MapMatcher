@@ -25,7 +25,6 @@
 package io.github.mtrevisan.mapmatcher.helpers.hilbertrtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
-import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import io.github.mtrevisan.mapmatcher.spatial.Polyline;
@@ -368,17 +367,17 @@ out geom;
 		HilbertPackedRTree<Polyline> tree = new HilbertPackedRTree<>();
 		Set<Polyline> highways = extractPolylines(new File(FILENAME_ROADS_SIMPLIFIED));
 		for(Polyline polyline : highways){
-			Envelope bb = polyline.getBoundingBox();
-			Region region = Region.of(bb.getMinX(), bb.getMinY(), bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
+			Region bb = polyline.getBoundingBox();
+			Region region = Region.of(bb.getX(), bb.getY(), bb.getWidth(), bb.getHeight());
 			tree.insert(region, polyline);
 		}
 
 		List<Polyline> roads = tree.query(Region.of(
-			FACTORY.createPoint(9.01670, 45.60973),
-			FACTORY.createPoint(9.40355, 45.33115)
+			FACTORY.createPoint(9.01670, 45.33115),
+			FACTORY.createPoint(9.40355, 45.60973)
 		));
 
-		Assertions.assertEquals(1178, roads.size());
+		Assertions.assertEquals(4113, roads.size());
 	}
 
 	@Test
@@ -418,8 +417,8 @@ out geom;
 		geometries.add(factory.createPolyline(factory.createPoint(2., 2.), factory.createPoint(4., 4.)));
 		HilbertPackedRTree<String> t = new HilbertPackedRTree<>(7);
 		for(int i = 0; i < geometries.size(); i ++){
-			Envelope bb = geometries.get(i).getBoundingBox();
-			Region region = Region.of(bb.getMinX(), bb.getMinY(), bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
+			Region bb = geometries.get(i).getBoundingBox();
+			Region region = Region.of(bb.getX(), bb.getY(), bb.getWidth(), bb.getHeight());
 			t.insert(region, String.valueOf(i + 1));
 		}
 
@@ -435,8 +434,8 @@ out geom;
 		geometries.add(factory.createPolyline(factory.createPoint(20., 20.), factory.createPoint(30., 30.)));
 		HilbertPackedRTree<Object> t = new HilbertPackedRTree<>(3);
 		for(Polyline g : geometries){
-			Envelope bb = g.getBoundingBox();
-			Region region = Region.of(bb.getMinX(), bb.getMinY(), bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
+			Region bb = g.getBoundingBox();
+			Region region = Region.of(bb.getX(), bb.getY(), bb.getWidth(), bb.getHeight());
 			t.insert(region, new Object());
 		}
 

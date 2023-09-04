@@ -29,9 +29,9 @@ import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.graph.NearNodeMergeGraph;
 import io.github.mtrevisan.mapmatcher.graph.Node;
 import io.github.mtrevisan.mapmatcher.helpers.filters.GPSPositionSpeedFilter;
-import io.github.mtrevisan.mapmatcher.helpers.hprtree.HilbertPackedRTree;
+import io.github.mtrevisan.mapmatcher.helpers.hilbertrtree.HilbertPackedRTree;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
-import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -361,12 +361,12 @@ public class PathHelper{
 			//construct the envelope
 			final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
 			final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
-			final Envelope envelope = Envelope.of(northEast, southWest);
+			final Region envelope = Region.of(northEast, southWest);
 
 			//skip observations inside current envelope
 			do{
 				currentObservationIndex = PathHelper.extractNextObservation(observations, currentObservationIndex + 1);
-			}while(currentObservationIndex >= 0 && envelope.intersects(observations[currentObservationIndex]));
+			}while(currentObservationIndex >= 0 && envelope.contains(observations[currentObservationIndex]));
 
 			//add observed edges to final set
 			observedEdges.addAll(tree.query(envelope));
@@ -401,7 +401,7 @@ public class PathHelper{
 
 				final Point northEast = GeodeticHelper.destination(observation, 45., threshold);
 				final Point southWest = GeodeticHelper.destination(observation, 225., threshold);
-				final Envelope envelope = Envelope.of(northEast, southWest);
+				final Region envelope = Region.of(northEast, southWest);
 
 				final List<Polyline> edges = tree.query(envelope);
 				double minDistance = Double.POSITIVE_INFINITY;

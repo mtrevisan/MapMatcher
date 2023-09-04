@@ -25,8 +25,8 @@
 package io.github.mtrevisan.mapmatcher.graph;
 
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
-import io.github.mtrevisan.mapmatcher.helpers.hprtree.HilbertPackedRTree;
-import io.github.mtrevisan.mapmatcher.spatial.Envelope;
+import io.github.mtrevisan.mapmatcher.helpers.hilbertrtree.HilbertPackedRTree;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -173,7 +173,7 @@ public class NearNodeMergeGraph implements Graph{
 				}
 
 		if(tree != null){
-			final Envelope geoBoundingBox = path.getBoundingBox();
+			final Region geoBoundingBox = path.getBoundingBox();
 			tree.insert(geoBoundingBox, path);
 		}
 
@@ -258,7 +258,7 @@ public class NearNodeMergeGraph implements Graph{
 
 		final Point northEast = GeodeticHelper.destination(point, 45., threshold);
 		final Point southWest = GeodeticHelper.destination(point, 225., threshold);
-		final Envelope envelope = Envelope.of(northEast, southWest);
+		final Region envelope = Region.of(northEast, southWest);
 		final List<Polyline> polylines = tree.query(envelope);
 
 		final List<Edge> edges = new ArrayList<>(0);

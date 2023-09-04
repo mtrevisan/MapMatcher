@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.TopologyCalculator;
 
 import java.io.Serial;
@@ -140,7 +141,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 		return points.length;
 	}
 
-	public Envelope getBoundingBox(){
+	public Region getBoundingBox(){
 		double minLatitude = Double.POSITIVE_INFINITY;
 		double minLongitude = Double.POSITIVE_INFINITY;
 		double maxLatitude = Double.NEGATIVE_INFINITY;
@@ -163,7 +164,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 			else if(point.getY() > maxLatitude)
 				maxLatitude = point.getY();
 		}
-		return Envelope.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
+		return Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 	}
 
 	public boolean isClosed(){

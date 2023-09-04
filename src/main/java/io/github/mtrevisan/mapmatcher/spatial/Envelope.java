@@ -24,8 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial;
 
-import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
-
 import java.util.Objects;
 
 
@@ -40,7 +38,6 @@ public class Envelope implements Comparable<Envelope>{
 	/** The maximum y-coordinate. */
 	private double maxY;
 
-	private SpatialNode node;
 	private boolean boundary;
 
 
@@ -169,14 +166,6 @@ public class Envelope implements Comparable<Envelope>{
 		maxX = -1.;
 		minY = 0.;
 		maxY = -1.;
-	}
-
-	public SpatialNode getNode(){
-		return node;
-	}
-
-	public void setNode(final SpatialNode node){
-		this.node = node;
 	}
 
 	public boolean isBoundary(){

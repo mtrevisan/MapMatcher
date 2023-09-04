@@ -53,9 +53,7 @@ import java.util.Stack;
  * quad k-d
  * https://core.ac.uk/download/pdf/41827175.pdf
  */
-public class RegionQuadTree implements RegionTree{
-
-	public static final int MAX_LEVELS_UNLIMITED = -1;
+public class QuadTree implements RegionTree<QuadTreeOptions>{
 
 	private static final int INDEX_SELF = -1;
 	private static final int INDEX_NORTH_WEST_CHILD = 0;
@@ -66,7 +64,7 @@ public class RegionQuadTree implements RegionTree{
 	/** The region covered by this node. */
 	private final Region envelope;
 	/** The list of children. */
-	private final RegionQuadTree[] children;
+	private final QuadTree[] children;
 	/** The actual regions this node contains. */
 	private List<Region> regions;
 
@@ -77,14 +75,14 @@ public class RegionQuadTree implements RegionTree{
 	 * @param envelope	The region envelope defining the node.
 	 * @return	The node.
 	 */
-	public static RegionQuadTree create(final Region envelope){
-		return new RegionQuadTree(envelope);
+	public static QuadTree create(final Region envelope){
+		return new QuadTree(envelope);
 	}
 
 
-	private RegionQuadTree(final Region envelope){
+	private QuadTree(final Region envelope){
 		this.envelope = envelope;
-		children = new RegionQuadTree[4];
+		children = new QuadTree[4];
 	}
 
 
@@ -127,20 +125,15 @@ public class RegionQuadTree implements RegionTree{
 //	}
 
 	@Override
-	public void insert(final Region region, final int maxRegionsPerNode){
-		insert(region, maxRegionsPerNode, MAX_LEVELS_UNLIMITED);
-	}
-
-	@Override
-	public void insert(final Region region, final int maxRegionsPerNode, final int maxLevels){
-		if(maxLevels < MAX_LEVELS_UNLIMITED)
-			throw new IllegalArgumentException("Invalid number of max levels: (" + maxLevels + ")");
+	public void insert(final Region region, final QuadTreeOptions options){
+		if(options.maxLevels < QuadTreeOptions.MAX_LEVELS_UNLIMITED)
+			throw new IllegalArgumentException("Invalid number of max levels: (" + options.maxLevels + ")");
 
 		final Stack<InsertItem> stack = new Stack<>();
 		stack.push(new InsertItem(this, BitCode.ofEmpty(), region));
 		while(!stack.isEmpty()){
 			final InsertItem item = stack.pop();
-			final RegionQuadTree itemNode = item.node;
+			final QuadTree itemNode = item.node;
 			final BitCode itemCode = item.code;
 			final Region itemRegion = item.region;
 
@@ -161,12 +154,12 @@ public class RegionQuadTree implements RegionTree{
 			itemRegion.setCode(itemCode);
 			//add the region to the list of regions of the current node
 			if(itemNode.regions == null)
-				itemNode.regions = new ArrayList<>(maxRegionsPerNode);
+				itemNode.regions = new ArrayList<>(options.maxRegionsPerNode);
 			itemNode.regions.add(itemRegion);
 
 			//if number of regions is greater than the maximum, split the node
-			if(itemNode.regions.size() > maxRegionsPerNode
-					&& (maxLevels < 0 || itemCode.getLevel() < maxLevels)){
+			if(itemNode.regions.size() > options.maxRegionsPerNode
+					&& (options.maxLevels < 0 || itemCode.getLevel() < options.maxLevels)){
 				if(!itemNode.hasChildren())
 					itemNode.split();
 
@@ -189,11 +182,11 @@ public class RegionQuadTree implements RegionTree{
 	}
 
 	private static class InsertItem{
-		final RegionQuadTree node;
+		final QuadTree node;
 		final BitCode code;
 		final Region region;
 
-		private InsertItem(final RegionQuadTree node, final BitCode code, final Region region){
+		private InsertItem(final QuadTree node, final BitCode code, final Region region){
 			this.node = node;
 			this.code = code;
 			this.region = region;
@@ -206,7 +199,6 @@ public class RegionQuadTree implements RegionTree{
 		final double width = envelope.getWidth() / 2.;
 		final double height = envelope.getHeight() / 2.;
 
-		//FIXME ge xé na manièra de kavar sti "Region.of"?
 		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, width, height));
 		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + width, y, width, height));
 		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + height, width, height));
@@ -301,13 +293,8 @@ public class RegionQuadTree implements RegionTree{
 //	}
 
 	@Override
-	public boolean delete(final Region region, final int maxRegionsPerNode){
-		return delete(region, maxRegionsPerNode, MAX_LEVELS_UNLIMITED);
-	}
-
-	@Override
-	public boolean delete(final Region region, final int maxRegionsPerNode, final int maxLevels){
-		RegionQuadTree currentNode = this;
+	public boolean delete(final Region region, final QuadTreeOptions options){
+		QuadTree currentNode = this;
 		while(currentNode != null){
 			final int index = getChildIndex(currentNode.envelope, region);
 			if(index == INDEX_SELF || currentNode.children[index] == null){
@@ -323,7 +310,7 @@ public class RegionQuadTree implements RegionTree{
 							final List<Region> descendants = getAllDescendants(currentNode);
 							clear(currentNode);
 							for(final Region descendant : descendants)
-								currentNode.insert(descendant, maxRegionsPerNode, maxLevels);
+								currentNode.insert(descendant, options);
 						}
 
 						return true;
@@ -338,26 +325,26 @@ public class RegionQuadTree implements RegionTree{
 		return false;
 	}
 
-	private static List<Region> getAllDescendants(final RegionQuadTree node){
+	private static List<Region> getAllDescendants(final QuadTree node){
 		final List<Region> descendants = new ArrayList<>();
-		final Stack<RegionQuadTree> stack = new Stack<>();
+		final Stack<QuadTree> stack = new Stack<>();
 		stack.push(node);
 		while(!stack.isEmpty()){
-			final RegionQuadTree current = stack.pop();
+			final QuadTree current = stack.pop();
 
 			descendants.addAll(current.regions);
 			if(current.hasChildren())
-				for(final RegionQuadTree child : current.children)
+				for(final QuadTree child : current.children)
 					stack.push(child);
 		}
 		return descendants;
 	}
 
-	private static void clear(final RegionQuadTree node){
-		final Stack<RegionQuadTree> stack = new Stack<>();
+	private static void clear(final QuadTree node){
+		final Stack<QuadTree> stack = new Stack<>();
 		stack.push(node);
 		while(!stack.isEmpty()){
-			final RegionQuadTree current = stack.pop();
+			final QuadTree current = stack.pop();
 
 			current.regions.clear();
 
@@ -372,15 +359,15 @@ public class RegionQuadTree implements RegionTree{
 
 	@Override
 	public boolean intersects(final Region region){
-		final Stack<RegionQuadTree> stack = new Stack<>();
+		final Stack<QuadTree> stack = new Stack<>();
 		stack.push(this);
 		while(!stack.isEmpty()){
-			final RegionQuadTree node = stack.pop();
+			final QuadTree node = stack.pop();
 
 			final int index = getChildIndex(node.envelope, region);
 			if(index == INDEX_SELF || !node.hasChildren()){
 				if(node.hasChildren())
-					for(final RegionQuadTree child : node.children)
+					for(final QuadTree child : node.children)
 						if(region.intersects(child.envelope))
 							stack.push(child);
 			}
@@ -400,15 +387,15 @@ public class RegionQuadTree implements RegionTree{
 
 	@Override
 	public boolean contains(final Region region){
-		final Stack<RegionQuadTree> stack = new Stack<>();
+		final Stack<QuadTree> stack = new Stack<>();
 		stack.push(this);
 		while(!stack.isEmpty()){
-			final RegionQuadTree node = stack.pop();
+			final QuadTree node = stack.pop();
 
 			final int index = getChildIndex(node.envelope, region);
 			if(index == INDEX_SELF || !node.hasChildren()){
 				if(node.hasChildren())
-					for(final RegionQuadTree child : node.children)
+					for(final QuadTree child : node.children)
 						if(child.envelope.intersects(region))
 							stack.push(child);
 			}
@@ -430,15 +417,15 @@ public class RegionQuadTree implements RegionTree{
 	public Collection<Region> query(final Region region){
 		final List<Region> returnList = new ArrayList<>();
 
-		final Stack<RegionQuadTree> stack = new Stack<>();
+		final Stack<QuadTree> stack = new Stack<>();
 		stack.push(this);
 		while(!stack.isEmpty()){
-			final RegionQuadTree node = stack.pop();
+			final QuadTree node = stack.pop();
 
 			final int index = getChildIndex(node.envelope, region);
 			if(index == INDEX_SELF || !node.hasChildren()){
 				if(node.hasChildren())
-					for(final RegionQuadTree child : node.children)
+					for(final QuadTree child : node.children)
 						if(child.envelope.contains(region))
 							stack.push(child);
 			}

@@ -38,28 +38,29 @@ class HybridQuadKDTreeTest{
 
 	@Test
 	void simple(){
-		int maxRegionsPerNode = 1;
-		RegionQuadTree quadTree0 = RegionQuadTree.create(Region.of(2., 2., 35., 35.));
-		quadTree0.insert(Region.of(10., 10., 10., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(5., 5., 10., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(25., 25., 10., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(5., 5., 12., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(5., 25., 20., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(25., 5., 10., 10.), maxRegionsPerNode);
-		quadTree0.insert(Region.of(2., 2., 2., 2.), maxRegionsPerNode);
+		QuadTreeOptions options = new QuadTreeOptions()
+			.withMaxRegionsPerNode(1);
+		QuadTree quadTree0 = QuadTree.create(Region.of(2., 2., 35., 35.));
+		quadTree0.insert(Region.of(10., 10., 10., 10.), options);
+		quadTree0.insert(Region.of(5., 5., 10., 10.), options);
+		quadTree0.insert(Region.of(25., 25., 10., 10.), options);
+		quadTree0.insert(Region.of(5., 5., 12., 10.), options);
+		quadTree0.insert(Region.of(5., 25., 20., 10.), options);
+		quadTree0.insert(Region.of(25., 5., 10., 10.), options);
+		quadTree0.insert(Region.of(2., 2., 2., 2.), options);
 
-		RegionQuadTree quadTree = RegionQuadTree.create(Region.of(2., 2., 35., 35.));
-		HybridKDTree.insert(quadTree, Region.of(10., 10., 10., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 10., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(25., 25., 10., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 12., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(5., 25., 20., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(25., 5., 10., 10.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, Region.of(2., 2., 2., 2.), maxRegionsPerNode);
+		QuadTree quadTree = QuadTree.create(Region.of(2., 2., 35., 35.));
+		HybridKDTree.insert(quadTree, Region.of(10., 10., 10., 10.), options);
+		HybridKDTree.insert(quadTree, Region.of(5., 5., 10., 10.), options);
+		HybridKDTree.insert(quadTree, Region.of(25., 25., 10., 10.), options);
+		HybridKDTree.insert(quadTree, Region.of(5., 5., 12., 10.), options);
+		HybridKDTree.insert(quadTree, Region.of(5., 25., 20., 10.), options);
+		HybridKDTree.insert(quadTree, Region.of(25., 5., 10., 10.), options);
+		HybridKDTree.insert(quadTree, Region.of(2., 2., 2., 2.), options);
 		Region region = Region.of(5., 5., 5., 5.);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), maxRegionsPerNode);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), maxRegionsPerNode);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), options);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), options);
+		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), options);
 
 		Assertions.assertTrue(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
 		Assertions.assertFalse(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));

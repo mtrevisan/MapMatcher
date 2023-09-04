@@ -25,7 +25,7 @@
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
 
-public class QuadTreeOptions{
+public class QuadTreeOptions implements TreeOptions{
 
 	public static final int MAX_LEVELS_UNLIMITED = -1;
 
@@ -43,7 +43,7 @@ public class QuadTreeOptions{
 		return new QuadTreeOptions();
 	}
 
-	private QuadTreeOptions(){}
+	public QuadTreeOptions(){}
 
 
 	public QuadTreeOptions withMaxRegionsPerNode(final int maxRegionsPerNode){

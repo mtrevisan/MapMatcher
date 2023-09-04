@@ -477,7 +477,7 @@ public class SuccinctKDTree implements SpatialTree{
 	 *
 	 * @param rangeMin	Minimum point of the searching rectangle.
 	 * @param rangeMax	Maximum point of the searching rectangle.
-	 * @return	Collection of {@link Point}s that fall within the given envelope.
+	 * @return	Collection of {@link Point}s that fall within the given region.
 	 */
 	@Override
 	public Collection<Point> query(final Point rangeMin, final Point rangeMax){

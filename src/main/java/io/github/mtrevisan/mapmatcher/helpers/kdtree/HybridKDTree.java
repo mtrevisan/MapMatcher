@@ -26,6 +26,7 @@ package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
@@ -41,38 +42,22 @@ public class HybridKDTree{
 	private HybridKDTree(){}
 
 
-	public static void insert(final RegionTree tree, final Region region, final int maxRegionsPerNode){
-		tree.insert(region, maxRegionsPerNode);
+	public static <O extends TreeOptions> void insert(final RegionTree<O> tree, final Region region, final O options){
+		tree.insert(region, options);
 	}
 
-	public static void insert(final RegionTree tree, final Region region, final int maxRegionsPerNode, final int maxLevels){
-		tree.insert(region, maxRegionsPerNode, maxLevels);
-	}
-
-	public static void insert(final RegionTree tree, final Region region, final Point point, final int maxRegionsPerNode){
+	public static <O extends TreeOptions> void insert(final RegionTree<O> tree, final Region region, final Point point, final O options){
 		if(insert(tree, region, point))
 			return;
 
 		region.setBoundary();
 		//TODO extends Region, parké kusita 'l fà bastantha senso (?)
-		//	ge xé un poblèma su RegionQuadTree.split(), kuando ke se krea un nòvo Region...
+		//	ge xé un poblèma su RegionQuadTree.split(), kuando ke se krea un nòvo Region ko Region.of...
 		region.setNode(new KDNode(point));
-		tree.insert(region, maxRegionsPerNode);
+		tree.insert(region, options);
 	}
 
-	public static void insert(final RegionTree tree, final Region region, final Point point, final int maxRegionsPerNode,
-			final int maxLevels){
-		if(insert(tree, region, point))
-			return;
-
-		region.setBoundary();
-		//TODO extends Region, parké kusita 'l fà bastantha senso (?)
-		//	ge xé un poblèma su RegionQuadTree.split(), kuando ke se krea un nòvo Region...
-		region.setNode(new KDNode(point));
-		tree.insert(region, maxRegionsPerNode, maxLevels);
-	}
-
-	private static boolean insert(final RegionTree tree, final Region region, final Point point){
+	private static <O extends TreeOptions> boolean insert(final RegionTree<O> tree, final Region region, final Point point){
 		final Collection<Region> regions = query(tree, region);
 		if(!regions.isEmpty()){
 			final int dimensions = point.getDimensions();
@@ -87,11 +72,11 @@ public class HybridKDTree{
 	}
 
 
-	public static Collection<Region> query(final RegionTree tree, final Region region){
+	public static <O extends TreeOptions> Collection<Region> query(final RegionTree<O> tree, final Region region){
 		return tree.query(region);
 	}
 
-	public static boolean contains(final RegionTree tree, final Region region, final Point point){
+	public static <O extends TreeOptions> boolean contains(final RegionTree<O> tree, final Region region, final Point point){
 		final Collection<Region> regions = query(tree, region);
 		if(!regions.isEmpty()){
 			final int dimensions = point.getDimensions();
@@ -106,7 +91,7 @@ public class HybridKDTree{
 	}
 
 
-	public static Point nearestNeighbor(final RegionTree tree, final Region region, final Point point){
+	public static <O extends TreeOptions> Point nearestNeighbor(final RegionTree<O> tree, final Region region, final Point point){
 		final Collection<Region> regions = query(tree, region);
 		if(!regions.isEmpty()){
 			final int dimensions = point.getDimensions();

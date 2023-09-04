@@ -27,7 +27,8 @@ package io.github.mtrevisan.mapmatcher;
 import io.github.mtrevisan.mapmatcher.graph.Edge;
 import io.github.mtrevisan.mapmatcher.graph.Graph;
 import io.github.mtrevisan.mapmatcher.helpers.PathHelper;
-import io.github.mtrevisan.mapmatcher.helpers.hprtree.HilbertPackedRTree;
+import io.github.mtrevisan.mapmatcher.helpers.hilbertrtree.HilbertPackedRTree;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.mapmatching.MapMatchingStrategy;
 import io.github.mtrevisan.mapmatcher.mapmatching.ViterbiMapMatching;
 import io.github.mtrevisan.mapmatcher.mapmatching.calculators.emission.EmissionProbabilityCalculator;
@@ -42,7 +43,6 @@ import io.github.mtrevisan.mapmatcher.mapmatching.exceptions.NoObservationsExcep
 import io.github.mtrevisan.mapmatcher.pathfinding.AStarPathFinder;
 import io.github.mtrevisan.mapmatcher.pathfinding.PathFindingStrategy;
 import io.github.mtrevisan.mapmatcher.pathfinding.calculators.DistanceCalculator;
-import io.github.mtrevisan.mapmatcher.spatial.Envelope;
 import io.github.mtrevisan.mapmatcher.spatial.GPSPoint;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
@@ -92,7 +92,7 @@ public class Application{
 		final Polyline[] edges = new Polyline[]{edge0, edge1, edge2, edge3, edge4, edge5};
 		final HilbertPackedRTree<Polyline> tree = new HilbertPackedRTree<>();
 		for(final Polyline edge : edges){
-			final Envelope geoBoundingBox = edge.getBoundingBox();
+			final Region geoBoundingBox = edge.getBoundingBox();
 			tree.insert(geoBoundingBox, edge);
 		}
 

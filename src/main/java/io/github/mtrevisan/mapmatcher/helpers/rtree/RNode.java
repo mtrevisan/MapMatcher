@@ -39,12 +39,12 @@ class RNode{
 	protected RNode parent;
 
 
-	public static RNode createInternal(final Region envelope){
-		return new RNode(envelope);
+	public static RNode createInternal(final Region region){
+		return new RNode(region);
 	}
 
-	public static RNode createLeaf(final Region envelope){
-		final RNode node = new RNode(envelope);
+	public static RNode createLeaf(final Region region){
+		final RNode node = new RNode(region);
 		node.leaf = true;
 		return node;
 	}
