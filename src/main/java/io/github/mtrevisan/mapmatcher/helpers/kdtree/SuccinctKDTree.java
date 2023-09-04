@@ -29,11 +29,12 @@ import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import org.agrona.collections.Int2ObjectHashMap;
 
+import java.util.ArrayDeque;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 
 /**
@@ -157,7 +158,7 @@ public class SuccinctKDTree implements SpatialTree{
 	private void buildTree(final List<Point> points){
 		final int dimensions = comparators.length;
 
-		final Stack<BuildTreeItem> stack = new Stack<>();
+		final Deque<BuildTreeItem> stack = new ArrayDeque<>();
 		stack.push(BuildTreeItem.asRoot(points.size()));
 		while(!stack.isEmpty()){
 			final BuildTreeItem item = stack.pop();
@@ -410,40 +411,40 @@ public class SuccinctKDTree implements SpatialTree{
 			return null;
 
 		Point bestNodePoint = null;
-		double bestDistanceSquare = Double.POSITIVE_INFINITY;
+		double bestSquaredDistance = Double.POSITIVE_INFINITY;
 		double precisionSquare = point.getDistanceCalculator()
 			.getPrecision();
 		precisionSquare *= precisionSquare;
 
 		final int dimensions = comparators.length;
-		final Stack<NodeIndexAxisItem> stack = new Stack<>();
+		final Deque<NodeIndexAxisItem> stack = new ArrayDeque<>();
 		stack.push(new NodeIndexAxisItem(ROOT_INDEX, STARTING_DIMENSION));
 		while(!stack.isEmpty()){
 			final NodeIndexAxisItem item = stack.pop();
 			final int nodeIndex = item.nodeIndex;
 
 			final Point currentNodePoint = data(nodeIndex);
-			final double distanceSquare = euclideanDistanceSquare(point, currentNodePoint);
-			if(distanceSquare < bestDistanceSquare){
-				bestDistanceSquare = distanceSquare;
+			final double squaredDistance = euclideanSquaredDistance(point, currentNodePoint);
+			if(squaredDistance < bestSquaredDistance){
+				bestSquaredDistance = squaredDistance;
 				bestNodePoint = currentNodePoint;
 			}
-			if(bestDistanceSquare <= precisionSquare)
+			if(bestSquaredDistance <= precisionSquare)
 				break;
 
-			final double coordinateDelta = currentNodePoint.getCoordinate(item.axis) - point.getCoordinate(item.axis);
+			final double coordinateDelta = euclideanAxisDistance(currentNodePoint, point, item.axis);
 			final int axis = getNextAxis(item.axis, dimensions);
 			final int currentNodeLeftIndex = leftIndex(nodeIndex);
 			if(coordinateDelta >= 0. && data(currentNodeLeftIndex) != null){
 				stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
-				if(coordinateDelta * coordinateDelta < bestDistanceSquare)
+				if(coordinateDelta * coordinateDelta < bestSquaredDistance)
 					stack.push(new NodeIndexAxisItem(currentNodeLeftIndex, axis));
 			}
 			else if(coordinateDelta < 0.){
 				final int currentNodeRightIndex = rightIndex(nodeIndex);
 				if(data(currentNodeRightIndex) != null){
 					stack.push(new NodeIndexAxisItem(currentNodeRightIndex, axis));
-					if(-coordinateDelta * coordinateDelta < bestDistanceSquare)
+					if(-coordinateDelta * coordinateDelta < bestSquaredDistance)
 						stack.push(new NodeIndexAxisItem(currentNodeRightIndex, axis));
 				}
 			}
@@ -452,13 +453,17 @@ public class SuccinctKDTree implements SpatialTree{
 		return bestNodePoint;
 	}
 
-	private static double euclideanDistanceSquare(final Point point, final Point currentNodePoint){
-		double distanceSquare = 0.;
-		for(int i = 0; i < point.getDimensions(); i ++){
-			final double delta = currentNodePoint.getCoordinate(i) - point.getCoordinate(i);
-			distanceSquare += delta * delta;
+	private static double euclideanSquaredDistance(final Point point1, final Point point2){
+		double squaredDistance = 0.;
+		for(int i = 0; i < point1.getDimensions(); i ++){
+			final double delta = euclideanAxisDistance(point1, point2, i);
+			squaredDistance += delta * delta;
 		}
-		return distanceSquare;
+		return squaredDistance;
+	}
+
+	private static double euclideanAxisDistance(final Point point1, final Point point2, final int axis){
+		return point1.getCoordinate(axis) - point2.getCoordinate(axis);
 	}
 
 	private static class NodeIndexAxisItem{
@@ -481,7 +486,7 @@ public class SuccinctKDTree implements SpatialTree{
 	 */
 	@Override
 	public Collection<Point> query(final Point rangeMin, final Point rangeMax){
-		final Stack<Point> points = new Stack<>();
+		final Deque<Point> points = new ArrayDeque<>();
 		if(isEmpty())
 			return points;
 
@@ -489,7 +494,7 @@ public class SuccinctKDTree implements SpatialTree{
 		int axis = STARTING_DIMENSION;
 		final int dimensions = comparators.length;
 
-		final Stack<Integer> nodes = new Stack<>();
+		final Deque<Integer> nodes = new ArrayDeque<>();
 		//start from root
 		nodes.push(ROOT_INDEX);
 		while(!nodes.isEmpty()){

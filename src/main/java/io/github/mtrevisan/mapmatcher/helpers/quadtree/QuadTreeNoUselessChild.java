@@ -26,10 +26,11 @@ package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 
 /**
@@ -117,7 +118,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 		if(options.maxLevels < QuadTreeOptions.MAX_LEVELS_UNLIMITED)
 			throw new IllegalArgumentException("Invalid number of max levels: (" + options.maxLevels + ")");
 
-		final Stack<InsertItem> stack = new Stack<>();
+		final Deque<InsertItem> stack = new ArrayDeque<>();
 		stack.push(new InsertItem(this, BitCode.ofEmpty(), region));
 		while(!stack.isEmpty()){
 			final InsertItem item = stack.pop();
@@ -290,7 +291,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 
 	private static List<Region> getAllDescendants(final QuadTreeNoUselessChild node){
 		final List<Region> descendants = new ArrayList<>();
-		final Stack<QuadTreeNoUselessChild> stack = new Stack<>();
+		final Deque<QuadTreeNoUselessChild> stack = new ArrayDeque<>();
 		stack.push(node);
 		while(!stack.isEmpty()){
 			final QuadTreeNoUselessChild current = stack.pop();
@@ -305,7 +306,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 	}
 
 	private static void clear(final QuadTreeNoUselessChild node){
-		final Stack<QuadTreeNoUselessChild> stack = new Stack<>();
+		final Deque<QuadTreeNoUselessChild> stack = new ArrayDeque<>();
 		stack.push(node);
 		while(!stack.isEmpty()){
 			final QuadTreeNoUselessChild current = stack.pop();
@@ -324,7 +325,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 
 	@Override
 	public boolean intersects(final Region region){
-		final Stack<QuadTreeNoUselessChild> stack = new Stack<>();
+		final Deque<QuadTreeNoUselessChild> stack = new ArrayDeque<>();
 		stack.push(this);
 		while(!stack.isEmpty()){
 			final QuadTreeNoUselessChild node = stack.pop();
@@ -351,7 +352,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 
 	@Override
 	public boolean contains(final Region region){
-		final Stack<QuadTreeNoUselessChild> stack = new Stack<>();
+		final Deque<QuadTreeNoUselessChild> stack = new ArrayDeque<>();
 		stack.push(this);
 		while(!stack.isEmpty()){
 			final QuadTreeNoUselessChild node = stack.pop();
@@ -380,7 +381,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 	public Collection<Region> query(final Region region){
 		final List<Region> returnList = new ArrayList<>();
 
-		final Stack<QuadTreeNoUselessChild> stack = new Stack<>();
+		final Deque<QuadTreeNoUselessChild> stack = new ArrayDeque<>();
 		stack.push(this);
 		while(!stack.isEmpty()){
 			final QuadTreeNoUselessChild node = stack.pop();

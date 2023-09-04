@@ -341,15 +341,15 @@ public class KDTree implements SpatialTree{
 			final KDNode node = currentItem.node;
 
 			final Point nodePoint = node.point;
-			final double distanceSquare = euclideanDistanceSquare(point, nodePoint);
-			if(distanceSquare < bestDistanceSquare){
-				bestDistanceSquare = distanceSquare;
+			final double squaredDistance = euclideanSquaredDistance(point, nodePoint);
+			if(squaredDistance < bestDistanceSquare){
+				bestDistanceSquare = squaredDistance;
 				bestNode = node;
 			}
 			if(bestDistanceSquare <= precisionSquare)
 				break;
 
-			final double coordinateDelta = nodePoint.getCoordinate(currentItem.axis) - point.getCoordinate(currentItem.axis);
+			final double coordinateDelta = euclideanAxisDistance(nodePoint, point, currentItem.axis);
 			final int axis = getNextAxis(currentItem.axis, dimensions);
 			if(coordinateDelta > 0. && node.left != null){
 				stack.push(new NodeAxisItem(node.left, axis));
@@ -366,13 +366,19 @@ public class KDTree implements SpatialTree{
 		return (bestNode != null? bestNode.point: null);
 	}
 
-	private static double euclideanDistanceSquare(final Point point, final Point currentNodePoint){
-		double distanceSquare = 0.;
-		for(int i = 0; i < point.getDimensions(); i ++){
-			final double delta = currentNodePoint.getCoordinate(i) - point.getCoordinate(i);
-			distanceSquare += delta * delta;
+	/** Return squared distance between two points. */
+	private static double euclideanSquaredDistance(final Point point1, final Point point2){
+		double squaredDistance = 0.;
+		for(int i = 0; i < point1.getDimensions(); i ++){
+			final double delta = euclideanAxisDistance(point1, point2, i);
+			squaredDistance += delta * delta;
 		}
-		return distanceSquare;
+		return squaredDistance;
+	}
+
+	/** Return distance between one axis only. */
+	private static double euclideanAxisDistance(final Point point1, final Point point2, final int axis){
+		return point1.getCoordinate(axis) - point2.getCoordinate(axis);
 	}
 
 	private static class NodeAxisItem{

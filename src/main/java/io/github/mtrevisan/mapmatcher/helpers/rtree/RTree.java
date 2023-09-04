@@ -27,12 +27,13 @@ package io.github.mtrevisan.mapmatcher.helpers.rtree;
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 
 public class RTree implements RegionTree<RTreeOptions>{
@@ -340,7 +341,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 	@Override
 	public boolean intersects(final Region region){
-		final Stack<RNode> stack = new Stack<>();
+		final Deque<RNode> stack = new ArrayDeque<>();
 		stack.push(root);
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
@@ -359,7 +360,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 	@Override
 	public boolean contains(final Region region){
-		final Stack<RNode> stack = new Stack<>();
+		final Deque<RNode> stack = new ArrayDeque<>();
 		stack.push(root);
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
@@ -379,7 +380,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 	@Override
 	public Collection<Region> query(final Region region){
 		final List<Region> results = new LinkedList<>();
-		final Stack<RNode> stack = new Stack<>();
+		final Deque<RNode> stack = new ArrayDeque<>();
 		stack.push(root);
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
