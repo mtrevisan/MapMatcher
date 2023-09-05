@@ -52,6 +52,11 @@
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<apache.math3.version>3.6.1</apache.math3.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
+		<apache.httpcomponents.client5.verion>5.2.1</apache.httpcomponents.client5.verion>
+
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+		<com.fasterxml.jackson.version>2.15.2</com.fasterxml.jackson.version>
 
 		<!-- https://mvnrepository.com/artifact/org.agrona/agrona -->
 		<org.agrona.version>1.19.2</org.agrona.version>
@@ -152,6 +157,28 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			<version>${apache.math3.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+			<version>${apache.httpcomponents.client5.verion}</version>
+		</dependency>
+
+		<!-- Jackson -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${com.fasterxml.jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-csv</artifactId>
+			<version>${com.fasterxml.jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>${com.fasterxml.jackson.version}</version>
 		</dependency>
 
 		<!-- Agrona -->
