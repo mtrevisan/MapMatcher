@@ -32,13 +32,13 @@ import java.util.Objects;
 
 public class Region implements Comparable<Region>{
 
-	/** The minimum x-coordinate. */
+	/** The minimum (bottom left) x-coordinate. */
 	private double minX;
-	/** The minimum y-coordinate. */
+	/** The minimum (bottom left) y-coordinate. */
 	private double minY;
-	/** The maximum x-coordinate. */
+	/** The maximum (upper right) x-coordinate. */
 	private double maxX;
-	/** The maximum y-coordinate. */
+	/** The maximum (upper right) y-coordinate. */
 	private double maxY;
 
 	/** Store linear region quadtree location code. */

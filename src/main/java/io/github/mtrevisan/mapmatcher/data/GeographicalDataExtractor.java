@@ -98,7 +98,7 @@ public class GeographicalDataExtractor{
 
 	public static void main(final String[] args) throws IOException{
 		final String stateCode = "IT";
-//		final StateData stateData = collectData(stateCode);
+		final StateData stateData = collectData(stateCode);
 
 		extractMunicipalityData(46539);
 
