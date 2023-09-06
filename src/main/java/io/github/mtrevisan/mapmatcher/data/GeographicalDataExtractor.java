@@ -46,7 +46,7 @@ out geom;
 //out skel qt;
 
 
-== list of buildings ==
+== list of buildings (elements.type=node) ==
 [out:json];
 area[name="Lozzo di Cadore"]->.searchArea;
 (
@@ -136,24 +136,24 @@ public class GeographicalDataExtractor{
 			//incrementally calculate region of whole state
 			for(final Region region : regionData[index].boundaries){
 				if(Double.isNaN(minLatitude)){
-					minLongitude = region.getX();
-					minLatitude = region.getY();
-					maxLongitude = region.getX() + region.getWidth();
-					maxLatitude = region.getY() + region.getHeight();
+					minLongitude = region.getMinX();
+					minLatitude = region.getMinY();
+					maxLongitude = region.getMaxX();
+					maxLatitude = region.getMaxY();
 				}
 				else{
-					if(region.getX() < minLongitude)
-						minLongitude = region.getX();
-					if(region.getY() < minLatitude)
-						minLatitude = region.getY();
-					if(region.getX() + region.getWidth() > maxLongitude)
-						maxLongitude = region.getX() + region.getWidth();
-					if(region.getY() + region.getHeight() > maxLatitude)
-						maxLatitude = region.getY() + region.getHeight();
+					if(region.getMinX() < minLongitude)
+						minLongitude = region.getMinX();
+					if(region.getMinY() < minLatitude)
+						minLatitude = region.getMinY();
+					if(region.getMaxX() > maxLongitude)
+						maxLongitude = region.getMaxX();
+					if(region.getMaxY() > maxLatitude)
+						maxLatitude = region.getMaxY();
 				}
 			}
 		}
-		final Region stateBoundary = Region.of(minLongitude, minLatitude, maxLongitude - minLongitude, maxLatitude - minLatitude);
+		final Region stateBoundary = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 
 		StateData stateData = new StateData();
 		stateData.stateCode = stateCode;
@@ -265,8 +265,7 @@ public class GeographicalDataExtractor{
 					regionData.regionCode = regionCode;
 					regionData.regionName = regionName;
 //					dataRegion.elements[elementIndex] = dataElement;
-					regionData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude,
-						maxLongitude - minLongitude, maxLatitude - minLatitude);
+					regionData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 				}
 			}
 			catch(final JsonProcessingException jpe){
@@ -369,8 +368,7 @@ public class GeographicalDataExtractor{
 					provinceData.provinceCode = provinceCode;
 					provinceData.provinceName = provinceName;
 //					provinceData.elements[elementIndex] = dataElement;
-					provinceData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude,
-						maxLongitude - minLongitude, maxLatitude - minLatitude);
+					provinceData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 				}
 			}
 			catch(final JsonProcessingException jpe){
@@ -471,8 +469,7 @@ public class GeographicalDataExtractor{
 
 					municipalityData.municipalityName = municipalityName;
 //					municipalityData.elements[elementIndex] = dataElement;
-					municipalityData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude,
-						maxLongitude - minLongitude, maxLatitude - minLatitude);
+					municipalityData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 				}
 			}
 			catch(final JsonProcessingException jpe){

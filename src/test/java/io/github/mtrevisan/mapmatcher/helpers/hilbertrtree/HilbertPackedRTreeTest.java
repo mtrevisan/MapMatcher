@@ -365,8 +365,7 @@ https://openaddresses.io/
 		HilbertPackedRTree<Polyline> tree = new HilbertPackedRTree<>();
 		Set<Polyline> highways = extractPolylines(new File(FILENAME_ROADS_SIMPLIFIED));
 		for(Polyline polyline : highways){
-			Region bb = polyline.getBoundingBox();
-			Region region = Region.of(bb.getX(), bb.getY(), bb.getWidth(), bb.getHeight());
+			Region region = Region.of(polyline.getBoundingBox());
 			tree.insert(region, polyline);
 		}
 
@@ -375,14 +374,14 @@ https://openaddresses.io/
 			FACTORY.createPoint(9.40355, 45.60973)
 		));
 
-		Assertions.assertEquals(4113, roads.size());
+		Assertions.assertEquals(1178, roads.size());
 	}
 
 	@Test
 	void empty_tree_using_list_query(){
 		HilbertPackedRTree<Object> tree = new HilbertPackedRTree<>();
 
-		List<Object> list = tree.query(Region.of(0., 1., 0., 0.));
+		List<Object> list = tree.query(Region.of(0., 1., 0., 1.));
 
 		Assertions.assertTrue(list.isEmpty());
 	}
@@ -415,12 +414,11 @@ https://openaddresses.io/
 		geometries.add(factory.createPolyline(factory.createPoint(2., 2.), factory.createPoint(4., 4.)));
 		HilbertPackedRTree<String> t = new HilbertPackedRTree<>(7);
 		for(int i = 0; i < geometries.size(); i ++){
-			Region bb = geometries.get(i).getBoundingBox();
-			Region region = Region.of(bb.getX(), bb.getY(), bb.getWidth(), bb.getHeight());
+			Region region = Region.of(geometries.get(i).getBoundingBox());
 			t.insert(region, String.valueOf(i + 1));
 		}
 
-		Assertions.assertArrayEquals(new String[]{"1", "3", "7"}, t.query(Region.of(3., 3., 3., 3.)).toArray());
+		Assertions.assertArrayEquals(new String[]{"1", "3", "7"}, t.query(Region.of(3., 3., 6., 6.)).toArray());
 	}
 
 	@Test
@@ -432,16 +430,15 @@ https://openaddresses.io/
 		geometries.add(factory.createPolyline(factory.createPoint(20., 20.), factory.createPoint(30., 30.)));
 		HilbertPackedRTree<Object> t = new HilbertPackedRTree<>(3);
 		for(Polyline g : geometries){
-			Region bb = g.getBoundingBox();
-			Region region = Region.of(bb.getX(), bb.getY(), bb.getWidth(), bb.getHeight());
+			Region region = Region.of(g.getBoundingBox());
 			t.insert(region, new Object());
 		}
 
-		t.query(Region.of(5., 5., 1., 1.));
+		t.query(Region.of(5., 5., 6., 6.));
 
-		Assertions.assertEquals(1, t.query(Region.of(5., 5., 1., 1.)).size());
-		Assertions.assertEquals(0, t.query(Region.of(20., 0., 10., 10.)).size());
-		Assertions.assertEquals(2, t.query(Region.of(25., 25., 1., 1.)).size());
+		Assertions.assertEquals(1, t.query(Region.of(5., 5., 6., 6.)).size());
+		Assertions.assertEquals(0, t.query(Region.of(20., 0., 30., 10.)).size());
+		Assertions.assertEquals(2, t.query(Region.of(25., 25., 26., 26.)).size());
 		Assertions.assertEquals(3, t.query(Region.of(0., 0., 100., 100.)).size());
 	}
 
@@ -449,26 +446,26 @@ https://openaddresses.io/
 	void query3(){
 		HilbertPackedRTree<Integer> t = new HilbertPackedRTree<>();
 		for(int i = 0; i < 3; i ++)
-			t.insert(Region.of(i, i, 1, 1), i);
+			t.insert(Region.of(i, i, i + 1, i + 1), i);
 
 		t.query(Region.of(0., 0., 1., 1.));
 
-		Assertions.assertEquals(3, t.query(Region.of(1., 1., 1., 1.)).size());
-		Assertions.assertEquals(0, t.query(Region.of(9., 9., 1., 1.)).size());
+		Assertions.assertEquals(3, t.query(Region.of(1., 1., 2., 2.)).size());
+		Assertions.assertEquals(0, t.query(Region.of(9., 9., 10., 10.)).size());
 	}
 
 	@Test
 	void query10(){
 		HilbertPackedRTree<Integer> t = new HilbertPackedRTree<>();
 		for(int i = 0; i < 10; i ++)
-			t.insert(Region.of(i, i, 1, 1), i);
+			t.insert(Region.of(i, i, i + 1, i + 1), i);
 
 		t.query(Region.of(0, 0, 1, 1));
 
-		Assertions.assertEquals(3, t.query(Region.of(5, 5, 1, 1)).size());
-		Assertions.assertEquals(2, t.query(Region.of(9, 9, 1, 1)).size());
-		Assertions.assertEquals(0, t.query(Region.of(25, 25, 1, 1)).size());
-		Assertions.assertEquals(10, t.query(Region.of(0, 0, 10, 10)).size());
+		Assertions.assertEquals(3, t.query(Region.of(5., 5., 6., 6.)).size());
+		Assertions.assertEquals(2, t.query(Region.of(9., 9., 10., 10.)).size());
+		Assertions.assertEquals(0, t.query(Region.of(25., 25., 26., 26.)).size());
+		Assertions.assertEquals(10, t.query(Region.of(0., 0., 10., 10.)).size());
 	}
 
 	@Test
@@ -489,14 +486,14 @@ https://openaddresses.io/
 
 	private void queryGrid(int size, HilbertPackedRTree<Integer> tree){
 		for(int i = 0; i < size; i ++)
-			tree.insert(Region.of(i, i, 1, 1), i);
+			tree.insert(Region.of(i, i, i + 1, i + 1), i);
 
 		tree.query(Region.of(0, 0, 1, 1));
 
-		Assertions.assertEquals(3, tree.query(Region.of(5, 5, 1, 1)).size());
-		Assertions.assertEquals(3, tree.query(Region.of(9, 9, 1, 1)).size());
-		Assertions.assertEquals(3, tree.query(Region.of(25, 25, 1, 1)).size());
-		Assertions.assertEquals(11, tree.query(Region.of(0, 0, 10, 10)).size());
+		Assertions.assertEquals(3, tree.query(Region.of(5., 5., 6., 6.)).size());
+		Assertions.assertEquals(3, tree.query(Region.of(9., 9., 10., 10.)).size());
+		Assertions.assertEquals(3, tree.query(Region.of(25., 25., 26., 26.)).size());
+		Assertions.assertEquals(11, tree.query(Region.of(0., 0., 10., 10.)).size());
 	}
 
 }

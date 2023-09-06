@@ -37,44 +37,44 @@ class QuadTreeTest{
 	void contains_all_max_regions(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(10);
-		QuadTree tree = QuadTree.create(Region.of(2., 2., 33., 33.));
+		QuadTree tree = QuadTree.create(Region.of(2., 2., 35., 35.));
 		List<Region> regions = Arrays.asList(
-			Region.of(5., 5., 10., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 5., 12., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 25., 20., 10.),
-			Region.of(25., 5., 10., 10.),
-			Region.of(2., 2., 2., 2.)
+			Region.of(5., 5., 15., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 5., 17., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 25., 25., 35.),
+			Region.of(25., 5., 35., 15.),
+			Region.of(2., 2., 4., 4.)
 		);
 		for(Region region : regions)
 			tree.insert(region, options);
 
 		for(Region region : regions)
 			Assertions.assertTrue(tree.intersects(region));
-		Assertions.assertFalse(tree.intersects(Region.of(100., 100., 1., 1.)));
+		Assertions.assertFalse(tree.intersects(Region.of(100., 100., 101., 101.)));
 	}
 
 	@Test
 	void delete_max_regions(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(10);
-		QuadTree tree = QuadTree.create(Region.of(2., 2., 33., 33.));
+		QuadTree tree = QuadTree.create(Region.of(2., 2., 35., 35.));
 		List<Region> regions = Arrays.asList(
-			Region.of(5., 5., 10., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 5., 12., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 25., 20., 10.),
-			Region.of(25., 5., 10., 10.),
-			Region.of(2., 2., 2., 2.)
+			Region.of(5., 5., 15., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 5., 17., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 25., 25., 35.),
+			Region.of(25., 5., 35., 15.),
+			Region.of(2., 2., 4., 4.)
 		);
 		for(Region region : regions)
 			tree.insert(region, options);
 
 		int deleteIndex = 6;
 		Assertions.assertTrue(tree.delete(regions.get(deleteIndex), options));
-		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.), options));
+		Assertions.assertFalse(tree.delete(Region.of(25., 25., 35., 37.), options));
 		for(Region region : regions){
 			if(!region.equals(regions.get(deleteIndex)))
 				Assertions.assertTrue(tree.intersects(region));
@@ -88,42 +88,42 @@ class QuadTreeTest{
 	void contains_all(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(1);
-		QuadTree tree = QuadTree.create(Region.of(2., 2., 33., 33.));
+		QuadTree tree = QuadTree.create(Region.of(2., 2., 35., 35.));
 		List<Region> regions = Arrays.asList(
-			Region.of(5., 5., 10., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 5., 12., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 25., 20., 10.),
-			Region.of(25., 5., 10., 10.),
-			Region.of(2., 2., 2., 2.)
+			Region.of(5., 5., 15., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 5., 17., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 25., 25., 35.),
+			Region.of(25., 5., 35., 15.),
+			Region.of(2., 2., 4., 4.)
 		);
 		for(Region region : regions)
 			tree.insert(region, options);
 
 		for(Region region : regions)
 			Assertions.assertTrue(tree.intersects(region));
-		Assertions.assertFalse(tree.intersects(Region.of(100., 100., 1., 1.)));
+		Assertions.assertFalse(tree.intersects(Region.of(100., 100., 101., 101.)));
 	}
 
 	@Test
 	void query(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(1);
-		QuadTree tree = QuadTree.create(Region.of(2., 2., 33., 33.));
+		QuadTree tree = QuadTree.create(Region.of(2., 2., 35., 35.));
 		List<Region> regions = Arrays.asList(
-			Region.of(5., 5., 10., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 5., 12., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 25., 20., 10.),
-			Region.of(25., 5., 10., 10.),
-			Region.of(2., 2., 2., 2.)
+			Region.of(5., 5., 15., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 5., 17., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 25., 25., 35.),
+			Region.of(25., 5., 35., 15.),
+			Region.of(2., 2., 4., 4.)
 		);
 		for(Region region : regions)
 			tree.insert(region, options);
 
-		final Region queriedRegion = Region.of(3., 3., 3., 3.);
+		final Region queriedRegion = Region.of(3., 3., 6., 6.);
 		Assertions.assertEquals(3, tree.query(queriedRegion).size());
 	}
 
@@ -131,22 +131,22 @@ class QuadTreeTest{
 	void delete(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(1);
-		QuadTree tree = QuadTree.create(Region.of(2., 2., 33., 33.));
+		QuadTree tree = QuadTree.create(Region.of(2., 2., 35., 35.));
 		List<Region> regions = Arrays.asList(
-			Region.of(5., 5., 10., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 5., 12., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 25., 20., 10.),
-			Region.of(25., 5., 10., 10.),
-			Region.of(2., 2., 2., 2.)
+			Region.of(5., 5., 15., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 5., 17., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 25., 25., 35.),
+			Region.of(25., 5., 35., 15.),
+			Region.of(2., 2., 4., 4.)
 		);
 		for(Region region : regions)
 			tree.insert(region, options);
 
 		int deleteIndex = 6;
 		Assertions.assertTrue(tree.delete(regions.get(deleteIndex), options));
-		Assertions.assertFalse(tree.delete(Region.of(25., 25., 10., 12.), options));
+		Assertions.assertFalse(tree.delete(Region.of(25., 25., 35., 37.), options));
 		for(Region region : regions){
 			if(!region.equals(regions.get(deleteIndex)))
 				Assertions.assertTrue(tree.intersects(region));

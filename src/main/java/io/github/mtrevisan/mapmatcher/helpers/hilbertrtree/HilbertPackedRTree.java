@@ -66,10 +66,10 @@ public class HilbertPackedRTree<T>{
 	private static final int HILBERT_LEVEL = 12;
 	private static final int DEFAULT_NODE_CAPACITY = 16;
 
-	private static final int NODE_BOUND_X_INDEX = 0;
-	private static final int NODE_BOUND_Y_INDEX = 1;
-	private static final int NODE_BOUND_WIDTH_INDEX = 2;
-	private static final int NODE_BOUND_HEIGHT_INDEX = 3;
+	private static final int NODE_BOUND_MIN_X_INDEX = 0;
+	private static final int NODE_BOUND_MIN_Y_INDEX = 1;
+	private static final int NODE_BOUND_MAX_X_INDEX = 2;
+	private static final int NODE_BOUND_MAX_Y_INDEX = 3;
 
 	private final List<Item<T>> items = new ArrayList<>(0);
 	private final int nodeCapacity;
@@ -193,10 +193,10 @@ public class HilbertPackedRTree<T>{
 		final double[] a = new double[size << 2];
 		for(int i = 0; i < size; i ++){
 			final int index = i << 2;
-			a[index + NODE_BOUND_X_INDEX] = Double.NaN;
-			a[index + NODE_BOUND_Y_INDEX] = Double.NaN;
-			a[index + NODE_BOUND_WIDTH_INDEX] = - Double.NaN;
-			a[index + NODE_BOUND_HEIGHT_INDEX] = - Double.NaN;
+			a[index + NODE_BOUND_MIN_X_INDEX] = Double.NaN;
+			a[index + NODE_BOUND_MIN_Y_INDEX] = Double.NaN;
+			a[index + NODE_BOUND_MAX_X_INDEX] = Double.NaN;
+			a[index + NODE_BOUND_MAX_Y_INDEX] = Double.NaN;
 		}
 		return a;
 	}
@@ -213,7 +213,7 @@ public class HilbertPackedRTree<T>{
 				break;
 
 			final Region env = items.get(itemIndex).getRegion();
-			updateNodeBounds(nodeIndex, env.getX(), env.getY(), env.getWidth(), env.getHeight());
+			updateNodeBounds(nodeIndex, env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
 		}
 	}
 
@@ -235,27 +235,27 @@ public class HilbertPackedRTree<T>{
 				break;
 
 			updateNodeBounds(nodeIndex,
-				nodeBounds[index + NODE_BOUND_X_INDEX], nodeBounds[index + NODE_BOUND_Y_INDEX],
-				nodeBounds[index + NODE_BOUND_WIDTH_INDEX], nodeBounds[index + NODE_BOUND_HEIGHT_INDEX]);
+				nodeBounds[index + NODE_BOUND_MIN_X_INDEX], nodeBounds[index + NODE_BOUND_MIN_Y_INDEX],
+				nodeBounds[index + NODE_BOUND_MAX_X_INDEX], nodeBounds[index + NODE_BOUND_MAX_Y_INDEX]);
 		}
 	}
 
-	private void updateNodeBounds(final int nodeIndex, final double x, final double y, final double width, final double height){
-		if(Double.isNaN(nodeBounds[nodeIndex + NODE_BOUND_X_INDEX])){
-			nodeBounds[nodeIndex + NODE_BOUND_X_INDEX] = x;
-			nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX] = y;
-			nodeBounds[nodeIndex + NODE_BOUND_WIDTH_INDEX] = width;
-			nodeBounds[nodeIndex + NODE_BOUND_HEIGHT_INDEX] = height;
+	private void updateNodeBounds(final int nodeIndex, final double minX, final double minY, final double maxX, final double maxY){
+		if(Double.isNaN(nodeBounds[nodeIndex + NODE_BOUND_MIN_X_INDEX])){
+			nodeBounds[nodeIndex + NODE_BOUND_MIN_X_INDEX] = minX;
+			nodeBounds[nodeIndex + NODE_BOUND_MIN_Y_INDEX] = minY;
+			nodeBounds[nodeIndex + NODE_BOUND_MAX_X_INDEX] = maxX;
+			nodeBounds[nodeIndex + NODE_BOUND_MAX_Y_INDEX] = maxY;
 		}
 		else{
-			final double newLeft = Math.min(nodeBounds[nodeIndex + NODE_BOUND_X_INDEX], x);
-			final double newTop = Math.min(nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX], y);
-			final double newRight = Math.max(nodeBounds[nodeIndex + NODE_BOUND_X_INDEX] + nodeBounds[nodeIndex + NODE_BOUND_WIDTH_INDEX], x + width);
-			final double newBottom = Math.max(nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX] + nodeBounds[nodeIndex + NODE_BOUND_HEIGHT_INDEX], y + height);
-			nodeBounds[nodeIndex + NODE_BOUND_X_INDEX] = newLeft;
-			nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX] = newTop;
-			nodeBounds[nodeIndex + NODE_BOUND_WIDTH_INDEX] = newRight - newLeft;
-			nodeBounds[nodeIndex + NODE_BOUND_HEIGHT_INDEX] = newBottom - newTop;
+			final double newLeft = Math.min(nodeBounds[nodeIndex + NODE_BOUND_MIN_X_INDEX], minX);
+			final double newTop = Math.min(nodeBounds[nodeIndex + NODE_BOUND_MIN_Y_INDEX], minY);
+			final double newRight = Math.max(nodeBounds[nodeIndex + NODE_BOUND_MAX_X_INDEX], maxX);
+			final double newBottom = Math.max(nodeBounds[nodeIndex + NODE_BOUND_MAX_Y_INDEX], maxY);
+			nodeBounds[nodeIndex + NODE_BOUND_MIN_X_INDEX] = newLeft;
+			nodeBounds[nodeIndex + NODE_BOUND_MIN_Y_INDEX] = newTop;
+			nodeBounds[nodeIndex + NODE_BOUND_MAX_X_INDEX] = newRight;
+			nodeBounds[nodeIndex + NODE_BOUND_MAX_Y_INDEX] = newBottom;
 		}
 	}
 
@@ -350,10 +350,10 @@ public class HilbertPackedRTree<T>{
 	}
 
 	private boolean intersects(final int nodeIndex, final Region region){
-		return !(region.getX() + region.getWidth() < nodeBounds[nodeIndex + NODE_BOUND_X_INDEX]
-			|| region.getY() + region.getHeight() < nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX]
-			|| region.getX() > nodeBounds[nodeIndex + NODE_BOUND_X_INDEX] + nodeBounds[nodeIndex + NODE_BOUND_WIDTH_INDEX]
-			|| region.getY() > nodeBounds[nodeIndex + NODE_BOUND_Y_INDEX] + nodeBounds[nodeIndex + NODE_BOUND_HEIGHT_INDEX]);
+		return !(region.getMaxX() < nodeBounds[nodeIndex + NODE_BOUND_MIN_X_INDEX]
+			|| region.getMaxY() < nodeBounds[nodeIndex + NODE_BOUND_MIN_Y_INDEX]
+			|| region.getMinX() > nodeBounds[nodeIndex + NODE_BOUND_MAX_X_INDEX]
+			|| region.getMinY() > nodeBounds[nodeIndex + NODE_BOUND_MAX_Y_INDEX]);
 
 	}
 
@@ -369,8 +369,8 @@ public class HilbertPackedRTree<T>{
 //		//create from largest to smallest
 //		for(int i = numNodes - 1; i >= 0; i --){
 //			final int boundIndex = i << 2;
-//			bounds[i] = Region.of(nodeBounds[boundIndex + NODE_BOUND_X_INDEX], nodeBounds[boundIndex + NODE_BOUND_Y_INDEX],
-//				nodeBounds[boundIndex + NODE_BOUND_WIDTH_INDEX], nodeBounds[boundIndex + NODE_BOUND_HEIGHT_INDEX]);
+//			bounds[i] = Region.of(nodeBounds[boundIndex + NODE_BOUND_MIN_X_INDEX], nodeBounds[boundIndex + NODE_BOUND_MIN_Y_INDEX],
+//				nodeBounds[boundIndex + NODE_BOUND_MAX_X_INDEX], nodeBounds[boundIndex + NODE_BOUND_MAX_Y_INDEX]);
 //		}
 //		return bounds;
 //	}

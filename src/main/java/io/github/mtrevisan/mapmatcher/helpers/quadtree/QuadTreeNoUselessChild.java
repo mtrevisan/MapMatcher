@@ -174,16 +174,16 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 	}
 
 	private void createChild(final QuadTreeNoUselessChild node, final int childIndex){
-		final double x = node.envelope.getX();
-		final double y = node.envelope.getY();
-		final double width = node.envelope.getWidth() / 2.;
-		final double height = node.envelope.getHeight() / 2.;
+		final double childWidth = node.envelope.getExtentX() / 2.;
+		final double childHeight = node.envelope.getExtentY() / 2.;
+		final double x = node.envelope.getMinX() + ((childIndex & 0x01) != 0x00? childWidth: 0);
+		final double y = node.envelope.getMinY() + ((childIndex & 0x10) != 0x00? childHeight: 0);
 		//FIXME ge xé na manièra de kavar sto "Region.of"?
 		final Region region = Region.of(
-			x + ((childIndex & 0x01) != 0x00? width: 0),
-			y + ((childIndex & 0x10) != 0x00? height: 0),
-			width,
-			height);
+			x,
+			y,
+			x + childWidth,
+			y + childHeight);
 		node.children[childIndex] = create(options, region);
 	}
 
@@ -200,16 +200,16 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 	}
 
 	private int getChildIndex(final Region region){
-		final double x = region.getX();
-		final double y = region.getY();
-		final double width = region.getWidth();
-		final double height = region.getHeight();
-		final double midX = envelope.getX() + envelope.getWidth() / 2.;
-		final double midY = envelope.getY() + envelope.getHeight() / 2.;
-		final boolean northSide = (y < midY && height + y < midY);
-		final boolean southSide = (y > midY);
-		final boolean westSide = (x < midX && x + width < midX);
-		final boolean eastSide = (x > midX);
+		final double minX = region.getMinX();
+		final double minY = region.getMinY();
+		final double maxX = region.getMaxX();
+		final double maxY = region.getMaxY();
+		final double midX = envelope.getMidX();
+		final double midY = envelope.getMidY();
+		final boolean northSide = (minY < midY && maxY < midY);
+		final boolean southSide = (minY > midY);
+		final boolean westSide = (minX < midX && maxX < midX);
+		final boolean eastSide = (minX > midX);
 
 		int index = INDEX_SELF;
 		if(eastSide){

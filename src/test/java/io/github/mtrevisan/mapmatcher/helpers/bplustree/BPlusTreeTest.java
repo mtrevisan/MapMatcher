@@ -183,15 +183,15 @@ class BPlusTreeTest{
 	void query(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(1);
-		QuadTree tree = QuadTree.create(Region.of(2., 2., 33., 33.));
+		QuadTree tree = QuadTree.create(Region.of(2., 2., 35., 35.));
 		List<Region> regions = Arrays.asList(
-			Region.of(5., 5., 10., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 5., 12., 10.),
-			Region.of(25., 25., 10., 10.),
-			Region.of(5., 25., 20., 10.),
-			Region.of(25., 5., 10., 10.),
-			Region.of(2., 2., 2., 2.)
+			Region.of(5., 5., 15., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 5., 17., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 25., 25., 35.),
+			Region.of(25., 5., 35., 15.),
+			Region.of(2., 2., 4., 4.)
 		);
 		for(Region region : regions)
 			tree.insert(region, options);
@@ -199,7 +199,7 @@ class BPlusTreeTest{
 		for(Region region : regions)
 			bptree.insert(region.getCode(), region);
 
-		final Region queriedRegion = Region.of(3., 3., 3., 3.);
+		final Region queriedRegion = Region.of(3., 3., 6., 6.);
 		BitCode key = BitCode.ofEmpty();
 		//TODO extract key from queried region
 //		Assertions.assertEquals(1, bptree.query(key).size());

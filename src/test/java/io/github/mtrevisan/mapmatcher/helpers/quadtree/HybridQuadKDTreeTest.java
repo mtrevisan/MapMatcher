@@ -40,24 +40,15 @@ class HybridQuadKDTreeTest{
 	void simple(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(1);
-		QuadTree quadTree0 = QuadTree.create(Region.of(2., 2., 35., 35.));
-		quadTree0.insert(Region.of(10., 10., 10., 10.), options);
-		quadTree0.insert(Region.of(5., 5., 10., 10.), options);
-		quadTree0.insert(Region.of(25., 25., 10., 10.), options);
-		quadTree0.insert(Region.of(5., 5., 12., 10.), options);
-		quadTree0.insert(Region.of(5., 25., 20., 10.), options);
-		quadTree0.insert(Region.of(25., 5., 10., 10.), options);
-		quadTree0.insert(Region.of(2., 2., 2., 2.), options);
-
-		QuadTree quadTree = QuadTree.create(Region.of(2., 2., 35., 35.));
-		HybridKDTree.insert(quadTree, Region.of(10., 10., 10., 10.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 10., 10.), options);
-		HybridKDTree.insert(quadTree, Region.of(25., 25., 10., 10.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 12., 10.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 25., 20., 10.), options);
-		HybridKDTree.insert(quadTree, Region.of(25., 5., 10., 10.), options);
-		HybridKDTree.insert(quadTree, Region.of(2., 2., 2., 2.), options);
-		Region region = Region.of(5., 5., 5., 5.);
+		QuadTree quadTree = QuadTree.create(Region.of(2., 2., 37., 37.));
+		HybridKDTree.insert(quadTree, Region.of(10., 10., 20., 20.), options);
+		HybridKDTree.insert(quadTree, Region.of(5., 5., 15., 15.), options);
+		HybridKDTree.insert(quadTree, Region.of(25., 25., 35., 35.), options);
+		HybridKDTree.insert(quadTree, Region.of(5., 5., 17., 15.), options);
+		HybridKDTree.insert(quadTree, Region.of(5., 25., 25., 35.), options);
+		HybridKDTree.insert(quadTree, Region.of(25., 5., 35., 15.), options);
+		HybridKDTree.insert(quadTree, Region.of(2., 2., 4., 4.), options);
+		Region region = Region.of(5., 5., 10., 10.);
 		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), options);
 		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), options);
 		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), options);

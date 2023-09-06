@@ -87,8 +87,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 				}
 				else if(nonIntersectingArea == minAreaIncrement){
 					//choose the node with the smallest area
-					final double nextArea = next.region.getWidth() * next.region.getHeight();
-					final double childArea = child.region.getWidth() * child.region.getHeight();
+					final double nextArea = next.region.euclideanArea();
+					final double childArea = child.region.euclideanArea();
 					if(childArea < nextArea)
 						next = child;
 				}
@@ -101,15 +101,14 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 	private static double calculateNonIntersectingArea(final Region region1, final Region region2){
 		//calculate intersection points
-		final double x1 = Math.max(region1.getX(), region2.getX());
-		final double y1 = Math.max(region1.getY(), region2.getY());
-		final double x2 = Math.min(region1.getX() + region1.getWidth(), region2.getX() + region2.getWidth());
-		final double y2 = Math.min(region1.getY() + region1.getHeight(), region2.getY() + region2.getHeight());
+		final double x1 = Math.max(region1.getMinX(), region2.getMinX());
+		final double y1 = Math.max(region1.getMinY(), region2.getMinY());
+		final double x2 = Math.min(region1.getMaxX(), region2.getMaxX());
+		final double y2 = Math.min(region1.getMaxY(), region2.getMaxY());
 		//calculate area of intersection
 		final double intersectionArea = Math.max(0., x2 - x1) * Math.max(0., y2 - y1);
 		//calculate total area of the two regions
-		final double totalArea = region1.getWidth() * region1.getHeight()
-			+ region2.getWidth() * region2.getHeight();
+		final double totalArea = region1.euclideanArea() + region2.euclideanArea();
 		//calculate intersection area
 		return totalArea - intersectionArea;
 	}
@@ -150,8 +149,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 			else if(nia0 > nia1)
 				preferred = nodes[1];
 			else{
-				final double area0 = nodes[0].region.getWidth() * nodes[0].region.getHeight();
-				final double area1 = nodes[1].region.getWidth() * nodes[1].region.getHeight();
+				final double area0 = nodes[0].region.euclideanArea();
+				final double area1 = nodes[1].region.euclideanArea();
 				if(area0 < area1)
 					preferred = nodes[0];
 				else if(nia0 > area1)
@@ -183,18 +182,18 @@ public class RTree implements RegionTree<RTreeOptions>{
 			RNode nodeMaxLowerBound = null;
 			RNode nodeMinUpperBound = null;
 			for(final RNode node : nodes){
-				final double[] coordinates = new double[]{node.region.getX(), node.region.getY()};
-				final double[] dimensions = new double[]{node.region.getWidth(), node.region.getHeight()};
+				final double[] coordinates = new double[]{node.region.getMinX(), node.region.getMinY(),
+					node.region.getMaxX(), node.region.getMaxY()};
 				if(coordinates[i] < dimLowerBound)
 					dimLowerBound = coordinates[i];
-				if(dimensions[i] + coordinates[i] > dimUpperBound)
-					dimUpperBound = dimensions[i] + coordinates[i];
+				if(coordinates[i + 2] > dimUpperBound)
+					dimUpperBound = coordinates[i + 2];
 				if(coordinates[i] > dimMaxLowerBound){
 					dimMaxLowerBound = coordinates[i];
 					nodeMaxLowerBound = node;
 				}
-				if(dimensions[i] + coordinates[i] < dimMinUpperBound){
-					dimMinUpperBound = dimensions[i] + coordinates[i];
+				if(coordinates[i + 2] < dimMinUpperBound){
+					dimMinUpperBound = coordinates[i + 2];
 					nodeMinUpperBound = node;
 				}
 			}
@@ -220,7 +219,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 				if(newNode != null){
 					final double coordinate = Math.sqrt(Double.MAX_VALUE);
 					final double dimension = -2. * Math.sqrt(Double.MAX_VALUE);
-					final Region region = Region.of(coordinate, coordinate, dimension, dimension);
+					final Region region = Region.of(coordinate, coordinate, coordinate + dimension, coordinate + dimension);
 					root = RNode.createInternal(region);
 
 					root.children.add(currentNode);
@@ -314,28 +313,25 @@ public class RTree implements RegionTree<RTreeOptions>{
 	}
 
 	private static void tighten(final RNode parent){
-		final double[] minCoordinates = new double[2];
-		final double[] maxDimensions = new double[2];
-		final double[] childCoordinates = new double[2];
-		final double[] childDimensions = new double[2];
-		for(int i = 0; i < minCoordinates.length; i ++){
-			minCoordinates[i] = Double.MAX_VALUE;
-			maxDimensions[i] = 0.;
+		final double[] coordinates = new double[4];
+		final double[] childCoordinates = new double[4];
+		for(int i = 0; i < 2; i ++){
+			coordinates[i] = Double.MAX_VALUE;
+			coordinates[i + 2] = 0.;
 
 			for(final RNode child : parent.children){
 				child.parent = parent;
-				childCoordinates[0] = child.region.getX();
-				childCoordinates[1] = child.region.getY();
-				childDimensions[0] = child.region.getWidth();
-				childDimensions[1] = child.region.getHeight();
-				if(childCoordinates[i] < minCoordinates[i])
-					minCoordinates[i] = childCoordinates[i];
-				final double maxCoordinate = childCoordinates[i] + childDimensions[i];
-				if(maxCoordinate > maxDimensions[i])
-					maxDimensions[i] = maxCoordinate;
+				childCoordinates[0] = child.region.getMinX();
+				childCoordinates[1] = child.region.getMinY();
+				childCoordinates[2] = child.region.getMaxX();
+				childCoordinates[3] = child.region.getMaxY();
+				if(childCoordinates[i] < coordinates[i])
+					coordinates[i] = childCoordinates[i];
+				if(childCoordinates[i + 2] > coordinates[i + 2])
+					coordinates[i + 2] = childCoordinates[i + 2];
 			}
 		}
-		parent.region = Region.of(minCoordinates[0], minCoordinates[1], maxDimensions[0], maxDimensions[1]);
+		parent.region = Region.of(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
 	}
 
 

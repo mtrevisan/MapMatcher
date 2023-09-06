@@ -38,24 +38,18 @@ class HilbertEncoder{
 
 	HilbertEncoder(final int level, final Region extent){
 		this.level = level;
-		final int hSide = (int)Math.pow(2, level) - 1;
+		final int hSide = (1 << level) - 1;
 
-		minX = extent.getX();
-		final double extentX = extent.getWidth();
-		strideX = extentX / hSide;
+		minX = extent.getMinX();
+		strideX = extent.getExtentX() / hSide;
 
-		minY = extent.getX();
-		final double extentY = extent.getHeight();
-		strideY = extentY / hSide;
+		minY = extent.getMinX();
+		strideY = extent.getExtentY() / hSide;
 	}
 
 	int encode(final Region env){
-		final double middleX = env.getWidth() / 2 + env.getX();
-		final int x = (int)((middleX - minX) / strideX);
-
-		final double middleY = env.getHeight() / 2 + env.getY();
-		final int y = (int)((middleY - minY) / strideY);
-
+		final int x = (int)((env.getMidX() - minX) / strideX);
+		final int y = (int)((env.getMidY() - minY) / strideY);
 		return HilbertCode.encode(level, x, y);
 	}
 

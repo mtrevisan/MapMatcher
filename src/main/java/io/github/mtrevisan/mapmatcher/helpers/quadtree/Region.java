@@ -32,17 +32,14 @@ import java.util.Objects;
 
 public class Region implements Comparable<Region>{
 
-	private static final double NULL_DIMENSION = -1.;
-
-
-	/** The x-coordinate. */
-	private double x;
-	/** The y-coordinate. */
-	private double y;
-	/** The width along the x-coordinate. */
-	private double width;
-	/** The height along the y-coordinate. */
-	private double height;
+	/** The minimum x-coordinate. */
+	private double minX;
+	/** The minimum y-coordinate. */
+	private double minY;
+	/** The maximum x-coordinate. */
+	private double maxX;
+	/** The maximum y-coordinate. */
+	private double maxY;
 
 	/** Store linear region quadtree location code. */
 	private BitCode code;
@@ -53,13 +50,22 @@ public class Region implements Comparable<Region>{
 	/**
 	 * Creates a region defined by maximum and minimum values.
 	 *
-	 * @param x The x-value.
-	 * @param y The y-value.
-	 * @param width The width along the x-value.
-	 * @param height The height along the y-value.
+	 * @param region The region to copy from.
 	 */
-	public static Region of(final double x, final double y, final double width, final double height){
-		return new Region(x, y, width, height);
+	public static Region of(final Region region){
+		return new Region(region.minX, region.minY, region.maxX, region.maxY);
+	}
+
+	/**
+	 * Creates a region defined by maximum and minimum values.
+	 *
+	 * @param minX The minimum x-value.
+	 * @param minY The minimum y-value.
+	 * @param maxX The maximum x-value.
+	 * @param maxY The maximum y-value.
+	 */
+	public static Region of(final double minX, final double minY, final double maxX, final double maxY){
+		return new Region(minX, minY, maxX, maxY);
 	}
 
 	/**
@@ -70,7 +76,7 @@ public class Region implements Comparable<Region>{
 	 */
 	public static Region of(final Point p1, final Point p2){
 		return of(Math.min(p1.getX(), p2.getX()), Math.min(p1.getY(), p2.getY()),
-			Math.abs(p2.getX() - p1.getX()), Math.abs(p2.getY() - p1.getY()));
+			Math.max(p1.getX(), p2.getX()), Math.max(p1.getY(), p2.getY()));
 	}
 
 	/**
@@ -79,7 +85,7 @@ public class Region implements Comparable<Region>{
 	 * @param p	The point.
 	 */
 	public static Region of(final Point p){
-		return of(p.getX(), p.getY(), 0., 0.);
+		return of(p.getX(), p.getY(), p.getX(), p.getY());
 	}
 
 	public static Region ofEmpty(){
@@ -91,58 +97,79 @@ public class Region implements Comparable<Region>{
 		setToNull();
 	}
 
-	protected Region(final double x, final double y, final double width, final double height){
-		if(width < 0.)
-			throw new IllegalArgumentException("Width must be non-negative.");
-		if(height < 0.)
-			throw new IllegalArgumentException("Height must be non-negative.");
-
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
+	protected Region(final double minX, final double minY, final double maxX, final double maxY){
+		this.minX = minX;
+		this.minY = minY;
+		this.maxX = maxX;
+		this.maxY = maxY;
 	}
 
 	/**
-	 * Returns the region's x-value.
-	 *
-	 * @return	The x-coordinate.
-	 */
-	public double getX(){
-		return x;
-	}
-
-	/**
-	 * Returns the region's y-value.
-	 *
-	 * @return	The y-coordinate.
-	 */
-	public double getY(){
-		return y;
-	}
-
-	/**
-	 * Returns the region's width along the x-value.
+	 * Returns the region's minimum x-value.
 	 * <p>
-	 * <code>-1</code> indicates that this is a null region.
+	 * <code>Double.NaN</code> indicates that this is a null region.
 	 * </p>
 	 *
-	 * @return	The width along the x-coordinate.
+	 * @return	The minimum x-coordinate.
 	 */
-	public double getWidth(){
-		return width;
+	public double getMinX(){
+		return minX;
 	}
 
 	/**
-	 * Returns the region's height along the y-value.
+	 * Returns the region's minimum y-value.
 	 * <p>
-	 * <code>-1</code> indicates that this is a null region.
+	 * <code>Double.NaN</code> indicates that this is a null region.
 	 * </p>
 	 *
-	 * @return	The height along the y-coordinate.
+	 * @return	The minimum y-coordinate.
 	 */
-	public double getHeight(){
-		return height;
+	public double getMinY(){
+		return minY;
+	}
+
+	/**
+	 * Returns the region's maximum x-value.
+	 * <p>
+	 * <code>Double.NaN</code> indicates that this is a null region.
+	 * </p>
+	 *
+	 * @return	The maximum x-coordinate.
+	 */
+	public double getMaxX(){
+		return maxX;
+	}
+
+	/**
+	 * Returns the region's maximum y-value.
+	 * <p>
+	 * <code>Double.NaN</code> indicates that this is a null region.
+	 * </p>
+	 *
+	 * @return	The maximum y-coordinate.
+	 */
+	public double getMaxY(){
+		return maxY;
+	}
+
+	public double getMidX(){
+		return (maxX + minX) / 2.;
+	}
+
+	public double getMidY(){
+		return (maxY + minY) / 2.;
+	}
+
+	public double getExtentX(){
+		return (maxX - minX);
+	}
+
+	public double getExtentY(){
+		return (maxY - minY);
+	}
+
+	public double euclideanArea(){
+		return (maxX - minX) * (maxY - minY);
 	}
 
 	/**
@@ -151,15 +178,17 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether this region is uninitialized or is the region of the empty geometry.
 	 */
 	public boolean isNull(){
-		return (width < 0. || height < 0.);
+		return (maxX < minX || maxY < minY);
 	}
 
 	/**
 	 * Makes this region a "null" region, that is, the region of the empty geometry.
 	 */
 	public void setToNull(){
-		width = NULL_DIMENSION;
-		height = NULL_DIMENSION;
+		minX = Double.NaN;
+		minY = Double.NaN;
+		maxX = Double.NaN;
+		maxY = Double.NaN;
 	}
 
 	public BitCode getCode(){
@@ -215,20 +244,16 @@ public class Region implements Comparable<Region>{
 	 */
 	public void expandToInclude(final double x, final double y){
 		if(isNull()){
-			this.x = x;
-			this.y = y;
-			width = x;
-			height = y;
+			minX = x;
+			minY = y;
+			maxX = x;
+			maxY = y;
 		}
 		else{
-			final double newLeft = Math.min(this.x, x);
-			final double newTop = Math.min(this.y, y);
-			final double newRight = Math.max(this.x + width, x);
-			final double newBottom = Math.max(this.y + height, y);
-			this.x = newLeft;
-			this.y = newTop;
-			width = newRight - newLeft;
-			height = newBottom - newTop;
+			minX = Math.min(minX, x);
+			minY = Math.min(minY, y);
+			maxX = Math.max(maxX, x);
+			maxY = Math.max(maxY, y);
 		}
 	}
 
@@ -245,20 +270,16 @@ public class Region implements Comparable<Region>{
 			return;
 
 		if(isNull()){
-			x = other.getX();
-			y = other.getY();
-			width = other.getWidth();
-			height = other.getHeight();
+			minX = other.getMinX();
+			minY = other.getMinY();
+			maxX = other.getMaxX();
+			maxY = other.getMaxY();
 		}
 		else{
-			final double newLeft = Math.min(x, other.x);
-			final double newTop = Math.min(y, other.y);
-			final double newRight = Math.max(x + width, other.x + other.width);
-			final double newBottom = Math.max(y + height, other.y + other.height);
-			x = newLeft;
-			y = newTop;
-			width = newRight - newLeft;
-			height = newBottom - newTop;
+			minX = Math.min(minX, other.minX);
+			minY = Math.min(minY, other.minY);
+			maxX = Math.max(maxX, other.maxX);
+			maxY = Math.max(maxY, other.maxY);
 		}
 	}
 
@@ -287,13 +308,13 @@ public class Region implements Comparable<Region>{
 		if(isNull())
 			return;
 
-		x -= deltaX;
-		y -= deltaY;
-		width += deltaX;
-		height += deltaY;
+		minX -= deltaX;
+		minY -= deltaY;
+		maxX += deltaX;
+		maxY += deltaY;
 
 		//check for region disappearing
-		if(width < 0. || height < 0.)
+		if(maxX < minX || maxY < minY)
 			setToNull();
 	}
 
@@ -308,12 +329,11 @@ public class Region implements Comparable<Region>{
 		if(isNull() || region.isNull() || !intersects(region))
 			return ofEmpty();
 
-		final double intersectionMinX = Math.max(x, region.x);
-		final double intersectionMinY = Math.max(y, region.y);
-		final double intersectionMaxX = Math.min(x + width, region.x + region.width);
-		final double intersectionMaxY = Math.min(y + height, region.y + region.height);
-		return of(intersectionMinX, intersectionMinY,
-			intersectionMaxX - intersectionMinX, intersectionMaxY - intersectionMinY);
+		final double intersectionMinX = Math.max(minX, region.minX);
+		final double intersectionMinY = Math.max(minY, region.minY);
+		final double intersectionMaxX = Math.min(maxX, region.maxX);
+		final double intersectionMaxY = Math.min(maxY, region.maxY);
+		return of(intersectionMinX, intersectionMinY, intersectionMaxX, intersectionMaxY);
 	}
 
 	/**
@@ -324,8 +344,8 @@ public class Region implements Comparable<Region>{
 	 */
 	public boolean intersects(final Region region){
 		return !(region == null || isNull() || region.isNull()
-			|| x + width < region.x || region.x + region.width < x
-			|| y + height < region.y || region.y + region.height < y);
+			|| maxX < region.minX || region.maxX < minX
+			|| maxY < region.minY || region.maxY < minY);
 	}
 
 	/**
@@ -336,8 +356,8 @@ public class Region implements Comparable<Region>{
 	 */
 	public boolean contains(final Region region){
 		return (region != null && !isNull() && !region.isNull()
-			&& x >= region.x && region.x + region.width <= x + width
-			&& y >= region.y && region.y + region.height <= y + height);
+		  && minX >= region.minX && region.maxX <= maxX
+		  && minY >= region.minY && region.maxY <= maxY);
 	}
 
 	/**
@@ -348,8 +368,8 @@ public class Region implements Comparable<Region>{
 	 */
 	public boolean contains(final Point p){
 		return !(p == null || isNull()
-			|| p.getX() > x + width || p.getX() < x
-			|| p.getY() > y + height || p.getY() < y);
+			|| p.getX() > maxX || p.getX() < minX
+			|| p.getY() > maxY || p.getY() < minY);
 	}
 
 
@@ -370,13 +390,13 @@ public class Region implements Comparable<Region>{
 			return 1;
 
 		//compare based on numerical ordering of ordinates
-		int cmp = Double.compare(x, region.x);
+		int cmp = Double.compare(minX, region.minX);
 		if(cmp == 0)
-			cmp = Double.compare(y, region.y);
+			cmp = Double.compare(minY, region.minY);
 		if(cmp == 0)
-			cmp = Double.compare(width, region.width);
+			cmp = Double.compare(maxX, region.maxX);
 		if(cmp == 0)
-			cmp = Double.compare(height, region.height);
+			cmp = Double.compare(maxY, region.maxY);
 		return cmp;
 	}
 
@@ -388,20 +408,20 @@ public class Region implements Comparable<Region>{
 			return false;
 
 		final Region other = (Region)obj;
-		return (Objects.equals(x, other.x) && Objects.equals(y, other.y)
-			&& Objects.equals(width, other.width) && Objects.equals(height, other.height));
+		return (Objects.equals(minX, other.minX) && Objects.equals(minY, other.minY)
+				  && Objects.equals(maxX, other.maxX) && Objects.equals(maxY, other.maxY));
 	}
 
 	@Override
 	public int hashCode(){
-		return Objects.hash(x, y, width, height);
+		return Objects.hash(minX, minY, maxX, maxY);
 	}
 
 	@Override
 	public String toString(){
 		return (boundary? "Boundary": "Region")
-			+ (code != null? "(" + code + ")": "")
-			+ "[" + x + " : " + (x + width) + ", " + y + " : " + (y + height) + "]";
+				 + (code != null? "(" + code + ")": "")
+				 + "[" + minX + " : " + maxX + ", " + minY + " : " + maxY + "]";
 	}
 
 }

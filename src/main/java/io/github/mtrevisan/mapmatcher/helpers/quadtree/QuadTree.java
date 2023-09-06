@@ -203,62 +203,60 @@ public class QuadTree implements RegionTree<QuadTreeOptions>{
 	}
 
 	private void split(){
-		final double x = envelope.getX();
-		final double y = envelope.getY();
-		final double width = envelope.getWidth() / 2.;
-		final double height = envelope.getHeight() / 2.;
+		final double x = envelope.getMinX();
+		final double y = envelope.getMinY();
+		final double childWidth = envelope.getExtentX() / 2.;
+		final double childHeight = envelope.getExtentY() / 2.;
 
-		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, width, height));
-		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + width, y, width, height));
-		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + height, width, height));
-		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + width, y + height, width, height));
+		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, x + childWidth, y + childHeight));
+		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, x + childWidth * 2., y + childHeight));
+		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, x + childWidth, y + childHeight * 2.));
+		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + childWidth, y + childHeight, x + childWidth * 2., y + childHeight * 2.));
 	}
 
 	private static Region calculateRegion(final Region envelope, final int child){
-		double x = envelope.getX();
-		double y = envelope.getY();
-		double width = envelope.getWidth();
-		double height = envelope.getHeight();
+		double x = envelope.getMinX();
+		double y = envelope.getMinY();
+		double childWidth = envelope.getExtentX();
+		double childHeight = envelope.getExtentY();
 		final BitCode code = envelope.getCode();
 		final int depth = (code != null? code.getLevel(): 0);
 		for(int i = 0; i < depth; i ++){
 			final int index = code.valueAt(i << 1, 2);
-			width /= 2.;
-			height /= 2.;
-			x += ((index & 0x01) != 0x00? width: 0);
-			y += ((index & 0x10) != 0x00? height: 0);
+			childWidth /= 2.;
+			childHeight /= 2.;
+			x += ((index & 0x01) != 0x00? childWidth: 0);
+			y += ((index & 0x10) != 0x00? childHeight: 0);
 		}
 
-		width /= 2.;
-		height /= 2.;
-		x += ((child & 0x01) != 0x00? width: 0);
-		y += ((child & 0x10) != 0x00? height: 0);
-		return Region.of(x, y, width, height);
+		childWidth /= 2.;
+		childHeight /= 2.;
+		x += ((child & 0x01) != 0x00? childWidth: 0);
+		y += ((child & 0x10) != 0x00? childHeight: 0);
+		return Region.of(x, y, x + childWidth, y + childHeight);
 	}
 
 	private static Region calculateChildRegion(final Region envelope, final int side){
-		double x = envelope.getX();
-		double y = envelope.getY();
-		double width = envelope.getWidth();
-		double height = envelope.getHeight();
-		width /= 2.;
-		height /= 2.;
-		x += ((side & 0x01) != 0x00? width: 0);
-		y += ((side & 0x10) != 0x00? height: 0);
-		return Region.of(x, y, width, height);
+		double x = envelope.getMinX();
+		double y = envelope.getMinY();
+		final double childWidth = envelope.getExtentX() / 2.;
+		final double childHeight = envelope.getExtentY() / 2.;
+		x += ((side & 0x01) != 0x00? childWidth: 0);
+		y += ((side & 0x10) != 0x00? childHeight: 0);
+		return Region.of(x, y, x + childWidth, y + childHeight);
 	}
 
 	private static int getChildIndex(final Region envelope, final Region region){
-		final double x = region.getX();
-		final double y = region.getY();
-		final double width = region.getWidth();
-		final double height = region.getHeight();
-		final double midX = envelope.getX() + envelope.getWidth() / 2.;
-		final double midY = envelope.getY() + envelope.getHeight() / 2.;
-		final boolean northSide = (y < midY && height + y < midY);
-		final boolean southSide = (y > midY);
-		final boolean westSide = (x < midX && x + width < midX);
-		final boolean eastSide = (x > midX);
+		final double minX = region.getMinX();
+		final double minY = region.getMinY();
+		final double maxX = region.getMaxX();
+		final double maxY = region.getMaxY();
+		final double midX = envelope.getMidX();
+		final double midY = envelope.getMidY();
+		final boolean northSide = (minY < midY && maxY < midY);
+		final boolean southSide = (minY > midY);
+		final boolean westSide = (minX < midX && maxX < midX);
+		final boolean eastSide = (minX > midX);
 
 		int index = INDEX_SELF;
 		if(eastSide){
