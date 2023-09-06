@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
@@ -48,10 +50,11 @@ out geom;
 
 == list of buildings (elements.type=node) ==
 [out:json];
-area[name="Lozzo di Cadore"]->.searchArea;
+area[name="Miane"];
+//area(id:46539);
 (
-  nwr["building"](area.searchArea);
-  nwr["addr:housenumber"](area.searchArea);
+  nwr(area)["building"];
+  nwr(area)["addr:housenumber"];
 );
 out center;
 out tags;
@@ -100,9 +103,10 @@ public class GeographicalDataExtractor{
 		final String stateCode = "IT";
 		final StateData stateData = collectData(stateCode);
 
-		extractMunicipalityData(46539);
+//		extractBuildingData("Miane");
 
 		//TODO
+		System.out.println();
 	}
 
 	private static StateData collectData(final String stateCode){
@@ -113,8 +117,20 @@ public class GeographicalDataExtractor{
 
 			//extract data of each province
 			final ProvinceData[] provinceData = new ProvinceData[provinceIDs.length];
-			for(int index = 0; index < provinceIDs.length; index ++)
-				provinceData[index] = extractProvinceData(provinceIDs[index]);
+			for(int i = 0; i < provinceIDs.length; i ++){
+				final int provinceID = provinceIDs[i];
+				provinceData[i] = extractProvinceData(provinceID);
+
+				final int[] municipalityIDs = listMunicipalityIDs(provinceData[i].provinceCode);
+				final MunicipalityData[] municipalityData = new MunicipalityData[municipalityIDs.length];
+				for(int j = 0; j < municipalityIDs.length; j ++){
+					municipalityData[j] = extractMunicipalityData(municipalityIDs[j]);
+
+					municipalityData[j].buildings = extractBuildingData(municipalityData[j].municipalityName);
+				}
+
+				provinceData[i].municipalities = municipalityData;
+			}
 			region.provinces = provinceData;
 		}
 		return stateData;
@@ -172,9 +188,9 @@ public class GeographicalDataExtractor{
 	 */
 	private static int[] listRegionIDs(final String stateCode){
 		int[] ids = null;
-		final String requestBody = "[out:csv(::id)];\n"
-			+ "area[\"ISO3166-1\"=\"" + stateCode + "\"];\n"
-			+ "rel(area)[\"ISO3166-2\"~\"^" + stateCode + "\"][\"admin_level\"=\"4\"];\n"
+		final String requestBody = "[out:csv(::id)];"
+			+ "area[\"ISO3166-1\"=\"" + stateCode + "\"];"
+			+ "rel(area)[\"ISO3166-2\"~\"^" + stateCode + "\"][admin_level=4];"
 			+ "out body;";
 		final DataResponse response = post(OVERPASS_API_URI, requestBody);
 		if(response.statusCode == HttpStatus.SC_OK){
@@ -201,8 +217,8 @@ public class GeographicalDataExtractor{
 
 	private static RegionData extractRegionData(final int id){
 		RegionData regionData = null;
-		final String requestBody = "[out:json];\n"
-			+ "rel(id:" + id + ");\n"
+		final String requestBody = "[out:json];"
+			+ "rel(id:" + id + ");"
 			+ "out geom;";
 		final DataResponse response = post(OVERPASS_API_URI, requestBody);
 		if(response.statusCode == HttpStatus.SC_OK){
@@ -218,7 +234,6 @@ public class GeographicalDataExtractor{
 					throw new UnsupportedOperationException("There are more than one element for id " + id + ", what should be done?");
 
 				regionData = new RegionData();
-//				dataRegion.elements = new DataElement[elementSize];
 				regionData.boundaries = new Region[elementSize];
 
 				for(int elementIndex = 0; elementIndex < elementSize; elementIndex ++){
@@ -233,38 +248,8 @@ public class GeographicalDataExtractor{
 					final double maxLongitude = bounds.path("maxlon").asDouble(Double.NaN);
 					final double maxLatitude = bounds.path("maxlat").asDouble(Double.NaN);
 
-					final ArrayNode members = (ArrayNode)element.path("members");
-					final int memberSize = members.size();
-
-//					final DataElement dataElement = new DataElement();
-//					dataElement.region = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
-//					dataElement.members = new DataMember[memberSize];
-//
-//					for(int memberIndex = 0; memberIndex < memberSize; memberIndex ++){
-//						final JsonNode member = members.get(memberIndex);
-//
-//						if(!member.has("geometry"))
-//							continue;
-//
-//						final ArrayNode geometry = (ArrayNode)member.path("geometry");
-//						final String rawRole = member.path("role").asText("").toUpperCase(Locale.ROOT);
-//						final DataMember.MemberRole role = DataMember.MemberRole.valueOf(rawRole);
-//						final StringJoiner sj = new StringJoiner(",", "LINESTRING(", ")");
-//						for(final JsonNode point : geometry){
-//							final double longitude = point.path("lon").asDouble(Double.NaN);
-//							final double latitude = point.path("lat").asDouble(Double.NaN);
-//							sj.add(longitude + " " + latitude);
-//						}
-//
-//						final DataMember dataMember = new DataMember();
-//						dataMember.role = role;
-//						dataMember.polyline = factory.createPolyline(sj.toString());
-//						dataElement.members[memberIndex] = dataMember;
-//					}
-
 					regionData.regionCode = regionCode;
 					regionData.regionName = regionName;
-//					dataRegion.elements[elementIndex] = dataElement;
 					regionData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 				}
 			}
@@ -283,9 +268,9 @@ public class GeographicalDataExtractor{
 	 */
 	private static int[] listProvinceIDs(final String regionCode){
 		int[] ids = null;
-		final String requestBody = "[out:csv(::id)];\n"
-			+ "area[\"ISO3166-2\"=\"" + regionCode + "\"];\n"
-			+ "rel(area)[\"admin_level\"=\"6\"];\n"
+		final String requestBody = "[out:csv(::id)];"
+			+ "area[\"ISO3166-2\"=\"" + regionCode + "\"];"
+			+ "rel(area)[admin_level=6];"
 			+ "out body;";
 		final DataResponse response = post(OVERPASS_API_URI, requestBody);
 		if(response.statusCode == HttpStatus.SC_OK){
@@ -304,14 +289,12 @@ public class GeographicalDataExtractor{
 
 	private static ProvinceData extractProvinceData(final int id){
 		ProvinceData provinceData = null;
-		final String requestBody = "[out:json];\n"
-			+ "rel(id:" + id + ");\n"
+		final String requestBody = "[out:json];"
+			+ "rel(id:" + id + ");"
 			+ "out geom;";
 		final DataResponse response = post(OVERPASS_API_URI, requestBody);
 		if(response.statusCode == HttpStatus.SC_OK){
 			try{
-//				final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-
 				//interpret as JSON
 				final JsonNode data = JSON_MAPPER.readTree(response.body);
 
@@ -321,7 +304,6 @@ public class GeographicalDataExtractor{
 					throw new UnsupportedOperationException("There are more than one element for id " + id + ", what should be done?");
 
 				provinceData = new ProvinceData();
-//				provinceData.elements = new DataElement[elementSize];
 				provinceData.boundaries = new Region[elementSize];
 
 				for(int elementIndex = 0; elementIndex < elementSize; elementIndex ++){
@@ -336,38 +318,8 @@ public class GeographicalDataExtractor{
 					final double maxLongitude = bounds.path("maxlon").asDouble(Double.NaN);
 					final double maxLatitude = bounds.path("maxlat").asDouble(Double.NaN);
 
-					final ArrayNode members = (ArrayNode)element.path("members");
-					final int memberSize = members.size();
-
-//					final DataElement dataElement = new DataElement();
-//					dataElement.region = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
-//					dataElement.members = new DataMember[memberSize];
-//
-//					for(int memberIndex = 0; memberIndex < memberSize; memberIndex ++){
-//						final JsonNode member = members.get(memberIndex);
-//
-//						if(!member.has("geometry"))
-//							continue;
-//
-//						final ArrayNode geometry = (ArrayNode)member.path("geometry");
-//						final String rawRole = member.path("role").asText("").toUpperCase(Locale.ROOT);
-//						final DataMember.MemberRole role = DataMember.MemberRole.valueOf(rawRole);
-//						final StringJoiner sj = new StringJoiner(",", "LINESTRING(", ")");
-//						for(final JsonNode point : geometry){
-//							final double longitude = point.path("lon").asDouble(Double.NaN);
-//							final double latitude = point.path("lat").asDouble(Double.NaN);
-//							sj.add(longitude + " " + latitude);
-//						}
-//
-//						final DataMember dataMember = new DataMember();
-//						dataMember.role = role;
-//						dataMember.polyline = factory.createPolyline(sj.toString());
-//						dataElement.members[memberIndex] = dataMember;
-//					}
-
 					provinceData.provinceCode = provinceCode;
 					provinceData.provinceName = provinceName;
-//					provinceData.elements[elementIndex] = dataElement;
 					provinceData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 				}
 			}
@@ -386,9 +338,9 @@ public class GeographicalDataExtractor{
 	 */
 	private static int[] listMunicipalityIDs(final String provinceCode){
 		int[] ids = null;
-		final String requestBody = "[out:csv(::id)];\n"
-			+ "area[\"ISO3166-2\"=\"" + provinceCode + "\"];\n"
-			+ "rel(area)[\"admin_level\"=\"8\"];\n"
+		final String requestBody = "[out:csv(::id)];"
+			+ "area[\"ISO3166-2\"=\"" + provinceCode + "\"];"
+			+ "rel(area)[admin_level=8];"
 			+ "out body;";
 		final DataResponse response = post(OVERPASS_API_URI, requestBody);
 		if(response.statusCode == HttpStatus.SC_OK){
@@ -407,8 +359,8 @@ public class GeographicalDataExtractor{
 
 	private static MunicipalityData extractMunicipalityData(final int id){
 		MunicipalityData municipalityData = null;
-		final String requestBody = "[out:json];\n"
-			+ "rel(id:" + id + ");\n"
+		final String requestBody = "[out:json];"
+			+ "rel(id:" + id + ");"
 			+ "out geom;";
 		final DataResponse response = post(OVERPASS_API_URI, requestBody);
 		if(response.statusCode == HttpStatus.SC_OK){
@@ -424,7 +376,6 @@ public class GeographicalDataExtractor{
 					throw new UnsupportedOperationException("There are more than one element for id " + id + ", what should be done?");
 
 				municipalityData = new MunicipalityData();
-//				municipalityData.elements = new DataElement[elementSize];
 				municipalityData.boundaries = new Region[elementSize];
 
 				for(int elementIndex = 0; elementIndex < elementSize; elementIndex ++){
@@ -438,37 +389,7 @@ public class GeographicalDataExtractor{
 					final double maxLongitude = bounds.path("maxlon").asDouble(Double.NaN);
 					final double maxLatitude = bounds.path("maxlat").asDouble(Double.NaN);
 
-					final ArrayNode members = (ArrayNode)element.path("members");
-					final int memberSize = members.size();
-
-//					final DataElement dataElement = new DataElement();
-//					dataElement.region = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
-//					dataElement.members = new DataMember[memberSize];
-//
-//					for(int memberIndex = 0; memberIndex < memberSize; memberIndex ++){
-//						final JsonNode member = members.get(memberIndex);
-//
-//						if(!member.has("geometry"))
-//							continue;
-//
-//						final ArrayNode geometry = (ArrayNode)member.path("geometry");
-//						final String rawRole = member.path("role").asText("").toUpperCase(Locale.ROOT);
-//						final DataMember.MemberRole role = DataMember.MemberRole.valueOf(rawRole);
-//						final StringJoiner sj = new StringJoiner(",", "LINESTRING(", ")");
-//						for(final JsonNode point : geometry){
-//							final double longitude = point.path("lon").asDouble(Double.NaN);
-//							final double latitude = point.path("lat").asDouble(Double.NaN);
-//							sj.add(longitude + " " + latitude);
-//						}
-//
-//						final DataMember dataMember = new DataMember();
-//						dataMember.role = role;
-//						dataMember.polyline = factory.createPolyline(sj.toString());
-//						dataElement.members[memberIndex] = dataMember;
-//					}
-
 					municipalityData.municipalityName = municipalityName;
-//					municipalityData.elements[elementIndex] = dataElement;
 					municipalityData.boundaries[elementIndex] = Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude);
 				}
 			}
@@ -477,6 +398,68 @@ public class GeographicalDataExtractor{
 			}
 		}
 		return municipalityData;
+	}
+
+	private static BuildingData[] extractBuildingData(final String municipalityName){
+		BuildingData[] buildingData = null;
+		final String requestBody = "[out:json];"
+			+ "area[name=\"" + municipalityName + "\"];"
+			+ "("
+			+ "nwr(area)[\"building\"];"
+			+ "nwr(area)[\"addr:housenumber\"];"
+			+ ");"
+			+ "out center;"
+			+ "out tags;"
+			+ "out qt;";
+		final DataResponse response = post(OVERPASS_API_URI, requestBody);
+		if(response.statusCode == HttpStatus.SC_OK){
+			try{
+//				final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+
+				//interpret as JSON
+				final JsonNode data = JSON_MAPPER.readTree(response.body);
+
+				final ArrayNode elements = (ArrayNode)data.path("elements");
+				final int elementSize = elements.size();
+				buildingData = new BuildingData[elementSize];
+
+				for(int elementIndex = 0; elementIndex < elementSize; elementIndex ++){
+					final JsonNode element = elements.get(elementIndex);
+
+					final JsonNode center = element.path("center");
+					final double longitude = (center.isEmpty()? element: center).path("lon").asDouble(Double.NaN);
+					final double latitude = (center.isEmpty()? element: center).path("lat").asDouble(Double.NaN);
+					if(Double.isNaN(longitude) || Double.isNaN(latitude))
+						continue;
+
+					final JsonNode tags = element.path("tags");
+					final String city = tags.path("addr:city").asText(null);
+					final String street = tags.path("addr:street").asText(null);
+					final String houseNumber = tags.path("addr:housenumber").asText(null);
+					final String name = tags.path("name").asText(null);
+
+					final BuildingData building = new BuildingData();
+					building.longitude = longitude;
+					building.latitude = latitude;
+					building.city = city;
+					building.municipality = municipalityName;
+					building.street = street;
+					building.houseNumber = houseNumber;
+					building.name = name;
+					buildingData[elementIndex] = building;
+				}
+			}
+			catch(final JsonProcessingException jpe){
+				LOGGER.error(jpe.getMessage(), jpe);
+			}
+		}
+
+		final List<BuildingData> cleanedList = new ArrayList<>();
+		if(buildingData != null)
+			for(final BuildingData buildingDatum : buildingData)
+				if(buildingDatum != null)
+					cleanedList.add(buildingDatum);
+		return cleanedList.toArray(BuildingData[]::new);
 	}
 
 
@@ -499,26 +482,26 @@ public class GeographicalDataExtractor{
 	private static final class ProvinceData{
 		private String provinceCode;
 		private String provinceName;
-//		private MunicipalityData[] municipalities;
+		private MunicipalityData[] municipalities;
 		private Region[] boundaries;
 	}
 
 	private static final class MunicipalityData{
 		private String municipalityName;
 		private Region[] boundaries;
+		private BuildingData[] buildings;
 	}
 
-//	private static final class DataElement{
-//		private Region region;
-//		private DataElementMember[] members;
-//	}
-//
-//	private static final class DataElementMember{
-//		private MemberRole role;
-//		private Polyline polyline;
-//
-//		private enum MemberRole{OUTER, INNER}
-//	}
+	private static final class BuildingData{
+		private double longitude;
+		private double latitude;
+		private String city;
+		private String municipality;
+		private String street;
+		private String houseNumber;
+
+		private String name;
+	}
 
 
 	private static DataResponse post(final String uri, final String requestBody){

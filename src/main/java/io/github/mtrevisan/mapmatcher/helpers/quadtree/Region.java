@@ -41,6 +41,7 @@ public class Region implements Comparable<Region>{
 	/** The maximum (upper right) y-coordinate. */
 	private double maxY;
 
+	private String id;
 	/** Store linear region quadtree location code. */
 	private BitCode code;
 	private SpatialNode node;
@@ -102,6 +103,13 @@ public class Region implements Comparable<Region>{
 		this.minY = minY;
 		this.maxX = maxX;
 		this.maxY = maxY;
+	}
+
+
+	public Region withID(final String id){
+		this.id = id;
+
+		return this;
 	}
 
 	/**
@@ -420,6 +428,7 @@ public class Region implements Comparable<Region>{
 	@Override
 	public String toString(){
 		return (boundary? "Boundary": "Region")
+				 + (id != null? "[" + id + "]": "")
 				 + (code != null? "(" + code + ")": "")
 				 + "[" + minX + " : " + maxX + ", " + minY + " : " + maxY + "]";
 	}
