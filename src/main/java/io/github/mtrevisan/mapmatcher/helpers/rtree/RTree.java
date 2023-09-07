@@ -43,13 +43,17 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 	private RNode root;
 
+	private final NodeSplitter splitter;
 
-	public static RTree create(){
-		return new RTree();
+
+	public static RTree create(final NodeSplitter splitter){
+		return new RTree(splitter);
 	}
 
 
-	private RTree(){}
+	private RTree(final NodeSplitter splitter){
+		this.splitter = splitter;
+	}
 
 
 	@Override
@@ -60,20 +64,17 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 	@Override
 	public void insert(final Region region, final RTreeOptions options){
-		final RNode node = RNode.createLeaf(region);
+		final RNode newNode = RNode.createLeaf(region);
 		if(isEmpty())
-			root = node;
+			root = newNode;
 		else{
-			final RNode parent = chooseLeaf(node.region);
-			parent.children.add(node);
-			node.parent = parent;
+			final RNode parent = chooseLeaf(newNode.region);
+			parent.addChild(newNode);
 
 			if(parent.children.size() <= options.maxObjects)
 				adjustRegionsUpToRoot(parent);
-			else{
-				final RNode[] splits = splitNode(parent, options.minObjects);
-				adjustTree(splits[0], splits[1], options);
-			}
+			else
+				splitAndAdjust(parent, newNode, options);
 		}
 	}
 
@@ -110,195 +111,115 @@ public class RTree implements RegionTree<RTreeOptions>{
 		RNode currentNode = node;
 		while(currentNode != null){
 			tightenRegion(currentNode);
+
 			currentNode = currentNode.parent;
 		}
 	}
 
-	private void adjustTree(final RNode node, RNode newNode, final RTreeOptions options){
-		RNode currentNode = node;
-		while(currentNode != root){
+	private void splitAndAdjust(RNode parent, final RNode overflowNode, final RTreeOptions options){
+		//FIXME
+		while(true){
+//			RNode[] splits = splitter.splitNode(parent, overflowNode);
+			RNode[] splits = splitter.splitNode(parent);
+			RNode currentNode = splits[0];
+			RNode newNode = splits[1];
+
+			if(parent == root){
+				//assign new root
+				root = RNode.createInternal(Region.ofEmpty());
+				root.addChild(currentNode);
+				root.addChild(newNode);
+				tightenRegion(root);
+
+				break;
+			}
+
 			tightenRegion(currentNode);
 			tightenRegion(newNode);
 			if(currentNode.parent.children.size() <= options.maxObjects)
 				break;
 
-			final RNode[] splits = splitNode(currentNode.parent, options.minObjects);
-			currentNode = splits[0];
-			newNode = splits[1];
+			parent = currentNode.parent;
 		}
-
-		final double coordinate = Math.sqrt(Double.MAX_VALUE);
-		final double dimension = -2. * Math.sqrt(Double.MAX_VALUE);
-		final Region region = Region.of(coordinate, coordinate, coordinate + dimension, coordinate + dimension);
-		root = RNode.createInternal(region);
-
-		root.children.add(currentNode);
-		currentNode.parent = root;
-		root.children.add(newNode);
-		newNode.parent = root;
-
-		tightenRegion(root);
-	}
-
-	private RNode[] splitNode(final RNode node, final int minObjects){
-		final RNode[] nodes = new RNode[]{
-			node,
-			(node.leaf? RNode.createLeaf(node.region): RNode.createInternal(node.region))
-		};
-		nodes[1].parent = node.parent;
-		if(nodes[1].parent != null)
-			nodes[1].parent.children.add(nodes[1]);
-
-		final LinkedList<RNode> children = new LinkedList<>(node.children);
-		node.children.clear();
-		final RNode[] seedNodes = pickSeeds(children);
-		nodes[0].children.add(seedNodes[0]);
-		nodes[1].children.add(seedNodes[1]);
-
-		while(!children.isEmpty()){
-			if((nodes[0].children.size() >= minObjects) && (nodes[1].children.size() + children.size() == minObjects)){
-				nodes[1].children.addAll(children);
-				children.clear();
-				return nodes;
-			}
-			else if((nodes[1].children.size() >= minObjects) && (nodes[1].children.size() + children.size() == minObjects)){
-				nodes[0].children.addAll(children);
-				children.clear();
-				return nodes;
-			}
-			final RNode child = children.pop();
-			RNode preferred;
-
-			final double nia0 = child.region.nonIntersectingArea(nodes[0].region);
-			final double nia1 = child.region.nonIntersectingArea(nodes[1].region);
-			if(nia0 < nia1)
-				preferred = nodes[0];
-			else if(nia0 > nia1)
-				preferred = nodes[1];
-			else{
-				final double area0 = nodes[0].region.euclideanArea();
-				final double area1 = nodes[1].region.euclideanArea();
-				if(area0 < area1)
-					preferred = nodes[0];
-				else if(nia0 > area1)
-					preferred = nodes[1];
-				else
-					preferred = nodes[nodes[0].children.size() <= nodes[1].children.size()? 0: 1];
-			}
-			preferred.children.add(child);
-		}
-		tightenRegion(nodes[0]);
-		tightenRegion(nodes[1]);
-		return nodes;
-	}
-
-	private static RNode[] pickSeeds(final List<RNode> nodes){
-		RNode[] bestPair = null;
-		double bestSeparation = 0.;
-		for(int i = 0; i < 2; i ++){
-			double dimLowerBound = Double.MAX_VALUE;
-			double dimMinUpperBound = Double.MAX_VALUE;
-			double dimUpperBound = -Double.MAX_VALUE;
-			double dimMaxLowerBound = -Double.MAX_VALUE;
-			RNode nodeMaxLowerBound = null;
-			RNode nodeMinUpperBound = null;
-			for(final RNode node : nodes){
-				final double[] coordinates = new double[]{node.region.getMinX(), node.region.getMinY(),
-					node.region.getMaxX(), node.region.getMaxY()};
-				if(coordinates[i] < dimLowerBound)
-					dimLowerBound = coordinates[i];
-				if(coordinates[i + 2] > dimUpperBound)
-					dimUpperBound = coordinates[i + 2];
-				if(coordinates[i] > dimMaxLowerBound){
-					dimMaxLowerBound = coordinates[i];
-					nodeMaxLowerBound = node;
-				}
-				if(coordinates[i + 2] < dimMinUpperBound){
-					dimMinUpperBound = coordinates[i + 2];
-					nodeMinUpperBound = node;
-				}
-			}
-			final double separation = Math.abs((dimMinUpperBound - dimMaxLowerBound) / (dimUpperBound - dimLowerBound));
-			if(separation >= bestSeparation){
-				bestPair = new RNode[]{nodeMaxLowerBound, nodeMinUpperBound};
-				bestSeparation = separation;
-			}
-		}
-		if(bestPair != null){
-			nodes.remove(bestPair[0]);
-			nodes.remove(bestPair[1]);
-		}
-		return bestPair;
 	}
 
 
 	@Override
 	public boolean delete(final Region region, final RTreeOptions options){
+		boolean deleted = false;
 		final RNode leaf = findLeaf(root, region);
-		boolean isDeleted = false;
 		if(leaf != null){
-			for(final RNode node : leaf.children)
-				if(node.region.equals(region)){
-					isDeleted = true;
-					break;
-				}
-			if(isDeleted)
-				condenseTree(leaf, options);
+			condenseTree(leaf, options);
+
+			//reassign root if it has only one child
+			if(root.children.size() == 1)
+				root = RNode.createLeaf(root.children.get(0).region);
+
+			deleted = true;
 		}
-		return isDeleted;
+		return deleted;
 	}
 
 	private static RNode findLeaf(final RNode parent, final Region region){
-		if(parent.leaf){
-			for(final RNode child : parent.children)
-				if(child.region.intersects(region))
-					return parent;
+		final Deque<RNode> stack = new ArrayDeque<>();
+		stack.push(parent);
+		while(!stack.isEmpty()){
+			final RNode currentNode = stack.pop();
+
+			if(currentNode.leaf){
+				for(final RNode child : currentNode.children)
+					if(child.region.intersects(region))
+						return currentNode;
+			}
+			else{
+				for(final RNode child : currentNode.children)
+					if(child.region.intersects(region))
+						stack.push(child);
+			}
 		}
-		else
-			for(final RNode child : parent.children)
-				if(child.region.intersects(region)){
-					final RNode result = findLeaf(child, region);
-					if(result != null)
-						return result;
-				}
 		return null;
 	}
 
 	private void condenseTree(RNode remove, final RTreeOptions options){
-		final Set<RNode> reprocessedNodes = new HashSet<>();
+		final Set<RNode> removedNodes = new HashSet<>();
 		while(remove != root){
-			if(remove.leaf && remove.children.size() < options.minObjects){
-				reprocessedNodes.addAll(remove.children);
-				remove.parent.children.remove(remove);
-			}
-			else if(!remove.leaf && remove.children.size() < options.minObjects){
-				final LinkedList<RNode> toVisit = new LinkedList<>(remove.children);
-				while(!toVisit.isEmpty()){
-					final RNode node = toVisit.pop();
-					if(node.leaf)
-						reprocessedNodes.addAll(node.children);
-					else
-						toVisit.addAll(node.children);
+			//node has underflow of children
+			if(remove.children.size() < options.minObjects){
+				if(remove.leaf)
+					removedNodes.addAll(remove.children);
+				else{
+					final LinkedList<RNode> toVisit = new LinkedList<>(remove.children);
+					while(!toVisit.isEmpty()){
+						final RNode node = toVisit.pop();
+						if(node.leaf)
+							removedNodes.addAll(node.children);
+						else
+							toVisit.addAll(node.children);
+					}
 				}
+
 				remove.parent.children.remove(remove);
 			}
 			else
 				tightenRegion(remove);
 
+			final RNode oldRemove = remove;
 			remove = remove.parent;
+			oldRemove.parent = null;
 		}
-		for(final RNode eNode : reprocessedNodes)
-			insert(eNode.region, options);
+
+		//reinsert temporarily deleted nodes
+		for(final RNode node : removedNodes)
+			insert(node.region, options);
 	}
 
-	private static void tightenRegion(final RNode node){
+	private void tightenRegion(final RNode node){
 		final double[] coordinates = new double[4];
 		coordinates[0] = Double.MAX_VALUE;
 		coordinates[1] = Double.MAX_VALUE;
 		coordinates[2] = -Double.MAX_VALUE;
 		coordinates[3] = -Double.MAX_VALUE;
 		for(final RNode child : node.children){
-			child.parent = node;
 			if(child.region.getMinX() < coordinates[0])
 				coordinates[0] = child.region.getMinX();
 			if(child.region.getMinY() < coordinates[1])
@@ -315,21 +236,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 	@Override
 	public boolean intersects(final Region region){
-		final Deque<RNode> stack = new ArrayDeque<>();
-		stack.push(root);
-		while(!stack.isEmpty()){
-			final RNode current = stack.pop();
-			if(current.leaf){
-				for(final RNode e : current.children)
-					if(e.region.intersects(region))
-						return true;
-			}
-			else
-				for(final RNode c : current.children)
-					if(c.region.intersects(region))
-						stack.push(c);
-		}
-		return false;
+		return (findLeaf(root, region) != null);
 	}
 
 	@Override
@@ -339,14 +246,15 @@ public class RTree implements RegionTree<RTreeOptions>{
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
 			if(current.leaf){
-				for(final RNode e : current.children)
-					if(e.region.contains(region))
+				for(final RNode child : current.children)
+					if(child.region.contains(region))
 						return true;
 			}
-			else
-				for(final RNode c : current.children)
-					if(c.region.contains(region))
-						stack.push(c);
+			else{
+				for(final RNode child : current.children)
+					if(child.region.contains(region))
+						stack.push(child);
+			}
 		}
 		return false;
 	}

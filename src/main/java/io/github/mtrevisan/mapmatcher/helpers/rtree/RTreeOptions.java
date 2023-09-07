@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.rtree;
 
-
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 
 
@@ -34,11 +33,12 @@ public class RTreeOptions implements TreeOptions{
 	int maxObjects = 10;
 
 
-	public static RTreeOptions withDefault(){
+	public static RTreeOptions create(){
 		return new RTreeOptions();
 	}
 
-	public RTreeOptions(){}
+
+	private RTreeOptions(){}
 
 
 	public RTreeOptions withMinObjects(final int minObjects){

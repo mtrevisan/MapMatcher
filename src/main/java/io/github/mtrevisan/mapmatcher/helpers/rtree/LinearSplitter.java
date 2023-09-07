@@ -4,19 +4,25 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-//https://github.com/TheDeathFar/HilbertTree/blob/main/src/ru/vsu/css/vorobcov_i_a/LinearSplitter.java#L17
+//https://github.com/TheDeathFar/HilbertTree/blob/main/src/ru/vsu/css/vorobcov_i_a/LinearSplitter.java
 public class LinearSplitter extends NodeSplitter{
 
 	private final int minObjects;
 
 
-	LinearSplitter(final int minObjects){
-		this.minObjects = minObjects;
+	public static LinearSplitter create(final RTreeOptions options){
+		return new LinearSplitter(options);
 	}
 
 
+	private LinearSplitter(final RTreeOptions options){
+		this.minObjects = options.minObjects;
+	}
+
+
+	//FIXME
 	@Override
-	RNode[] splitNode(final RNode node, final int minObjects){
+	RNode[] splitNode(final RNode node){
 		final RNode[] nodes = new RNode[]{
 			node,
 			(node.leaf? RNode.createLeaf(node.region): RNode.createInternal(node.region))
@@ -63,8 +69,7 @@ public class LinearSplitter extends NodeSplitter{
 			}
 			preferred.children.add(child);
 		}
-		tightenRegion(nodes[0]);
-		tightenRegion(nodes[1]);
+
 		return nodes;
 	}
 
@@ -132,10 +137,39 @@ public class LinearSplitter extends NodeSplitter{
 //				maxDifference = maxEnlargementDifference;
 //			}
 //		}
+//
 //		//selecting group to which we add the selected entry
 //		resolveTies(node1, node2, chosenEntry);
+//
 //		//remove chosenRecord from records
-//		records.remove(chosenEntry);
+//		nodes.remove(chosenEntry);
 	}
+
+//	private void resolveTies(final RNode node1, final RNode node2, final RNode chosenEntry){
+//		double enlargementL1 = node1.region.calculateEnlargement(chosenEntry.region);
+//		double enlargementL2 = node2.region.calculateEnlargement(chosenEntry.region);
+//		if(enlargementL1 == enlargementL2){
+//			// select group with min area
+//			double area1 = node1.region.euclideanArea();
+//			double area2 = node2.region.euclideanArea();
+//			if(area1 == area2){
+//				int numEntries1 = node1.children.size();
+//				int numEntries2 = node2.children.size();
+//				//if it's still equal, resolve by default to L1
+//				if(numEntries1 <= numEntries2)
+//					node1.addChild(chosenEntry);
+//				else
+//					node2.addChild(chosenEntry);
+//			}
+//			else if(area1 < area2)
+//				node1.addChild(chosenEntry);
+//			else
+//				node2.addChild(chosenEntry);
+//		}
+//		else if(enlargementL1 < enlargementL2)
+//			node1.addChild(chosenEntry);
+//		else
+//			node2.addChild(chosenEntry);
+//	}
 
 }

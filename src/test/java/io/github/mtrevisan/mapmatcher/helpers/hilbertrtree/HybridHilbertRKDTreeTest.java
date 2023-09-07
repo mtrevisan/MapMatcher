@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-class HybridHilbertPackedRKDTreeTest{
+class HybridHilbertRKDTreeTest{
 
 	private static final GeometryFactory FACTORY_EUCLIDEAN = new GeometryFactory(new EuclideanCalculator());
 

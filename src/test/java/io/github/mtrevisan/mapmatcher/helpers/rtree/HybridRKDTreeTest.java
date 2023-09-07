@@ -43,10 +43,11 @@ class HybridRKDTreeTest{
 
 	@Test
 	void simple(){
-		RTreeOptions options = new RTreeOptions()
+		RTreeOptions options = RTreeOptions.create()
 			.withMinObjects(1)
 			.withMaxObjects(10);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(), options);
+		NodeSplitter splitter = LinearSplitter.create(options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(splitter), options);
 		tree.insert(Region.of(10., 10., 20., 20.));
 		tree.insert(Region.of(5., 5., 15., 15.));
 		tree.insert(Region.of(25., 25., 35., 35.));
@@ -68,10 +69,10 @@ class HybridRKDTreeTest{
 
 //	@Test
 	void italy(){
-		RTreeOptions options = new RTreeOptions()
-			.withMinObjects(2)
+		RTreeOptions options = RTreeOptions.create().withMinObjects(2)
 			.withMaxObjects(3);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(), options);
+		NodeSplitter splitter = LinearSplitter.create(options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(splitter), options);
 		//italy (IT)
 //		tree.insert(Region.of(6.6272658, 35.4929521, 18.5205121, 47.0921462).withID("IT"));
 		//sicilia (IT-82)

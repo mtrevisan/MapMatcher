@@ -55,4 +55,10 @@ class RNode{
 		children = new ArrayList<>();
 	}
 
+
+	void addChild(final RNode child){
+		child.parent = this;
+		children.add(child);
+	}
+
 }
