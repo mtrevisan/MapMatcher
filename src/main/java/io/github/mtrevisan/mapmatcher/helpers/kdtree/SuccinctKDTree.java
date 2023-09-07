@@ -406,7 +406,7 @@ public class SuccinctKDTree implements SpatialTree{
 	 * @return Closest {@link Point} object in the tree to the target.
 	 */
 	@Override
-	public Point nearestNeighbour(final Point point){
+	public Point nearestNeighbor(final Point point){
 		if(isEmpty() || point == null)
 			return null;
 

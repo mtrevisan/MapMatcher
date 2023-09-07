@@ -98,7 +98,7 @@ public class HybridKDTree{
 			for(final Region queriedRegion : regions)
 				if(queriedRegion.isBoundary()){
 					final KDNode kdNode = (KDNode)queriedRegion.getNode();
-					final Point nearestNeighbor = KDTree.nearestNeighbour(kdNode, point, dimensions);
+					final Point nearestNeighbor = KDTree.nearestNeighbor(kdNode, point, dimensions);
 					if(nearestNeighbor != null)
 						return nearestNeighbor;
 				}

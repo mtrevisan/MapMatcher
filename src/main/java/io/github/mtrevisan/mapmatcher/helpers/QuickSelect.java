@@ -70,7 +70,7 @@ public class QuickSelect{
 	}
 
 	/**
-	 * Randomly partitions a set about a pivot such that the values to the left
+	 * Partitions a set about a pivot such that the values to the left
 	 * of the pivot are less than or equal to the pivot and the values to the
 	 * right of the pivot are greater than the pivot.
 	 *

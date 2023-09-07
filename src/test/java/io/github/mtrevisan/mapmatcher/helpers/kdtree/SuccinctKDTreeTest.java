@@ -94,22 +94,22 @@ class SuccinctKDTreeTest{
 	}
 
 	@Test
-	void neighbour(){
+	void neighbor(){
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctKDTree tree = SuccinctKDTree.ofPoints(tollBooths);
 
 		for(Point tollBooth : tollBooths)
-			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(tollBooth));
+			Assertions.assertEquals(tollBooth, tree.nearestNeighbor(tollBooth));
 		for(Point tollBooth : tollBooths)
-			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(
+			Assertions.assertEquals(tollBooth, tree.nearestNeighbor(
 				tollBooth.getFactory().createPoint(tollBooth.getX() + 1.e-7, tollBooth.getY() + 1.e-7)));
 		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
-			tree.nearestNeighbour(FACTORY.createPoint(0., 0.)));
+			tree.nearestNeighbor(FACTORY.createPoint(0., 0.)));
 	}
 
 	@Test
-	void neighbour_euclidean(){
+	void neighbor_euclidean(){
 		SuccinctKDTree tree = SuccinctKDTree.ofDimensions(2);
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
@@ -120,7 +120,7 @@ class SuccinctKDTreeTest{
 		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
 
 		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(8., 6.),
-			tree.nearestNeighbour(FACTORY_EUCLIDEAN.createPoint(9., 8.)));
+			tree.nearestNeighbor(FACTORY_EUCLIDEAN.createPoint(9., 8.)));
 	}
 
 	@Test
@@ -169,22 +169,22 @@ class SuccinctKDTreeTest{
 	}
 
 	@Test
-	void bulk_neighbour(){
+	void bulk_neighbor(){
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		List<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctKDTree tree = SuccinctKDTree.ofPoints(tollBooths);
 
 		for(Point tollBooth : tollBooths)
-			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(tollBooth));
+			Assertions.assertEquals(tollBooth, tree.nearestNeighbor(tollBooth));
 		for(Point tollBooth : tollBooths)
-			Assertions.assertEquals(tollBooth, tree.nearestNeighbour(
+			Assertions.assertEquals(tollBooth, tree.nearestNeighbor(
 				tollBooth.getFactory().createPoint(tollBooth.getX() - 1.e-7, tollBooth.getY() + 1.e-7)));
 		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
-			tree.nearestNeighbour(FACTORY.createPoint(0., 0.)));
+			tree.nearestNeighbor(FACTORY.createPoint(0., 0.)));
 	}
 
 	@Test
-	void bulk_neighbour_euclidean(){
+	void bulk_neighbor_euclidean(){
 		SuccinctKDTree tree = SuccinctKDTree.ofPoints(Arrays.asList(
 			FACTORY_EUCLIDEAN.createPoint(6., 4.),
 			FACTORY_EUCLIDEAN.createPoint(5., 2.),
@@ -196,7 +196,7 @@ class SuccinctKDTreeTest{
 		));
 
 		Assertions.assertEquals(FACTORY.createPoint(8., 6.),
-			tree.nearestNeighbour(FACTORY.createPoint(9., 8.)));
+			tree.nearestNeighbor(FACTORY.createPoint(9., 8.)));
 	}
 
 	@Test

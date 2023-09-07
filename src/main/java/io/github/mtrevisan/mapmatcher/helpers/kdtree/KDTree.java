@@ -319,15 +319,15 @@ public class KDTree implements SpatialTree{
 	 * @return Closest {@link Point} object in the tree to the target.
 	 */
 	@Override
-	public Point nearestNeighbour(final Point point){
+	public Point nearestNeighbor(final Point point){
 		if(isEmpty() || point == null)
 			return null;
 
-		return nearestNeighbour(root, point, comparators.length);
+		return nearestNeighbor(root, point, comparators.length);
 	}
 
 	/** NOTE: used by {@link HybridKDTree}. */
-	static Point nearestNeighbour(KDNode currentNode, final Point point, final int dimensions){
+	static Point nearestNeighbor(final KDNode currentNode, final Point point, final int dimensions){
 		KDNode bestNode = null;
 		double bestDistanceSquare = Double.POSITIVE_INFINITY;
 		double precisionSquare = point.getDistanceCalculator()

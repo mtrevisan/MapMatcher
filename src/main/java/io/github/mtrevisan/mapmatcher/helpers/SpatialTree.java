@@ -55,7 +55,7 @@ public interface SpatialTree{
 	 * @param point	The point to query.
 	 * @return	The point that is the nearest neighbor.
 	 */
-	Point nearestNeighbour(final Point point);
+	Point nearestNeighbor(final Point point);
 
 	/**
 	 * Query the tree returning all the points that lies inside the given rectangle.

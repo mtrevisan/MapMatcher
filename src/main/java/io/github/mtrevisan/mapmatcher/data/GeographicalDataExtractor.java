@@ -1,6 +1,7 @@
 package io.github.mtrevisan.mapmatcher.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -84,7 +85,8 @@ public class GeographicalDataExtractor{
 
 	private static final String OVERPASS_API_URI = "https://overpass-api.de/api/interpreter";
 
-	public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
 	static{
 		JSON_MAPPER.registerModule(new JavaTimeModule());
 		JSON_MAPPER.setTimeZone(TimeZone.getTimeZone(ZoneOffset.UTC));
@@ -101,9 +103,7 @@ public class GeographicalDataExtractor{
 
 	public static void main(final String[] args) throws IOException{
 		final String stateCode = "IT";
-		final StateData stateData = collectData(stateCode);
-
-//		extractBuildingData("Miane");
+//		final StateData stateData = collectData(stateCode);
 
 		//TODO
 		System.out.println();
@@ -493,13 +493,20 @@ public class GeographicalDataExtractor{
 	}
 
 	private static final class BuildingData{
+		@JsonProperty
 		private double longitude;
+		@JsonProperty
 		private double latitude;
+		@JsonProperty
 		private String city;
+		@JsonProperty
 		private String municipality;
+		@JsonProperty
 		private String street;
+		@JsonProperty
 		private String houseNumber;
 
+		@JsonProperty
 		private String name;
 	}
 

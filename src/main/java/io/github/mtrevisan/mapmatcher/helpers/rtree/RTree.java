@@ -155,14 +155,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 					preferred = nodes[0];
 				else if(nia0 > area1)
 					preferred = nodes[1];
-				else{
-					if(nodes[0].children.size() < nodes[1].children.size())
-						preferred = nodes[0];
-					else if(nodes[0].children.size() > nodes[1].children.size())
-						preferred = nodes[1];
-					else
-						preferred = nodes[(int)Math.round(Math.random())];
-				}
+				else
+					preferred = nodes[nodes[0].children.size() <= nodes[1].children.size()? 0: 1];
 			}
 			preferred.children.add(child);
 		}

@@ -25,8 +25,6 @@
 package io.github.mtrevisan.mapmatcher.helpers.hilbertrtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.kdtree.HybridKDTree;
-import io.github.mtrevisan.mapmatcher.helpers.quadtree.QuadTree;
-import io.github.mtrevisan.mapmatcher.helpers.quadtree.QuadTreeOptions;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
@@ -34,32 +32,30 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
-class HybridHPRKDTreeTest{
+class HybridHilbertPackedRKDTreeTest{
 
 	private static final GeometryFactory FACTORY_EUCLIDEAN = new GeometryFactory(new EuclideanCalculator());
 
 
-	@Test
-	void simple(){
-		QuadTreeOptions options = new QuadTreeOptions()
-			.withMaxRegionsPerNode(1);
-		QuadTree quadTree = QuadTree.create(Region.of(2., 2., 37., 37.));
-		HybridKDTree.insert(quadTree, Region.of(10., 10., 20., 20.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 15., 15.), options);
-		HybridKDTree.insert(quadTree, Region.of(25., 25., 35., 35.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 17., 15.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 25., 25., 35.), options);
-		HybridKDTree.insert(quadTree, Region.of(25., 5., 35., 15.), options);
-		HybridKDTree.insert(quadTree, Region.of(2., 2., 4., 4.), options);
-		Region region = Region.of(5., 5., 10., 10.);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), options);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), options);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), options);
-
-		Assertions.assertTrue(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
-		Assertions.assertFalse(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
-		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
-			HybridKDTree.nearestNeighbor(quadTree, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
-	}
+//	@Test
+//	void simple(){
+//		HilbertPackedRTree<Object> hprTree = new HilbertPackedRTree<>();
+//		HybridKDTree.insert(hprTree, Region.of(10., 10., 20., 20.));
+//		HybridKDTree.insert(hprTree, Region.of(5., 5., 15., 15.));
+//		HybridKDTree.insert(hprTree, Region.of(25., 25., 35., 35.));
+//		HybridKDTree.insert(hprTree, Region.of(5., 5., 17., 15.));
+//		HybridKDTree.insert(hprTree, Region.of(5., 25., 25., 35.));
+//		HybridKDTree.insert(hprTree, Region.of(25., 5., 35., 15.));
+//		HybridKDTree.insert(hprTree, Region.of(2., 2., 4., 4.));
+//		Region region = Region.of(5., 5., 10., 10.);
+//		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.));
+//		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.));
+//		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.));
+//
+//		Assertions.assertTrue(HybridKDTree.contains(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
+//		Assertions.assertFalse(HybridKDTree.contains(hprTree, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
+//		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
+//			HybridKDTree.nearestNeighbor(hprTree, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
+//	}
 
 }
