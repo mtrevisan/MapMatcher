@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Set;
 
 
+/**
+ * @see <a href="https://github.com/TheDeathFar/HilbertTree/blob/main/src/ru/vsu/css/vorobcov_i_a/RTree.java">RTree.java</a>
+ */
 public class RTree implements RegionTree<RTreeOptions>{
 
 	private RNode root;
@@ -61,56 +64,80 @@ public class RTree implements RegionTree<RTreeOptions>{
 		if(isEmpty())
 			root = node;
 		else{
-			final RNode parent = chooseLeaf(root, node);
+			final RNode parent = chooseLeaf(node.region);
 			parent.children.add(node);
 			node.parent = parent;
-			if(parent.children.size() > options.maxObjects){
+
+			if(parent.children.size() <= options.maxObjects)
+				adjustRegionsUpToRoot(parent);
+			else{
 				final RNode[] splits = splitNode(parent, options.minObjects);
-				adjustTree(splits[0], splits[1], options.minObjects, options.maxObjects);
+				adjustTree(splits[0], splits[1], options);
 			}
-			else
-				adjustTree(parent, null, options.minObjects, options.maxObjects);
 		}
 	}
 
-	private static RNode chooseLeaf(final RNode parent, final RNode node){
-		RNode current = parent;
+	/**
+	 * Find leaf that needs the least enlargement with the region.
+	 */
+	private RNode chooseLeaf(final Region region){
+		RNode current = root;
 		while(!current.leaf){
+			//choose child which region enlarges the less with current record's region
 			double minAreaIncrement = Double.MAX_VALUE;
-			RNode next = current.children.get(0);
-			for(int i = 1; i < current.children.size(); i ++){
-				final RNode child = current.children.get(i);
-				final double nonIntersectingArea = calculateNonIntersectingArea(child.region, node.region);
+			RNode minAreaNode = current.children.get(0);
+			for(final RNode child : current.children){
+				final double nonIntersectingArea = region.nonIntersectingArea(child.region);
 				if(nonIntersectingArea < minAreaIncrement){
 					minAreaIncrement = nonIntersectingArea;
-					next = child;
+					minAreaNode = child;
 				}
 				else if(nonIntersectingArea == minAreaIncrement){
 					//choose the node with the smallest area
-					final double nextArea = next.region.euclideanArea();
 					final double childArea = child.region.euclideanArea();
+					final double nextArea = minAreaNode.region.euclideanArea();
 					if(childArea < nextArea)
-						next = child;
+						minAreaNode = child;
 				}
 			}
 
-			current = next;
+			current = minAreaNode;
 		}
 		return current;
 	}
 
-	private static double calculateNonIntersectingArea(final Region region1, final Region region2){
-		//calculate intersection points
-		final double x1 = Math.max(region1.getMinX(), region2.getMinX());
-		final double y1 = Math.max(region1.getMinY(), region2.getMinY());
-		final double x2 = Math.min(region1.getMaxX(), region2.getMaxX());
-		final double y2 = Math.min(region1.getMaxY(), region2.getMaxY());
-		//calculate area of intersection
-		final double intersectionArea = Math.max(0., x2 - x1) * Math.max(0., y2 - y1);
-		//calculate total area of the two regions
-		final double totalArea = region1.euclideanArea() + region2.euclideanArea();
-		//calculate intersection area
-		return totalArea - intersectionArea;
+	private void adjustRegionsUpToRoot(final RNode node){
+		RNode currentNode = node;
+		while(currentNode != null){
+			tightenRegion(currentNode);
+			currentNode = currentNode.parent;
+		}
+	}
+
+	private void adjustTree(final RNode node, RNode newNode, final RTreeOptions options){
+		RNode currentNode = node;
+		while(currentNode != root){
+			tightenRegion(currentNode);
+			tightenRegion(newNode);
+			if(currentNode.parent.children.size() <= options.maxObjects)
+				break;
+
+			final RNode[] splits = splitNode(currentNode.parent, options.minObjects);
+			currentNode = splits[0];
+			newNode = splits[1];
+		}
+
+		final double coordinate = Math.sqrt(Double.MAX_VALUE);
+		final double dimension = -2. * Math.sqrt(Double.MAX_VALUE);
+		final Region region = Region.of(coordinate, coordinate, coordinate + dimension, coordinate + dimension);
+		root = RNode.createInternal(region);
+
+		root.children.add(currentNode);
+		currentNode.parent = root;
+		root.children.add(newNode);
+		newNode.parent = root;
+
+		tightenRegion(root);
 	}
 
 	private RNode[] splitNode(final RNode node, final int minObjects){
@@ -142,8 +169,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 			final RNode child = children.pop();
 			RNode preferred;
 
-			final double nia0 = calculateNonIntersectingArea(nodes[0].region, child.region);
-			final double nia1 = calculateNonIntersectingArea(nodes[1].region, child.region);
+			final double nia0 = child.region.nonIntersectingArea(nodes[0].region);
+			final double nia1 = child.region.nonIntersectingArea(nodes[1].region);
 			if(nia0 < nia1)
 				preferred = nodes[0];
 			else if(nia0 > nia1)
@@ -160,8 +187,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 			}
 			preferred.children.add(child);
 		}
-		tighten(nodes[0]);
-		tighten(nodes[1]);
+		tightenRegion(nodes[0]);
+		tightenRegion(nodes[1]);
 		return nodes;
 	}
 
@@ -202,48 +229,6 @@ public class RTree implements RegionTree<RTreeOptions>{
 			nodes.remove(bestPair[1]);
 		}
 		return bestPair;
-	}
-
-	private void adjustTree(final RNode rNode, final RNode nNode, final int minObjects, final int maxObjects){
-		RNode currentNode = rNode;
-		RNode newNode = nNode;
-
-		while(true){
-			if(currentNode == root){
-				if(newNode != null){
-					final double coordinate = Math.sqrt(Double.MAX_VALUE);
-					final double dimension = -2. * Math.sqrt(Double.MAX_VALUE);
-					final Region region = Region.of(coordinate, coordinate, coordinate + dimension, coordinate + dimension);
-					root = RNode.createInternal(region);
-
-					root.children.add(currentNode);
-					currentNode.parent = root;
-					root.children.add(newNode);
-					newNode.parent = root;
-				}
-
-				tighten(root);
-				break;
-			}
-
-			tighten(currentNode);
-
-			if(newNode != null){
-				tighten(newNode);
-				if(currentNode.parent.children.size() > maxObjects){
-					final RNode[] splits = splitNode(currentNode.parent, minObjects);
-					currentNode = splits[0];
-					newNode = splits[1];
-					continue;
-				}
-			}
-			else if(currentNode.parent != null){
-				currentNode = currentNode.parent;
-				continue;
-			}
-
-			break;
-		}
 	}
 
 
@@ -298,7 +283,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 				remove.parent.children.remove(remove);
 			}
 			else
-				tighten(remove);
+				tightenRegion(remove);
 
 			remove = remove.parent;
 		}
@@ -306,26 +291,25 @@ public class RTree implements RegionTree<RTreeOptions>{
 			insert(eNode.region, options);
 	}
 
-	private static void tighten(final RNode parent){
+	private static void tightenRegion(final RNode node){
 		final double[] coordinates = new double[4];
-		final double[] childCoordinates = new double[4];
-		for(int i = 0; i < 2; i ++){
-			coordinates[i] = Double.MAX_VALUE;
-			coordinates[i + 2] = 0.;
-
-			for(final RNode child : parent.children){
-				child.parent = parent;
-				childCoordinates[0] = child.region.getMinX();
-				childCoordinates[1] = child.region.getMinY();
-				childCoordinates[2] = child.region.getMaxX();
-				childCoordinates[3] = child.region.getMaxY();
-				if(childCoordinates[i] < coordinates[i])
-					coordinates[i] = childCoordinates[i];
-				if(childCoordinates[i + 2] > coordinates[i + 2])
-					coordinates[i + 2] = childCoordinates[i + 2];
-			}
+		coordinates[0] = Double.MAX_VALUE;
+		coordinates[1] = Double.MAX_VALUE;
+		coordinates[2] = -Double.MAX_VALUE;
+		coordinates[3] = -Double.MAX_VALUE;
+		for(final RNode child : node.children){
+			child.parent = node;
+			if(child.region.getMinX() < coordinates[0])
+				coordinates[0] = child.region.getMinX();
+			if(child.region.getMinY() < coordinates[1])
+				coordinates[1] = child.region.getMinY();
+			if(child.region.getMaxX() > coordinates[2])
+				coordinates[2] = child.region.getMaxX();
+			if(child.region.getMaxY() > coordinates[3])
+				coordinates[3] = child.region.getMaxY();
 		}
-		parent.region = Region.of(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+
+		node.region = Region.of(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
 	}
 
 

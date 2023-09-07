@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.QuadTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.QuadTreeOptions;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
@@ -62,8 +63,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -363,14 +366,14 @@ class KDTreeTest{
 		final RTreeOptions options = new RTreeOptions()
 			.withMinObjects(rTreeMinObjects)
 			.withMaxObjects(rTreeMaxObjects);
-		final RTree rTree = RTree.create();
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(), options);
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){
 			final double prevMinY = minY;
 			for(int j = 0; j < regionDivision; j ++){
-				HybridKDTree.insert(rTree, Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
-					.withID("slice " + i + "+" + j), options);
+				tree.insert(Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
+					.withID("slice " + i + "+" + j));
 
 				minY += deltaLatitude;
 			}
@@ -383,20 +386,21 @@ class KDTreeTest{
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
+		final Map<Region, SpatialNode> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
 				final BuildingData building = JSON_MAPPER.readValue(line, BuildingData.class);
 				final Region region = Region.of(building.longitude - regionExtentLongitude, building.latitude - regionExtentLatitude,
 					building.longitude + regionExtentLongitude, building.latitude + regionExtentLatitude);
-				HybridKDTree.insert(rTree, region, factory.createPoint(building.longitude, building.latitude), options);
+				tree.insert(nodes, region, factory.createPoint(building.longitude, building.latitude));
 			}
 		}
 
 		//via Zanchet 19, Miane, Treviso, Italia
 		final Region region2 = Region.of(12.09257 - regionExtentLongitude, 45.94489 - regionExtentLatitude,
 			12.09257 + regionExtentLongitude, 45.94489 + regionExtentLatitude);
-		Point neighbor = HybridKDTree.nearestNeighbor(rTree, region2, factory.createPoint(12.09257, 45.94489));
+		final Point neighbor = tree.nearestNeighbor(nodes, region2, factory.createPoint(12.09257, 45.94489));
 		Assertions.assertEquals(factory.createPoint(12.0925717, 45.9449099), neighbor);
 
 		//query tree
@@ -407,7 +411,7 @@ class KDTreeTest{
 			final double latitude = generateRandomCoordinate(minLatitude, maxLatitude);
 			final Region region = Region.of(longitude - regionExtentLongitude, latitude - regionExtentLatitude,
 				longitude + regionExtentLongitude, latitude + regionExtentLatitude);
-			HybridKDTree.nearestNeighbor(rTree, region, factory.createPoint(longitude, latitude));
+			tree.nearestNeighbor(nodes, region, factory.createPoint(longitude, latitude));
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
@@ -435,13 +439,14 @@ class KDTreeTest{
 			.withMaxRegionsPerNode(quadTreeMaxRegionsPerNode)
 			.withMaxLevels(quadTreeMaxLevels);
 		final QuadTree quadTree = QuadTree.create(Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude));
+		HybridKDTree<QuadTreeOptions> tree = HybridKDTree.create(quadTree, options);
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){
 			final double prevMinY = minY;
 			for(int j = 0; j < regionDivision; j ++){
-				HybridKDTree.insert(quadTree, Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
-					.withID("slice " + i + "+" + j), options);
+				tree.insert(Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
+					.withID("slice " + i + "+" + j));
 
 				minY += deltaLatitude;
 			}
@@ -454,20 +459,21 @@ class KDTreeTest{
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
+		final Map<Region, SpatialNode> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
 				final BuildingData building = JSON_MAPPER.readValue(line, BuildingData.class);
 				final Region region = Region.of(building.longitude - regionExtentLongitude, building.latitude - regionExtentLatitude,
 					building.longitude + regionExtentLongitude, building.latitude + regionExtentLatitude);
-				HybridKDTree.insert(quadTree, region, factory.createPoint(building.longitude, building.latitude), options);
+				tree.insert(nodes, region, factory.createPoint(building.longitude, building.latitude));
 			}
 		}
 
 		//via Zanchet 19, Miane, Treviso, Italia
 		final Region region2 = Region.of(12.09257 - regionExtentLongitude, 45.94489 - regionExtentLatitude,
 			12.09257 + regionExtentLongitude, 45.94489 + regionExtentLatitude);
-		Point neighbor = HybridKDTree.nearestNeighbor(quadTree, region2, factory.createPoint(12.09257, 45.94489));
+		Point neighbor = tree.nearestNeighbor(nodes, region2, factory.createPoint(12.09257, 45.94489));
 		Assertions.assertEquals(factory.createPoint(12.0925717, 45.9449099), neighbor);
 
 		//query tree
@@ -478,7 +484,7 @@ class KDTreeTest{
 			final double latitude = generateRandomCoordinate(minLatitude, maxLatitude);
 			final Region region = Region.of(longitude - regionExtentLongitude, latitude - regionExtentLatitude,
 				longitude + regionExtentLongitude, latitude + regionExtentLatitude);
-			HybridKDTree.nearestNeighbor(quadTree, region, factory.createPoint(longitude, latitude));
+			tree.nearestNeighbor(nodes, region, factory.createPoint(longitude, latitude));
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
