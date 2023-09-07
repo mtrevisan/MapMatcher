@@ -60,7 +60,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 
-class HilbertPackedRTreeTest{
+class HilbertRTreeTest{
 
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 
@@ -362,38 +362,38 @@ https://openaddresses.io/
 
 	@Test
 	void query_tree() throws IOException{
-		HilbertPackedRTree<Polyline> tree = new HilbertPackedRTree<>();
+		HilbertRTree tree = HilbertRTree.create();
 		Set<Polyline> highways = extractPolylines(new File(FILENAME_ROADS_SIMPLIFIED));
 		for(Polyline polyline : highways){
 			Region region = Region.of(polyline.getBoundingBox());
-			tree.insert(region, polyline);
+			tree.insert(region, null);
 		}
 
-		List<Polyline> roads = tree.query(Region.of(
+		Collection<Region> regions = tree.query(Region.of(
 			FACTORY.createPoint(9.01670, 45.33115),
 			FACTORY.createPoint(9.40355, 45.60973)
 		));
 
-		Assertions.assertEquals(1178, roads.size());
+		Assertions.assertEquals(1178, regions.size());
 	}
 
 	@Test
 	void empty_tree_using_list_query(){
-		HilbertPackedRTree<Object> tree = new HilbertPackedRTree<>();
+		HilbertRTree tree = HilbertRTree.create();
 
-		List<Object> list = tree.query(Region.of(0., 1., 0., 1.));
+		Collection<Region> list = tree.query(Region.of(0., 1., 0., 1.));
 
 		Assertions.assertTrue(list.isEmpty());
 	}
 
 	@Test
 	void disallowed_inserts(){
-		HilbertPackedRTree<Object> t = new HilbertPackedRTree<>(3);
-		t.insert(Region.of(0., 0., 0., 0.), new Object());
-		t.insert(Region.of(0., 0., 0., 0.), new Object());
-		t.query(Region.ofEmpty());
+		HilbertRTree tree = HilbertRTree.create(3);
+		tree.insert(Region.of(0., 0., 0., 0.), null);
+		tree.insert(Region.of(0., 0., 0., 0.), null);
+		tree.query(Region.ofEmpty());
 		try{
-			t.insert(Region.of(0., 0., 0., 0.), new Object());
+			tree.insert(Region.of(0., 0., 0., 0.), null);
 			Assertions.fail();
 		}
 		catch(IllegalStateException e){
@@ -412,13 +412,19 @@ https://openaddresses.io/
 		geometries.add(factory.createPolyline(factory.createPoint(5., 25.), factory.createPoint(25., 35.)));
 		geometries.add(factory.createPolyline(factory.createPoint(25., 5.), factory.createPoint(35., 15.)));
 		geometries.add(factory.createPolyline(factory.createPoint(2., 2.), factory.createPoint(4., 4.)));
-		HilbertPackedRTree<String> t = new HilbertPackedRTree<>(7);
+		HilbertRTree tree = HilbertRTree.create(7);
 		for(int i = 0; i < geometries.size(); i ++){
-			Region region = Region.of(geometries.get(i).getBoundingBox());
-			t.insert(region, String.valueOf(i + 1));
+			Region region = Region.of(geometries.get(i).getBoundingBox())
+				.withID(String.valueOf(i));
+			tree.insert(region, null);
 		}
 
-		Assertions.assertArrayEquals(new String[]{"1", "3", "7"}, t.query(Region.of(3., 3., 6., 6.)).toArray());
+		final Collection<Region> regions = tree.query(Region.of(3., 3., 6., 6.));
+		final String[] ids = new String[regions.size()];
+		int i = 0;
+		for(final Region region : regions)
+			ids[i ++] = region.getID();
+		Assertions.assertArrayEquals(new String[]{"0", "2", "6"}, ids);
 	}
 
 	@Test
@@ -428,65 +434,65 @@ https://openaddresses.io/
 		geometries.add(factory.createPolyline(factory.createPoint(0., 0.), factory.createPoint(10., 10.)));
 		geometries.add(factory.createPolyline(factory.createPoint(20., 20.), factory.createPoint(30., 30.)));
 		geometries.add(factory.createPolyline(factory.createPoint(20., 20.), factory.createPoint(30., 30.)));
-		HilbertPackedRTree<Object> t = new HilbertPackedRTree<>(3);
+		HilbertRTree tree = HilbertRTree.create(3);
 		for(Polyline g : geometries){
 			Region region = Region.of(g.getBoundingBox());
-			t.insert(region, new Object());
+			tree.insert(region, null);
 		}
 
-		t.query(Region.of(5., 5., 6., 6.));
+		tree.query(Region.of(5., 5., 6., 6.));
 
-		Assertions.assertEquals(1, t.query(Region.of(5., 5., 6., 6.)).size());
-		Assertions.assertEquals(0, t.query(Region.of(20., 0., 30., 10.)).size());
-		Assertions.assertEquals(2, t.query(Region.of(25., 25., 26., 26.)).size());
-		Assertions.assertEquals(3, t.query(Region.of(0., 0., 100., 100.)).size());
+		Assertions.assertEquals(1, tree.query(Region.of(5., 5., 6., 6.)).size());
+		Assertions.assertEquals(0, tree.query(Region.of(20., 0., 30., 10.)).size());
+		Assertions.assertEquals(2, tree.query(Region.of(25., 25., 26., 26.)).size());
+		Assertions.assertEquals(3, tree.query(Region.of(0., 0., 100., 100.)).size());
 	}
 
 	@Test
 	void query3(){
-		HilbertPackedRTree<Integer> t = new HilbertPackedRTree<>();
+		HilbertRTree tree = HilbertRTree.create();
 		for(int i = 0; i < 3; i ++)
-			t.insert(Region.of(i, i, i + 1, i + 1), i);
+			tree.insert(Region.of(i, i, i + 1, i + 1), null);
 
-		t.query(Region.of(0., 0., 1., 1.));
+		tree.query(Region.of(0., 0., 1., 1.));
 
-		Assertions.assertEquals(3, t.query(Region.of(1., 1., 2., 2.)).size());
-		Assertions.assertEquals(0, t.query(Region.of(9., 9., 10., 10.)).size());
+		Assertions.assertEquals(3, tree.query(Region.of(1., 1., 2., 2.)).size());
+		Assertions.assertEquals(0, tree.query(Region.of(9., 9., 10., 10.)).size());
 	}
 
 	@Test
 	void query10(){
-		HilbertPackedRTree<Integer> t = new HilbertPackedRTree<>();
+		HilbertRTree tree = HilbertRTree.create();
 		for(int i = 0; i < 10; i ++)
-			t.insert(Region.of(i, i, i + 1, i + 1), i);
+			tree.insert(Region.of(i, i, i + 1, i + 1), null);
 
-		t.query(Region.of(0, 0, 1, 1));
+		tree.query(Region.of(0, 0, 1, 1));
 
-		Assertions.assertEquals(3, t.query(Region.of(5., 5., 6., 6.)).size());
-		Assertions.assertEquals(2, t.query(Region.of(9., 9., 10., 10.)).size());
-		Assertions.assertEquals(0, t.query(Region.of(25., 25., 26., 26.)).size());
-		Assertions.assertEquals(10, t.query(Region.of(0., 0., 10., 10.)).size());
+		Assertions.assertEquals(3, tree.query(Region.of(5., 5., 6., 6.)).size());
+		Assertions.assertEquals(2, tree.query(Region.of(9., 9., 10., 10.)).size());
+		Assertions.assertEquals(0, tree.query(Region.of(25., 25., 26., 26.)).size());
+		Assertions.assertEquals(10, tree.query(Region.of(0., 0., 10., 10.)).size());
 	}
 
 	@Test
 	void query_100_times(){
-		queryGrid(100, new HilbertPackedRTree<>());
+		queryGrid(100, HilbertRTree.create());
 	}
 
 	@Test
 	void query100_with_node_capacity_8(){
-		queryGrid(100, new HilbertPackedRTree<>(8));
+		queryGrid(100, HilbertRTree.create(8));
 	}
 
 	@Test
 	void query100_with_node_capacity_2(){
-		queryGrid(100, new HilbertPackedRTree<>(2));
+		queryGrid(100, HilbertRTree.create(2));
 	}
 
 
-	private void queryGrid(int size, HilbertPackedRTree<Integer> tree){
+	private void queryGrid(int size, HilbertRTree tree){
 		for(int i = 0; i < size; i ++)
-			tree.insert(Region.of(i, i, i + 1, i + 1), i);
+			tree.insert(Region.of(i, i, i + 1, i + 1), null);
 
 		tree.query(Region.of(0, 0, 1, 1));
 

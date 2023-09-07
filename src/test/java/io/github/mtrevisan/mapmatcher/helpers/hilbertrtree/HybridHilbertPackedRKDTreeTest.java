@@ -37,25 +37,25 @@ class HybridHilbertPackedRKDTreeTest{
 	private static final GeometryFactory FACTORY_EUCLIDEAN = new GeometryFactory(new EuclideanCalculator());
 
 
-//	@Test
-//	void simple(){
-//		HilbertPackedRTree<Object> hprTree = new HilbertPackedRTree<>();
-//		HybridKDTree.insert(hprTree, Region.of(10., 10., 20., 20.));
-//		HybridKDTree.insert(hprTree, Region.of(5., 5., 15., 15.));
-//		HybridKDTree.insert(hprTree, Region.of(25., 25., 35., 35.));
-//		HybridKDTree.insert(hprTree, Region.of(5., 5., 17., 15.));
-//		HybridKDTree.insert(hprTree, Region.of(5., 25., 25., 35.));
-//		HybridKDTree.insert(hprTree, Region.of(25., 5., 35., 15.));
-//		HybridKDTree.insert(hprTree, Region.of(2., 2., 4., 4.));
-//		Region region = Region.of(5., 5., 10., 10.);
-//		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.));
-//		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.));
-//		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.));
-//
-//		Assertions.assertTrue(HybridKDTree.contains(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
-//		Assertions.assertFalse(HybridKDTree.contains(hprTree, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
-//		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
-//			HybridKDTree.nearestNeighbor(hprTree, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
-//	}
+	@Test
+	void simple(){
+		HilbertRTree hprTree = HilbertRTree.create();
+		HybridKDTree.insert(hprTree, Region.of(10., 10., 20., 20.), null);
+		HybridKDTree.insert(hprTree, Region.of(5., 5., 15., 15.), null);
+		HybridKDTree.insert(hprTree, Region.of(25., 25., 35., 35.), null);
+		HybridKDTree.insert(hprTree, Region.of(5., 5., 17., 15.), null);
+		HybridKDTree.insert(hprTree, Region.of(5., 25., 25., 35.), null);
+		HybridKDTree.insert(hprTree, Region.of(25., 5., 35., 15.), null);
+		HybridKDTree.insert(hprTree, Region.of(2., 2., 4., 4.), null);
+		Region region = Region.of(5., 5., 10., 10.);
+		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), null);
+		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), null);
+		HybridKDTree.insert(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), null);
+
+		Assertions.assertTrue(HybridKDTree.contains(hprTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
+		Assertions.assertFalse(HybridKDTree.contains(hprTree, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
+		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
+			HybridKDTree.nearestNeighbor(hprTree, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
+	}
 
 }

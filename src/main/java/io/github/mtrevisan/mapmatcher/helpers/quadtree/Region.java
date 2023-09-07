@@ -106,6 +106,10 @@ public class Region implements Comparable<Region>{
 	}
 
 
+	public String getID(){
+		return id;
+	}
+
 	public Region withID(final String id){
 		this.id = id;
 

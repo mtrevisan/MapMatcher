@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.hilbertrtree;
+package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 
@@ -38,17 +38,18 @@ class HilbertEncoder{
 
 	HilbertEncoder(final int level, final Region extent){
 		this.level = level;
-		final int hilbertSide = (1 << level) - 1;
+		final int hSide = (1 << level) - 1;
 
 		minX = extent.getMinX();
-		minY = extent.getMinY();
-		strideX = extent.getExtentX() / hilbertSide;
-		strideY = extent.getExtentY() / hilbertSide;
+		strideX = extent.getExtentX() / hSide;
+
+		minY = extent.getMinX();
+		strideY = extent.getExtentY() / hSide;
 	}
 
-	int encode(final Region region){
-		final int x = (int)((region.getMidX() - minX) / strideX);
-		final int y = (int)((region.getMidY() - minY) / strideY);
+	int encode(final Region env){
+		final int x = (int)((env.getMidX() - minX) / strideX);
+		final int y = (int)((env.getMidY() - minY) / strideY);
 		return HilbertCode.encode(level, x, y);
 	}
 

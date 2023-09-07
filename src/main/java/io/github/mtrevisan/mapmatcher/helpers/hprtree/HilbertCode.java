@@ -22,8 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.mtrevisan.mapmatcher.helpers.hilbertrtree;
-
+package io.github.mtrevisan.mapmatcher.helpers.hprtree;
 
 /**
  * Encodes points as the index along finite planar Hilbert curves.
@@ -56,8 +55,10 @@ class HilbertCode{
 
 	private static final double LN_2 = StrictMath.log(2.);
 
-
-	/** The maximum curve level that can be represented. */
+	/**
+	 *
+	 * The maximum curve level that can be represented.
+	 */
 	static final int MAX_LEVEL = 16;
 
 
@@ -72,7 +73,7 @@ class HilbertCode{
 	 */
 	static int size(final int level){
 		checkLevel(level);
-		return (1 << (level << 1));
+		return (int)Math.pow(2, 2 * level);
 	}
 
 	/**
@@ -86,7 +87,7 @@ class HilbertCode{
 	 */
 	static int maxOrdinate(final int level){
 		checkLevel(level);
-		return (1 << level) - 1;
+		return (int)Math.pow(2, level) - 1;
 	}
 
 	/**
@@ -177,7 +178,7 @@ class HilbertCode{
 		i1 = (i1 | (i1 << 2)) & 0x3333_3333;
 		i1 = (i1 | (i1 << 1)) & 0x5555_5555;
 
-		final long index = ((i1 << 1) | i0) >> (32 - (levelClamp << 1));
+		final long index = ((i1 << 1) | i0) >> (32 - 2 * levelClamp);
 		return (int)index;
 	}
 
@@ -206,7 +207,7 @@ class HilbertCode{
 		checkLevel(level);
 		final int levelClamp = levelClamp(level);
 
-		index <<= 32 - (levelClamp << 1);
+		index <<= 32 - 2 * levelClamp;
 
 		final long i0 = deInterleave(index);
 		final long i1 = deInterleave(index >> 1);

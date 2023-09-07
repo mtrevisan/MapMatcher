@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022 Mauro Trevisan
+ * Copyright (c) 2022-2023 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -24,12 +24,15 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.hilbertrtree;
 
+import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
 
@@ -43,15 +46,15 @@ import java.util.List;
  * The tree is constructed by sorting the items by the Hilbert code of the midpoint of their region.<br/>
  * Then, a set of internal layers is created recursively as follows:
  * <ul>
- * 	<li>The items/nodes of the previous are partitioned into blocks of size <code>nodeCapacity</code>
- * 	<li>For each block a layer node is created with range equal to the region of the items/nodes in the block
+ * 	<li>The items/nodes of the previous are partitioned into blocks of size <code>nodeCapacity</code>.
+ * 	<li>For each block a layer node is created with range equal to the region of the items/nodes in the block.
  * </ul>
  * The internal layers are stored using an array to store the node bounds.<br/>
  * The link between a node and its children is stored implicitly in the indexes of the array.<br/>
  * For efficiency, the offsets to the layers within the node array are pre-computed and stored.
  * </p>
  * <p>
- * NOTE: Based on performance testing, the HPRtree is somewhat faster than the STRtree.<br/>
+ * NOTE: Based on performance testing, the HPRtree is somewhat faster than the STR tree.<br/>
  * It should also be more memory-efficient, due to fewer object allocations.<br/>
  * </p>
  *
@@ -59,8 +62,9 @@ import java.util.List;
  * @see <a href="https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java">HPRtree.java</a>
  * @see <a href="https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf">Hilbert R-tree: An improved R-tree using fractals</a>
  * @see <a href="https://web.cs.swarthmore.edu/~adanner/cs97/s08/pdf/prtreesigmod04.pdf">The Priority R-Tree: A Practically Efficient and Worst-Case Optimal R-Tree</a>
+ * @see <a href="https://cdn.dal.ca/content/dam/dalhousie/pdf/faculty/computerscience/technical-reports/CS-2006-07.pdf">Compact Hilbert Indices</a>
  */
-public class HilbertPackedRTree<T>{
+public class HilbertRTree implements RegionTree<TreeOptions>{
 
 	private static final int ENV_SIZE = 4;
 	private static final int HILBERT_LEVEL = 12;
@@ -71,7 +75,7 @@ public class HilbertPackedRTree<T>{
 	private static final int NODE_BOUND_MAX_X_INDEX = 2;
 	private static final int NODE_BOUND_MAX_Y_INDEX = 3;
 
-	private final List<Item<T>> items = new ArrayList<>(0);
+	private final List<Region> items = new ArrayList<>(0);
 	private final int nodeCapacity;
 	private final Region totalExtent = Region.ofEmpty();
 	private int[] layerStartIndex;
@@ -82,8 +86,8 @@ public class HilbertPackedRTree<T>{
 	/**
 	 * Creates a new tree with the default node capacity.
 	 */
-	public HilbertPackedRTree(){
-		this(DEFAULT_NODE_CAPACITY);
+	public static HilbertRTree create(){
+		return new HilbertRTree();
 	}
 
 	/**
@@ -91,10 +95,24 @@ public class HilbertPackedRTree<T>{
 	 *
 	 * @param nodeCapacity	The node capacity to use.
 	 */
-	public HilbertPackedRTree(final int nodeCapacity){
+	public static HilbertRTree create(final int nodeCapacity){
+		return new HilbertRTree(nodeCapacity);
+	}
+
+
+	private HilbertRTree(){
+		this(DEFAULT_NODE_CAPACITY);
+	}
+
+	private HilbertRTree(final int nodeCapacity){
 		this.nodeCapacity = nodeCapacity;
 	}
 
+
+	@Override
+	public boolean isEmpty(){
+		return items.isEmpty();
+	}
 
 	/**
 	 * Gets the number of items in the index.
@@ -105,15 +123,19 @@ public class HilbertPackedRTree<T>{
 		return items.size();
 	}
 
-	public void insert(final Region region, final T item){
-		if(isBuilt)
-			throw new IllegalStateException("Cannot insert items after tree is built.");
 
-		items.add(new Item<>(region, item));
+	@Override
+	public void insert(final Region region, final TreeOptions options){
+		if(isBuilt)
+			throw new IllegalStateException("Cannot insert a new region after tree is built.");
+
+		items.add(region);
 		totalExtent.expandToInclude(region);
 	}
 
-	public boolean remove(final Region region, final T item){
+
+	@Override
+	public boolean delete(final Region region, final TreeOptions options){
 		//TODO https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf
 		//	find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
 		//	delete the item (remove the item from node `L`)
@@ -153,8 +175,26 @@ public class HilbertPackedRTree<T>{
 	}
 
 	private void sortItems(){
-		final ItemComparator<T> comp = new ItemComparator<>(new HilbertEncoder(HILBERT_LEVEL, totalExtent));
+		final RegionComparator comp = new RegionComparator(new HilbertEncoder(HILBERT_LEVEL, totalExtent));
 		items.sort(comp);
+	}
+
+	private static class RegionComparator implements Comparator<Region>{
+
+		private final HilbertEncoder encoder;
+
+
+		RegionComparator(final HilbertEncoder encoder){
+			this.encoder = encoder;
+		}
+
+		@Override
+		public int compare(final Region region1, final Region region2){
+			final int hilbertCode1 = encoder.encode(region1);
+			final int hilbertCode2 = encoder.encode(region2);
+			return Integer.compare(hilbertCode1, hilbertCode2);
+		}
+
 	}
 
 	private static int[] computeLayerIndices(final int itemSize, final int nodeCapacity){
@@ -212,7 +252,7 @@ public class HilbertPackedRTree<T>{
 			if(itemIndex >= items.size())
 				break;
 
-			final Region env = items.get(itemIndex).getRegion();
+			final Region env = items.get(itemIndex);
 			updateNodeBounds(nodeIndex, env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
 		}
 	}
@@ -260,33 +300,26 @@ public class HilbertPackedRTree<T>{
 	}
 
 
-	public Collection<T> nodes(){
-		final List<T> list = new ArrayList<>(items.size());
-		for(final Item<T> item : items)
-			list.add(item.getItem());
-		return list;
-	}
-
-
-	public List<T> query(final Region region){
+	@Override
+	public Collection<Region> query(final Region region){
 		build();
 
 		if(!totalExtent.intersects(region))
 			return Collections.emptyList();
 
-		final ArrayListVisitor<T> visitor = new ArrayListVisitor<>();
+		final List<Region> visitor = new ArrayList<>();
 		query(region, visitor);
-		return visitor.getItems();
+		return visitor;
 	}
 
-	private void query(final Region region, final ItemVisitor<T> visitor){
+	private void query(final Region region, final Collection<Region> visitor){
 		if(layerStartIndex == null)
 			queryItems(0, region, visitor);
 		else
 			queryTopLayer(region, visitor);
 	}
 
-	private void queryItems(final int blockStart, final Region region, final ItemVisitor<T> visitor){
+	private void queryItems(final int blockStart, final Region region, final Collection<Region> visitor){
 		for(int i = 0; i < nodeCapacity; i ++){
 			final int itemIndex = blockStart + i;
 			//don't query past end of items
@@ -294,13 +327,13 @@ public class HilbertPackedRTree<T>{
 				break;
 
 			//visit the item if its region intersects search region
-			final Item<T> item = items.get(itemIndex);
-			if(item.getRegion().intersects(region))
-				visitor.visitItem(item.getItem());
+			final Region item = items.get(itemIndex);
+			if(item.intersects(region))
+				visitor.add(item);
 		}
 	}
 
-	private void queryTopLayer(final Region region, final ItemVisitor<T> visitor){
+	private void queryTopLayer(final Region region, final Collection<Region> visitor){
 		final int layerIndex = layerStartIndex.length - 2;
 		final int layerSize = layerSize(layerIndex);
 		//query each node in layer
@@ -314,7 +347,7 @@ public class HilbertPackedRTree<T>{
 		return layerEnd - layerStart;
 	}
 
-	private void queryNode(final int layerIndex, final int nodeOffset, final Region region, final ItemVisitor<T> visitor){
+	private void queryNode(final int layerIndex, final int nodeOffset, final Region region, final Collection<Region> visitor){
 		int layerStart = layerStartIndex[layerIndex];
 		final int nodeIndex = layerStart + nodeOffset;
 		if(!intersects(nodeIndex, region))
@@ -355,6 +388,18 @@ public class HilbertPackedRTree<T>{
 			|| region.getMinX() > nodeBounds[nodeIndex + NODE_BOUND_MAX_X_INDEX]
 			|| region.getMinY() > nodeBounds[nodeIndex + NODE_BOUND_MAX_Y_INDEX]);
 
+	}
+
+
+	@Override
+	public boolean intersects(final Region region){
+		throw new UnsupportedOperationException();
+	}
+
+
+	@Override
+	public boolean contains(final Region region){
+		throw new UnsupportedOperationException();
 	}
 
 
