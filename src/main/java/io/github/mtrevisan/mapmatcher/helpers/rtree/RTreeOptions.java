@@ -29,8 +29,16 @@ import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 
 public class RTreeOptions implements TreeOptions{
 
-	int minObjects = 1;
-	int maxObjects = 10;
+	/**
+	 * According to <a href="https://infolab.usc.edu/csci599/Fall2001/paper/rstar-tree.pdf">The R*-tree: an efficient and robust access method for points and rectangles</a>,
+	 * the best filling ratio is 0.4.
+	 */
+	public static final double DEFAULT_FILLING_FACTOR = 0.4;
+
+
+	double fillingFactor = DEFAULT_FILLING_FACTOR;
+	int minChildren = 1;
+	int maxChildren = 4;
 
 
 	public static RTreeOptions create(){
@@ -41,20 +49,35 @@ public class RTreeOptions implements TreeOptions{
 	private RTreeOptions(){}
 
 
-	public RTreeOptions withMinObjects(final int minObjects){
-		if(minObjects < 1)
-			throw new IllegalArgumentException("Minimum number of objects for this node must be greater than zero");
+	public RTreeOptions setFillingFactor(double fillingFactor){
+		if(fillingFactor <= 0. || fillingFactor > 1.)
+			throw new IllegalArgumentException("Filling factor must be greater than zero and less or equal to one");
 
-		this.minObjects = minObjects;
+		this.fillingFactor = fillingFactor;
 
 		return this;
 	}
 
-	public RTreeOptions withMaxObjects(final int maxObjects){
-		if(maxObjects < 1)
-			throw new IllegalArgumentException("Maximum number of objects for this node must be greater than zero");
+	/**
+	 * Default is {@link #withMaxChildren(int)} times {@link #DEFAULT_FILLING_FACTOR}.
+	 *
+	 * @param minChildren	The minimum number of children.
+	 * @return	This instance.
+	 */
+	public RTreeOptions withMinChildren(final int minChildren){
+		if(minChildren < 1)
+			throw new IllegalArgumentException("Minimum number of children for this node must be greater than zero");
 
-		this.maxObjects = maxObjects;
+		this.minChildren = minChildren;
+
+		return this;
+	}
+
+	public RTreeOptions withMaxChildren(final int maxChildren){
+		if(maxChildren < 1)
+			throw new IllegalArgumentException("Maximum number of children for this node must be greater than zero");
+
+		this.maxChildren = maxChildren;
 
 		return this;
 	}

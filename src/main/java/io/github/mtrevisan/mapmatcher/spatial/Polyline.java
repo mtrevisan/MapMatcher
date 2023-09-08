@@ -271,7 +271,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	//https://github.com/dyn4j/dyn4j/blob/master/src/main/java/org/dyn4j/collision/narrowphase/Gjk.java
 	//https://www.researchgate.net/publication/224108603_A_Fast_Geometric_Algorithm_for_Finding_the_Minimum_Distance_Between_Two_Convex_Hulls
 	public Point onTrackClosestPoint(final Point point){
-		double minClosestPointDistance = Double.MAX_VALUE;
+		double minClosestPointDistance = Double.POSITIVE_INFINITY;
 		Point minClosestPoint = null;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
 		for(int i = 1; i < points.length; i ++){
@@ -291,7 +291,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	}
 
 	public int onTrackClosestNodeIndex(final Point point){
-		double minClosestNodeDistance = Double.MAX_VALUE;
+		double minClosestNodeDistance = Double.POSITIVE_INFINITY;
 		int minClosestNodeIndex = 0;
 		final TopologyCalculator topologyCalculator = point.factory.topologyCalculator;
 		for(int i = 1; i < points.length; i ++){
@@ -314,7 +314,7 @@ public class Polyline extends Geometry implements Comparable<Polyline>, Serializ
 	public double alongTrackDistance(final Point point){
 		double cumulativeDistance = Double.NaN;
 		if(points.length > 0){
-			double minClosestPointDistance = Double.MAX_VALUE;
+			double minClosestPointDistance = Double.POSITIVE_INFINITY;
 			//on or before
 			int minClosestPointIndex = 0;
 			Point minClosestPoint = points[0];

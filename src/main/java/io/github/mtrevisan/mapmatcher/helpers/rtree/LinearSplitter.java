@@ -4,8 +4,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-//https://github.com/TheDeathFar/HilbertTree/blob/main/src/ru/vsu/css/vorobcov_i_a/LinearSplitter.java
-public class LinearSplitter extends NodeSplitter{
+/**
+ * Least enlargement splitter using Guttman's linear split.
+ */
+class LinearSplitter implements NodeSplitter{
 
 	private final int minObjects;
 
@@ -16,13 +18,12 @@ public class LinearSplitter extends NodeSplitter{
 
 
 	private LinearSplitter(final RTreeOptions options){
-		this.minObjects = options.minObjects;
+		this.minObjects = options.minChildren;
 	}
 
 
-	//FIXME
 	@Override
-	RNode[] splitNode(final RNode node){
+	public RNode[] splitNode(final RNode node){
 		final RNode[] nodes = new RNode[]{
 			node,
 			(node.leaf? RNode.createLeaf(node.region): RNode.createInternal(node.region))
@@ -31,56 +32,42 @@ public class LinearSplitter extends NodeSplitter{
 		if(nodes[1].parent != null)
 			nodes[1].parent.children.add(nodes[1]);
 
-		final LinkedList<RNode> children = new LinkedList<>(node.children);
+		//find the two nodes that maximizes the space waste, and assign them to a node:
+		final LinkedList<RNode> seeds = new LinkedList<>(node.children);
 		node.children.clear();
-		final RNode[] seedNodes = pickSeeds(children);
+
+		final RNode[] seedNodes = pickSeeds(seeds);
 		nodes[0].children.add(seedNodes[0]);
 		nodes[1].children.add(seedNodes[1]);
 
-		while(!children.isEmpty()){
-			if((nodes[0].children.size() >= minObjects) && (nodes[1].children.size() + children.size() == minObjects)){
-				nodes[1].children.addAll(children);
-				children.clear();
+		//examine remaining entries and add them to either `nodes[0]` or `nodes[1]` with the least enlargement criteria
+		while(!seeds.isEmpty()){
+			if(nodes[0].children.size() >= minObjects && nodes[1].children.size() + seeds.size() == minObjects){
+				nodes[1].children.addAll(seeds);
 				return nodes;
 			}
-			else if((nodes[1].children.size() >= minObjects) && (nodes[1].children.size() + children.size() == minObjects)){
-				nodes[0].children.addAll(children);
-				children.clear();
+			if(nodes[1].children.size() >= minObjects && nodes[1].children.size() + seeds.size() == minObjects){
+				nodes[0].children.addAll(seeds);
 				return nodes;
 			}
-			final RNode child = children.pop();
-			RNode preferred;
 
-			final double nia0 = child.region.nonIntersectingArea(nodes[0].region);
-			final double nia1 = child.region.nonIntersectingArea(nodes[1].region);
-			if(nia0 < nia1)
-				preferred = nodes[0];
-			else if(nia0 > nia1)
-				preferred = nodes[1];
-			else{
-				final double area0 = nodes[0].region.euclideanArea();
-				final double area1 = nodes[1].region.euclideanArea();
-				if(area0 < area1)
-					preferred = nodes[0];
-				else if(nia0 > area1)
-					preferred = nodes[1];
-				else
-					preferred = nodes[nodes[0].children.size() <= nodes[1].children.size()? 0: 1];
-			}
+			//add the next record to the node which will require the least enlargement:
+			final RNode child = seeds.pop();
+			final RNode preferred = pickNext(child, nodes[0], nodes[1]);
 			preferred.children.add(child);
 		}
 
 		return nodes;
 	}
 
-	@Override
-	RNode[] pickSeeds(final List<RNode> nodes){
+	/** Find the two nodes that maximizes the space waste. */
+	private static RNode[] pickSeeds(final List<RNode> nodes){
 		RNode[] bestPair = null;
 		double bestSeparation = 0.;
-		double dimLowerBound = Double.MAX_VALUE;
-		double dimMinUpperBound = Double.MAX_VALUE;
-		double dimUpperBound = -Double.MAX_VALUE;
-		double dimMaxLowerBound = -Double.MAX_VALUE;
+		double dimLowerBound = Double.POSITIVE_INFINITY;
+		double dimMinUpperBound = Double.POSITIVE_INFINITY;
+		double dimUpperBound = Double.NEGATIVE_INFINITY;
+		double dimMaxLowerBound = Double.NEGATIVE_INFINITY;
 		RNode nodeMaxLowerBound = null;
 		RNode nodeMinUpperBound = null;
 		for(final RNode node : nodes){
@@ -123,53 +110,25 @@ public class LinearSplitter extends NodeSplitter{
 		return bestPair;
 	}
 
-	@Override
-	void pickNext(final List<RNode> nodes, final RNode node1, final RNode node2){
-//		RNode chosenEntry = null;
-//		double maxDifference = 0;
-//		//get the max difference between area enlargements
-//		for(final RNode entry : nodes){
-//			double enlargementL1 = node1.region.calculateEnlargement(entry.region);
-//			double enlargementL2 = node2.region.calculateEnlargement(entry.region);
-//			double maxEnlargementDifference = Math.abs(enlargementL1 - enlargementL2);
-//			if(maxEnlargementDifference >= maxDifference){
-//				chosenEntry = entry;
-//				maxDifference = maxEnlargementDifference;
-//			}
-//		}
-//
-//		//selecting group to which we add the selected entry
-//		resolveTies(node1, node2, chosenEntry);
-//
-//		//remove chosenRecord from records
-//		nodes.remove(chosenEntry);
+	private static RNode pickNext(final RNode child, final RNode node1, final RNode node2){
+		RNode preferred;
+		final double nia0 = child.region.nonIntersectingArea(node1.region);
+		final double nia1 = child.region.nonIntersectingArea(node2.region);
+		if(nia0 < nia1)
+			preferred = node1;
+		else if(nia0 > nia1)
+			preferred = node2;
+		else{
+			final double area0 = node1.region.euclideanArea();
+			final double area1 = node2.region.euclideanArea();
+			if(area0 < area1)
+				preferred = node1;
+			else if(nia0 > area1)
+				preferred = node2;
+			else
+				preferred = (node1.children.size() <= node2.children.size()? node1: node2);
+		}
+		return preferred;
 	}
-
-//	private void resolveTies(final RNode node1, final RNode node2, final RNode chosenEntry){
-//		double enlargementL1 = node1.region.calculateEnlargement(chosenEntry.region);
-//		double enlargementL2 = node2.region.calculateEnlargement(chosenEntry.region);
-//		if(enlargementL1 == enlargementL2){
-//			// select group with min area
-//			double area1 = node1.region.euclideanArea();
-//			double area2 = node2.region.euclideanArea();
-//			if(area1 == area2){
-//				int numEntries1 = node1.children.size();
-//				int numEntries2 = node2.children.size();
-//				//if it's still equal, resolve by default to L1
-//				if(numEntries1 <= numEntries2)
-//					node1.addChild(chosenEntry);
-//				else
-//					node2.addChild(chosenEntry);
-//			}
-//			else if(area1 < area2)
-//				node1.addChild(chosenEntry);
-//			else
-//				node2.addChild(chosenEntry);
-//		}
-//		else if(enlargementL1 < enlargementL2)
-//			node1.addChild(chosenEntry);
-//		else
-//			node2.addChild(chosenEntry);
-//	}
 
 }

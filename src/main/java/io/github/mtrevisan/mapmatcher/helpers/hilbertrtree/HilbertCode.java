@@ -51,6 +51,8 @@ package io.github.mtrevisan.mapmatcher.helpers.hilbertrtree;
  * </p>
  *
  * @author Martin Davis
+ *
+ * @see <a href="https://github.com/jorgenkg/hilbert-rtree/blob/master/lib/hilbert/HilbertCurves.ts">HilbertCurves.ts</a>
  */
 class HilbertCode{
 
@@ -118,14 +120,15 @@ class HilbertCode{
 	 * @param y	The y ordinate of the point.
 	 * @return	The index of the point along the Hilbert curve.
 	 */
-	static int encode(final int level, int x, int y){
+	static int encode(int level, int x, int y){
 		//Fast Hilbert curve algorithm by http://threadlocalmutex.com/ ported from C++ https://github.com/rawrunprotected/hilbert_curves
 		//(public domain)
-		final int levelClamp = levelClamp(level);
+		level = clamp(level, 1, MAX_LEVEL);
 
-		x = x << (16 - levelClamp);
-		y = y << (16 - levelClamp);
+		x = x << (MAX_LEVEL - level);
+		y = y << (MAX_LEVEL - level);
 
+		//initial prefix scan round, prime with x and y
 		long a = x ^ y;
 		long b = 0xFFFF ^ a;
 		long c = 0xFFFF ^ (x | y);
@@ -140,6 +143,7 @@ class HilbertCode{
 		b = bb;
 		c = cc;
 		d = dd;
+
 		aa = ((a & (a >> 2)) ^ (b & (b >> 2)));
 		bb = ((a & (b >> 2)) ^ (b & ((a ^ b) >> 2)));
 		cc ^= ((a & (c >> 2)) ^ (b & (d >> 2)));
@@ -149,48 +153,40 @@ class HilbertCode{
 		b = bb;
 		c = cc;
 		d = dd;
+
 		aa = ((a & (a >> 4)) ^ (b & (b >> 4)));
 		bb = ((a & (b >> 4)) ^ (b & ((a ^ b) >> 4)));
 		cc ^= ((a & (c >> 4)) ^ (b & (d >> 4)));
 		dd ^= ((b & (c >> 4)) ^ ((a ^ b) & (d >> 4)));
 
+		//final round and projection
 		a = aa;
 		b = bb;
 		c = cc;
 		d = dd;
+
 		cc ^= ((a & (c >> 8)) ^ (b & (d >> 8)));
 		dd ^= ((b & (c >> 8)) ^ ((a ^ b) & (d >> 8)));
 
+		//undo transformation prefix scan
 		a = cc ^ (cc >> 1);
 		b = dd ^ (dd >> 1);
 
-		long i0 = x ^ y;
-		long i1 = b | (0xFFFF ^ (i0 | a));
+		//recover index bits
+		final long i0 = x ^ y;
+		final long i1 = b | (0xFFFF ^ (i0 | a));
 
-		i0 = (i0 | (i0 << 8)) & 0x00FF_00FF;
-		i0 = (i0 | (i0 << 4)) & 0x0F0F_0F0F;
-		i0 = (i0 | (i0 << 2)) & 0x3333_3333;
-		i0 = (i0 | (i0 << 1)) & 0x5555_5555;
-
-		i1 = (i1 | (i1 << 8)) & 0x00FF_00FF;
-		i1 = (i1 | (i1 << 4)) & 0x0F0F_0F0F;
-		i1 = (i1 | (i1 << 2)) & 0x3333_3333;
-		i1 = (i1 | (i1 << 1)) & 0x5555_5555;
-
-		final long index = ((i1 << 1) | i0) >> (32 - (levelClamp << 1));
-		return (int)index;
+		return (int)((interleave(i1) << 1) | interleave(i0)) >> (32 - (level << 1));
 	}
 
-	/**
-	 * Clamps a level to the range valid for the index algorithm used.
-	 *
-	 * @param level	The level of a Hilbert curve.
-	 * @return	A valid level.
-	 */
-	private static int levelClamp(final int level){
-		//clamp order to [1, 16]
-		return Math.min(Math.max(level, 1), MAX_LEVEL);
+	private static long interleave(long x){
+		x = (x | (x << 8)) & 0x00FF_00FF;
+		x = (x | (x << 4)) & 0x0F0F_0F0F;
+		x = (x | (x << 2)) & 0x3333_3333;
+		x = (x | (x << 1)) & 0x5555_5555;
+		return x;
 	}
+
 
 	/**
 	 * Computes the point on a Hilbert curve of given level for a given code index.
@@ -202,11 +198,12 @@ class HilbertCode{
 	 * @param index	The index of the point on the curve.
 	 * @return	The point on the Hilbert curve.
 	 */
-	static long[] decode(final int level, int index){
+	static long[] decode(int level, int index){
 		checkLevel(level);
-		final int levelClamp = levelClamp(level);
 
-		index <<= 32 - (levelClamp << 1);
+		level = clamp(level, 1, MAX_LEVEL);
+
+		index <<= 32 - (level << 1);
 
 		final long i0 = deInterleave(index);
 		final long i1 = deInterleave(index >> 1);
@@ -219,10 +216,19 @@ class HilbertCode{
 
 		final long a = (((i0 ^ 0xFFFF) & prefixT1) | (i0 & prefixT0));
 
-		final long x = (a ^ i1) >> (16 - levelClamp);
-		final long y = (a ^ i0 ^ i1) >> (16 - levelClamp);
+		final long x = (a ^ i1) >> (MAX_LEVEL - level);
+		final long y = (a ^ i0 ^ i1) >> (MAX_LEVEL - level);
 
 		return new long[]{x, y};
+	}
+
+	private static long deInterleave(int x){
+		x = x & 0x55555555;
+		x = (x | (x >> 1)) & 0x33333333;
+		x = (x | (x >> 2)) & 0x0F0F0F0F;
+		x = (x | (x >> 4)) & 0x00FF00FF;
+		x = (x | (x >> 8)) & 0x0000FFFF;
+		return x;
 	}
 
 	private static long prefixScan(long x){
@@ -233,13 +239,17 @@ class HilbertCode{
 		return x;
 	}
 
-	private static long deInterleave(int x){
-		x = x & 0x55555555;
-		x = (x | (x >> 1)) & 0x33333333;
-		x = (x | (x >> 2)) & 0x0F0F0F0F;
-		x = (x | (x >> 4)) & 0x00FF00FF;
-		x = (x | (x >> 8)) & 0x0000FFFF;
-		return x;
+
+	/**
+	 * Clamps a value between a minimum and maximum.
+	 *
+	 * @param value	The value.
+	 * @param min	The minimum value.
+	 * @param max	The maximum value.
+	 * @return	A valid value.
+	 */
+	private static int clamp(final int value, final int min, final int max){
+		return Math.min(Math.max(value, min), max);
 	}
 
 }

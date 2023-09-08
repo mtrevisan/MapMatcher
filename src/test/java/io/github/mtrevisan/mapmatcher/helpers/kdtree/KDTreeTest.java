@@ -32,8 +32,6 @@ import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.QuadTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.QuadTreeOptions;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
-import io.github.mtrevisan.mapmatcher.helpers.rtree.LinearSplitter;
-import io.github.mtrevisan.mapmatcher.helpers.rtree.NodeSplitter;
 import io.github.mtrevisan.mapmatcher.helpers.rtree.RTree;
 import io.github.mtrevisan.mapmatcher.helpers.rtree.RTreeOptions;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
@@ -365,10 +363,9 @@ class KDTreeTest{
 
 		final double deltaLongitude = (maxLongitude - minLongitude) / regionDivision;
 		final double deltaLatitude = (maxLatitude - minLatitude) / regionDivision;
-		final RTreeOptions options = RTreeOptions.create().withMinObjects(rTreeMinObjects)
-			.withMaxObjects(rTreeMaxObjects);
-		NodeSplitter splitter = LinearSplitter.create(options);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(splitter), options);
+		final RTreeOptions options = RTreeOptions.create().withMinChildren(rTreeMinObjects)
+			.withMaxChildren(rTreeMaxObjects);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options), options);
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){

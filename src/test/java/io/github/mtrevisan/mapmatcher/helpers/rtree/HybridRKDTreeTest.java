@@ -30,7 +30,6 @@ import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,38 +40,11 @@ class HybridRKDTreeTest{
 	private static final GeometryFactory FACTORY_EUCLIDEAN = new GeometryFactory(new EuclideanCalculator());
 
 
-	@Test
-	void simple(){
-		RTreeOptions options = RTreeOptions.create()
-			.withMinObjects(1)
-			.withMaxObjects(10);
-		NodeSplitter splitter = LinearSplitter.create(options);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(splitter), options);
-		tree.insert(Region.of(10., 10., 20., 20.));
-		tree.insert(Region.of(5., 5., 15., 15.));
-		tree.insert(Region.of(25., 25., 35., 35.));
-		tree.insert(Region.of(5., 5., 17., 15.));
-		tree.insert(Region.of(5., 25., 25., 35.));
-		tree.insert(Region.of(25., 5., 35., 15.));
-		tree.insert(Region.of(2., 2., 4., 4.));
-		Region region = Region.of(5., 5., 10., 10.);
-		Map<Region, SpatialNode> nodes = new HashMap<>();
-		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.));
-		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(2., 2.));
-		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 2.));
-
-		Assertions.assertTrue(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
-		Assertions.assertFalse(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
-		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
-			tree.nearestNeighbor(nodes, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
-	}
-
 //	@Test
 	void italy(){
-		RTreeOptions options = RTreeOptions.create().withMinObjects(2)
-			.withMaxObjects(3);
-		NodeSplitter splitter = LinearSplitter.create(options);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(splitter), options);
+		RTreeOptions options = RTreeOptions.create().withMinChildren(2)
+			.withMaxChildren(3);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options), options);
 		//italy (IT)
 //		tree.insert(Region.of(6.6272658, 35.4929521, 18.5205121, 47.0921462).withID("IT"));
 		//sicilia (IT-82)

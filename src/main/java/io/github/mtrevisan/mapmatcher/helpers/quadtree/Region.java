@@ -178,6 +178,10 @@ public class Region implements Comparable<Region>{
 		return (maxY - minY);
 	}
 
+	public double euclideanPerimeter(){
+		return (getExtentX() + getExtentY()) * 2.;
+	}
+
 	public double euclideanArea(){
 		return (maxX - minX) * (maxY - minY);
 	}
@@ -374,14 +378,19 @@ public class Region implements Comparable<Region>{
 			|| p.getY() > maxY || p.getY() < minY);
 	}
 
-	public double nonIntersectingArea(final Region region){
+	public double intersectingArea(final Region region){
 		//calculate intersection points
 		final double x1 = Math.max(minX, region.minX);
 		final double y1 = Math.max(minY, region.minY);
 		final double x2 = Math.min(maxX, region.maxX);
 		final double y2 = Math.min(maxY, region.maxY);
 		//calculate area of intersection
-		final double intersectionArea = Math.abs(x2 - x1) * Math.abs(y2 - y1);
+		return Math.abs(x2 - x1) * Math.abs(y2 - y1);
+	}
+
+	public double nonIntersectingArea(final Region region){
+		//calculate area of intersection
+		final double intersectionArea = intersectingArea(region);
 		//calculate total area of the two regions
 		final double totalArea = euclideanArea() + region.euclideanArea();
 		//calculate intersection area

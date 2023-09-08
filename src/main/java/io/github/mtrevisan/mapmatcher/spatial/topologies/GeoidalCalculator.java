@@ -94,17 +94,17 @@ public class GeoidalCalculator implements TopologyCalculator{
 	 */
 	@Override
 	public double distance(final Point point, final Polyline lineString){
-		double minNearestPointDistance = Double.MAX_VALUE;
+		double minClosestPointDistance = Double.POSITIVE_INFINITY;
 		final Point[] points = lineString.getPoints();
 		for(int i = 1; i < points.length; i ++){
 			final Point startPoint = points[i - 1];
 			final Point endPoint = points[i];
 			final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(startPoint, endPoint, point);
 			final double distance = GeodeticHelper.orthodromicDistance(nearestPoint, point);
-			if(distance < minNearestPointDistance)
-				minNearestPointDistance = distance;
+			if(distance < minClosestPointDistance)
+				minClosestPointDistance = distance;
 		}
-		return minNearestPointDistance;
+		return minClosestPointDistance;
 	}
 
 	@Override
