@@ -132,14 +132,14 @@ public class KDTree implements SpatialTree{
 			int axis = params.axis;
 
 			//extract the splitting node
-			final int k = begin + ((end - begin) >> 1);
-			final KDNode median = QuickSelect.select(nodes, begin, end - 1, k, comparators[axis]);
+			final int middle = begin + ((end - begin) >> 1);
+			final KDNode median = QuickSelect.select(nodes, begin, end - 1, middle, comparators[axis]);
 
 			axis = getNextAxis(axis, comparators.length);
-			if(begin < k)
-				stack.push(new BuildTreeParams(begin, k, axis, median, BuildTreeParams.Side.LEFT));
-			if(k + 1 < end)
-				stack.push(new BuildTreeParams(k + 1, end, axis, median, BuildTreeParams.Side.RIGHT));
+			if(begin < middle)
+				stack.push(new BuildTreeParams(begin, middle, axis, median, BuildTreeParams.Side.LEFT));
+			if(middle + 1 < end)
+				stack.push(new BuildTreeParams(middle + 1, end, axis, median, BuildTreeParams.Side.RIGHT));
 
 			if(root == null)
 				root = median;

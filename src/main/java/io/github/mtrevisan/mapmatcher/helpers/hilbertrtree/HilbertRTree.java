@@ -63,6 +63,7 @@ import java.util.List;
  * @see <a href="https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf">Hilbert R-tree: An improved R-tree using fractals</a>
  * @see <a href="https://web.cs.swarthmore.edu/~adanner/cs97/s08/pdf/prtreesigmod04.pdf">The Priority R-Tree: A Practically Efficient and Worst-Case Optimal R-Tree</a>
  * @see <a href="https://cdn.dal.ca/content/dam/dalhousie/pdf/faculty/computerscience/technical-reports/CS-2006-07.pdf">Compact Hilbert Indices</a>
+ * @see <a href="https://github.com/Ya-hwon/hprtree/tree/master">hprtree</a>
  */
 public class HilbertRTree implements RegionTree<TreeOptions>{
 
@@ -76,7 +77,7 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 	private static final int NODE_BOUND_MAX_Y_INDEX = 3;
 
 	private final List<Region> items = new ArrayList<>(0);
-	private final int nodeCapacity;
+	private final int minChildren;
 	private final Region totalExtent = Region.ofEmpty();
 	private int[] layerStartIndex;
 	private double[] nodeBounds;
@@ -104,8 +105,8 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 		this(DEFAULT_NODE_CAPACITY);
 	}
 
-	private HilbertRTree(final int nodeCapacity){
-		this.nodeCapacity = nodeCapacity;
+	private HilbertRTree(final int minChildren){
+		this.minChildren = minChildren;
 	}
 
 
@@ -125,7 +126,7 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 
 
 	@Override
-	public void insert(final Region region, final TreeOptions options){
+	public void insert(final Region region){
 		if(isBuilt)
 			throw new IllegalStateException("Cannot insert a new region after tree is built.");
 
@@ -135,7 +136,7 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 
 
 	@Override
-	public boolean delete(final Region region, final TreeOptions options){
+	public boolean delete(final Region region){
 		//TODO https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf
 		//	find the host leaf (perform an exact match search to find the leaf node `L` that contain the given item)
 		//	delete the item (remove the item from node `L`)
@@ -158,12 +159,12 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 
 		isBuilt = true;
 		//don't need to build an empty or very small tree
-		if(items.size() <= nodeCapacity)
+		if(items.size() <= minChildren)
 			return;
 
 		sortItems();
 
-		layerStartIndex = computeLayerIndices(items.size(), nodeCapacity);
+		layerStartIndex = computeLayerIndices(items.size(), minChildren);
 		//allocate storage
 		final int nodeCount = layerStartIndex[layerStartIndex.length - 1] >> 2;
 		nodeBounds = createBoundsArray(nodeCount);
@@ -243,11 +244,11 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 
 	private void computeLeafNodes(final int layerSize){
 		for(int i = 0; i < layerSize; i += ENV_SIZE)
-			computeLeafNodeBounds(i, (nodeCapacity * i) >> 2);
+			computeLeafNodeBounds(i, (minChildren * i) >> 2);
 	}
 
 	private void computeLeafNodeBounds(final int nodeIndex, final int blockStart){
-		for(int i = 0; i <= nodeCapacity; i ++){
+		for(int i = 0; i <= minChildren; i ++){
 			final int itemIndex = blockStart + i;
 			if(itemIndex >= items.size())
 				break;
@@ -263,13 +264,13 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 		final int layerSize = layerSize(layerIndex);
 		final int childLayerEnd = layerStart;
 		for(int i = 0; i < layerSize; i += ENV_SIZE){
-			final int childStart = childLayerStart + nodeCapacity * i;
+			final int childStart = childLayerStart + minChildren * i;
 			computeNodeBounds(layerStart + i, childStart, childLayerEnd);
 		}
 	}
 
 	private void computeNodeBounds(final int nodeIndex, final int blockStart, final int nodeMaxIndex){
-		for(int i = 0; i <= nodeCapacity; i ++){
+		for(int i = 0; i <= minChildren; i ++){
 			final int index = blockStart + (i << 2);
 			if(index >= nodeMaxIndex)
 				break;
@@ -320,7 +321,7 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 	}
 
 	private void queryItems(final int blockStart, final Region region, final Collection<Region> visitor){
-		for(int i = 0; i < nodeCapacity; i ++){
+		for(int i = 0; i < minChildren; i ++){
 			final int itemIndex = blockStart + i;
 			//don't query past end of items
 			if(itemIndex >= items.size())
@@ -361,15 +362,15 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 			final int currentIndex = stack.pop();
 
 			if(currentIndex == 0){
-				final int childNodesOffset = currentOffset / ENV_SIZE * nodeCapacity;
+				final int childNodesOffset = currentOffset / ENV_SIZE * minChildren;
 				queryItems(childNodesOffset, region, visitor);
 			}
 			else{
-				final int childNodesOffset = currentOffset * nodeCapacity;
+				final int childNodesOffset = currentOffset * minChildren;
 				//query node children
 				layerStart = layerStartIndex[currentIndex - 1];
 				final int layerEnd = layerStartIndex[currentIndex];
-				for(int i = 0; i < nodeCapacity; i ++){
+				for(int i = 0; i < minChildren; i ++){
 					final int childNodeOffset = childNodesOffset + ENV_SIZE * i;
 					//don't query past layer end
 					if(layerStart + childNodeOffset >= layerEnd)

@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
-import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Objects;
@@ -44,7 +43,6 @@ public class Region implements Comparable<Region>{
 	private String id;
 	/** Store linear region quadtree location code. */
 	private BitCode code;
-	private SpatialNode node;
 	private boolean boundary;
 
 
@@ -180,6 +178,10 @@ public class Region implements Comparable<Region>{
 		return (maxY - minY);
 	}
 
+	public double euclideanPerimeter(){
+		return (getExtentX() + getExtentY()) * 2.;
+	}
+
 	public double euclideanArea(){
 		return (maxX - minX) * (maxY - minY);
 	}
@@ -190,7 +192,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether this region is uninitialized or is the region of the empty geometry.
 	 */
 	public boolean isNull(){
-		return (maxX < minX || maxY < minY);
+		return (Double.isNaN(minX) || maxX < minX || maxY < minY);
 	}
 
 	/**
@@ -213,14 +215,6 @@ public class Region implements Comparable<Region>{
 
 	public int getLevel(){
 		return (code.length() >> 1);
-	}
-
-	public SpatialNode getNode(){
-		return node;
-	}
-
-	public void setNode(final SpatialNode node){
-		this.node = node;
 	}
 
 	public boolean isBoundary(){
@@ -382,6 +376,25 @@ public class Region implements Comparable<Region>{
 		return !(p == null || isNull()
 			|| p.getX() > maxX || p.getX() < minX
 			|| p.getY() > maxY || p.getY() < minY);
+	}
+
+	public double intersectingArea(final Region region){
+		//calculate intersection points
+		final double x1 = Math.max(minX, region.minX);
+		final double y1 = Math.max(minY, region.minY);
+		final double x2 = Math.min(maxX, region.maxX);
+		final double y2 = Math.min(maxY, region.maxY);
+		//calculate area of intersection
+		return Math.abs(x2 - x1) * Math.abs(y2 - y1);
+	}
+
+	public double nonIntersectingArea(final Region region){
+		//calculate area of intersection
+		final double intersectionArea = intersectingArea(region);
+		//calculate total area of the two regions
+		final double totalArea = euclideanArea() + region.euclideanArea();
+		//calculate intersection area
+		return totalArea - intersectionArea;
 	}
 
 

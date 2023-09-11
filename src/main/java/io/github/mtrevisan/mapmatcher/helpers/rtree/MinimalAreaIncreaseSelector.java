@@ -26,44 +26,47 @@ package io.github.mtrevisan.mapmatcher.helpers.rtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 
-import java.util.ArrayList;
-import java.util.List;
 
+class MinimalAreaIncreaseSelector implements NodeSelector{
 
-class RNode{
-
-	protected Region region;
-	protected final List<RNode> children;
-	protected boolean leaf;
-
-	protected RNode parent;
-
-
-	public static RNode createInternal(final Region region){
-		return new RNode(region);
-	}
-
-	public static RNode createLeaf(final Region region){
-		final RNode node = new RNode(region);
-		node.leaf = true;
-		return node;
+	static MinimalAreaIncreaseSelector create(){
+		return new MinimalAreaIncreaseSelector();
 	}
 
 
-	private RNode(final Region region){
-		this.region = region;
-		children = new ArrayList<>();
-	}
+	private MinimalAreaIncreaseSelector(){}
 
 
-	void addChild(final RNode child){
-		child.parent = this;
-		children.add(child);
-	}
+	/**
+	 * Find leaf that needs the least enlargement with the region.
+	 */
+	@Override
+	public RNode select(final RNode parent, final Region region){
+		RNode current = parent;
+		while(!current.leaf){
+			//choose child which region enlarges the less with current record's region
+			double minAreaIncrement = Double.POSITIVE_INFINITY;
+			RNode minAreaNode = null;
+			for(final RNode child : current.children){
+				//first order by minimum non-intersecting area
+				final double nonIntersectingArea = region.nonIntersectingArea(child.region);
+				if(nonIntersectingArea < minAreaIncrement){
+					minAreaIncrement = nonIntersectingArea;
+					minAreaNode = child;
+				}
+				else if(nonIntersectingArea == minAreaIncrement){
+					//then order by smallest area
+					final double childArea = child.region.euclideanArea();
+					@SuppressWarnings("DataFlowIssue")
+					final double nextArea = minAreaNode.region.euclideanArea();
+					if(childArea < nextArea)
+						minAreaNode = child;
+				}
+			}
 
-	void tightenRegion(){
-		for(final RNode child : children)
-			region.expandToInclude(child.region);
+			current = minAreaNode;
+		}
+		return current;
 	}
 
 }

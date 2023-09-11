@@ -39,18 +39,16 @@ public interface RegionTree<O extends TreeOptions>{
 	 * Add the region to the tree (if it is not already in the tree) with unlimited levels.
 	 *
 	 * @param region	The region to add.
-	 * @param options	The tree options (used during construction phase).
 	 */
-	void insert(Region region, O options);
+	void insert(Region region);
 
 	/**
 	 * Delete the region from the tree.
 	 *
 	 * @param region	The region to delete.
-	 * @param options	The tree options (used during re-balancing phase).
 	 * @return	Whether the region was deleted.
 	 */
-	boolean delete(Region region, O options);
+	boolean delete(Region region);
 
 	/**
 	 * Assess the given region intersects the tree.

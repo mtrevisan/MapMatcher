@@ -125,16 +125,15 @@ class BPlusTreeTest{
 			int value = (int)(Math.random() * maxValue);
 			if(Math.random() > 0.1){
 				treeMap.put(key, value);
-				if(! bPlusTree.query(key).isEmpty()){
+				if(!bPlusTree.query(key).isEmpty())
 					bPlusTree.remove(key);
-				}
 				bPlusTree.insert(key, value);
 			}
 			if(Math.random() < 0.5){
 				int deleteKey = (int)(Math.random() * maxKey);
 				Integer deletedValue = treeMap.remove(deleteKey);
 				boolean deleted = bPlusTree.remove(deleteKey);
-				Assertions.assertTrue((deletedValue == null && ! deleted) || (deletedValue != null && deleted));
+				Assertions.assertTrue(deletedValue == null && !deleted || deletedValue != null && deleted);
 			}
 
 			int getKey = (int)(Math.random() * maxKey);
@@ -183,7 +182,7 @@ class BPlusTreeTest{
 	void query(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(1);
-		QuadTree tree = QuadTree.create(Region.of(2., 2., 35., 35.));
+		QuadTree tree = QuadTree.create(Region.of(2., 2., 35., 35.), options);
 		List<Region> regions = Arrays.asList(
 			Region.of(5., 5., 15., 15.),
 			Region.of(25., 25., 35., 35.),
@@ -194,7 +193,7 @@ class BPlusTreeTest{
 			Region.of(2., 2., 4., 4.)
 		);
 		for(Region region : regions)
-			tree.insert(region, options);
+			tree.insert(region);
 		final BPlusTree<BitCode, Region> bptree = BPlusTree.ofOrder(regions.size());
 		for(Region region : regions)
 			bptree.insert(region.getCode(), region);

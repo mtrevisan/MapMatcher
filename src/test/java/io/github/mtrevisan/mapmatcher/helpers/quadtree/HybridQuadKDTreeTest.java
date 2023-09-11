@@ -24,11 +24,15 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.quadtree;
 
+import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.helpers.kdtree.HybridKDTree;
 import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.topologies.EuclideanCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 class HybridQuadKDTreeTest{
@@ -40,23 +44,25 @@ class HybridQuadKDTreeTest{
 	void simple(){
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(1);
-		QuadTree quadTree = QuadTree.create(Region.of(2., 2., 37., 37.));
-		HybridKDTree.insert(quadTree, Region.of(10., 10., 20., 20.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 15., 15.), options);
-		HybridKDTree.insert(quadTree, Region.of(25., 25., 35., 35.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 5., 17., 15.), options);
-		HybridKDTree.insert(quadTree, Region.of(5., 25., 25., 35.), options);
-		HybridKDTree.insert(quadTree, Region.of(25., 5., 35., 15.), options);
-		HybridKDTree.insert(quadTree, Region.of(2., 2., 4., 4.), options);
+		QuadTree quadTree = QuadTree.create(Region.of(2., 2., 37., 37.), options);
+		HybridKDTree<QuadTreeOptions> tree = HybridKDTree.create(quadTree, options);
+		tree.insert(Region.of(10., 10., 20., 20.));
+		tree.insert(Region.of(5., 5., 15., 15.));
+		tree.insert(Region.of(25., 25., 35., 35.));
+		tree.insert(Region.of(5., 5., 17., 15.));
+		tree.insert(Region.of(5., 25., 25., 35.));
+		tree.insert(Region.of(25., 5., 35., 15.));
+		tree.insert(Region.of(2., 2., 4., 4.));
 		Region region = Region.of(5., 5., 10., 10.);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.), options);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(2., 2.), options);
-		HybridKDTree.insert(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 2.), options);
+		Map<Region, SpatialNode> nodes = new HashMap<>();
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.));
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(2., 2.));
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 2.));
 
-		Assertions.assertTrue(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
-		Assertions.assertFalse(HybridKDTree.contains(quadTree, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
+		Assertions.assertTrue(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
+		Assertions.assertFalse(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
 		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
-			HybridKDTree.nearestNeighbor(quadTree, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
+			tree.nearestNeighbor(nodes, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
 	}
 
 }

@@ -24,11 +24,18 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.rtree;
 
+import io.github.mtrevisan.mapmatcher.helpers.QuickSelect;
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
+import io.github.mtrevisan.mapmatcher.spatial.Point;
+import org.agrona.collections.Int2ObjectHashMap;
 
+import java.lang.reflect.Array;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -36,17 +43,243 @@ import java.util.List;
 import java.util.Set;
 
 
+/**
+ * @see <a href="https://en.wikipedia.org/wiki/R-tree">R-tree</a>
+ * @see <a href="https://github.com/davidmoten/rtree2">RTree2</a>
+ * @see <a href="https://en.wikipedia.org/wiki/R*-tree">R*-tree</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Hilbert_R-tree">Hilbert R-tree</a>
+ * @see <a href="https://github.com/TheDeathFar/HilbertTree">HilberTree</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Hilbert_R-tree">Hilbert R-tree</a>
+ * @see <a href="https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/index/hprtree/HPRtree.java">HPRtree.java</a>
+ * @see <a href="https://www.cs.cmu.edu/~christos/PUBLICATIONS.OLDER/vldb94.pdf">Hilbert R-tree: An improved R-tree using fractals</a>
+ * @see <a href="https://web.cs.swarthmore.edu/~adanner/cs97/s08/pdf/prtreesigmod04.pdf">The Priority R-Tree: A Practically Efficient and Worst-Case Optimal R-Tree</a>
+ * @see <a href="https://cdn.dal.ca/content/dam/dalhousie/pdf/faculty/computerscience/technical-reports/CS-2006-07.pdf">Compact Hilbert Indices</a>
+ * @see <a href="https://github.com/Ya-hwon/hprtree/tree/master">hprtree</a>
+ */
 public class RTree implements RegionTree<RTreeOptions>{
+
+	private static final int HILBERT_LEVEL = 12;
+
 
 	private RNode root;
 
+	private final RTreeOptions options;
+	private final NodeSplitter splitter;
+	private final NodeSelector selector;
 
-	public static RTree create(){
-		return new RTree();
+	//TODO succinct tree structure
+	//https://sux.di.unimi.it/
+	//https://github.com/vigna/Sux4J/blob/master/src/it/unimi/dsi/sux4j/bits/Select.java
+	//
+	//LOUDS? http://www.cs.cmu.edu/~huanche1/slides/FST.pdf
+	//child(i) = select(S, rank(HC, i) + 1)
+	//parent(i) = select(S, rank(S, i) - 1)
+	//value(i) = i - rank(HC, i)
+	//
+	//https://dukespace.lib.duke.edu/dspace/bitstream/handle/10161/434/A.Gupta%20thesis%20revision.pdf?sequence=3
+	//http://groups.di.unipi.it/~ottavian/files/phd_thesis.pdf
+	//https://vigna.di.unimi.it/ftp/papers/Broadword.pdf
+	//firstChild(i) = select0(rank1(i) + 1)
+	//nextSibling(i) = i + 1
+	//parent(i) = select1(rank0(i))
+	private final BitSet structure = new BitSet();
+	//data in level-order traversal
+	private Int2ObjectHashMap<Region> data;
+
+
+	public static RTree create(final RTreeOptions options){
+		return new RTree(options, LinearSplitter.create(options), MinimalAreaIncreaseSelector.create());
+	}
+
+	public static RTree createSTR(final List<Region> regions, final RTreeOptions options){
+		final RTree tree = new RTree(options, LinearSplitter.create(options), MinimalAreaIncreaseSelector.create());
+
+		final Comparator<Region>[] comparators = createSTRComparators();
+
+		tree.buildSortTileRecursive(regions, comparators);
+
+		return tree;
+	}
+
+	public static RTree createRStar(final List<Region> regions, final RTreeOptions options){
+		final RTree tree = new RTree(options, RStarSplitter.create(options), RStarSelector.create());
+
+		final Comparator<Region>[] comparators = createSTRComparators();
+
+		tree.buildSortTileRecursive(regions, comparators);
+
+		return tree;
+	}
+
+	private static Comparator<Region>[] createSTRComparators(){
+		final int dimensions = 2;
+		@SuppressWarnings("unchecked")
+		final Comparator<Region>[] comparators = (Comparator<Region>[])Array.newInstance(Comparator.class, dimensions);
+		for(int i = 0; i < dimensions; i ++)
+			comparators[i] = new MidComparator(i);
+		return comparators;
+	}
+
+	private static final class MidComparator implements Comparator<Region>{
+		private final int axis;
+
+		public MidComparator(final int axis){
+			this.axis = axis;
+		}
+
+		@Override
+		public int compare(final Region region1, final Region region2){
+			return Double.compare(midAxis(region1), midAxis(region2));
+		}
+
+		private double midAxis(final Region region){
+			return (axis == 0? region.getMidX(): region.getMidY());
+		}
+	}
+
+	public static RTree createHilbert(final List<Region> regions, final RTreeOptions options){
+		final RTree tree = new RTree(options, LinearSplitter.create(options), MinimalAreaIncreaseSelector.create());
+
+		//compute total extent of the tree:
+		final Region rootRegion = Region.ofEmpty();
+		for(final Region region : regions)
+			rootRegion.expandToInclude(region);
+
+		final HilbertEncoder encoder = new HilbertEncoder(HILBERT_LEVEL, rootRegion);
+		final Comparator<Region> comparator = (region1, region2) -> {
+			final int hilbertCode1 = encoder.encode(region1);
+			final int hilbertCode2 = encoder.encode(region2);
+			return Integer.compare(hilbertCode1, hilbertCode2);
+		};
+
+		tree.buildHilbert(regions, comparator);
+
+		return tree;
 	}
 
 
-	private RTree(){}
+	private RTree(final RTreeOptions options, final NodeSplitter splitter, final NodeSelector selector){
+		this.options = options;
+		this.splitter = splitter;
+		this.selector = selector;
+	}
+
+
+	/**
+	 * Bulk load an R-tree using the Sort-Tile-Recursive (STR) algorithm.
+	 *
+	 * @param regions	The list of regions to be added.
+	 *
+	 * @see <a href="http://ieeexplore.ieee.org/abstract/document/582015/">STR: a simple and efficient algorithm for R-tree packing</a>
+	 */
+	private void buildSortTileRecursive(final List<Region> regions, final Comparator<Region>[] comparators){
+		if(regions.isEmpty())
+			return;
+
+		//sort the regions based on the mid-coordinates of the given axis
+		final List<Region> sortedRegions = new ArrayList<>(regions);
+		sortedRegions.sort(comparators[0]);
+
+		final Deque<BuildItem> stack = new ArrayDeque<>();
+		stack.push(new BuildItem(sortedRegions));
+		while(!stack.isEmpty()){
+			final BuildItem item = stack.pop();
+
+			buildNode(item, comparators[1], stack);
+		}
+
+		//update the parent region for all nodes
+		if(!isEmpty())
+			updateRegions(root);
+	}
+
+	private void buildNode(final BuildItem item, final Comparator<Region> comparator, final Deque<BuildItem> stack){
+		final List<Region> currentRegions = item.regions;
+		final int begin = item.begin;
+		final int end = item.end;
+		final RNode parentNode = item.parent;
+
+		//calculate the midpoint
+		final int middle = begin + ((end - begin) >> 1);
+		final Region median = QuickSelect.select(currentRegions, begin, end, middle, comparator);
+
+		//create a new node with the region corresponding to the midpoint
+		final RNode node = (begin == end
+			? RNode.createLeaf(median)
+			: RNode.createInternal(median));
+
+		//add the node to the root if it is the first created node
+		if(isEmpty())
+			root = node;
+		else
+			//add the node as a child of the parent
+			parentNode.addChild(node);
+
+		//add the left and right subtrees to the stack
+		if(begin < middle)
+			stack.push(new BuildItem(currentRegions, begin, middle - 1, node));
+		if(middle < end)
+			stack.push(new BuildItem(currentRegions, middle + 1, end, node));
+	}
+
+	private static final class BuildItem{
+		private final List<Region> regions;
+		private final int begin;
+		private final int end;
+		private final RNode parent;
+
+		BuildItem(final List<Region> regions){
+			this(regions, 0, regions.size()  - 1, null);
+		}
+
+		BuildItem(final List<Region> regions, final int begin, final int end, final RNode parent){
+			this.regions = regions;
+			this.begin = begin;
+			this.end = end;
+			this.parent = parent;
+		}
+	}
+
+	private static void updateRegions(final RNode parent){
+		final Deque<RNode> stack = new ArrayDeque<>();
+		stack.push(parent);
+		while(!stack.isEmpty()){
+			final RNode current = stack.pop();
+
+			if(current.leaf)
+				current.tightenRegion();
+			else
+				stack.addAll(current.children);
+		}
+	}
+
+
+	/**
+	 * Bulk load an R-tree using Hilbert packing algorithm.
+	 *
+	 * @param regions	The list of regions to be added.
+	 */
+	private void buildHilbert(final List<Region> regions, final Comparator<Region> comparator){
+		if(regions.isEmpty())
+			return;
+
+		//sort the regions based on the hilbert code
+		final List<Region> sortedRegions = new ArrayList<>(regions);
+		sortedRegions.sort(comparator);
+
+
+		final Deque<BuildItem> stack = new ArrayDeque<>();
+		stack.push(new BuildItem(sortedRegions));
+		while(!stack.isEmpty()){
+			final BuildItem item = stack.pop();
+
+			buildNode(item, comparator, stack);
+		}
+
+		//update the parent region for all nodes
+		if(!isEmpty())
+			updateRegions(root);
+	}
 
 
 	@Override
@@ -56,296 +289,136 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 
 	@Override
-	public void insert(final Region region, final RTreeOptions options){
-		final RNode node = RNode.createLeaf(region);
+	public void insert(final Region region){
+		final RNode newNode = RNode.createLeaf(region);
 		if(isEmpty())
-			root = node;
+			root = newNode;
 		else{
-			final RNode parent = chooseLeaf(root, node);
-			parent.children.add(node);
-			node.parent = parent;
-			if(parent.children.size() > options.maxObjects){
-				final RNode[] splits = splitNode(parent, options.minObjects);
-				adjustTree(splits[0], splits[1], options.minObjects, options.maxObjects);
-			}
+			final RNode parent = selector.select(root, newNode.region);
+			parent.addChild(newNode);
+
+			if(parent.children.size() <= options.maxChildren)
+				adjustRegionsUpToRoot(parent);
 			else
-				adjustTree(parent, null, options.minObjects, options.maxObjects);
+				splitAndAdjust(parent);
 		}
 	}
 
-	private static RNode chooseLeaf(final RNode parent, final RNode node){
-		RNode current = parent;
-		while(!current.leaf){
-			double minAreaIncrement = Double.MAX_VALUE;
-			RNode next = current.children.get(0);
-			for(int i = 1; i < current.children.size(); i ++){
-				final RNode child = current.children.get(i);
-				final double nonIntersectingArea = calculateNonIntersectingArea(child.region, node.region);
-				if(nonIntersectingArea < minAreaIncrement){
-					minAreaIncrement = nonIntersectingArea;
-					next = child;
-				}
-				else if(nonIntersectingArea == minAreaIncrement){
-					//choose the node with the smallest area
-					final double nextArea = next.region.euclideanArea();
-					final double childArea = child.region.euclideanArea();
-					if(childArea < nextArea)
-						next = child;
-				}
-			}
+	private void adjustRegionsUpToRoot(RNode node){
+		while(node != root && node.parent != null){
+			node.tightenRegion();
 
-			current = next;
+			node = node.parent;
 		}
-		return current;
+
+		if(node == root)
+			root.tightenRegion();
 	}
 
-	private static double calculateNonIntersectingArea(final Region region1, final Region region2){
-		//calculate intersection points
-		final double x1 = Math.max(region1.getMinX(), region2.getMinX());
-		final double y1 = Math.max(region1.getMinY(), region2.getMinY());
-		final double x2 = Math.min(region1.getMaxX(), region2.getMaxX());
-		final double y2 = Math.min(region1.getMaxY(), region2.getMaxY());
-		//calculate area of intersection
-		final double intersectionArea = Math.max(0., x2 - x1) * Math.max(0., y2 - y1);
-		//calculate total area of the two regions
-		final double totalArea = region1.euclideanArea() + region2.euclideanArea();
-		//calculate intersection area
-		return totalArea - intersectionArea;
-	}
-
-	private RNode[] splitNode(final RNode node, final int minObjects){
-		final RNode[] nodes = new RNode[]{
-			node,
-			(node.leaf? RNode.createLeaf(node.region): RNode.createInternal(node.region))
-		};
-		nodes[1].parent = node.parent;
-		if(nodes[1].parent != null)
-			nodes[1].parent.children.add(nodes[1]);
-
-		final LinkedList<RNode> children = new LinkedList<>(node.children);
-		node.children.clear();
-		final RNode[] seedNodes = pickSeeds(children);
-		nodes[0].children.add(seedNodes[0]);
-		nodes[1].children.add(seedNodes[1]);
-
-		while(!children.isEmpty()){
-			if((nodes[0].children.size() >= minObjects) && (nodes[1].children.size() + children.size() == minObjects)){
-				nodes[1].children.addAll(children);
-				children.clear();
-				return nodes;
-			}
-			else if((nodes[1].children.size() >= minObjects) && (nodes[1].children.size() + children.size() == minObjects)){
-				nodes[0].children.addAll(children);
-				children.clear();
-				return nodes;
-			}
-			final RNode child = children.pop();
-			RNode preferred;
-
-			final double nia0 = calculateNonIntersectingArea(nodes[0].region, child.region);
-			final double nia1 = calculateNonIntersectingArea(nodes[1].region, child.region);
-			if(nia0 < nia1)
-				preferred = nodes[0];
-			else if(nia0 > nia1)
-				preferred = nodes[1];
-			else{
-				final double area0 = nodes[0].region.euclideanArea();
-				final double area1 = nodes[1].region.euclideanArea();
-				if(area0 < area1)
-					preferred = nodes[0];
-				else if(nia0 > area1)
-					preferred = nodes[1];
-				else
-					preferred = nodes[nodes[0].children.size() <= nodes[1].children.size()? 0: 1];
-			}
-			preferred.children.add(child);
-		}
-		tighten(nodes[0]);
-		tighten(nodes[1]);
-		return nodes;
-	}
-
-	private static RNode[] pickSeeds(final List<RNode> nodes){
-		RNode[] bestPair = null;
-		double bestSeparation = 0.;
-		for(int i = 0; i < 2; i ++){
-			double dimLowerBound = Double.MAX_VALUE;
-			double dimMinUpperBound = Double.MAX_VALUE;
-			double dimUpperBound = -Double.MAX_VALUE;
-			double dimMaxLowerBound = -Double.MAX_VALUE;
-			RNode nodeMaxLowerBound = null;
-			RNode nodeMinUpperBound = null;
-			for(final RNode node : nodes){
-				final double[] coordinates = new double[]{node.region.getMinX(), node.region.getMinY(),
-					node.region.getMaxX(), node.region.getMaxY()};
-				if(coordinates[i] < dimLowerBound)
-					dimLowerBound = coordinates[i];
-				if(coordinates[i + 2] > dimUpperBound)
-					dimUpperBound = coordinates[i + 2];
-				if(coordinates[i] > dimMaxLowerBound){
-					dimMaxLowerBound = coordinates[i];
-					nodeMaxLowerBound = node;
-				}
-				if(coordinates[i + 2] < dimMinUpperBound){
-					dimMinUpperBound = coordinates[i + 2];
-					nodeMinUpperBound = node;
-				}
-			}
-			final double separation = Math.abs((dimMinUpperBound - dimMaxLowerBound) / (dimUpperBound - dimLowerBound));
-			if(separation >= bestSeparation){
-				bestPair = new RNode[]{nodeMaxLowerBound, nodeMinUpperBound};
-				bestSeparation = separation;
-			}
-		}
-		if(bestPair != null){
-			nodes.remove(bestPair[0]);
-			nodes.remove(bestPair[1]);
-		}
-		return bestPair;
-	}
-
-	private void adjustTree(final RNode rNode, final RNode nNode, final int minObjects, final int maxObjects){
-		RNode currentNode = rNode;
-		RNode newNode = nNode;
-
+	private void splitAndAdjust(RNode parent){
 		while(true){
+			final RNode[] splits = splitter.splitNode(parent);
+			final RNode currentNode = splits[0];
+			final RNode newNode = splits[1];
+
 			if(currentNode == root){
-				if(newNode != null){
-					final double coordinate = Math.sqrt(Double.MAX_VALUE);
-					final double dimension = -2. * Math.sqrt(Double.MAX_VALUE);
-					final Region region = Region.of(coordinate, coordinate, coordinate + dimension, coordinate + dimension);
-					root = RNode.createInternal(region);
+				//assign new root
+				root = RNode.createInternal(Region.ofEmpty());
+				root.addChild(currentNode);
+				root.addChild(newNode);
+				root.tightenRegion();
 
-					root.children.add(currentNode);
-					currentNode.parent = root;
-					root.children.add(newNode);
-					newNode.parent = root;
-				}
-
-				tighten(root);
 				break;
 			}
 
-			tighten(currentNode);
+			currentNode.tightenRegion();
+			newNode.tightenRegion();
+			if(currentNode.parent.children.size() <= options.maxChildren)
+				break;
 
-			if(newNode != null){
-				tighten(newNode);
-				if(currentNode.parent.children.size() > maxObjects){
-					final RNode[] splits = splitNode(currentNode.parent, minObjects);
-					currentNode = splits[0];
-					newNode = splits[1];
-					continue;
-				}
-			}
-			else if(currentNode.parent != null){
-				currentNode = currentNode.parent;
-				continue;
-			}
-
-			break;
+			parent = currentNode.parent;
 		}
 	}
 
 
 	@Override
-	public boolean delete(final Region region, final RTreeOptions options){
-		final RNode leaf = findLeaf(root, region);
-		boolean isDeleted = false;
-		if(leaf != null){
+	public boolean delete(final Region region){
+		boolean deleted = false;
+		final RNode leaf = findLeaf(region);
+		if(leaf != null)
 			for(final RNode node : leaf.children)
 				if(node.region.equals(region)){
-					isDeleted = true;
+					condenseTree(leaf);
+
+					//reassign root if it has only one child
+					if(root.children.size() == 1)
+						root = RNode.createLeaf(root.children.get(0).region);
+
+					deleted = true;
 					break;
 				}
-			if(isDeleted)
-				condenseTree(leaf, options);
-		}
-		return isDeleted;
+		return deleted;
 	}
 
-	private static RNode findLeaf(final RNode parent, final Region region){
-		if(parent.leaf){
-			for(final RNode child : parent.children)
-				if(child.region.intersects(region))
-					return parent;
-		}
-		else
-			for(final RNode child : parent.children)
-				if(child.region.intersects(region)){
-					final RNode result = findLeaf(child, region);
-					if(result != null)
-						return result;
+	private RNode findLeaf(final Region region){
+		if(root.region.intersects(region)){
+			final Deque<RNode> stack = new ArrayDeque<>();
+			stack.push(root);
+			while(!stack.isEmpty()){
+				final RNode currentNode = stack.pop();
+
+				if(currentNode.leaf){
+					for(final RNode child : currentNode.children)
+						if(child.region.intersects(region))
+							return currentNode;
 				}
+				else{
+					for(final RNode child : currentNode.children)
+						if(child.region.intersects(region))
+							stack.push(child);
+				}
+			}
+		}
 		return null;
 	}
 
-	private void condenseTree(RNode remove, final RTreeOptions options){
-		final Set<RNode> reprocessedNodes = new HashSet<>();
+	private void condenseTree(RNode remove){
+		final Set<RNode> removedNodes = new HashSet<>();
 		while(remove != root){
-			if(remove.leaf && remove.children.size() < options.minObjects){
-				reprocessedNodes.addAll(remove.children);
+			if(remove.children.size() >= options.minChildren)
+				remove.tightenRegion();
+			//node has underflow of children
+			else if(remove.leaf){
+				removedNodes.addAll(remove.children);
 				remove.parent.children.remove(remove);
 			}
-			else if(!remove.leaf && remove.children.size() < options.minObjects){
+			else{
 				final LinkedList<RNode> toVisit = new LinkedList<>(remove.children);
 				while(!toVisit.isEmpty()){
 					final RNode node = toVisit.pop();
 					if(node.leaf)
-						reprocessedNodes.addAll(node.children);
+						removedNodes.addAll(node.children);
 					else
 						toVisit.addAll(node.children);
 				}
+
 				remove.parent.children.remove(remove);
 			}
-			else
-				tighten(remove);
 
+			final RNode oldRemove = remove;
 			remove = remove.parent;
+			oldRemove.parent = null;
 		}
-		for(final RNode eNode : reprocessedNodes)
-			insert(eNode.region, options);
-	}
 
-	private static void tighten(final RNode parent){
-		final double[] coordinates = new double[4];
-		final double[] childCoordinates = new double[4];
-		for(int i = 0; i < 2; i ++){
-			coordinates[i] = Double.MAX_VALUE;
-			coordinates[i + 2] = 0.;
-
-			for(final RNode child : parent.children){
-				child.parent = parent;
-				childCoordinates[0] = child.region.getMinX();
-				childCoordinates[1] = child.region.getMinY();
-				childCoordinates[2] = child.region.getMaxX();
-				childCoordinates[3] = child.region.getMaxY();
-				if(childCoordinates[i] < coordinates[i])
-					coordinates[i] = childCoordinates[i];
-				if(childCoordinates[i + 2] > coordinates[i + 2])
-					coordinates[i + 2] = childCoordinates[i + 2];
-			}
-		}
-		parent.region = Region.of(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+		//reinsert temporarily deleted nodes
+		for(final RNode node : removedNodes)
+			insert(node.region);
 	}
 
 
 	@Override
 	public boolean intersects(final Region region){
-		final Deque<RNode> stack = new ArrayDeque<>();
-		stack.push(root);
-		while(!stack.isEmpty()){
-			final RNode current = stack.pop();
-			if(current.leaf){
-				for(final RNode e : current.children)
-					if(e.region.intersects(region))
-						return true;
-			}
-			else
-				for(final RNode c : current.children)
-					if(c.region.intersects(region))
-						stack.push(c);
-		}
-		return false;
+		return (findLeaf(region) != null);
 	}
 
 	@Override
@@ -354,15 +427,17 @@ public class RTree implements RegionTree<RTreeOptions>{
 		stack.push(root);
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
+
 			if(current.leaf){
-				for(final RNode e : current.children)
-					if(e.region.contains(region))
+				for(final RNode child : current.children)
+					if(child.region.contains(region))
 						return true;
 			}
-			else
-				for(final RNode c : current.children)
-					if(c.region.contains(region))
-						stack.push(c);
+			else{
+				for(final RNode child : current.children)
+					if(child.region.contains(region))
+						stack.push(child);
+			}
 		}
 		return false;
 	}
@@ -379,10 +454,11 @@ public class RTree implements RegionTree<RTreeOptions>{
 					if(region.intersects(e.region))
 						results.add(e.region);
 			}
-			else
+			else{
 				for(final RNode c : current.children)
 					if(region.intersects(c.region))
 						stack.push(c);
+			}
 		}
 		return results;
 	}

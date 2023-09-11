@@ -26,44 +26,9 @@ package io.github.mtrevisan.mapmatcher.helpers.rtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 
-import java.util.ArrayList;
-import java.util.List;
 
+interface NodeSelector{
 
-class RNode{
-
-	protected Region region;
-	protected final List<RNode> children;
-	protected boolean leaf;
-
-	protected RNode parent;
-
-
-	public static RNode createInternal(final Region region){
-		return new RNode(region);
-	}
-
-	public static RNode createLeaf(final Region region){
-		final RNode node = new RNode(region);
-		node.leaf = true;
-		return node;
-	}
-
-
-	private RNode(final Region region){
-		this.region = region;
-		children = new ArrayList<>();
-	}
-
-
-	void addChild(final RNode child){
-		child.parent = this;
-		children.add(child);
-	}
-
-	void tightenRegion(){
-		for(final RNode child : children)
-			region.expandToInclude(child.region);
-	}
+	RNode select(final RNode parent, final Region region);
 
 }

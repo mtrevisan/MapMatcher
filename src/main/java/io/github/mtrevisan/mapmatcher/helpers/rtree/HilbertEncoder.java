@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2023 Mauro Trevisan
+ * Copyright (c) 2022 Mauro Trevisan
  * <p>
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -26,44 +26,30 @@ package io.github.mtrevisan.mapmatcher.helpers.rtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 
-import java.util.ArrayList;
-import java.util.List;
+
+class HilbertEncoder{
+
+	private final int level;
+	private final double minX;
+	private final double minY;
+	private final double strideX;
+	private final double strideY;
 
 
-class RNode{
+	HilbertEncoder(final int level, final Region extent){
+		this.level = level;
+		final int hilbertSide = (1 << level) - 1;
 
-	protected Region region;
-	protected final List<RNode> children;
-	protected boolean leaf;
-
-	protected RNode parent;
-
-
-	public static RNode createInternal(final Region region){
-		return new RNode(region);
+		minX = extent.getMinX();
+		minY = extent.getMinY();
+		strideX = extent.getExtentX() / hilbertSide;
+		strideY = extent.getExtentY() / hilbertSide;
 	}
 
-	public static RNode createLeaf(final Region region){
-		final RNode node = new RNode(region);
-		node.leaf = true;
-		return node;
-	}
-
-
-	private RNode(final Region region){
-		this.region = region;
-		children = new ArrayList<>();
-	}
-
-
-	void addChild(final RNode child){
-		child.parent = this;
-		children.add(child);
-	}
-
-	void tightenRegion(){
-		for(final RNode child : children)
-			region.expandToInclude(child.region);
+	int encode(final Region region){
+		final int x = (int)((region.getMidX() - minX) / strideX);
+		final int y = (int)((region.getMidY() - minY) / strideY);
+		return HilbertCode.encode(level, x, y);
 	}
 
 }

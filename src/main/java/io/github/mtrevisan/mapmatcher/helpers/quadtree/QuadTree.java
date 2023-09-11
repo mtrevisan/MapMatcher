@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
-//import java.util.Stack;
 
 
 /**
@@ -77,21 +76,26 @@ public class QuadTree implements RegionTree<QuadTreeOptions>{
 	/** The actual regions this node contains. */
 	private List<Region> regions;
 
+	private final QuadTreeOptions options;
+
 
 	/**
 	 * Creator of a node.
 	 *
 	 * @param envelope	The region envelope defining the node.
+	 * @param options	The tree options (used during construction phase).
 	 * @return	The node.
 	 */
-	public static QuadTree create(final Region envelope){
-		return new QuadTree(envelope);
+	public static QuadTree create(final Region envelope, final QuadTreeOptions options){
+		return new QuadTree(envelope, options);
 	}
 
 
-	private QuadTree(final Region envelope){
+	private QuadTree(final Region envelope, final QuadTreeOptions options){
 		this.envelope = envelope;
 		children = new QuadTree[4];
+
+		this.options = options;
 	}
 
 
@@ -134,7 +138,7 @@ public class QuadTree implements RegionTree<QuadTreeOptions>{
 //	}
 
 	@Override
-	public void insert(final Region region, final QuadTreeOptions options){
+	public void insert(final Region region){
 		if(options.maxLevels < QuadTreeOptions.MAX_LEVELS_UNLIMITED)
 			throw new IllegalArgumentException("Invalid number of max levels: (" + options.maxLevels + ")");
 
@@ -208,10 +212,10 @@ public class QuadTree implements RegionTree<QuadTreeOptions>{
 		final double childWidth = envelope.getExtentX() / 2.;
 		final double childHeight = envelope.getExtentY() / 2.;
 
-		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, x + childWidth, y + childHeight));
-		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, x + childWidth * 2., y + childHeight));
-		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, x + childWidth, y + childHeight * 2.));
-		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + childWidth, y + childHeight, x + childWidth * 2., y + childHeight * 2.));
+		children[INDEX_NORTH_WEST_CHILD] = create(Region.of(x, y, x + childWidth, y + childHeight), options);
+		children[INDEX_NORTH_EAST_CHILD] = create(Region.of(x + childWidth, y, x + childWidth * 2., y + childHeight), options);
+		children[INDEX_SOUTH_WEST_CHILD] = create(Region.of(x, y + childHeight, x + childWidth, y + childHeight * 2.), options);
+		children[INDEX_SOUTH_EAST_CHILD] = create(Region.of(x + childWidth, y + childHeight, x + childWidth * 2., y + childHeight * 2.), options);
 	}
 
 	private static Region calculateRegion(final Region envelope, final int child){
@@ -300,7 +304,7 @@ public class QuadTree implements RegionTree<QuadTreeOptions>{
 //	}
 
 	@Override
-	public boolean delete(final Region region, final QuadTreeOptions options){
+	public boolean delete(final Region region){
 		QuadTree currentNode = this;
 		while(currentNode != null){
 			final int index = getChildIndex(currentNode.envelope, region);
@@ -317,7 +321,7 @@ public class QuadTree implements RegionTree<QuadTreeOptions>{
 							final List<Region> descendants = getAllDescendants(currentNode);
 							clear(currentNode);
 							for(final Region descendant : descendants)
-								currentNode.insert(descendant, options);
+								currentNode.insert(descendant);
 						}
 
 						return true;

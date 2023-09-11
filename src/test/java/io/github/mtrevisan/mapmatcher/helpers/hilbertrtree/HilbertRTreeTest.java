@@ -366,7 +366,7 @@ https://openaddresses.io/
 		Set<Polyline> highways = extractPolylines(new File(FILENAME_ROADS_SIMPLIFIED));
 		for(Polyline polyline : highways){
 			Region region = Region.of(polyline.getBoundingBox());
-			tree.insert(region, null);
+			tree.insert(region);
 		}
 
 		Collection<Region> regions = tree.query(Region.of(
@@ -389,11 +389,11 @@ https://openaddresses.io/
 	@Test
 	void disallowed_inserts(){
 		HilbertRTree tree = HilbertRTree.create(3);
-		tree.insert(Region.of(0., 0., 0., 0.), null);
-		tree.insert(Region.of(0., 0., 0., 0.), null);
+		tree.insert(Region.of(0., 0., 0., 0.));
+		tree.insert(Region.of(0., 0., 0., 0.));
 		tree.query(Region.ofEmpty());
 		try{
-			tree.insert(Region.of(0., 0., 0., 0.), null);
+			tree.insert(Region.of(0., 0., 0., 0.));
 			Assertions.fail();
 		}
 		catch(IllegalStateException e){
@@ -416,7 +416,7 @@ https://openaddresses.io/
 		for(int i = 0; i < geometries.size(); i ++){
 			Region region = Region.of(geometries.get(i).getBoundingBox())
 				.withID(String.valueOf(i));
-			tree.insert(region, null);
+			tree.insert(region);
 		}
 
 		final Collection<Region> regions = tree.query(Region.of(3., 3., 6., 6.));
@@ -437,7 +437,7 @@ https://openaddresses.io/
 		HilbertRTree tree = HilbertRTree.create(3);
 		for(Polyline g : geometries){
 			Region region = Region.of(g.getBoundingBox());
-			tree.insert(region, null);
+			tree.insert(region);
 		}
 
 		tree.query(Region.of(5., 5., 6., 6.));
@@ -452,7 +452,7 @@ https://openaddresses.io/
 	void query3(){
 		HilbertRTree tree = HilbertRTree.create();
 		for(int i = 0; i < 3; i ++)
-			tree.insert(Region.of(i, i, i + 1, i + 1), null);
+			tree.insert(Region.of(i, i, i + 1, i + 1));
 
 		tree.query(Region.of(0., 0., 1., 1.));
 
@@ -464,7 +464,7 @@ https://openaddresses.io/
 	void query10(){
 		HilbertRTree tree = HilbertRTree.create();
 		for(int i = 0; i < 10; i ++)
-			tree.insert(Region.of(i, i, i + 1, i + 1), null);
+			tree.insert(Region.of(i, i, i + 1, i + 1));
 
 		tree.query(Region.of(0, 0, 1, 1));
 
@@ -492,7 +492,7 @@ https://openaddresses.io/
 
 	private void queryGrid(int size, HilbertRTree tree){
 		for(int i = 0; i < size; i ++)
-			tree.insert(Region.of(i, i, i + 1, i + 1), null);
+			tree.insert(Region.of(i, i, i + 1, i + 1));
 
 		tree.query(Region.of(0, 0, 1, 1));
 

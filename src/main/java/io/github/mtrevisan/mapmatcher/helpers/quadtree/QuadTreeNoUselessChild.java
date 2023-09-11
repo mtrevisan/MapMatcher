@@ -114,7 +114,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 //	}
 
 	@Override
-	public void insert(final Region region, final QuadTreeOptions options){
+	public void insert(final Region region){
 		if(options.maxLevels < QuadTreeOptions.MAX_LEVELS_UNLIMITED)
 			throw new IllegalArgumentException("Invalid number of max levels: (" + options.maxLevels + ")");
 
@@ -257,7 +257,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 //	}
 
 	@Override
-	public boolean delete(final Region region, final QuadTreeOptions options){
+	public boolean delete(final Region region){
 		QuadTreeNoUselessChild currentNode = this;
 		while(currentNode != null){
 			final int index = currentNode.getChildIndex(region);
@@ -274,7 +274,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 							final List<Region> descendants = getAllDescendants(currentNode);
 							clear(currentNode);
 							for(final Region descendant : descendants)
-								currentNode.insert(descendant, options);
+								currentNode.insert(descendant);
 						}
 
 						return true;

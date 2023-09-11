@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.QuadTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.QuadTreeOptions;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
@@ -62,8 +63,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -307,7 +310,7 @@ class KDTreeTest{
 	}
 
 	@Test
-	void real_data_r_tree() throws IOException{
+	void real_data_kd_tree() throws IOException{
 		//world boundary:
 		final double minLongitude = 12.0383688;
 		final double minLatitude = 45.9045485;
@@ -360,17 +363,17 @@ class KDTreeTest{
 
 		final double deltaLongitude = (maxLongitude - minLongitude) / regionDivision;
 		final double deltaLatitude = (maxLatitude - minLatitude) / regionDivision;
-		final RTreeOptions options = new RTreeOptions()
-			.withMinObjects(rTreeMinObjects)
-			.withMaxObjects(rTreeMaxObjects);
-		final RTree rTree = RTree.create();
+		final RTreeOptions options = RTreeOptions.create()
+			.withMinChildren(rTreeMinObjects)
+			.withMaxChildren(rTreeMaxObjects);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options), options);
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){
 			final double prevMinY = minY;
 			for(int j = 0; j < regionDivision; j ++){
-				HybridKDTree.insert(rTree, Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
-					.withID("slice " + i + "+" + j), options);
+				tree.insert(Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
+					.withID("slice " + i + "+" + j));
 
 				minY += deltaLatitude;
 			}
@@ -383,20 +386,21 @@ class KDTreeTest{
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
+		final Map<Region, SpatialNode> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
 				final BuildingData building = JSON_MAPPER.readValue(line, BuildingData.class);
 				final Region region = Region.of(building.longitude - regionExtentLongitude, building.latitude - regionExtentLatitude,
 					building.longitude + regionExtentLongitude, building.latitude + regionExtentLatitude);
-				HybridKDTree.insert(rTree, region, factory.createPoint(building.longitude, building.latitude), options);
+				tree.insert(nodes, region, factory.createPoint(building.longitude, building.latitude));
 			}
 		}
 
 		//via Zanchet 19, Miane, Treviso, Italia
 		final Region region2 = Region.of(12.09257 - regionExtentLongitude, 45.94489 - regionExtentLatitude,
 			12.09257 + regionExtentLongitude, 45.94489 + regionExtentLatitude);
-		Point neighbor = HybridKDTree.nearestNeighbor(rTree, region2, factory.createPoint(12.09257, 45.94489));
+		final Point neighbor = tree.nearestNeighbor(nodes, region2, factory.createPoint(12.09257, 45.94489));
 		Assertions.assertEquals(factory.createPoint(12.0925717, 45.9449099), neighbor);
 
 		//query tree
@@ -407,11 +411,230 @@ class KDTreeTest{
 			final double latitude = generateRandomCoordinate(minLatitude, maxLatitude);
 			final Region region = Region.of(longitude - regionExtentLongitude, latitude - regionExtentLatitude,
 				longitude + regionExtentLongitude, latitude + regionExtentLatitude);
-			HybridKDTree.nearestNeighbor(rTree, region, factory.createPoint(longitude, latitude));
+			tree.nearestNeighbor(nodes, region, factory.createPoint(longitude, latitude));
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
 		//926 op/ms (3.5x)
+		System.out.println("speed: " + speed + " op/ms");
+	}
+
+	@Test
+	void real_data_r_str_kd_tree() throws IOException{
+		//world boundary:
+		final double minLongitude = 12.0383688;
+		final double minLatitude = 45.9045485;
+		final double maxLongitude = 12.1368368;
+		final double maxLatitude = 45.9823375;
+
+		//parameters:
+		final int regionDivision = 6;
+		final double pointRegionExtentFactor = 2.4;
+		final int rTreeMinObjects = 1;
+		final int rTreeMaxObjects = 3;
+
+		final double deltaLongitude = (maxLongitude - minLongitude) / regionDivision;
+		final double deltaLatitude = (maxLatitude - minLatitude) / regionDivision;
+		final RTreeOptions options = RTreeOptions.create()
+			.withMinChildren(rTreeMinObjects)
+			.withMaxChildren(rTreeMaxObjects);
+		final List<Region> regions = new ArrayList<>(regionDivision * regionDivision);
+		double minX = minLongitude;
+		double minY = minLatitude;
+		for(int i = 0; i < regionDivision; i ++){
+			final double prevMinY = minY;
+			for(int j = 0; j < regionDivision; j ++){
+				regions.add(Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
+					.withID("slice " + i + "+" + j));
+
+				minY += deltaLatitude;
+			}
+			minX += deltaLongitude;
+			minY = prevMinY;
+		}
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createSTR(regions, options), options);
+
+
+		//read buildings from file and store in a tree
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
+		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
+		final Map<Region, SpatialNode> nodes = new HashMap<>();
+		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
+			String line;
+			while((line = br.readLine()) != null){
+				final BuildingData building = JSON_MAPPER.readValue(line, BuildingData.class);
+				final Region region = Region.of(building.longitude - regionExtentLongitude, building.latitude - regionExtentLatitude,
+					building.longitude + regionExtentLongitude, building.latitude + regionExtentLatitude);
+				tree.insert(nodes, region, factory.createPoint(building.longitude, building.latitude));
+			}
+		}
+
+		//via Zanchet 19, Miane, Treviso, Italia
+		final Region region2 = Region.of(12.09257 - regionExtentLongitude, 45.94489 - regionExtentLatitude,
+			12.09257 + regionExtentLongitude, 45.94489 + regionExtentLatitude);
+		final Point neighbor = tree.nearestNeighbor(nodes, region2, factory.createPoint(12.09257, 45.94489));
+		Assertions.assertEquals(factory.createPoint(12.0925717, 45.9449099), neighbor);
+
+		//query tree
+		final int counter = 1_000_000;
+		final long start = System.currentTimeMillis();
+		for(int i = 0; i < counter; i ++){
+			final double longitude = generateRandomCoordinate(minLongitude, maxLongitude);
+			final double latitude = generateRandomCoordinate(minLatitude, maxLatitude);
+			final Region region = Region.of(longitude - regionExtentLongitude, latitude - regionExtentLatitude,
+				longitude + regionExtentLongitude, latitude + regionExtentLatitude);
+			tree.nearestNeighbor(nodes, region, factory.createPoint(longitude, latitude));
+		}
+		final long stop = System.currentTimeMillis();
+		final int speed = Math.round((float)counter / (stop - start));
+		//1094 op/ms (4.1x)
+		System.out.println("speed: " + speed + " op/ms");
+	}
+
+	@Test
+	void real_data_r_star_kd_tree() throws IOException{
+		//world boundary:
+		final double minLongitude = 12.0383688;
+		final double minLatitude = 45.9045485;
+		final double maxLongitude = 12.1368368;
+		final double maxLatitude = 45.9823375;
+
+		//parameters:
+		final int regionDivision = 6;
+		final double pointRegionExtentFactor = 2.4;
+		final int rTreeMinObjects = 1;
+		final int rTreeMaxObjects = 3;
+
+		final double deltaLongitude = (maxLongitude - minLongitude) / regionDivision;
+		final double deltaLatitude = (maxLatitude - minLatitude) / regionDivision;
+		final RTreeOptions options = RTreeOptions.create()
+			.withMinChildren(rTreeMinObjects)
+			.withMaxChildren(rTreeMaxObjects);
+		final List<Region> regions = new ArrayList<>(regionDivision * regionDivision);
+		double minX = minLongitude;
+		double minY = minLatitude;
+		for(int i = 0; i < regionDivision; i ++){
+			final double prevMinY = minY;
+			for(int j = 0; j < regionDivision; j ++){
+				regions.add(Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
+					.withID("slice " + i + "+" + j));
+
+				minY += deltaLatitude;
+			}
+			minX += deltaLongitude;
+			minY = prevMinY;
+		}
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createRStar(regions, options), options);
+
+
+		//read buildings from file and store in a tree
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
+		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
+		final Map<Region, SpatialNode> nodes = new HashMap<>();
+		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
+			String line;
+			while((line = br.readLine()) != null){
+				final BuildingData building = JSON_MAPPER.readValue(line, BuildingData.class);
+				final Region region = Region.of(building.longitude - regionExtentLongitude, building.latitude - regionExtentLatitude,
+					building.longitude + regionExtentLongitude, building.latitude + regionExtentLatitude);
+				tree.insert(nodes, region, factory.createPoint(building.longitude, building.latitude));
+			}
+		}
+
+		//via Zanchet 19, Miane, Treviso, Italia
+		final Region region2 = Region.of(12.09257 - regionExtentLongitude, 45.94489 - regionExtentLatitude,
+			12.09257 + regionExtentLongitude, 45.94489 + regionExtentLatitude);
+		final Point neighbor = tree.nearestNeighbor(nodes, region2, factory.createPoint(12.09257, 45.94489));
+		Assertions.assertEquals(factory.createPoint(12.0925717, 45.9449099), neighbor);
+
+		//query tree
+		final int counter = 1_000_000;
+		final long start = System.currentTimeMillis();
+		for(int i = 0; i < counter; i ++){
+			final double longitude = generateRandomCoordinate(minLongitude, maxLongitude);
+			final double latitude = generateRandomCoordinate(minLatitude, maxLatitude);
+			final Region region = Region.of(longitude - regionExtentLongitude, latitude - regionExtentLatitude,
+				longitude + regionExtentLongitude, latitude + regionExtentLatitude);
+			tree.nearestNeighbor(nodes, region, factory.createPoint(longitude, latitude));
+		}
+		final long stop = System.currentTimeMillis();
+		final int speed = Math.round((float)counter / (stop - start));
+		//1324 op/ms (4.9x)
+		System.out.println("speed: " + speed + " op/ms");
+	}
+
+	@Test
+	void real_data_hilbert_r_kd_tree() throws IOException{
+		//world boundary:
+		final double minLongitude = 12.0383688;
+		final double minLatitude = 45.9045485;
+		final double maxLongitude = 12.1368368;
+		final double maxLatitude = 45.9823375;
+
+		//parameters:
+		final int regionDivision = 6;
+		final double pointRegionExtentFactor = 2.4;
+		final int rTreeMinObjects = 1;
+		final int rTreeMaxObjects = 3;
+
+		final double deltaLongitude = (maxLongitude - minLongitude) / regionDivision;
+		final double deltaLatitude = (maxLatitude - minLatitude) / regionDivision;
+		final RTreeOptions options = RTreeOptions.create()
+			.withMinChildren(rTreeMinObjects)
+			.withMaxChildren(rTreeMaxObjects);
+		final List<Region> regions = new ArrayList<>(regionDivision * regionDivision);
+		double minX = minLongitude;
+		double minY = minLatitude;
+		for(int i = 0; i < regionDivision; i ++){
+			final double prevMinY = minY;
+			for(int j = 0; j < regionDivision; j ++){
+				regions.add(Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
+					.withID("slice " + i + "+" + j));
+
+				minY += deltaLatitude;
+			}
+			minX += deltaLongitude;
+			minY = prevMinY;
+		}
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createHilbert(regions, options), options);
+
+
+		//read buildings from file and store in a tree
+		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
+		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
+		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
+		final Map<Region, SpatialNode> nodes = new HashMap<>();
+		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
+			String line;
+			while((line = br.readLine()) != null){
+				final BuildingData building = JSON_MAPPER.readValue(line, BuildingData.class);
+				final Region region = Region.of(building.longitude - regionExtentLongitude, building.latitude - regionExtentLatitude,
+					building.longitude + regionExtentLongitude, building.latitude + regionExtentLatitude);
+				tree.insert(nodes, region, factory.createPoint(building.longitude, building.latitude));
+			}
+		}
+
+		//via Zanchet 19, Miane, Treviso, Italia
+		final Region region2 = Region.of(12.09257 - regionExtentLongitude, 45.94489 - regionExtentLatitude,
+			12.09257 + regionExtentLongitude, 45.94489 + regionExtentLatitude);
+		final Point neighbor = tree.nearestNeighbor(nodes, region2, factory.createPoint(12.09257, 45.94489));
+		Assertions.assertEquals(factory.createPoint(12.0925717, 45.9449099), neighbor);
+
+		//query tree
+		final int counter = 1_000_000;
+		final long start = System.currentTimeMillis();
+		for(int i = 0; i < counter; i ++){
+			final double longitude = generateRandomCoordinate(minLongitude, maxLongitude);
+			final double latitude = generateRandomCoordinate(minLatitude, maxLatitude);
+			final Region region = Region.of(longitude - regionExtentLongitude, latitude - regionExtentLatitude,
+				longitude + regionExtentLongitude, latitude + regionExtentLatitude);
+			tree.nearestNeighbor(nodes, region, factory.createPoint(longitude, latitude));
+		}
+		final long stop = System.currentTimeMillis();
+		final int speed = Math.round((float)counter / (stop - start));
+		//992 op/ms (3.7x)
 		System.out.println("speed: " + speed + " op/ms");
 	}
 
@@ -434,14 +657,15 @@ class KDTreeTest{
 		final QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(quadTreeMaxRegionsPerNode)
 			.withMaxLevels(quadTreeMaxLevels);
-		final QuadTree quadTree = QuadTree.create(Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude));
+		final QuadTree quadTree = QuadTree.create(Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude), options);
+		HybridKDTree<QuadTreeOptions> tree = HybridKDTree.create(quadTree, options);
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){
 			final double prevMinY = minY;
 			for(int j = 0; j < regionDivision; j ++){
-				HybridKDTree.insert(quadTree, Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
-					.withID("slice " + i + "+" + j), options);
+				tree.insert(Region.of(minX, minY, minX + deltaLongitude, minY + deltaLatitude)
+					.withID("slice " + i + "+" + j));
 
 				minY += deltaLatitude;
 			}
@@ -454,20 +678,21 @@ class KDTreeTest{
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
+		final Map<Region, SpatialNode> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
 				final BuildingData building = JSON_MAPPER.readValue(line, BuildingData.class);
 				final Region region = Region.of(building.longitude - regionExtentLongitude, building.latitude - regionExtentLatitude,
 					building.longitude + regionExtentLongitude, building.latitude + regionExtentLatitude);
-				HybridKDTree.insert(quadTree, region, factory.createPoint(building.longitude, building.latitude), options);
+				tree.insert(nodes, region, factory.createPoint(building.longitude, building.latitude));
 			}
 		}
 
 		//via Zanchet 19, Miane, Treviso, Italia
 		final Region region2 = Region.of(12.09257 - regionExtentLongitude, 45.94489 - regionExtentLatitude,
 			12.09257 + regionExtentLongitude, 45.94489 + regionExtentLatitude);
-		Point neighbor = HybridKDTree.nearestNeighbor(quadTree, region2, factory.createPoint(12.09257, 45.94489));
+		Point neighbor = tree.nearestNeighbor(nodes, region2, factory.createPoint(12.09257, 45.94489));
 		Assertions.assertEquals(factory.createPoint(12.0925717, 45.9449099), neighbor);
 
 		//query tree
@@ -478,7 +703,7 @@ class KDTreeTest{
 			final double latitude = generateRandomCoordinate(minLatitude, maxLatitude);
 			final Region region = Region.of(longitude - regionExtentLongitude, latitude - regionExtentLatitude,
 				longitude + regionExtentLongitude, latitude + regionExtentLatitude);
-			HybridKDTree.nearestNeighbor(quadTree, region, factory.createPoint(longitude, latitude));
+			tree.nearestNeighbor(nodes, region, factory.createPoint(longitude, latitude));
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
