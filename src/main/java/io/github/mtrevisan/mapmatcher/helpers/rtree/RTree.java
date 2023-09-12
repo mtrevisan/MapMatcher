@@ -27,13 +27,10 @@ package io.github.mtrevisan.mapmatcher.helpers.rtree;
 import io.github.mtrevisan.mapmatcher.helpers.QuickSelect;
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
-import io.github.mtrevisan.mapmatcher.spatial.Point;
-import org.agrona.collections.Int2ObjectHashMap;
 
 import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
@@ -66,25 +63,6 @@ public class RTree implements RegionTree<RTreeOptions>{
 	private final RTreeOptions options;
 	private final NodeSplitter splitter;
 	private final NodeSelector selector;
-
-	//TODO succinct tree structure
-	//https://sux.di.unimi.it/
-	//https://github.com/vigna/Sux4J/blob/master/src/it/unimi/dsi/sux4j/bits/Select.java
-	//
-	//LOUDS? http://www.cs.cmu.edu/~huanche1/slides/FST.pdf
-	//child(i) = select(S, rank(HC, i) + 1)
-	//parent(i) = select(S, rank(S, i) - 1)
-	//value(i) = i - rank(HC, i)
-	//
-	//https://dukespace.lib.duke.edu/dspace/bitstream/handle/10161/434/A.Gupta%20thesis%20revision.pdf?sequence=3
-	//http://groups.di.unipi.it/~ottavian/files/phd_thesis.pdf
-	//https://vigna.di.unimi.it/ftp/papers/Broadword.pdf
-	//firstChild(i) = select0(rank1(i) + 1)
-	//nextSibling(i) = i + 1
-	//parent(i) = select1(rank0(i))
-	private final BitSet structure = new BitSet();
-	//data in level-order traversal
-	private Int2ObjectHashMap<Region> data;
 
 
 	public static RTree create(final RTreeOptions options){
@@ -190,7 +168,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 		//update the parent region for all nodes
 		if(!isEmpty())
-			updateRegions(root);
+			updateRegions();
 	}
 
 	private void buildNode(final BuildItem item, final Comparator<Region> comparator, final Deque<BuildItem> stack){
@@ -240,9 +218,9 @@ public class RTree implements RegionTree<RTreeOptions>{
 		}
 	}
 
-	private static void updateRegions(final RNode parent){
+	private void updateRegions(){
 		final Deque<RNode> stack = new ArrayDeque<>();
-		stack.push(parent);
+		stack.push(root);
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
 
@@ -278,7 +256,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 		//update the parent region for all nodes
 		if(!isEmpty())
-			updateRegions(root);
+			updateRegions();
 	}
 
 
@@ -365,15 +343,15 @@ public class RTree implements RegionTree<RTreeOptions>{
 			final Deque<RNode> stack = new ArrayDeque<>();
 			stack.push(root);
 			while(!stack.isEmpty()){
-				final RNode currentNode = stack.pop();
+				final RNode current = stack.pop();
 
-				if(currentNode.leaf){
-					for(final RNode child : currentNode.children)
+				if(current.leaf){
+					for(final RNode child : current.children)
 						if(child.region.intersects(region))
-							return currentNode;
+							return current;
 				}
 				else{
-					for(final RNode child : currentNode.children)
+					for(final RNode child : current.children)
 						if(child.region.intersects(region))
 							stack.push(child);
 				}
@@ -450,14 +428,14 @@ public class RTree implements RegionTree<RTreeOptions>{
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
 			if(current.leaf){
-				for(final RNode e : current.children)
-					if(region.intersects(e.region))
-						results.add(e.region);
+				for(final RNode child : current.children)
+					if(region.intersects(child.region))
+						results.add(child.region);
 			}
 			else{
-				for(final RNode c : current.children)
-					if(region.intersects(c.region))
-						stack.push(c);
+				for(final RNode child : current.children)
+					if(region.intersects(child.region))
+						stack.push(child);
 			}
 		}
 		return results;
