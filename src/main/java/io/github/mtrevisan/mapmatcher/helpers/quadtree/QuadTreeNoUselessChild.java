@@ -378,7 +378,7 @@ public class QuadTreeNoUselessChild implements RegionTree<QuadTreeOptions>{
 	}
 
 	@Override
-	public Collection<Region> query(final Region region){
+	public List<Region> query(final Region region){
 		final List<Region> returnList = new ArrayList<>();
 
 		final Deque<QuadTreeNoUselessChild> stack = new ArrayDeque<>();

@@ -47,7 +47,10 @@ class MinimalAreaIncreaseSelector implements NodeSelector{
 			//choose child which region enlarges the less with current record's region
 			double minAreaIncrement = Double.POSITIVE_INFINITY;
 			RNode minAreaNode = null;
-			for(final RNode child : current.children){
+			final int size = current.children.size();
+			for(int i = 0; i < size; i ++){
+				final RNode child = current.children.get(i);
+
 				//first order by minimum non-intersecting area
 				final double nonIntersectingArea = region.nonIntersectingArea(child.region);
 				if(nonIntersectingArea < minAreaIncrement){

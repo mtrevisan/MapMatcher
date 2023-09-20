@@ -47,7 +47,7 @@ class RTreeTest{
 		RTreeOptions options = RTreeOptions.create()
 			.withMinChildren(1)
 			.withMaxChildren(10);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options), options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options));
 		tree.insert(Region.of(10., 10., 20., 20.));
 		tree.insert(Region.of(5., 5., 15., 15.));
 		tree.insert(Region.of(25., 25., 35., 35.));
@@ -81,7 +81,7 @@ class RTreeTest{
 			Region.of(25., 5., 35., 15.),
 			Region.of(2., 2., 4., 4.)
 		);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createSTR(regions, options), options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createSTR(regions, options));
 		Region region = Region.of(5., 5., 10., 10.);
 		Map<Region, SpatialNode> nodes = new HashMap<>();
 		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.));

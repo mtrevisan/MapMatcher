@@ -31,13 +31,10 @@ import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -120,8 +117,12 @@ public class RTree implements RegionTree<RTreeOptions>{
 
 		//compute total extent of the tree:
 		final Region rootRegion = Region.ofEmpty();
-		for(final Region region : regions)
+		final int size = regions.size();
+		for(int i = 0; i < size; i ++){
+			final Region region = regions.get(i);
+
 			rootRegion.expandToInclude(region);
+		}
 
 		final HilbertEncoder encoder = new HilbertEncoder(HILBERT_LEVEL, rootRegion);
 		final Comparator<Region> comparator = (region1, region2) -> {
@@ -323,8 +324,11 @@ public class RTree implements RegionTree<RTreeOptions>{
 	public boolean delete(final Region region){
 		boolean deleted = false;
 		final RNode leaf = findLeaf(region);
-		if(leaf != null)
-			for(final RNode node : leaf.children)
+		if(leaf != null){
+			final int size = leaf.children.size();
+			for(int i = 0; i < size; i ++){
+				final RNode node = leaf.children.get(i);
+
 				if(node.region.equals(region)){
 					condenseTree(leaf);
 
@@ -335,6 +339,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 					deleted = true;
 					break;
 				}
+			}
+		}
 		return deleted;
 	}
 
@@ -346,14 +352,22 @@ public class RTree implements RegionTree<RTreeOptions>{
 				final RNode current = stack.pop();
 
 				if(current.leaf){
-					for(final RNode child : current.children)
+					final int size = current.children.size();
+					for(int i = 0; i < size; i ++){
+						final RNode child = current.children.get(i);
+
 						if(child.region.intersects(region))
 							return current;
+					}
 				}
 				else{
-					for(final RNode child : current.children)
+					final int size = current.children.size();
+					for(int i = 0; i < size; i ++){
+						final RNode child = current.children.get(i);
+
 						if(child.region.intersects(region))
 							stack.push(child);
+					}
 				}
 			}
 		}
@@ -361,7 +375,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 	}
 
 	private void condenseTree(RNode remove){
-		final Set<RNode> removedNodes = new HashSet<>();
+		final List<RNode> removedNodes = new ArrayList<>();
 		while(remove != root){
 			if(remove.children.size() >= options.minChildren)
 				remove.tightenRegion();
@@ -374,6 +388,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 				final LinkedList<RNode> toVisit = new LinkedList<>(remove.children);
 				while(!toVisit.isEmpty()){
 					final RNode node = toVisit.pop();
+
 					if(node.leaf)
 						removedNodes.addAll(node.children);
 					else
@@ -389,8 +404,12 @@ public class RTree implements RegionTree<RTreeOptions>{
 		}
 
 		//reinsert temporarily deleted nodes
-		for(final RNode node : removedNodes)
+		final int size = removedNodes.size();
+		for(int i = 0; i < size; i ++){
+			final RNode node = removedNodes.get(i);
+
 			insert(node.region);
+		}
 	}
 
 
@@ -407,35 +426,52 @@ public class RTree implements RegionTree<RTreeOptions>{
 			final RNode current = stack.pop();
 
 			if(current.leaf){
-				for(final RNode child : current.children)
+				final int size = current.children.size();
+				for(int i = 0; i < size; i ++){
+					final RNode child = current.children.get(i);
+
 					if(child.region.contains(region))
 						return true;
+				}
 			}
 			else{
-				for(final RNode child : current.children)
+				final int size = current.children.size();
+				for(int i = 0; i < size; i ++){
+					final RNode child = current.children.get(i);
+
 					if(child.region.contains(region))
 						stack.push(child);
+				}
 			}
 		}
 		return false;
 	}
 
 	@Override
-	public Collection<Region> query(final Region region){
-		final List<Region> results = new LinkedList<>();
+	public List<Region> query(final Region region){
+		final List<Region> results = new ArrayList<>();
 		final Deque<RNode> stack = new ArrayDeque<>();
-		stack.push(root);
+		if(region.intersects(root.region))
+			stack.push(root);
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
+
+			final int size = current.children.size();
 			if(current.leaf){
-				for(final RNode child : current.children)
+				for(int i = 0; i < size; i ++){
+					final RNode child = current.children.get(i);
+
 					if(region.intersects(child.region))
 						results.add(child.region);
+				}
 			}
 			else{
-				for(final RNode child : current.children)
+				for(int i = 0; i < size; i ++){
+					final RNode child = current.children.get(i);
+
 					if(region.intersects(child.region))
 						stack.push(child);
+				}
 			}
 		}
 		return results;

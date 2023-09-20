@@ -45,7 +45,7 @@ class HybridQuadKDTreeTest{
 		QuadTreeOptions options = new QuadTreeOptions()
 			.withMaxRegionsPerNode(1);
 		QuadTree quadTree = QuadTree.create(Region.of(2., 2., 37., 37.), options);
-		HybridKDTree<QuadTreeOptions> tree = HybridKDTree.create(quadTree, options);
+		HybridKDTree<QuadTreeOptions> tree = HybridKDTree.create(quadTree);
 		tree.insert(Region.of(10., 10., 20., 20.));
 		tree.insert(Region.of(5., 5., 15., 15.));
 		tree.insert(Region.of(25., 25., 35., 35.));

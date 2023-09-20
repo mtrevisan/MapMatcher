@@ -33,8 +33,8 @@ import org.apache.commons.math3.linear.RealMatrix;
  */
 public class KalmanFilter{
 
-	private final int stateDimension;
-	private final int observationDimension;
+	private final int stateDimensions;
+	private final int observationDimensions;
 
 	//state-transition model (the kinematic equations, predicts how the state would evolve naturally without input), F_k
 	private RealMatrix stateTransition;
@@ -59,19 +59,19 @@ public class KalmanFilter{
 	private RealMatrix estimateCovariance;
 
 
-	public KalmanFilter(final int stateDimension, final int observationDimension){
-		this.stateDimension = stateDimension;
-		this.observationDimension = observationDimension;
+	public KalmanFilter(final int stateDimensions, final int observationDimensions){
+		this.stateDimensions = stateDimensions;
+		this.observationDimensions = observationDimensions;
 	}
 
-	public int getStateDimension(){
-		return stateDimension;
+	public int getStateDimensions(){
+		return stateDimensions;
 	}
 
 	public void setStateTransition(final RealMatrix stateTransition){
-		if(stateTransition.getRowDimension() != stateDimension || stateTransition.getColumnDimension() != stateDimension)
-			throw new IllegalArgumentException("State transition matrix must be of dimension "
-				+ stateDimension + "×" + stateDimension);
+		if(stateTransition.getRowDimension() != stateDimensions || stateTransition.getColumnDimension() != stateDimensions)
+			throw new IllegalArgumentException("State transition matrix must be of dimensions "
+				+ stateDimensions + "×" + stateDimensions);
 
 		this.stateTransition = stateTransition;
 	}
@@ -81,51 +81,51 @@ public class KalmanFilter{
 	}
 
 	public void setObservationModel(final RealMatrix observationModel){
-		if(observationModel.getRowDimension() != observationDimension || observationModel.getColumnDimension() != stateDimension)
-			throw new IllegalArgumentException("Observation model matrix must be of dimension "
-				+ observationDimension + "×" + stateDimension);
+		if(observationModel.getRowDimension() != observationDimensions || observationModel.getColumnDimension() != stateDimensions)
+			throw new IllegalArgumentException("Observation model matrix must be of dimensions "
+				+ observationDimensions + "×" + stateDimensions);
 
 		this.observationModel = observationModel;
 	}
 
 	public void setProcessNoiseCovariance(final RealMatrix processNoiseCovariance){
-		if(processNoiseCovariance.getRowDimension() != stateDimension || processNoiseCovariance.getColumnDimension() != stateDimension)
-			throw new IllegalArgumentException("Process noise covariance matrix must be of dimension "
-				+ stateDimension + "×" + stateDimension);
+		if(processNoiseCovariance.getRowDimension() != stateDimensions || processNoiseCovariance.getColumnDimension() != stateDimensions)
+			throw new IllegalArgumentException("Process noise covariance matrix must be of dimensions "
+				+ stateDimensions + "×" + stateDimensions);
 
 		this.processNoiseCovariance = processNoiseCovariance;
 	}
 
 	public void setObservationNoiseCovariance(final RealMatrix observationNoiseCovariance){
-		if(observationNoiseCovariance.getRowDimension() != observationDimension
-				|| observationNoiseCovariance.getColumnDimension() != observationDimension)
-			throw new IllegalArgumentException("Observation noise covariance matrix must be of dimension "
-				+ observationDimension + "×" + observationDimension);
+		if(observationNoiseCovariance.getRowDimension() != observationDimensions
+				|| observationNoiseCovariance.getColumnDimension() != observationDimensions)
+			throw new IllegalArgumentException("Observation noise covariance matrix must be of dimensions "
+				+ observationDimensions + "×" + observationDimensions);
 
 		this.observationNoiseCovariance = observationNoiseCovariance;
 	}
 
 	public void setInitialStateEstimate(final RealMatrix stateEstimate){
-		if(stateEstimate.getRowDimension() != stateDimension
+		if(stateEstimate.getRowDimension() != stateDimensions
 				|| stateEstimate.getColumnDimension() != 1)
-			throw new IllegalArgumentException("Initial state estimate matrix must be of dimension " + stateDimension + "×" + 1);
+			throw new IllegalArgumentException("Initial state estimate matrix must be of dimensions " + stateDimensions + "×" + 1);
 
 		this.stateEstimate = stateEstimate;
 	}
 
 	public void setInitialEstimateCovariance(final RealMatrix estimateCovariance){
-		if(estimateCovariance.getRowDimension() != stateDimension
-				|| estimateCovariance.getColumnDimension() != stateDimension)
-			throw new IllegalArgumentException("Initial estimate covariance matrix must be of dimension "
-				+ stateDimension + "×" + stateDimension);
+		if(estimateCovariance.getRowDimension() != stateDimensions
+				|| estimateCovariance.getColumnDimension() != stateDimensions)
+			throw new IllegalArgumentException("Initial estimate covariance matrix must be of dimensions "
+				+ stateDimensions + "×" + stateDimensions);
 
 		this.estimateCovariance = estimateCovariance;
 	}
 
 	public void setObservation(final RealMatrix observation){
-		if(observation.getRowDimension() != observationDimension
+		if(observation.getRowDimension() != observationDimensions
 			|| observation.getColumnDimension() != 1)
-			throw new IllegalArgumentException("Observation matrix must be of dimension " + observationDimension + "×" + 1);
+			throw new IllegalArgumentException("Observation matrix must be of dimensions " + observationDimensions + "×" + 1);
 
 		this.observation = observation;
 	}
@@ -180,7 +180,7 @@ public class KalmanFilter{
 		stateEstimate = predictedState.add(optimalGain.multiply(innovation));
 
 		//updated (a posteriori) estimate covariance, P_k|k = (I - K_k * H_k) * P-hat_k|k-1
-		estimateCovariance = MatrixUtils.createRealIdentityMatrix(stateDimension)
+		estimateCovariance = MatrixUtils.createRealIdentityMatrix(stateDimensions)
 			.subtract(optimalGain.multiply(observationModel))
 			.multiply(predictedEstimateCovariance);
 	}

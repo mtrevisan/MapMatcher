@@ -44,7 +44,7 @@ class HybridRKDTreeTest{
 	void italy(){
 		RTreeOptions options = RTreeOptions.create().withMinChildren(2)
 			.withMaxChildren(3);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options), options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options));
 		//italy (IT)
 //		tree.insert(Region.of(6.6272658, 35.4929521, 18.5205121, 47.0921462).withID("IT"));
 		//sicilia (IT-82)

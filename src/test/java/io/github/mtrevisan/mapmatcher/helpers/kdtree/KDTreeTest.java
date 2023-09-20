@@ -48,6 +48,7 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+//import org.ehcache.sizeof.SizeOf;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -343,7 +344,7 @@ class KDTreeTest{
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
-		//268 op/ms
+		//4158 op/ms
 		System.out.println("speed: " + speed + " op/ms");
 	}
 
@@ -366,7 +367,7 @@ class KDTreeTest{
 		final RTreeOptions options = RTreeOptions.create()
 			.withMinChildren(rTreeMinObjects)
 			.withMaxChildren(rTreeMaxObjects);
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options), options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.create(options));
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){
@@ -415,7 +416,7 @@ class KDTreeTest{
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
-		//926 op/ms (3.5x)
+		//84 op/ms
 		System.out.println("speed: " + speed + " op/ms");
 	}
 
@@ -452,7 +453,7 @@ class KDTreeTest{
 			minX += deltaLongitude;
 			minY = prevMinY;
 		}
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createSTR(regions, options), options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createSTR(regions, options));
 
 
 		//read buildings from file and store in a tree
@@ -488,7 +489,7 @@ class KDTreeTest{
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
-		//1094 op/ms (4.1x)
+		//2341 op/ms
 		System.out.println("speed: " + speed + " op/ms");
 	}
 
@@ -525,7 +526,7 @@ class KDTreeTest{
 			minX += deltaLongitude;
 			minY = prevMinY;
 		}
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createRStar(regions, options), options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createRStar(regions, options));
 
 
 		//read buildings from file and store in a tree
@@ -561,7 +562,7 @@ class KDTreeTest{
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
-		//1324 op/ms (4.9x)
+		//2552 op/ms
 		System.out.println("speed: " + speed + " op/ms");
 	}
 
@@ -598,7 +599,7 @@ class KDTreeTest{
 			minX += deltaLongitude;
 			minY = prevMinY;
 		}
-		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createHilbert(regions, options), options);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createHilbert(regions, options));
 
 
 		//read buildings from file and store in a tree
@@ -634,7 +635,7 @@ class KDTreeTest{
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
-		//992 op/ms (3.7x)
+		//2545 op/ms
 		System.out.println("speed: " + speed + " op/ms");
 	}
 
@@ -658,7 +659,7 @@ class KDTreeTest{
 			.withMaxRegionsPerNode(quadTreeMaxRegionsPerNode)
 			.withMaxLevels(quadTreeMaxLevels);
 		final QuadTree quadTree = QuadTree.create(Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude), options);
-		HybridKDTree<QuadTreeOptions> tree = HybridKDTree.create(quadTree, options);
+		HybridKDTree<QuadTreeOptions> tree = HybridKDTree.create(quadTree);
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){
@@ -707,7 +708,7 @@ class KDTreeTest{
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
-		//330 op/ms (1.2x)
+		//1168 op/ms
 		System.out.println("speed: " + speed + " op/ms");
 	}
 

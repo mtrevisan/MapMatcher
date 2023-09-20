@@ -45,7 +45,7 @@ public class GPSPositionSpeedFilter{
 
 		//Assuming the axes are rectilinear does not work well at the poles, but it has the bonus that we don't need to convert between
 		//lat/long and more rectangular coordinates. The slight inaccuracy of our physics model is not too important.
-		final RealMatrix stateTransition = MatrixUtils.createRealIdentityMatrix(filter.getStateDimension());
+		final RealMatrix stateTransition = MatrixUtils.createRealIdentityMatrix(filter.getStateDimensions());
 		filter.setStateTransition(stateTransition);
 		setSecondsPerTimeStep(1.);
 
@@ -70,11 +70,11 @@ public class GPSPositionSpeedFilter{
 		}));
 
 		//initial state
-		filter.setInitialStateEstimate(MatrixUtils.createRealMatrix(filter.getStateDimension(), 1));
+		filter.setInitialStateEstimate(MatrixUtils.createRealMatrix(filter.getStateDimensions(), 1));
 
 		//the start position is totally unknown, so give a high variance
 		final double trillion = 1_000. * 1_000. * 1_000. * 1_000.;
-		final RealMatrix initialEstimateCovariance = MatrixUtils.createRealIdentityMatrix(filter.getStateDimension())
+		final RealMatrix initialEstimateCovariance = MatrixUtils.createRealIdentityMatrix(filter.getStateDimensions())
 			.scalarMultiply(trillion);
 		filter.setInitialEstimateCovariance(initialEstimateCovariance);
 	}

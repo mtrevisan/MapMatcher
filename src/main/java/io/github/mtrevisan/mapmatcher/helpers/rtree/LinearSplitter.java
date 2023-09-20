@@ -70,7 +70,10 @@ class LinearSplitter implements NodeSplitter{
 		double dimMaxLowerBound = Double.NEGATIVE_INFINITY;
 		RNode nodeMaxLowerBound = null;
 		RNode nodeMinUpperBound = null;
-		for(final RNode node : nodes){
+		final int size = nodes.size();
+		for(int i = 0; i < size; i ++){
+			final RNode node = nodes.get(i);
+
 			if(node.region.getMinX() < dimLowerBound)
 				dimLowerBound = node.region.getMinX();
 			if(node.region.getMinY() < dimLowerBound)

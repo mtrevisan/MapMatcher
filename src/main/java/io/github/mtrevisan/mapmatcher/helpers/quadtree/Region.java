@@ -192,7 +192,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether this region is uninitialized or is the region of the empty geometry.
 	 */
 	public boolean isNull(){
-		return (Double.isNaN(minX) || maxX < minX || maxY < minY);
+		return Double.isNaN(minX);
 	}
 
 	/**
@@ -272,9 +272,6 @@ public class Region implements Comparable<Region>{
 	 * @param other	The region to expand to include.
 	 */
 	public void expandToInclude(final Region other){
-		if(other.isNull())
-			return;
-
 		if(isNull()){
 			minX = other.getMinX();
 			minY = other.getMinY();
@@ -311,9 +308,6 @@ public class Region implements Comparable<Region>{
 	 * @param deltaY	The distance to expand the region along the Y axis.
 	 */
 	public void expandBy(final double deltaX, final double deltaY){
-		if(isNull())
-			return;
-
 		minX -= deltaX;
 		minY -= deltaY;
 		maxX += deltaX;
@@ -332,7 +326,7 @@ public class Region implements Comparable<Region>{
 	 * or they do not intersect
 	 */
 	public Region intersection(final Region region){
-		if(isNull() || region.isNull() || !intersects(region))
+		if(!intersects(region))
 			return ofEmpty();
 
 		final double intersectionMinX = Math.max(minX, region.minX);
@@ -349,8 +343,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether the regions intersect.
 	 */
 	public boolean intersects(final Region region){
-		return !(region == null || isNull() || region.isNull()
-			|| maxX < region.minX || region.maxX < minX
+		return !(maxX < region.minX || region.maxX < minX
 			|| maxY < region.minY || region.maxY < minY);
 	}
 
@@ -361,8 +354,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether the regions is fully contained.
 	 */
 	public boolean contains(final Region region){
-		return (region != null && !isNull() && !region.isNull()
-		  && minX >= region.minX && region.maxX <= maxX
+		return (minX >= region.minX && region.maxX <= maxX
 		  && minY >= region.minY && region.maxY <= maxY);
 	}
 
@@ -373,8 +365,7 @@ public class Region implements Comparable<Region>{
 	 * @return	Whether the point intersects this region.
 	 */
 	public boolean contains(final Point p){
-		return !(p == null || isNull()
-			|| p.getX() > maxX || p.getX() < minX
+		return !(p.getX() > maxX || p.getX() < minX
 			|| p.getY() > maxY || p.getY() < minY);
 	}
 

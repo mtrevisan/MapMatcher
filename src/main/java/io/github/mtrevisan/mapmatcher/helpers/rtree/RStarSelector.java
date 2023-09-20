@@ -53,7 +53,10 @@ class RStarSelector implements NodeSelector{
 		double minOverlapArea = Double.POSITIVE_INFINITY;
 		double minAreaIncrement = Double.POSITIVE_INFINITY;
 		RNode minAreaNode = parent;
-		for(final RNode child : parent.children){
+		final int size = parent.children.size();
+		for(int i = 0; i < size; i ++){
+			final RNode child = parent.children.get(i);
+
 			//first order by minimum intersecting area
 			final double overlapArea = region.intersectingArea(child.region);
 			if(overlapArea < minOverlapArea){

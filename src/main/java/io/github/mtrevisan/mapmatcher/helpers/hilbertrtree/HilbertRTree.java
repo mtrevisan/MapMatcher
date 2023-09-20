@@ -302,7 +302,7 @@ public class HilbertRTree implements RegionTree<TreeOptions>{
 
 
 	@Override
-	public Collection<Region> query(final Region region){
+	public List<Region> query(final Region region){
 		build();
 
 		if(!totalExtent.intersects(region))

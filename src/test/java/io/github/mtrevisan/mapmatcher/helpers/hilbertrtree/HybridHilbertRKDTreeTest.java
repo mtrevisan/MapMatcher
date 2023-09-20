@@ -44,7 +44,7 @@ class HybridHilbertRKDTreeTest{
 
 	@Test
 	void simple(){
-		HybridKDTree<TreeOptions> tree = HybridKDTree.create(HilbertRTree.create(), null);
+		HybridKDTree<TreeOptions> tree = HybridKDTree.create(HilbertRTree.create());
 		tree.insert(Region.of(10., 10., 20., 20.));
 		tree.insert(Region.of(5., 5., 15., 15.));
 		tree.insert(Region.of(25., 25., 35., 35.));

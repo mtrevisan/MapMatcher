@@ -28,6 +28,7 @@ import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 
 import java.util.Collection;
+import java.util.List;
 
 
 public interface RegionTree<O extends TreeOptions>{
@@ -72,6 +73,6 @@ public interface RegionTree<O extends TreeOptions>{
 	 * @param region	The region used to filter.
 	 * @return	The list of regions with a non-null intersection with the given one.
 	 */
-	Collection<Region> query(Region region);
+	List<Region> query(Region region);
 
 }

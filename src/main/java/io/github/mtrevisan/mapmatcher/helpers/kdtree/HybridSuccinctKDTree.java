@@ -25,11 +25,11 @@
 package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.RegionTree;
-import io.github.mtrevisan.mapmatcher.helpers.SpatialNode;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,17 +39,17 @@ import java.util.Map;
  * @see <a href="https://dl.acm.org/doi/pdf/10.1145/318898.318925">Multikey retrieval from K-d trees and quad-trees</a>
  * @see <a href="https://pdfs.semanticscholar.org/abb0/fdeebccbdc1d3d57933751e95434136fb16a.pdf">A Hybrid Spatial Indexing Structure of Massive Point Cloud Based on Octree and 3D R*-Tree</a>
  */
-public class HybridKDTree<O extends TreeOptions>{
+public class HybridSuccinctKDTree<O extends TreeOptions>{
 
 	private final RegionTree<O> tree;
 
 
-	public static <O extends TreeOptions> HybridKDTree<O> create(final RegionTree<O> tree){
-		return new HybridKDTree<>(tree);
+	public static <O extends TreeOptions> HybridSuccinctKDTree<O> create(final RegionTree<O> tree){
+		return new HybridSuccinctKDTree<>(tree);
 	}
 
 
-	private HybridKDTree(final RegionTree<O> tree){
+	private HybridSuccinctKDTree(final RegionTree<O> tree){
 		this.tree = tree;
 	}
 
@@ -58,22 +58,21 @@ public class HybridKDTree<O extends TreeOptions>{
 		tree.insert(region);
 	}
 
-	public void insert(final Map<Region, SpatialNode> nodes, final Region region, final Point point){
-		final int dimensions = point.getDimensions();
+	public void insert(final Map<Region, SuccinctKDTree> nodes, final Region region, final Point point){
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
-				final KDNode node = (KDNode)nodes.get(queriedRegion);
-				KDTree.insert(node, point, dimensions);
+				final SuccinctKDTree tree = nodes.get(queriedRegion);
+				tree.insert(point);
 				return;
 			}
 		}
 
 		//region is outside the tree
 		region.setBoundary();
-		nodes.put(region, new KDNode(point));
+		nodes.put(region, SuccinctKDTree.ofPoints(Collections.singletonList(point)));
 		tree.insert(region);
 	}
 
@@ -82,15 +81,14 @@ public class HybridKDTree<O extends TreeOptions>{
 		return tree.query(region);
 	}
 
-	public boolean contains(final Map<Region, SpatialNode> nodes, final Region region, final Point point){
-		final int dimensions = point.getDimensions();
+	public boolean contains(final Map<Region, SuccinctKDTree> nodes, final Region region, final Point point){
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
-				final KDNode node = (KDNode)nodes.get(queriedRegion);
-				if(KDTree.contains(node, point, dimensions))
+				final SuccinctKDTree tree = nodes.get(queriedRegion);
+				if(tree.contains(point))
 					return true;
 			}
 		}
@@ -98,15 +96,14 @@ public class HybridKDTree<O extends TreeOptions>{
 	}
 
 
-	public Point nearestNeighbor(final Map<Region, SpatialNode> nodes, final Region region, final Point point){
-		final int dimensions = point.getDimensions();
+	public Point nearestNeighbor(final Map<Region, SuccinctKDTree> nodes, final Region region, final Point point){
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
-				final KDNode node = (KDNode)nodes.get(queriedRegion);
-				final Point nearestNeighbor = KDTree.nearestNeighbor(node, point, dimensions);
+				final SuccinctKDTree tree = nodes.get(queriedRegion);
+				final Point nearestNeighbor = tree.nearestNeighbor(point);
 				if(nearestNeighbor != null)
 					return nearestNeighbor;
 			}

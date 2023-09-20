@@ -43,8 +43,8 @@ class RStarSplitter implements NodeSplitter{
 		final List<RNode> children = new ArrayList<>(node.children);
 		final int childrenCount = children.size();
 		final List<RNode> minChildren = new ArrayList<>(childrenCount);
-		for(final Comparator<RNode> comparator : COMPARATORS){
-			children.sort(comparator);
+		for(int i = 0; i < 4; i ++){
+			children.sort(COMPARATORS[i]);
 
 			final double marginSum = marginValueSum(children);
 			if(marginSum <= minMarginSum){
