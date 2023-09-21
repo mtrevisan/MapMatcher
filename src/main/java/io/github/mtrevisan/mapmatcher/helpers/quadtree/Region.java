@@ -355,7 +355,7 @@ public class Region implements Comparable<Region>{
 	 */
 	public boolean contains(final Region region){
 		return (minX >= region.minX && region.maxX <= maxX
-		  && minY >= region.minY && region.maxY <= maxY);
+			&& minY >= region.minY && region.maxY <= maxY);
 	}
 
 	/**
@@ -425,7 +425,7 @@ public class Region implements Comparable<Region>{
 
 		final Region other = (Region)obj;
 		return (Objects.equals(minX, other.minX) && Objects.equals(minY, other.minY)
-				  && Objects.equals(maxX, other.maxX) && Objects.equals(maxY, other.maxY));
+			&& Objects.equals(maxX, other.maxX) && Objects.equals(maxY, other.maxY));
 	}
 
 	@Override

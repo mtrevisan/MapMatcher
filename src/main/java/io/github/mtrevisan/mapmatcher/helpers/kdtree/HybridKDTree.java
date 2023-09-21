@@ -59,14 +59,13 @@ public class HybridKDTree<O extends TreeOptions>{
 	}
 
 	public void insert(final Map<Region, SpatialNode> nodes, final Region region, final Point point){
-		final int dimensions = point.getDimensions();
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
 				final KDNode node = (KDNode)nodes.get(queriedRegion);
-				KDTree.insert(node, point, dimensions);
+				KDTree.insert(node, point);
 				return;
 			}
 		}
@@ -83,14 +82,13 @@ public class HybridKDTree<O extends TreeOptions>{
 	}
 
 	public boolean contains(final Map<Region, SpatialNode> nodes, final Region region, final Point point){
-		final int dimensions = point.getDimensions();
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
 				final KDNode node = (KDNode)nodes.get(queriedRegion);
-				if(KDTree.contains(node, point, dimensions))
+				if(KDTree.contains(node, point))
 					return true;
 			}
 		}
@@ -99,14 +97,13 @@ public class HybridKDTree<O extends TreeOptions>{
 
 
 	public Point nearestNeighbor(final Map<Region, SpatialNode> nodes, final Region region, final Point point){
-		final int dimensions = point.getDimensions();
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
 				final KDNode node = (KDNode)nodes.get(queriedRegion);
-				final Point nearestNeighbor = KDTree.nearestNeighbor(node, point, dimensions);
+				final Point nearestNeighbor = KDTree.nearestNeighbor(node, point);
 				if(nearestNeighbor != null)
 					return nearestNeighbor;
 			}

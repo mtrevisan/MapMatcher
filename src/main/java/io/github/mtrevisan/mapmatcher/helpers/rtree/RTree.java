@@ -208,7 +208,7 @@ public class RTree implements RegionTree<RTreeOptions>{
 		private final RNode parent;
 
 		BuildItem(final List<Region> regions){
-			this(regions, 0, regions.size()  - 1, null);
+			this(regions, 0, regions.size() - 1, null);
 		}
 
 		BuildItem(final List<Region> regions, final int begin, final int end, final RNode parent){
