@@ -360,17 +360,21 @@ public class SuccinctKDTree implements SpatialTree{
 
 			final double coordinateDelta = euclideanAxisDistance(nodePoint, point, axis);
 			final int nextAxis = getNextAxis(axis, dimensions);
-			if(coordinateDelta > 0. && structure.get(leftIndex(node))){
+			final int leftIndex = leftIndex(node);
+			if(leftIndex >= ROOT_INDEX && coordinateDelta > 0. && structure.get(leftIndex)){
 				stack.push(nextAxis);
-				stack.push(leftIndex(node));
+				stack.push(leftIndex);
 			}
-			else if(coordinateDelta <= 0. && structure.get(rightIndex(node))){
-				stack.push(nextAxis);
-				stack.push(rightIndex(node));
+			else{
+				final int rightIndex = rightIndex(node);
+				if(rightIndex >= ROOT_INDEX && coordinateDelta <= 0. && structure.get(rightIndex)){
+					stack.push(nextAxis);
+					stack.push(rightIndex);
+				}
 			}
 		}
 
-		return (bestNode >= 0? data.get(bestNode): null);
+		return (bestNode >= ROOT_INDEX? data.get(bestNode): null);
 	}
 
 	/** Return squared distance between two points. */
@@ -399,8 +403,8 @@ public class SuccinctKDTree implements SpatialTree{
 		stack.push(ROOT_INDEX);
 		stack.push(STARTING_DIMENSION);
 		while(!stack.isEmpty()){
-			final int node = stack.pop();
 			final int axis = stack.pop();
+			final int node = stack.pop();
 
 			//add contained points to points stack if inside the region
 			final Point point = data.get(node);
@@ -408,12 +412,14 @@ public class SuccinctKDTree implements SpatialTree{
 				points.add(point);
 
 			final int nextAxis = getNextAxis(axis, comparators.length);
-			if(structure.get(leftIndex(node)) && point.getCoordinate(axis) >= rangeMin.getCoordinate(axis)){
-				stack.push(leftIndex(node));
+			final int leftIndex = leftIndex(node);
+			if(leftIndex >= ROOT_INDEX && structure.get(leftIndex) && point.getCoordinate(axis) >= rangeMin.getCoordinate(axis)){
+				stack.push(leftIndex);
 				stack.push(nextAxis);
 			}
-			if(structure.get(rightIndex(node)) && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis)){
-				stack.push(rightIndex(node));
+			final int rightIndex = rightIndex(node);
+			if(rightIndex >= ROOT_INDEX && structure.get(rightIndex) && point.getCoordinate(axis) <= rangeMax.getCoordinate(axis)){
+				stack.push(rightIndex);
 				stack.push(nextAxis);
 			}
 		}

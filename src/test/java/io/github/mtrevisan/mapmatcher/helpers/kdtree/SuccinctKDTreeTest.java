@@ -633,7 +633,7 @@ class SuccinctKDTreeTest{
 		}
 		final long stop = System.currentTimeMillis();
 		final int speed = Math.round((float)counter / (stop - start));
-		//992 op/ms
+		//2275 op/ms
 		System.out.println("speed: " + speed + " op/ms");
 	}
 
