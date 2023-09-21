@@ -48,7 +48,6 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
-//import org.ehcache.sizeof.SizeOf;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
+import java.util.Stack;
 
 
 /**
@@ -77,9 +78,58 @@ public class KDTree implements SpatialTree{
 	private static final int DIMENSIONS = 2;
 
 
+	//linked representation
 	private KDNode root;
 
 	private Comparator<KDNode>[] comparators;
+
+//https://arxiv.org/pdf/1601.06939.pdf
+public String encodeBP(){
+	final StringBuilder structure = new StringBuilder();
+	final Stack<KDNode> stack = new Stack<>();
+	if(root != null)
+		stack.push(root);
+	while(!stack.isEmpty()){
+		final KDNode current = stack.pop();
+
+		if(current != null){
+			structure.append('1');
+			stack.push(current.right);
+			stack.push(current.left);
+		}
+		else if(!stack.isEmpty())
+			structure.append('0');
+	}
+	return structure.toString();
+}
+private boolean isLeaf(final StringBuilder structure, final int index){
+	return (structure.charAt(index + 1) == '0');
+}
+private int firstChild(final StringBuilder structure, final int index){
+	return (!isLeaf(structure, index)? index + 1: -1);
+}
+private int nextSibling(final StringBuilder structure, final int index){
+	final int next = close(structure, index) + 1;
+	return (structure.charAt(next) == '1'? next: -1);
+}
+//the position of the closing parenthesis that matches structure.charAt(i) = 1, that is, the smallest j > i such that excess(j) = excess(i) − 1.
+private int close(final StringBuilder structure, final int index){
+	for(int j = index + 1; j < structure.length(); j ++)
+		if(excess(structure, j) == excess(structure, index) - 1)
+			return j;
+	return -1;
+}
+private int excess(final StringBuilder structure, final int index){
+	return 2 * rank1(structure, index) - index;
+}
+//the number of occurrences of bit 1 in structure until `index`
+private int rank1(final StringBuilder structure, final int index){
+	int count = 0;
+	for(int i = 0; i < index; i ++)
+		count += structure.charAt(i) - '0';
+	return count;
+}
+//a leaf node is '10', so the count of the leaf nodes determines the index at which the point is saved
 
 
 	public static KDTree ofDimensions(final int dimensions){
