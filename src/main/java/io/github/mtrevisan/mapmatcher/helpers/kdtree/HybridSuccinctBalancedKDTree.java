@@ -29,6 +29,9 @@ import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.TreeOptions;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -38,17 +41,17 @@ import java.util.Map;
  * @see <a href="https://dl.acm.org/doi/pdf/10.1145/318898.318925">Multikey retrieval from K-d trees and quad-trees</a>
  * @see <a href="https://pdfs.semanticscholar.org/abb0/fdeebccbdc1d3d57933751e95434136fb16a.pdf">A Hybrid Spatial Indexing Structure of Massive Point Cloud Based on Octree and 3D R*-Tree</a>
  */
-public class HybridSuccinctKDTree<O extends TreeOptions>{
+public class HybridSuccinctBalancedKDTree<O extends TreeOptions>{
 
 	private final RegionTree<O> tree;
 
 
-	public static <O extends TreeOptions> HybridSuccinctKDTree<O> create(final RegionTree<O> tree){
-		return new HybridSuccinctKDTree<>(tree);
+	public static <O extends TreeOptions> HybridSuccinctBalancedKDTree<O> create(final RegionTree<O> tree){
+		return new HybridSuccinctBalancedKDTree<>(tree);
 	}
 
 
-	private HybridSuccinctKDTree(final RegionTree<O> tree){
+	private HybridSuccinctBalancedKDTree(final RegionTree<O> tree){
 		this.tree = tree;
 	}
 
@@ -57,23 +60,26 @@ public class HybridSuccinctKDTree<O extends TreeOptions>{
 		tree.insert(region);
 	}
 
-	public void insert(final Map<Region, SuccinctKDTree> nodes, final Region region, final Point point){
+	public void insert(final Map<Region, SuccinctBalancedKDTree> nodes, final Region region, final Point point){
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
-				final SuccinctKDTree tree = nodes.get(queriedRegion);
-				tree.insert(point);
+				final SuccinctBalancedKDTree tree = nodes.get(queriedRegion);
+				final Collection<Point> currentPoints = tree.getData();
+				final List<Point> newPoints = new ArrayList<>(currentPoints.size() + 1);
+				newPoints.addAll(currentPoints);
+				newPoints.add(point);
+				final SuccinctBalancedKDTree newKDTree = SuccinctBalancedKDTree.ofPoints(newPoints);
+				nodes.put(queriedRegion, newKDTree);
 				return;
 			}
 		}
 
 		//region is outside the tree
 		region.setBoundary();
-		final SuccinctKDTree kdTree = SuccinctKDTree.create();
-		kdTree.insert(point);
-		nodes.put(region, kdTree);
+		nodes.put(region, SuccinctBalancedKDTree.ofPoints(Collections.singletonList(point)));
 		tree.insert(region);
 	}
 
@@ -82,13 +88,13 @@ public class HybridSuccinctKDTree<O extends TreeOptions>{
 		return tree.query(region);
 	}
 
-	public boolean contains(final Map<Region, SuccinctKDTree> nodes, final Region region, final Point point){
+	public boolean contains(final Map<Region, SuccinctBalancedKDTree> nodes, final Region region, final Point point){
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
-				final SuccinctKDTree tree = nodes.get(queriedRegion);
+				final SuccinctBalancedKDTree tree = nodes.get(queriedRegion);
 				if(tree.contains(point))
 					return true;
 			}
@@ -97,13 +103,13 @@ public class HybridSuccinctKDTree<O extends TreeOptions>{
 	}
 
 
-	public Point nearestNeighbor(final Map<Region, SuccinctKDTree> nodes, final Region region, final Point point){
+	public Point nearestNeighbor(final Map<Region, SuccinctBalancedKDTree> nodes, final Region region, final Point point){
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);
 
 			if(queriedRegion.isBoundary()){
-				final SuccinctKDTree tree = nodes.get(queriedRegion);
+				final SuccinctBalancedKDTree tree = nodes.get(queriedRegion);
 				final Point nearestNeighbor = tree.nearestNeighbor(point);
 				if(nearestNeighbor != null)
 					return nearestNeighbor;

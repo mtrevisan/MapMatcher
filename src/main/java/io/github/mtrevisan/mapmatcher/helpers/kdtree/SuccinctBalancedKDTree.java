@@ -24,13 +24,16 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 
+import io.github.mtrevisan.mapmatcher.helpers.QuickSelect;
 import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import org.agrona.collections.Int2ObjectHashMap;
 
+import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
 
@@ -77,22 +80,114 @@ import java.util.List;
  * @see <a href="https://opendsa-server.cs.vt.edu/ODSA/Books/CS3/html/SequentialRep.html">Sequential Tree Representations</a>
  * @see <a href="https://www.researchgate.net/publication/259479421_Tree_Compression_and_Optimization_with_Applications">Tree compression and optimization with applications</a>
  */
-public class SuccinctKDTree implements SpatialTree{
+public class SuccinctBalancedKDTree implements SpatialTree{
 
 	private static final int ROOT_INDEX = 0;
 	private static final int STARTING_DIMENSION = 0;
 	private static final int DIMENSIONS = 2;
+	private static final double LOG2 = Math.log(2.);
 
 
-	private final Int2ObjectHashMap<Point> data = new Int2ObjectHashMap<>();
+	private Int2ObjectHashMap<Point> data;
 
 
-	public static SuccinctKDTree create(){
-		return new SuccinctKDTree();
+	private Comparator<Point>[] comparators;
+
+
+	public static SuccinctBalancedKDTree ofPoints(final List<Point> points){
+		return new SuccinctBalancedKDTree(points);
 	}
 
 
-	private SuccinctKDTree(){}
+	/**
+	 * Constructor for creating a (balanced) median k-d tree.
+	 *
+	 * @param points	A collection of {@link Point}s.
+	 */
+	private SuccinctBalancedKDTree(final List<Point> points){
+		if(points.isEmpty())
+			throw new IllegalArgumentException("List of points cannot be empty");
+
+		buildTree(points);
+	}
+
+	private void buildTree(final List<Point> points){
+		//the maximum number of nodes in a binary tree of height `h` is `2^h – 1`, therefore in order to contain at least `n` nodes, the
+		//tree has to have at least h = log2(n + 1)
+		final int h = (int)Math.ceil(Math.log(points.size() + 1) / LOG2);
+		data = new Int2ObjectHashMap<>(1 << h, Math.min((float)points.size() / (1 << h), 0.9f));
+
+		//extract dimensions from first point
+		for(final Point point : points){
+			createComparators(point.getDimensions());
+			break;
+		}
+
+		final Deque<BuildTreeParams> stack = new ArrayDeque<>();
+		if(!points.isEmpty())
+			stack.push(BuildTreeParams.asRoot(points.size()));
+		while(!stack.isEmpty()){
+			final BuildTreeParams params = stack.pop();
+			final int parent = params.parent;
+			final int begin = params.begin;
+			final int end = params.end;
+			int axis = params.axis;
+
+			//extract the splitting node
+			final int middle = begin + ((end - begin) >> 1);
+			final Point median = QuickSelect.select(points, begin, end - 1, middle, comparators[axis]);
+
+			axis = getNextAxis(axis);
+			if(begin < middle)
+				stack.push(new BuildTreeParams(leftIndex(parent), axis, begin, middle));
+			if(middle + 1 < end)
+				stack.push(new BuildTreeParams(rightIndex(parent), axis, middle + 1, end));
+
+			addNode(parent, median);
+		}
+	}
+
+	public Collection<Point> getData(){
+		return data.values();
+	}
+
+	private static class BuildTreeParams{
+		private final int parent;
+		private final int axis;
+		private final int begin;
+		private final int end;
+
+		private static BuildTreeParams asRoot(final int size){
+			return new BuildTreeParams(ROOT_INDEX, STARTING_DIMENSION, 0, size);
+		}
+
+		private BuildTreeParams(final int parent, final int axis, final int begin, final int end){
+			this.parent = parent;
+			this.axis = axis;
+			this.begin = begin;
+			this.end = end;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void createComparators(final int dimensions){
+		comparators = (Comparator<Point>[])Array.newInstance(Comparator.class, dimensions);
+		for(int i = 0; i < dimensions; i ++)
+			comparators[i] = new NodeComparator(i);
+	}
+
+	private static class NodeComparator implements Comparator<Point>{
+		private final int axis;
+
+		private NodeComparator(final int axis){
+			this.axis = axis;
+		}
+
+		@Override
+		public int compare(final Point point1, final Point point2){
+			return Double.compare(point1.getCoordinate(axis), point2.getCoordinate(axis));
+		}
+	}
 
 
 	@Override
@@ -101,72 +196,9 @@ public class SuccinctKDTree implements SpatialTree{
 	}
 
 
-	/**
-	 * Add the point to the set (if it is not already in the set).
-	 * <p>
-	 * At the root (and every second level thereafter), the x-coordinate is
-	 * used as the key.
-	 * </p>
-	 * <p>
-	 * This means that if (0.7, 0.2) is the root, then (0.5, 0.9) will be
-	 * added to the left, since its x-coordinate is smaller than the
-	 * x-coordinate of the root node. Similarly, if the next point to be
-	 * added is (0.8, 0.1), that point will be added to the right of root,
-	 * since its x-coordinate is larger than the x-coordinate of the root node.
-	 * </p>
-	 * <p>
-	 * So, visually, we would have:
-	 *       (0.7, 0.2)
-	 *      /          \
-	 * (0.5, 0.9)   (0.8, 0.1)
-	 * </p>
-	 * <p>
-	 * At one level below the root (and every second level thereafter), the
-	 * y-coordinate is used as the key.
-	 * </p>
-	 * <p>
-	 * This means that if we next add (0.6, 0.8), it will be added to the left
-	 * of (0.5, 0.9). Similarly, if we next add (0.4, 0.95), it will be added
-	 * to the right of (0.5, 0.9).
-	 * </p>
-	 * <p>
-	 * So, visually, we would have:
-	 *              (0.7, 0.2)
-	 *             /          \
-	 *        (0.5, 0.9)   (0.8, 0.1)
-	 *       /          \
-	 * (0.6, 0.8)   (0.4, 0.95)
-	 * </p>
-	 *
-	 * @param point	The point to add.
-	 */
 	@Override
 	public void insert(final Point point){
-		if(isEmpty())
-			addNode(ROOT_INDEX, point);
-		else{
-			int parent = ROOT_INDEX;
-			//traverse the tree and find the parent node:
-			int parentNode = -1;
-			int axis = STARTING_DIMENSION;
-			boolean goLeft = false;
-			Point currentPoint;
-			while((currentPoint = getData(parent)) != null){
-				parentNode = parent;
-
-				goLeft = (euclideanAxisDistance(point, currentPoint, axis) < 0.);
-				parent = (goLeft? leftIndex(parent): rightIndex(parent));
-
-				axis = getNextAxis(axis);
-			}
-
-			//add new leaf node to the tree
-			final int newNode = (goLeft
-				? leftIndex(parentNode)
-				: rightIndex(parentNode));
-			//Note: if `newNode < 0`, then add point to `parentNode` (max size of structure is reached)
-			addNode(newNode, point);
-		}
+		throw new UnsupportedOperationException();
 	}
 
 
