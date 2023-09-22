@@ -70,7 +70,7 @@ import java.util.Random;
 import java.util.Set;
 
 
-class SuccinctKDTreeTest{
+class SuccinctBalancedKDTreeTest{
 
 	private static final GeometryFactory FACTORY = new GeometryFactory(new GeoidalCalculator());
 	private static final GeometryFactory FACTORY_EUCLIDEAN = new GeometryFactory(new EuclideanCalculator());
@@ -116,11 +116,9 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void contains_all(){
-		SuccinctKDTree tree = SuccinctKDTree.create();
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		for(Point tollBooth : tollBooths)
-			tree.insert(tollBooth);
+		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(new ArrayList<>(tollBooths));
 
 		for(Point tollBooth : tollBooths)
 			Assertions.assertTrue(tree.contains(tollBooth));
@@ -129,47 +127,44 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void neighbor(){
-		SuccinctKDTree tree = SuccinctKDTree.create();
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		for(Point tollBooth : tollBooths)
-			tree.insert(tollBooth);
+		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(new ArrayList<>(tollBooths));
 
 		for(Point tollBooth : tollBooths)
 			Assertions.assertEquals(tollBooth, tree.nearestNeighbor(tollBooth));
 		for(Point tollBooth : tollBooths)
 			Assertions.assertEquals(tollBooth, tree.nearestNeighbor(
-				tollBooth.getFactory().createPoint(tollBooth.getX() + 1.e-7, tollBooth.getY() + 1.e-7)));
-		Assertions.assertEquals(FACTORY.createPoint(7.5925975, 43.8008445),
+				tollBooth.getFactory().createPoint(tollBooth.getX() - 1.e-7, tollBooth.getY() + 1.e-7)));
+		Assertions.assertEquals(FACTORY.createPoint(7.5946376, 43.8000279),
 			tree.nearestNeighbor(FACTORY.createPoint(0., 0.)));
 	}
 
 	@Test
 	void neighbor_euclidean(){
-		SuccinctKDTree tree = SuccinctKDTree.create();
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 1.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(4., 7.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(9., 3.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
+		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(Arrays.asList(
+			FACTORY_EUCLIDEAN.createPoint(6., 4.),
+			FACTORY_EUCLIDEAN.createPoint(5., 2.),
+			FACTORY_EUCLIDEAN.createPoint(8., 6.),
+			FACTORY_EUCLIDEAN.createPoint(2., 1.),
+			FACTORY_EUCLIDEAN.createPoint(4., 7.),
+			FACTORY_EUCLIDEAN.createPoint(9., 3.),
+			FACTORY_EUCLIDEAN.createPoint(2., 8.)
+		));
 
-		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(8., 6.),
-			tree.nearestNeighbor(FACTORY_EUCLIDEAN.createPoint(9., 8.)));
+		Assertions.assertEquals(FACTORY.createPoint(8., 6.),
+			tree.nearestNeighbor(FACTORY.createPoint(9., 8.)));
 	}
 
 	@Test
 	void points_in_range1(){
-		SuccinctKDTree tree = SuccinctKDTree.create();
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
-		for(Point tollBooth : tollBooths)
-			tree.insert(tollBooth);
+		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(new ArrayList<>(tollBooths));
 
-		Collection<Point> points = tree.query(FACTORY.createPoint(12.1, 45.5),
-			FACTORY.createPoint(12.5, 45.9));
-		Assertions.assertEquals(37, points.size());
+		Collection<Point> points = tree.query(FACTORY.createPoint(7.5925975, 43.8008445),
+			FACTORY.createPoint(8.5925975, 44.8008445));
+		Assertions.assertEquals(52, points.size());
 
 		points = tree.query(FACTORY.createPoint(7.5925975, 43.8008445),
 			FACTORY.createPoint(7.5925975, 43.8008445));
@@ -178,42 +173,21 @@ class SuccinctKDTreeTest{
 
 	@Test
 	void points_in_range2(){
-		SuccinctKDTree tree = SuccinctKDTree.create();
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(6., 4.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(5., 2.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(8., 6.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 1.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(4., 7.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(9., 3.));
-		tree.insert(FACTORY_EUCLIDEAN.createPoint(2., 8.));
+		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(Arrays.asList(
+			FACTORY_EUCLIDEAN.createPoint(6., 4.),
+			FACTORY_EUCLIDEAN.createPoint(5., 2.),
+			FACTORY_EUCLIDEAN.createPoint(8., 6.),
+			FACTORY_EUCLIDEAN.createPoint(2., 1.),
+			FACTORY_EUCLIDEAN.createPoint(4., 7.),
+			FACTORY_EUCLIDEAN.createPoint(9., 3.),
+			FACTORY_EUCLIDEAN.createPoint(2., 8.)
+		));
 
 		Collection<Point> points = tree.query(FACTORY_EUCLIDEAN.createPoint(1., 5.),
 			FACTORY_EUCLIDEAN.createPoint(5., 9.));
 		Assertions.assertEquals(new HashSet<>(Arrays.asList(FACTORY_EUCLIDEAN.createPoint(2., 8.),
 				FACTORY_EUCLIDEAN.createPoint(4., 7.))),
 			new HashSet<>(points));
-	}
-
-	@Test
-	void stress(){
-		SuccinctKDTree tree = SuccinctKDTree.create();
-		//create unbalanced tree
-		int size = 30;
-		for(int i = 0; i < size; i ++){
-			Point pt = FACTORY_EUCLIDEAN.createPoint(i, 0.);
-			tree.insert(pt);
-		}
-
-		for(int i = 0; i < size - 10; i ++){
-			Point min = FACTORY_EUCLIDEAN.createPoint(i, 0.);
-			Point max = FACTORY_EUCLIDEAN.createPoint(i + 10., 1.);
-			Assertions.assertEquals(11, tree.query(min, max).size());
-		}
-		for(int i = size - 10; i < size; i ++){
-			Point min = FACTORY_EUCLIDEAN.createPoint(i, 0.);
-			Point max = FACTORY_EUCLIDEAN.createPoint(i + 10., 1.);
-			Assertions.assertEquals(size - i, tree.query(min, max).size());
-		}
 	}
 
 
@@ -241,14 +215,15 @@ class SuccinctKDTreeTest{
 
 		//read buildings from file and store in a tree
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
-		final SuccinctKDTree tree = SuccinctKDTree.create();
+		final List<Point> points = new ArrayList<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
 				final BuildingData building = JSON_MAPPER.readValue(line, BuildingData.class);
-				tree.insert(factory.createPoint(building.longitude, building.latitude));
+				points.add(factory.createPoint(building.longitude, building.latitude));
 			}
 		}
+		final SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(points);
 
 		//query tree
 		//via Zanchet 19, Miane, Treviso, Italia
@@ -288,7 +263,7 @@ class SuccinctKDTreeTest{
 		final RTreeOptions options = RTreeOptions.create()
 			.withMinChildren(rTreeMinObjects)
 			.withMaxChildren(rTreeMaxObjects);
-		HybridSuccinctKDTree<RTreeOptions> tree = HybridSuccinctKDTree.create(RTree.create(options));
+		HybridSuccinctBalancedKDTree<RTreeOptions> tree = HybridSuccinctBalancedKDTree.create(RTree.create(options));
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){
@@ -308,7 +283,7 @@ class SuccinctKDTreeTest{
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
-		final Map<Region, SuccinctKDTree> nodes = new HashMap<>();
+		final Map<Region, SuccinctBalancedKDTree> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
@@ -374,14 +349,14 @@ class SuccinctKDTreeTest{
 			minX += deltaLongitude;
 			minY = prevMinY;
 		}
-		HybridSuccinctKDTree<RTreeOptions> tree = HybridSuccinctKDTree.create(RTree.createSTR(regions, options));
+		HybridSuccinctBalancedKDTree<RTreeOptions> tree = HybridSuccinctBalancedKDTree.create(RTree.createSTR(regions, options));
 
 
 		//read buildings from file and store in a tree
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
-		final Map<Region, SuccinctKDTree> nodes = new HashMap<>();
+		final Map<Region, SuccinctBalancedKDTree> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
@@ -447,14 +422,14 @@ class SuccinctKDTreeTest{
 			minX += deltaLongitude;
 			minY = prevMinY;
 		}
-		HybridSuccinctKDTree<RTreeOptions> tree = HybridSuccinctKDTree.create(RTree.createRStar(regions, options));
+		HybridSuccinctBalancedKDTree<RTreeOptions> tree = HybridSuccinctBalancedKDTree.create(RTree.createRStar(regions, options));
 
 
 		//read buildings from file and store in a tree
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
-		final Map<Region, SuccinctKDTree> nodes = new HashMap<>();
+		final Map<Region, SuccinctBalancedKDTree> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
@@ -520,14 +495,14 @@ class SuccinctKDTreeTest{
 			minX += deltaLongitude;
 			minY = prevMinY;
 		}
-		HybridSuccinctKDTree<RTreeOptions> tree = HybridSuccinctKDTree.create(RTree.createHilbert(regions, options));
+		HybridSuccinctBalancedKDTree<RTreeOptions> tree = HybridSuccinctBalancedKDTree.create(RTree.createHilbert(regions, options));
 
 
 		//read buildings from file and store in a tree
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
-		final Map<Region, SuccinctKDTree> nodes = new HashMap<>();
+		final Map<Region, SuccinctBalancedKDTree> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){
@@ -580,7 +555,7 @@ class SuccinctKDTreeTest{
 			.withMaxRegionsPerNode(quadTreeMaxRegionsPerNode)
 			.withMaxLevels(quadTreeMaxLevels);
 		final QuadTree quadTree = QuadTree.create(Region.of(minLongitude, minLatitude, maxLongitude, maxLatitude), options);
-		HybridSuccinctKDTree<QuadTreeOptions> tree = HybridSuccinctKDTree.create(quadTree);
+		HybridSuccinctBalancedKDTree<QuadTreeOptions> tree = HybridSuccinctBalancedKDTree.create(quadTree);
 		double minX = minLongitude;
 		double minY = minLatitude;
 		for(int i = 0; i < regionDivision; i ++){
@@ -600,7 +575,7 @@ class SuccinctKDTreeTest{
 		final GeometryFactory factory = new GeometryFactory(new GeoidalCalculator());
 		final double regionExtentLongitude = deltaLongitude / pointRegionExtentFactor;
 		final double regionExtentLatitude = deltaLatitude / pointRegionExtentFactor;
-		final Map<Region, SuccinctKDTree> nodes = new HashMap<>();
+		final Map<Region, SuccinctBalancedKDTree> nodes = new HashMap<>();
 		try(final BufferedReader br = Files.newBufferedReader(Paths.get(FILE_BUILDINGS_DATA), StandardCharsets.UTF_8)){
 			String line;
 			while((line = br.readLine()) != null){

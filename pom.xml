@@ -64,6 +64,9 @@
 		<!-- https://mvnrepository.com/artifact/net.sf.geographiclib/GeographicLib-Java -->
 		<geographiclib.version>2.0</geographiclib.version>
 
+		<!-- https://mvnrepository.com/artifact/com.googlecode.javaewah/JavaEWAH -->
+		<googlecode.javaewah.version>1.2.3</googlecode.javaewah.version>
+
 		<!-- Logging -->
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 		<slf4j.slf4j-api.version>2.0.9</slf4j.slf4j-api.version>
@@ -199,6 +202,13 @@
 			<groupId>net.sf.geographiclib</groupId>
 			<artifactId>GeographicLib-Java</artifactId>
 			<version>${geographiclib.version}</version>
+		</dependency>
+
+		<!-- JavaEWAH -->
+		<dependency>
+			<groupId>com.googlecode.javaewah</groupId>
+			<artifactId>JavaEWAH</artifactId>
+			<version>${googlecode.javaewah.version}</version>
 		</dependency>
 
 		<!-- Logger -->
