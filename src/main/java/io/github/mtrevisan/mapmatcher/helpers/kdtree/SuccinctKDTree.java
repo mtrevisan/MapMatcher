@@ -86,38 +86,6 @@ public class SuccinctKDTree implements SpatialTree{
 
 	private final Int2ObjectHashMap<Point> data = new Int2ObjectHashMap<>();
 
-/**
-Succinct
-https://www.cs.princeton.edu/~hy2/files/succinct_rank.pdf
-https://www.inf.utfsm.cl/~darroyue/papers/algor2016.pdf
-https://www.eti.uni-siegen.de/ti/veroeffentlichungen/21-hypersuccinct.pdf
-
-function encodeSuccinct(node n){
-	 if n = nil then
-		 append 0 to structure;
-	 else
-		 append 1 to structure;
-		 append n.data to data;
-		 EncodeSuccinct(n.left);
-		 EncodeSuccinct(n.right);
-}
-function decodeSuccinct(){
-	 remove first bit of structure and put it in b
-	 if b = 1 then
-		 create a new node n
-		 remove first element of data and put it in n.data
-		 n.left = DecodeSuccinct()
-		 n.right = DecodeSuccinct()
-	 	return n
-	 else
-	 	return nil
- }
-
-BP
-https://arxiv.org/pdf/1601.06939.pdf
-
-*/
-
 
 	public static SuccinctKDTree create(){
 		return new SuccinctKDTree();
