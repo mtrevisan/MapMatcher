@@ -24,7 +24,6 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 
-import com.googlecode.javaewah.EWAHCompressedBitmap;
 import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 import org.agrona.collections.Int2ObjectHashMap;
@@ -85,9 +84,6 @@ public class SuccinctKDTree implements SpatialTree{
 	private static final int DIMENSIONS = 2;
 
 
-	//representation of the tree in level-order traversal (breadth-first order) using Zaks' sequence (encoding with Fixed Length Codewords)
-	//simple k-d tree: 4 * 8 * n bit, succinct k-d tree: 5 * n bit, that is 6.4x better
-	private final EWAHCompressedBitmap structure = new EWAHCompressedBitmap();
 	private final Int2ObjectHashMap<Point> data = new Int2ObjectHashMap<>();
 
 /**
@@ -201,10 +197,6 @@ https://arxiv.org/pdf/1601.06939.pdf
 				? leftIndex(parentNode)
 				: rightIndex(parentNode));
 			//Note: if `newNode < 0`, then add point to `parentNode` (max size of structure is reached)
-//TODO manage multi-point per node? or throw error?
-//if newNode < ROOT_INDEX then the tree is too deep...
-if(newNode < ROOT_INDEX || newNode > 2147483583)
-	System.out.println();
 			addNode(newNode, point);
 		}
 	}
@@ -261,7 +253,7 @@ if(newNode < ROOT_INDEX || newNode > 2147483583)
 
 		final Deque<Integer> stack = new ArrayDeque<>();
 		stack.push(STARTING_DIMENSION);
-		stack.push(SuccinctKDTree.ROOT_INDEX);
+		stack.push(ROOT_INDEX);
 		while(!stack.isEmpty()){
 			final int node = stack.pop();
 			final int axis = stack.pop();
@@ -384,7 +376,7 @@ if(newNode < ROOT_INDEX || newNode > 2147483583)
 	}
 
 	private boolean hasNode(final int index){
-		return structure.get(index);
+		return data.containsKey(index);
 	}
 
 	private Point getData(final int index){
@@ -392,14 +384,7 @@ if(newNode < ROOT_INDEX || newNode > 2147483583)
 	}
 
 	private void addNode(final int index, final Point point){
-		structure.set(index);
-		//add data
 		data.put(index, point);
-	}
-
-	private void clear(){
-		structure.clear();
-		data.clear();
 	}
 
 }

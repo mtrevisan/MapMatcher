@@ -32,7 +32,6 @@ import org.agrona.collections.Int2ObjectHashMap;
 import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
@@ -89,9 +88,6 @@ public class SuccinctBalancedKDTree implements SpatialTree{
 	private static final double LOG2 = Math.log(2.);
 
 
-	//representation of the tree in level-order traversal (breadth-first order) using Zaks' sequence (encoding with Fixed Length Codewords)
-	//simple k-d tree: 4 * 8 * n bit, succinct k-d tree: 5 * n bit, that is 6.4x better
-	private final BitSet structure = new BitSet();
 	private Int2ObjectHashMap<Point> data;
 
 
@@ -257,7 +253,7 @@ public class SuccinctBalancedKDTree implements SpatialTree{
 
 		final Deque<Integer> stack = new ArrayDeque<>();
 		stack.push(STARTING_DIMENSION);
-		stack.push(SuccinctBalancedKDTree.ROOT_INDEX);
+		stack.push(ROOT_INDEX);
 		while(!stack.isEmpty()){
 			final int node = stack.pop();
 			final int axis = stack.pop();
@@ -380,7 +376,7 @@ public class SuccinctBalancedKDTree implements SpatialTree{
 	}
 
 	private boolean hasNode(final int index){
-		return structure.get(index);
+		return data.containsKey(index);
 	}
 
 	private Point getData(final int index){
@@ -388,14 +384,7 @@ public class SuccinctBalancedKDTree implements SpatialTree{
 	}
 
 	private void addNode(final int index, final Point point){
-		structure.set(index);
-		//add data
 		data.put(index, point);
-	}
-
-	private void clear(){
-		structure.clear();
-		data.clear();
 	}
 
 }
