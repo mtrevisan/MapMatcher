@@ -24,6 +24,7 @@
  */
 package io.github.mtrevisan.mapmatcher.helpers;
 
+import io.github.mtrevisan.mapmatcher.helpers.kdtree.MaximumTreeDepthReached;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
 
 import java.util.Collection;
@@ -39,7 +40,7 @@ public interface SpatialTree{
 	 *
 	 * @param point	The point to add.
 	 */
-	void insert(final Point point);
+	void insert(final Point point) throws MaximumTreeDepthReached;
 
 	/**
 	 * Assess the given point is inside the tree.

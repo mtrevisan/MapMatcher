@@ -26,7 +26,7 @@ package io.github.mtrevisan.mapmatcher.helpers.kdtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.SpatialTree;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
-import org.agrona.collections.Int2ObjectHashMap;
+import org.agrona.collections.Long2ObjectHashMap;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -79,12 +79,13 @@ import java.util.List;
  */
 public class SuccinctKDTree implements SpatialTree{
 
-	private static final int ROOT_INDEX = 0;
+	private static final long NO_NODE = -1l;
+	private static final long ROOT_INDEX = 0l;
 	private static final int STARTING_DIMENSION = 0;
 	private static final int DIMENSIONS = 2;
 
 
-	private final Int2ObjectHashMap<Point> data = new Int2ObjectHashMap<>();
+	private final Long2ObjectHashMap<Point> data = new Long2ObjectHashMap<>();
 
 
 	public static SuccinctKDTree create(){
@@ -141,13 +142,13 @@ public class SuccinctKDTree implements SpatialTree{
 	 * @param point	The point to add.
 	 */
 	@Override
-	public void insert(final Point point){
+	public void insert(final Point point) throws MaximumTreeDepthReached{
 		if(isEmpty())
 			addNode(ROOT_INDEX, point);
 		else{
-			int parent = ROOT_INDEX;
+			long parent = ROOT_INDEX;
 			//traverse the tree and find the parent node:
-			int parentNode = -1;
+			long parentNode = NO_NODE;
 			int axis = STARTING_DIMENSION;
 			boolean goLeft = false;
 			Point currentPoint;
@@ -161,10 +162,11 @@ public class SuccinctKDTree implements SpatialTree{
 			}
 
 			//add new leaf node to the tree
-			final int newNode = (goLeft
+			final long newNode = (goLeft
 				? leftIndex(parentNode)
 				: rightIndex(parentNode));
-			//Note: if `newNode < 0`, then add point to `parentNode` (max size of structure is reached)
+			if(newNode < 0l)
+				throw MaximumTreeDepthReached.create();
 			addNode(newNode, point);
 		}
 	}
@@ -178,7 +180,7 @@ public class SuccinctKDTree implements SpatialTree{
 		final double precision = point.getDistanceCalculator()
 			.getPrecision();
 
-		int currentNode = ROOT_INDEX;
+		long currentNode = ROOT_INDEX;
 		int axis = STARTING_DIMENSION;
 		Point currentPoint;
 		while((currentPoint = getData(currentNode)) != null){
@@ -213,18 +215,19 @@ public class SuccinctKDTree implements SpatialTree{
 		if(isEmpty() || point == null)
 			return null;
 
-		int bestNode = -1;
+		long bestNode = NO_NODE;
 		double bestSquaredDistance = Double.POSITIVE_INFINITY;
 		double squaredPrecision = point.getDistanceCalculator()
 			.getPrecision();
 		squaredPrecision *= squaredPrecision;
 
-		final Deque<Integer> stack = new ArrayDeque<>();
-		stack.push(STARTING_DIMENSION);
+		final Deque<Long> stack = new ArrayDeque<>();
+		stack.push((long)STARTING_DIMENSION);
 		stack.push(ROOT_INDEX);
 		while(!stack.isEmpty()){
-			final int node = stack.pop();
-			final int axis = stack.pop();
+			final long node = stack.pop();
+			final int axis = stack.pop()
+				.intValue();
 
 			//find closest node
 			final Point nodePoint = getData(node);
@@ -240,22 +243,22 @@ public class SuccinctKDTree implements SpatialTree{
 
 			final double coordinateDelta = euclideanAxisDistance(nodePoint, point, axis);
 			if(coordinateDelta > 0.){
-				final int leftIndex = leftIndex(node);
-				if(leftIndex >= ROOT_INDEX && hasNode(leftIndex)){
-					stack.push(getNextAxis(axis));
+				final long leftIndex = leftIndex(node);
+				if(hasNode(leftIndex)){
+					stack.push((long)getNextAxis(axis));
 					stack.push(leftIndex);
 				}
 			}
 			else{
-				final int rightIndex = rightIndex(node);
-				if(rightIndex >= ROOT_INDEX && hasNode(rightIndex)){
-					stack.push(getNextAxis(axis));
+				final long rightIndex = rightIndex(node);
+				if(hasNode(rightIndex)){
+					stack.push((long)getNextAxis(axis));
 					stack.push(rightIndex);
 				}
 			}
 		}
 
-		return (bestNode >= ROOT_INDEX? getData(bestNode): null);
+		return getData(bestNode);
 	}
 
 	/** Return squared distance between two points. */
@@ -280,12 +283,13 @@ public class SuccinctKDTree implements SpatialTree{
 		if(isEmpty())
 			return points;
 
-		final Deque<Integer> stack = new ArrayDeque<>();
+		final Deque<Long> stack = new ArrayDeque<>();
+		stack.push((long)STARTING_DIMENSION);
 		stack.push(ROOT_INDEX);
-		stack.push(STARTING_DIMENSION);
 		while(!stack.isEmpty()){
-			final int axis = stack.pop();
-			final int node = stack.pop();
+			final long node = stack.pop();
+			final int axis = stack.pop()
+				.intValue();
 
 			//add contained points to points stack if inside the region
 			final Point point = getData(node);
@@ -293,15 +297,15 @@ public class SuccinctKDTree implements SpatialTree{
 				points.add(point);
 
 			final int nextAxis = getNextAxis(axis);
-			final int leftIndex = leftIndex(node);
-			if(leftIndex >= ROOT_INDEX && hasNode(leftIndex) && euclideanAxisDistance(point, rangeMin, axis) >= 0.){
+			final long leftIndex = leftIndex(node);
+			if(hasNode(leftIndex) && euclideanAxisDistance(point, rangeMin, axis) >= 0.){
+				stack.push((long)nextAxis);
 				stack.push(leftIndex);
-				stack.push(nextAxis);
 			}
-			final int rightIndex = rightIndex(node);
-			if(rightIndex >= ROOT_INDEX && hasNode(rightIndex) && euclideanAxisDistance(point, rangeMax, axis) <= 0.){
+			final long rightIndex = rightIndex(node);
+			if(hasNode(rightIndex) && euclideanAxisDistance(point, rangeMax, axis) <= 0.){
+				stack.push((long)nextAxis);
 				stack.push(rightIndex);
-				stack.push(nextAxis);
 			}
 		}
 		return points;
@@ -335,23 +339,23 @@ public class SuccinctKDTree implements SpatialTree{
 	}
 
 
-	private static int leftIndex(final int parentIndex){
+	private static long leftIndex(final long parentIndex){
 		return (parentIndex << 1) + 1;
 	}
 
-	private static int rightIndex(final int parentIndex){
+	private static long rightIndex(final long parentIndex){
 		return (parentIndex << 1) + 2;
 	}
 
-	private boolean hasNode(final int index){
+	private boolean hasNode(final long index){
 		return data.containsKey(index);
 	}
 
-	private Point getData(final int index){
+	private Point getData(final long index){
 		return data.get(index);
 	}
 
-	private void addNode(final int index, final Point point){
+	private void addNode(final long index, final Point point){
 		data.put(index, point);
 	}
 

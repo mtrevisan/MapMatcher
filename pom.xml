@@ -205,11 +205,11 @@
 		</dependency>
 
 		<!-- JavaEWAH -->
-		<dependency>
-			<groupId>com.googlecode.javaewah</groupId>
-			<artifactId>JavaEWAH</artifactId>
-			<version>${googlecode.javaewah.version}</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.googlecode.javaewah</groupId>-->
+<!--			<artifactId>JavaEWAH</artifactId>-->
+<!--			<version>${googlecode.javaewah.version}</version>-->
+<!--		</dependency>-->
 
 		<!-- Logger -->
 		<dependency>

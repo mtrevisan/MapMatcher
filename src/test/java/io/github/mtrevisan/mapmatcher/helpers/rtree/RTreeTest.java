@@ -68,7 +68,7 @@ class RTreeTest{
 	}
 
 	@Test
-	void str_bulk_load(){
+	void simple_str(){
 		RTreeOptions options = RTreeOptions.create()
 			.withMinChildren(1)
 			.withMaxChildren(10);
@@ -94,31 +94,60 @@ class RTreeTest{
 			tree.nearestNeighbor(nodes, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
 	}
 
-//	@Test
-//	void simple_rstar(){
-//		RTreeOptions options = RTreeOptions.create()
-//			.withMinChildren(1)
-//			.withMaxChildren(10);
-//		List<Region> regions = List.of(
-//			Region.of(10., 10., 20., 20.),
-//			Region.of(5., 5., 15., 15.),
-//			Region.of(25., 25., 35., 35.),
-//			Region.of(5., 5., 17., 15.),
-//			Region.of(5., 25., 25., 35.),
-//			Region.of(25., 5., 35., 15.),
-//			Region.of(2., 2., 4., 4.)
-//		);
-//		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createRStar(regions, options), options);
-//		Region region = Region.of(5., 5., 10., 10.);
-//		Map<Region, SpatialNode> nodes = new HashMap<>();
-//		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.));
-//		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(2., 2.));
-//		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 2.));
-//
-//		Assertions.assertTrue(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
-//		Assertions.assertFalse(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
-//		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
-//			tree.nearestNeighbor(nodes, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
-//	}
+
+	@Test
+	void simple_rstar(){
+		RTreeOptions options = RTreeOptions.create()
+			.withMinChildren(1)
+			.withMaxChildren(10);
+		List<Region> regions = List.of(
+			Region.of(10., 10., 20., 20.),
+			Region.of(5., 5., 15., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 5., 17., 15.),
+			Region.of(5., 25., 25., 35.),
+			Region.of(25., 5., 35., 15.),
+			Region.of(2., 2., 4., 4.)
+		);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createRStar(regions, options));
+		Region region = Region.of(5., 5., 10., 10.);
+		Map<Region, SpatialNode> nodes = new HashMap<>();
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.));
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(2., 2.));
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 2.));
+
+		Assertions.assertTrue(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
+		Assertions.assertFalse(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
+		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
+			tree.nearestNeighbor(nodes, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
+	}
+
+
+	@Test
+	void simple_hilbert(){
+		RTreeOptions options = RTreeOptions.create()
+			.withMinChildren(1)
+			.withMaxChildren(10);
+		List<Region> regions = List.of(
+			Region.of(10., 10., 20., 20.),
+			Region.of(5., 5., 15., 15.),
+			Region.of(25., 25., 35., 35.),
+			Region.of(5., 5., 17., 15.),
+			Region.of(5., 25., 25., 35.),
+			Region.of(25., 5., 35., 15.),
+			Region.of(2., 2., 4., 4.)
+		);
+		HybridKDTree<RTreeOptions> tree = HybridKDTree.create(RTree.createHilbert(regions, options));
+		Region region = Region.of(5., 5., 10., 10.);
+		Map<Region, SpatialNode> nodes = new HashMap<>();
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.));
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(2., 2.));
+		tree.insert(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 2.));
+
+		Assertions.assertTrue(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(1., 1.)));
+		Assertions.assertFalse(tree.contains(nodes, region, FACTORY_EUCLIDEAN.createPoint(10., 10.)));
+		Assertions.assertEquals(FACTORY_EUCLIDEAN.createPoint(2., 2.),
+			tree.nearestNeighbor(nodes, region, FACTORY_EUCLIDEAN.createPoint(3., 3.)));
+	}
 
 }
