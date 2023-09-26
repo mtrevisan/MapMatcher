@@ -68,6 +68,9 @@ class RNode{
 
 			region.expandToInclude(child.region);
 		}
+
+		if(size > 0)
+			region.withID(null);
 	}
 
 }

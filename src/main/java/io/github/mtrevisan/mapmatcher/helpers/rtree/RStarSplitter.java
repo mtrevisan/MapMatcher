@@ -78,14 +78,13 @@ class RStarSplitter implements NodeSplitter{
 			}
 		}
 
-		final RNode[] nodes = new RNode[]{
-			node,
-			(node.leaf? RNode.createLeaf(node.region): RNode.createInternal(node.region))
-		};
-		nodes[0].children.clear();
-		nodes[0].children.addAll(children.subList(0, minIndex));
-		nodes[1].children.addAll(children.subList(minIndex, childrenCount));
-		return nodes;
+		final RNode newNode = (node.leaf
+			? RNode.createLeaf(node.region)
+			: RNode.createInternal(node.region));
+		node.children.clear();
+		node.children.addAll(children.subList(0, minIndex));
+		newNode.children.addAll(children.subList(minIndex, childrenCount));
+		return new RNode[]{node, newNode};
 	}
 
 	private double marginValueSum(final List<RNode> list){
@@ -104,14 +103,12 @@ class RStarSplitter implements NodeSplitter{
 		double maxY = Double.NEGATIVE_INFINITY;
 		for(int i = fromIndexInclusive; i < toIndexExclusive; i ++){
 			final RNode node = nodes.get(i);
-			if(node.region.getMinX() < minX)
-				minX = node.region.getMinX();
-			if(node.region.getMinY() < minY)
-				minY = node.region.getMinY();
-			if(node.region.getMaxX() > maxX)
-				maxX = node.region.getMaxX();
-			if(node.region.getMaxY() > maxY)
-				maxY = node.region.getMaxY();
+
+			final Region nodeRegion = node.region;
+			minX = Math.min(minX, nodeRegion.getMinX());
+			minY = Math.min(minY, nodeRegion.getMinY());
+			maxX = Math.max(maxX, nodeRegion.getMaxX());
+			maxY = Math.max(maxY, nodeRegion.getMaxY());
 		}
 		return Region.of(minX, minY, maxX, maxY);
 	}

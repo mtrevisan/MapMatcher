@@ -347,7 +347,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 	private RNode findLeaf(final Region region){
 		if(root.region.intersects(region)){
 			final Deque<RNode> stack = new ArrayDeque<>();
-			stack.push(root);
+			if(region.intersects(root.region))
+				stack.push(root);
 			while(!stack.isEmpty()){
 				final RNode current = stack.pop();
 
@@ -421,7 +422,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 	@Override
 	public boolean contains(final Region region){
 		final Deque<RNode> stack = new ArrayDeque<>();
-		stack.push(root);
+		if(region.intersects(root.region))
+			stack.push(root);
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
 

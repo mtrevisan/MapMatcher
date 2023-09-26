@@ -1,5 +1,7 @@
 package io.github.mtrevisan.mapmatcher.helpers.rtree;
 
+import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,36 +26,36 @@ class LinearSplitter implements NodeSplitter{
 
 	@Override
 	public RNode[] splitNode(final RNode node){
-		final RNode[] nodes = new RNode[]{
-			node,
-			(node.leaf? RNode.createLeaf(node.region): RNode.createInternal(node.region))
-		};
-		nodes[1].parent = node.parent;
-		if(nodes[1].parent != null)
-			nodes[1].parent.children.add(nodes[1]);
+		final RNode newNode = (node.leaf
+			? RNode.createLeaf(node.region)
+			: RNode.createInternal(node.region));
+		newNode.parent = node.parent;
+		if(node.parent != null)
+			node.parent.children.add(newNode);
 
 		//find the two nodes that maximizes the space waste, and assign them to a node:
 		final LinkedList<RNode> seeds = new LinkedList<>(node.children);
 		node.children.clear();
 
 		final RNode[] seedNodes = pickSeeds(seeds);
-		nodes[0].children.add(seedNodes[0]);
-		nodes[1].children.add(seedNodes[1]);
+		node.children.add(seedNodes[0]);
+		newNode.children.add(seedNodes[1]);
 
-		//examine remaining entries and add them to either `nodes[0]` or `nodes[1]` with the least enlargement criteria
+		//examine remaining entries and add them to either `node` or `newNode` with the least enlargement criteria
+		final RNode[] nodes = new RNode[]{node, newNode};
 		while(!seeds.isEmpty()){
-			if(nodes[0].children.size() >= minObjects && nodes[1].children.size() + seeds.size() == minObjects){
-				nodes[1].children.addAll(seeds);
+			if(node.children.size() >= minObjects && newNode.children.size() + seeds.size() == minObjects){
+				newNode.children.addAll(seeds);
 				return nodes;
 			}
-			if(nodes[1].children.size() >= minObjects && nodes[1].children.size() + seeds.size() == minObjects){
-				nodes[0].children.addAll(seeds);
+			if(newNode.children.size() >= minObjects && node.children.size() + seeds.size() == minObjects){
+				node.children.addAll(seeds);
 				return nodes;
 			}
 
 			//add the next record to the node which will require the least enlargement:
 			final RNode child = seeds.pop();
-			final RNode preferred = pickNext(child, nodes[0], nodes[1]);
+			final RNode preferred = pickNext(child.region, node, newNode);
 			preferred.children.add(child);
 		}
 
@@ -74,29 +76,30 @@ class LinearSplitter implements NodeSplitter{
 		for(int i = 0; i < size; i ++){
 			final RNode node = nodes.get(i);
 
-			if(node.region.getMinX() < dimLowerBound)
-				dimLowerBound = node.region.getMinX();
-			if(node.region.getMinY() < dimLowerBound)
-				dimLowerBound = node.region.getMinY();
-			if(node.region.getMaxX() > dimUpperBound)
-				dimUpperBound = node.region.getMaxX();
-			if(node.region.getMaxY() > dimUpperBound)
-				dimUpperBound = node.region.getMaxY();
+			final Region nodeRegion = node.region;
+			if(nodeRegion.getMinX() < dimLowerBound)
+				dimLowerBound = nodeRegion.getMinX();
+			if(nodeRegion.getMinY() < dimLowerBound)
+				dimLowerBound = nodeRegion.getMinY();
+			if(nodeRegion.getMaxX() > dimUpperBound)
+				dimUpperBound = nodeRegion.getMaxX();
+			if(nodeRegion.getMaxY() > dimUpperBound)
+				dimUpperBound = nodeRegion.getMaxY();
 
-			if(node.region.getMinX() > dimMaxLowerBound){
-				dimMaxLowerBound = node.region.getMinX();
+			if(nodeRegion.getMinX() > dimMaxLowerBound){
+				dimMaxLowerBound = nodeRegion.getMinX();
 				nodeMaxLowerBound = node;
 			}
-			if(node.region.getMinY() > dimMaxLowerBound){
-				dimMaxLowerBound = node.region.getMinY();
+			if(nodeRegion.getMinY() > dimMaxLowerBound){
+				dimMaxLowerBound = nodeRegion.getMinY();
 				nodeMaxLowerBound = node;
 			}
-			if(node.region.getMaxX() < dimMinUpperBound){
-				dimMinUpperBound = node.region.getMaxX();
+			if(nodeRegion.getMaxX() < dimMinUpperBound){
+				dimMinUpperBound = nodeRegion.getMaxX();
 				nodeMinUpperBound = node;
 			}
-			if(node.region.getMaxY() < dimMinUpperBound){
-				dimMinUpperBound = node.region.getMaxY();
+			if(nodeRegion.getMaxY() < dimMinUpperBound){
+				dimMinUpperBound = nodeRegion.getMaxY();
 				nodeMinUpperBound = node;
 			}
 
@@ -113,10 +116,10 @@ class LinearSplitter implements NodeSplitter{
 		return bestPair;
 	}
 
-	private static RNode pickNext(final RNode child, final RNode node1, final RNode node2){
+	private static RNode pickNext(final Region childRegion, final RNode node1, final RNode node2){
 		RNode preferred;
-		final double nia0 = child.region.nonIntersectingArea(node1.region);
-		final double nia1 = child.region.nonIntersectingArea(node2.region);
+		final double nia0 = childRegion.nonIntersectingArea(node1.region);
+		final double nia1 = childRegion.nonIntersectingArea(node2.region);
 		if(nia0 < nia1)
 			preferred = node1;
 		else if(nia0 > nia1)
