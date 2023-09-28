@@ -38,11 +38,12 @@ class RStarSplitter implements NodeSplitter{
 
 
 	@Override
-	public RNode[] splitNode(final RNode node){
+	public Object[] pivotNode(final RNode node){
 		double minMarginSum = Double.POSITIVE_INFINITY;
+		//list is changed each time, so a new list should be created to preserve the original one
 		final List<RNode> children = new ArrayList<>(node.children);
 		final int childrenCount = children.size();
-		final List<RNode> minChildren = new ArrayList<>(childrenCount);
+		final List<RNode> minMarginSumChildren = new ArrayList<>(childrenCount);
 		for(int i = 0; i < 4; i ++){
 			children.sort(COMPARATORS[i]);
 
@@ -50,21 +51,20 @@ class RStarSplitter implements NodeSplitter{
 			if(marginSum <= minMarginSum){
 				minMarginSum = marginSum;
 
-				//list is changed each time, so a new list should be created to preserve the original one
-				minChildren.clear();
-				minChildren.addAll(children);
+				minMarginSumChildren.clear();
+				minMarginSumChildren.addAll(children);
 			}
 		}
 
 		//find minimum pair:
 		int minIndex = minObjects;
-		Region minRegion1 = minimumBoundingRegion(minChildren, 0, minIndex);
-		Region minRegion2 = minimumBoundingRegion(minChildren, minIndex, childrenCount);
+		final Region minRegion1 = minimumBoundingRegion(minMarginSumChildren, 0, minIndex);
+		final Region minRegion2 = minimumBoundingRegion(minMarginSumChildren, minIndex, childrenCount);
 		double minNonIntersectingArea = minRegion1.nonIntersectingArea(minRegion2);
 		double minAreaSum = minRegion1.euclideanArea() + minRegion2.euclideanArea();
 		for(int i = minObjects + 1; i < childrenCount - minObjects + 1; i ++){
-			final Region region1 = minimumBoundingRegion(minChildren, 0, i);
-			final Region region2 = minimumBoundingRegion(minChildren, i, childrenCount);
+			final Region region1 = minimumBoundingRegion(minMarginSumChildren, 0, i);
+			final Region region2 = minimumBoundingRegion(minMarginSumChildren, i, childrenCount);
 
 			final double nonIntersectingArea = region1.nonIntersectingArea(region2);
 			final double areaSum = region1.euclideanArea() + region2.euclideanArea();
@@ -78,13 +78,10 @@ class RStarSplitter implements NodeSplitter{
 			}
 		}
 
-		final RNode newNode = (node.leaf
-			? RNode.createLeaf(node.region)
-			: RNode.createInternal(node.region));
-		node.children.clear();
-		node.children.addAll(children.subList(0, minIndex));
-		newNode.children.addAll(children.subList(minIndex, childrenCount));
-		return new RNode[]{node, newNode};
+		return new Object[]{
+			minMarginSumChildren.subList(0, minIndex),
+			minMarginSumChildren.subList(minIndex, minMarginSumChildren.size())
+		};
 	}
 
 	private double marginValueSum(final List<RNode> list){

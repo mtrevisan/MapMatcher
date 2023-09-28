@@ -2,6 +2,7 @@ package io.github.mtrevisan.mapmatcher.helpers.rtree;
 
 import io.github.mtrevisan.mapmatcher.helpers.quadtree.Region;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,41 +26,52 @@ class LinearSplitter implements NodeSplitter{
 
 
 	@Override
-	public RNode[] splitNode(final RNode node){
-		final RNode newNode = (node.leaf
-			? RNode.createLeaf(node.region)
-			: RNode.createInternal(node.region));
-		newNode.parent = node.parent;
-		if(node.parent != null)
-			node.parent.children.add(newNode);
-
+	public Object[] pivotNode(final RNode node){
 		//find the two nodes that maximizes the space waste, and assign them to a node:
 		final LinkedList<RNode> seeds = new LinkedList<>(node.children);
-		node.children.clear();
+
+		final int childrenCount = node.children.size();
+		final List<RNode> childrenLesser = new ArrayList<>(childrenCount);
+		final List<RNode> childrenGreater = new ArrayList<>(childrenCount);
 
 		final RNode[] seedNodes = pickSeeds(seeds);
-		node.children.add(seedNodes[0]);
-		newNode.children.add(seedNodes[1]);
+		if(seedNodes == null)
+			return null;
+		childrenLesser.add(seedNodes[0]);
+		childrenGreater.add(seedNodes[1]);
+		seeds.remove(seedNodes[0]);
+		seeds.remove(seedNodes[1]);
 
 		//examine remaining entries and add them to either `node` or `newNode` with the least enlargement criteria
-		final RNode[] nodes = new RNode[]{node, newNode};
 		while(!seeds.isEmpty()){
-			if(node.children.size() >= minObjects && newNode.children.size() + seeds.size() == minObjects){
-				newNode.children.addAll(seeds);
-				return nodes;
+			if(childrenLesser.size() + seeds.size() == minObjects){
+				childrenLesser.addAll(seeds);
+
+				break;
 			}
-			if(newNode.children.size() >= minObjects && node.children.size() + seeds.size() == minObjects){
-				node.children.addAll(seeds);
-				return nodes;
+			if(childrenGreater.size() + seeds.size() == minObjects){
+				childrenGreater.addAll(seeds);
+
+				break;
 			}
+//			if(childrenLesser.size() >= minObjects && childrenGreater.size() + seeds.size() == minObjects){
+//				childrenGreater.addAll(seeds);
+//
+//				break;
+//			}
+//			if(childrenGreater.size() >= minObjects && childrenLesser.size() + seeds.size() == minObjects){
+//				childrenLesser.addAll(seeds);
+//
+//				break;
+//			}
 
 			//add the next record to the node which will require the least enlargement:
 			final RNode child = seeds.pop();
-			final RNode preferred = pickNext(child.region, node, newNode);
-			preferred.children.add(child);
+			final List<RNode> preferred = pickNext(child.region, childrenLesser, childrenGreater);
+			preferred.add(child);
 		}
 
-		return nodes;
+		return new Object[]{childrenLesser, childrenGreater};
 	}
 
 	/** Find the two nodes that maximizes the space waste. */
@@ -67,8 +79,8 @@ class LinearSplitter implements NodeSplitter{
 		RNode[] bestPair = null;
 		double bestSeparation = 0.;
 		double dimLowerBound = Double.POSITIVE_INFINITY;
-		double dimMinUpperBound = Double.POSITIVE_INFINITY;
 		double dimUpperBound = Double.NEGATIVE_INFINITY;
+		double dimMinUpperBound = Double.POSITIVE_INFINITY;
 		double dimMaxLowerBound = Double.NEGATIVE_INFINITY;
 		RNode nodeMaxLowerBound = null;
 		RNode nodeMinUpperBound = null;
@@ -104,37 +116,46 @@ class LinearSplitter implements NodeSplitter{
 			}
 
 			final double separation = Math.abs((dimMinUpperBound - dimMaxLowerBound) / (dimUpperBound - dimLowerBound));
-			if(separation >= bestSeparation){
+			if(separation > bestSeparation){
 				bestPair = new RNode[]{nodeMaxLowerBound, nodeMinUpperBound};
 				bestSeparation = separation;
 			}
 		}
-		if(bestPair != null){
-			nodes.remove(bestPair[0]);
-			nodes.remove(bestPair[1]);
-		}
 		return bestPair;
 	}
 
-	private static RNode pickNext(final Region childRegion, final RNode node1, final RNode node2){
-		RNode preferred;
-		final double nia0 = childRegion.nonIntersectingArea(node1.region);
-		final double nia1 = childRegion.nonIntersectingArea(node2.region);
+	private static List<RNode> pickNext(final Region childRegion, final List<RNode> children1, final List<RNode> children2){
+		List<RNode> preferred;
+		final Region region1 = boundingRegion(children1);
+		final Region region2 = boundingRegion(children2);
+		final double nia0 = childRegion.nonIntersectingArea(region1);
+		final double nia1 = childRegion.nonIntersectingArea(region2);
 		if(nia0 < nia1)
-			preferred = node1;
+			preferred = children1;
 		else if(nia0 > nia1)
-			preferred = node2;
+			preferred = children2;
 		else{
-			final double area0 = node1.region.euclideanArea();
-			final double area1 = node2.region.euclideanArea();
+			final double area0 = region1.euclideanArea();
+			final double area1 = region2.euclideanArea();
 			if(area0 < area1)
-				preferred = node1;
+				preferred = children1;
 			else if(nia0 > area1)
-				preferred = node2;
+				preferred = children2;
 			else
-				preferred = (node1.children.size() <= node2.children.size()? node1: node2);
+				preferred = (children1.size() <= children2.size()? children1: children2);
 		}
 		return preferred;
+	}
+
+	private static Region boundingRegion(final List<RNode> children){
+		final Region region = Region.ofEmpty();
+		final int size = children.size();
+		for(int i = 0; i < size; i ++){
+			final RNode child = children.get(i);
+
+			region.expandToInclude(child.region);
+		}
+		return region;
 	}
 
 }
