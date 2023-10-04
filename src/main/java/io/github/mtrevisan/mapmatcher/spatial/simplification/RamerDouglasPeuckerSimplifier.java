@@ -24,8 +24,9 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.simplification;
 
-import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -81,6 +82,7 @@ public class RamerDouglasPeuckerSimplifier{
 
 		int startIndex = 0;
 		int endIndex = points.length - 1;
+		final GeometryFactory factory = points[0].getFactory();
 
 		preservePoints.set(startIndex);
 		preservePoints.set(endIndex);
@@ -97,8 +99,7 @@ public class RamerDouglasPeuckerSimplifier{
 			int maxIndex = startIndex;
 			for(int k = maxIndex + 1; k < endIndex; k ++)
 				if(!preservePoints.get(k)){
-					final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
-					final double distance = nearestPoint.distance(points[k]);
+					final double distance = points[k].distance(Polyline.of(factory, points[startIndex], points[endIndex]));
 					if(distance > maxDistance){
 						maxIndex = k;
 						maxDistance = distance;
