@@ -46,20 +46,20 @@
 		<javadoc.html.version>-html5</javadoc.html.version>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
-		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.12.0</maven-compiler-plugin.version>
 		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-shade-plugin -->
-		<maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
+		<maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<apache.math3.version>3.6.1</apache.math3.version>
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
-		<apache.httpcomponents.client5.verion>5.2.1</apache.httpcomponents.client5.verion>
+		<apache.httpcomponents.client5.verion>5.3</apache.httpcomponents.client5.verion>
 
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-		<com.fasterxml.jackson.version>2.15.2</com.fasterxml.jackson.version>
+		<com.fasterxml.jackson.version>2.16.0</com.fasterxml.jackson.version>
 
 		<!-- https://mvnrepository.com/artifact/org.agrona/agrona -->
-		<org.agrona.version>1.19.2</org.agrona.version>
+		<org.agrona.version>1.20.0</org.agrona.version>
 
 		<!-- https://mvnrepository.com/artifact/net.sf.geographiclib/GeographicLib-Java -->
 		<geographiclib.version>2.0</geographiclib.version>
@@ -71,11 +71,11 @@
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 		<slf4j.slf4j-api.version>2.0.9</slf4j.slf4j-api.version>
 		<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
-		<logback.logback-classic.version>1.4.11</logback.logback-classic.version>
+		<logback.logback-classic.version>1.4.14</logback.logback-classic.version>
 
 		<!-- JUnit -->
 		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
-		<junit.junit-jupiter-engine.version>5.10.0</junit.junit-jupiter-engine.version>
+		<junit.junit-jupiter-engine.version>5.10.1</junit.junit-jupiter-engine.version>
 	</properties>
 
 	<repositories>
