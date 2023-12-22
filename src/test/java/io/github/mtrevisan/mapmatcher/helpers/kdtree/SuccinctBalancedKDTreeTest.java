@@ -115,7 +115,7 @@ class SuccinctBalancedKDTreeTest{
 
 
 	@Test
-	void contains_all() throws MaximumTreeDepthReached{
+	void contains_all() throws MaximumTreeDepthReachedException{
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(new ArrayList<>(tollBooths));
@@ -126,7 +126,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void neighbor() throws MaximumTreeDepthReached{
+	void neighbor() throws MaximumTreeDepthReachedException{
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(new ArrayList<>(tollBooths));
@@ -141,7 +141,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void neighbor_euclidean() throws MaximumTreeDepthReached{
+	void neighbor_euclidean() throws MaximumTreeDepthReachedException{
 		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(Arrays.asList(
 			FACTORY_EUCLIDEAN.createPoint(6., 4.),
 			FACTORY_EUCLIDEAN.createPoint(5., 2.),
@@ -157,7 +157,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void points_in_range1() throws MaximumTreeDepthReached{
+	void points_in_range1() throws MaximumTreeDepthReachedException{
 		File tollBoothsFile = new File(FILENAME_TOLL_BOOTHS_RAW);
 		Set<Point> tollBooths = extractPoints(tollBoothsFile);
 		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(new ArrayList<>(tollBooths));
@@ -172,7 +172,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void points_in_range2() throws MaximumTreeDepthReached{
+	void points_in_range2() throws MaximumTreeDepthReachedException{
 		SuccinctBalancedKDTree tree = SuccinctBalancedKDTree.ofPoints(Arrays.asList(
 			FACTORY_EUCLIDEAN.createPoint(6., 4.),
 			FACTORY_EUCLIDEAN.createPoint(5., 2.),
@@ -206,7 +206,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void real_data_kd_tree() throws IOException, MaximumTreeDepthReached{
+	void real_data_kd_tree() throws IOException, MaximumTreeDepthReachedException{
 		//world boundary:
 		final double minLongitude = 12.0383688;
 		final double minLatitude = 45.9045485;
@@ -245,7 +245,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void real_data_r_kd_tree() throws IOException, MaximumTreeDepthReached{
+	void real_data_r_kd_tree() throws IOException, MaximumTreeDepthReachedException{
 		//world boundary:
 		final double minLongitude = 12.0383688;
 		final double minLatitude = 45.9045485;
@@ -317,7 +317,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void real_data_r_str_kd_tree() throws IOException, MaximumTreeDepthReached{
+	void real_data_r_str_kd_tree() throws IOException, MaximumTreeDepthReachedException{
 		//world boundary:
 		final double minLongitude = 12.0383688;
 		final double minLatitude = 45.9045485;
@@ -390,7 +390,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void real_data_r_star_kd_tree() throws IOException, MaximumTreeDepthReached{
+	void real_data_r_star_kd_tree() throws IOException, MaximumTreeDepthReachedException{
 		//world boundary:
 		final double minLongitude = 12.0383688;
 		final double minLatitude = 45.9045485;
@@ -463,7 +463,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void real_data_hilbert_r_kd_tree() throws IOException, MaximumTreeDepthReached{
+	void real_data_hilbert_r_kd_tree() throws IOException, MaximumTreeDepthReachedException{
 		//world boundary:
 		final double minLongitude = 12.0383688;
 		final double minLatitude = 45.9045485;
@@ -536,7 +536,7 @@ class SuccinctBalancedKDTreeTest{
 	}
 
 	@Test
-	void real_data_quad_kd_tree() throws IOException, MaximumTreeDepthReached{
+	void real_data_quad_kd_tree() throws IOException, MaximumTreeDepthReachedException{
 		//world boundary:
 		final double minLongitude = 12.0383688;
 		final double minLatitude = 45.9045485;

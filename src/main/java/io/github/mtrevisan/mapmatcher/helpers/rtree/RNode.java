@@ -62,12 +62,16 @@ class RNode{
 	}
 
 	void tightenRegion(){
+		region.setToNull();
 		final int size = children.size();
 		for(int i = 0; i < size; i ++){
 			final RNode child = children.get(i);
 
 			region.expandToInclude(child.region);
 		}
+
+		if(size > 0)
+			region.withID(null);
 	}
 
 }

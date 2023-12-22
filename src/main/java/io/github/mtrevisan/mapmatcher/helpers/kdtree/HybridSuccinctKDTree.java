@@ -57,7 +57,7 @@ public class HybridSuccinctKDTree<O extends TreeOptions>{
 		tree.insert(region);
 	}
 
-	public void insert(final Map<Region, SuccinctKDTree> nodes, final Region region, final Point point) throws MaximumTreeDepthReached{
+	public void insert(final Map<Region, SuccinctKDTree> nodes, final Region region, final Point point) throws MaximumTreeDepthReachedException{
 		final List<Region> regions = query(region);
 		for(int i = 0; i < regions.size(); i ++){
 			final Region queriedRegion = regions.get(i);

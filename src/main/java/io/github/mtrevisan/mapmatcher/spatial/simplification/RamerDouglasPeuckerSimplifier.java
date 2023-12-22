@@ -24,13 +24,15 @@
  */
 package io.github.mtrevisan.mapmatcher.spatial.simplification;
 
-import io.github.mtrevisan.mapmatcher.spatial.GeodeticHelper;
+import io.github.mtrevisan.mapmatcher.spatial.GeometryFactory;
 import io.github.mtrevisan.mapmatcher.spatial.Point;
+import io.github.mtrevisan.mapmatcher.spatial.Polyline;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 
 /**
@@ -68,7 +70,6 @@ public class RamerDouglasPeuckerSimplifier{
 
 	public Point[] simplify(final Point... points){
 		final BitSet preservePoints = new BitSet(points.length);
-
 		return simplify(preservePoints, points);
 	}
 
@@ -81,25 +82,24 @@ public class RamerDouglasPeuckerSimplifier{
 
 		int startIndex = 0;
 		int endIndex = points.length - 1;
+		final GeometryFactory factory = points[0].getFactory();
 
-		preservePoints.set(startIndex, true);
-		preservePoints.set(endIndex, true);
+		preservePoints.set(startIndex);
+		preservePoints.set(endIndex);
 
-		final Stack<KeyValuePair> stack = new Stack<>();
-		stack.push(new KeyValuePair(startIndex, endIndex));
-
+		final Deque<Integer> stack = new ArrayDeque<>();
+		stack.push(endIndex);
+		stack.push(startIndex);
 		while(!stack.isEmpty()){
-			final KeyValuePair element = stack.pop();
-			startIndex = element.startIndex;
-			endIndex = element.endIndex;
+			startIndex = stack.pop();
+			endIndex = stack.pop();
 
 			//find the point with the maximum distance from line between the start and end
 			double maxDistance = distanceTolerance;
 			int maxIndex = startIndex;
 			for(int k = maxIndex + 1; k < endIndex; k ++)
 				if(!preservePoints.get(k)){
-					final Point nearestPoint = GeodeticHelper.onTrackClosestPoint(points[startIndex], points[endIndex], points[k]);
-					final double distance = nearestPoint.distance(points[k]);
+					final double distance = points[k].distance(Polyline.of(factory, points[startIndex], points[endIndex]));
 					if(distance > maxDistance){
 						maxIndex = k;
 						maxDistance = distance;
@@ -108,31 +108,22 @@ public class RamerDouglasPeuckerSimplifier{
 
 			//if max distance is greater than tolerance then split and simplify, otherwise return the segment
 			if(maxDistance > distanceTolerance){
-				stack.push(new KeyValuePair(startIndex, maxIndex));
-				stack.push(new KeyValuePair(maxIndex, endIndex));
+				stack.push(maxIndex);
+				stack.push(startIndex);
+				stack.push(endIndex);
+				stack.push(maxIndex);
 			}
 			else{
-				preservePoints.set(startIndex, true);
-				preservePoints.set(endIndex, true);
+				preservePoints.set(startIndex);
+				preservePoints.set(endIndex);
 			}
 		}
 
 		final List<Point> simplifiedPoints = new ArrayList<>(points.length);
-		for(int i = 0; i < points.length; i ++)
-			if(preservePoints.get(i))
-				simplifiedPoints.add(points[i]);
+		int index = -1;
+		while((index = preservePoints.nextSetBit(index + 1)) >= 0)
+			simplifiedPoints.add(points[index]);
 		return simplifiedPoints.toArray(Point[]::new);
-	}
-
-
-	private static final class KeyValuePair{
-		private final int startIndex;
-		private final int endIndex;
-
-		private KeyValuePair(final int startIndex, final int endIndex){
-			this.startIndex = startIndex;
-			this.endIndex = endIndex;
-		}
 	}
 
 }

@@ -294,28 +294,39 @@ public class RTree implements RegionTree<RTreeOptions>{
 			root.tightenRegion();
 	}
 
-	private void splitAndAdjust(RNode parent){
+	private void splitAndAdjust(RNode node){
 		while(true){
-			final RNode[] splits = splitter.splitNode(parent);
-			final RNode currentNode = splits[0];
-			final RNode newNode = splits[1];
+			final Object[] splits = splitter.pivotNode(node);
+			@SuppressWarnings("unchecked")
+			final List<RNode> childrenLesser = (List<RNode>)splits[0];
+			@SuppressWarnings("unchecked")
+			final List<RNode> childrenGreater = (List<RNode>)splits[1];
 
-			if(currentNode == root){
+			final RNode newNode = (node.leaf
+				? RNode.createLeaf(node.region)
+				: RNode.createInternal(node.region));
+			node.children.clear();
+			node.children.addAll(childrenLesser);
+			newNode.children.addAll(childrenGreater);
+			node.tightenRegion();
+			newNode.tightenRegion();
+
+			if(node == root){
 				//assign new root
-				root = RNode.createInternal(Region.ofEmpty());
-				root.addChild(currentNode);
+				root.children.clear();
+				root.addChild(node);
 				root.addChild(newNode);
 				root.tightenRegion();
 
 				break;
 			}
+			else
+				node.parent.addChild(newNode);
 
-			currentNode.tightenRegion();
-			newNode.tightenRegion();
-			if(currentNode.parent.children.size() <= options.maxChildren)
+			if(node.parent.children.size() <= options.maxChildren)
 				break;
 
-			parent = currentNode.parent;
+			node = node.parent;
 		}
 	}
 
@@ -347,7 +358,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 	private RNode findLeaf(final Region region){
 		if(root.region.intersects(region)){
 			final Deque<RNode> stack = new ArrayDeque<>();
-			stack.push(root);
+			if(region.intersects(root.region))
+				stack.push(root);
 			while(!stack.isEmpty()){
 				final RNode current = stack.pop();
 
@@ -421,7 +433,8 @@ public class RTree implements RegionTree<RTreeOptions>{
 	@Override
 	public boolean contains(final Region region){
 		final Deque<RNode> stack = new ArrayDeque<>();
-		stack.push(root);
+		if(region.intersects(root.region))
+			stack.push(root);
 		while(!stack.isEmpty()){
 			final RNode current = stack.pop();
 
